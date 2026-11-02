@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/AcroFunJam.Domain/AcroFunJam.Domain.csproj" />
+    <ProjectReference Include="../../src/AcroFunJam.Application/AcroFunJam.Application.csproj" />
+    <ProjectReference Include="../../src/AcroFunJam.Infrastructure/AcroFunJam.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/AcroFunJam.Api/AcroFunJam.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TngTech.ArchUnitNET.xUnitV3" />
+  </ItemGroup>
+
+</Project>

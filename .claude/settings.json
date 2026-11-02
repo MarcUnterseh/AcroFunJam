@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet format:*)",
+      "Bash(dotnet list:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx jest:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx depcruise:*)",
+      "Bash(npx prettier:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(node .claude/hooks/*)"
+    ],
+    "deny": [
+      "Read(./**/.env)",
+      "Read(./**/.env.*)",
+      "Read(./**/appsettings.*.local.json)",
+      "Read(./**/secrets.json)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-context.mjs\"", "timeout": 10 }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tdd-guard.mjs\"", "timeout": 15 }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/architecture-guard.mjs\"", "timeout": 15 },
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/format.mjs\"", "timeout": 30 }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/run-tests-on-stop.mjs\"", "timeout": 600 }
+        ]
+      }
+    ]
+  }
+}

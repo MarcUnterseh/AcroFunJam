@@ -1,0 +1,10 @@
+{
+  "name": "@acrofunjam/ui-tokens",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Design tokens (colors, typography, spacing) shared by the web and mobile apps.",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

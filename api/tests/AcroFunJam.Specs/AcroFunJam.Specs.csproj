@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Code-behind généré dans obj/ : rien n'est écrit dans specs/features (ADR 0005). -->
+    <ReqnrollUseIntermediateOutputPathForCodeBehind>true</ReqnrollUseIntermediateOutputPathForCodeBehind>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/AcroFunJam.Api/AcroFunJam.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Reqnroll.xunit.v3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+  </ItemGroup>
+
+  <!-- Source unique des scénarios : specs/features (ADR 0003), liés via l'item documenté ReqnrollFeatureFile. -->
+  <ItemGroup>
+    <ReqnrollFeatureFile Include="..\..\..\specs\features\**\*.feature" Link="Features\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>

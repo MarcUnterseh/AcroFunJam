@@ -1,0 +1,5 @@
+# Smoke test: the app starts and shows its home screen.
+appId: com.acrofunjam.app
+---
+- launchApp
+- assertVisible: 'AcroFunJam'

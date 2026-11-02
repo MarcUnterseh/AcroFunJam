@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AcroFunJam.Api/AcroFunJam.Api.csproj" />
+    <Project Path="src/AcroFunJam.Application/AcroFunJam.Application.csproj" />
+    <Project Path="src/AcroFunJam.Domain/AcroFunJam.Domain.csproj" />
+    <Project Path="src/AcroFunJam.Infrastructure/AcroFunJam.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AcroFunJam.Application.Tests/AcroFunJam.Application.Tests.csproj" />
+    <Project Path="tests/AcroFunJam.Architecture.Tests/AcroFunJam.Architecture.Tests.csproj" />
+    <Project Path="tests/AcroFunJam.Domain.Tests/AcroFunJam.Domain.Tests.csproj" />
+    <Project Path="tests/AcroFunJam.Infrastructure.Tests/AcroFunJam.Infrastructure.Tests.csproj" />
+    <Project Path="tests/AcroFunJam.Specs/AcroFunJam.Specs.csproj" />
+  </Folder>
+</Solution>

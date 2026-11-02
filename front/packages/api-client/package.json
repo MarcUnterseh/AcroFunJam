@@ -1,0 +1,21 @@
+{
+  "name": "@acrofunjam/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "HTTP adapters implementing the ports of @acrofunjam/core, on top of a client generated from the API OpenAPI document.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@acrofunjam/core": "*",
+    "openapi-fetch": "0.17.0"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0"
+  }
+}

@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Le domaine n'a aucune PackageReference (cf. ADR 0002). -->
+
+</Project>

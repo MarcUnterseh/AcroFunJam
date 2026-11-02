@@ -1,0 +1,81 @@
+{
+  "tddGuard": {
+    "productionGlobs": [
+      { "pattern": "^api/src/[^/]+\\.Domain/.+\\.cs$", "testsRoot": "api/tests", "testExt": [".cs"] },
+      { "pattern": "^api/src/[^/]+\\.Application/.+\\.cs$", "testsRoot": "api/tests", "testExt": [".cs"] },
+      { "pattern": "^front/packages/core/src/(domain|application)/.+\\.tsx?$", "testsRoot": "front/packages/core", "testExt": [".test.ts", ".test.tsx", ".spec.ts"] }
+    ],
+    "exemptFilePatterns": [
+      "\\.test\\.tsx?$",
+      "\\.spec\\.tsx?$",
+      "(^|/)index\\.ts$",
+      "(^|/)types\\.ts$",
+      "(^|/)I[A-Z][A-Za-z0-9]*\\.cs$",
+      "Port\\.ts$",
+      "(Command|Query|Dto|Event|Error|Errors)\\.(cs|ts)$",
+      "(^|/)(GlobalUsings|AssemblyInfo|DependencyInjection)\\.cs$"
+    ]
+  },
+  "architectureGuard": {
+    "rules": [
+      {
+        "name": "Domain C# indépendant",
+        "filePattern": "^api/src/[^/]+\\.Domain/.+\\.cs$",
+        "forbidden": [
+          "^using\\s+[\\w.]*\\.(Application|Infrastructure|Api)\\b",
+          "^using\\s+Microsoft\\.EntityFrameworkCore",
+          "^using\\s+Microsoft\\.AspNetCore",
+          "^using\\s+Microsoft\\.Extensions\\.DependencyInjection",
+          "^using\\s+System\\.Net\\.Http",
+          "^using\\s+System\\.Data",
+          "^using\\s+(Newtonsoft\\.Json|System\\.Text\\.Json)",
+          "\\[(Table|Column|Key|JsonProperty|JsonPropertyName)\\b"
+        ]
+      },
+      {
+        "name": "Application C# sans infrastructure",
+        "filePattern": "^api/src/[^/]+\\.Application/.+\\.cs$",
+        "forbidden": [
+          "^using\\s+[\\w.]*\\.(Infrastructure|Api)\\b",
+          "^using\\s+Microsoft\\.EntityFrameworkCore",
+          "^using\\s+Microsoft\\.AspNetCore",
+          "^using\\s+System\\.Net\\.Http"
+        ]
+      },
+      {
+        "name": "Infrastructure C# ne dépend pas de l'API",
+        "filePattern": "^api/src/[^/]+\\.Infrastructure/.+\\.cs$",
+        "forbidden": ["^using\\s+[\\w.]*\\.Api\\b", "^using\\s+Microsoft\\.AspNetCore\\.(Mvc|Http)"]
+      },
+      {
+        "name": "Domaine front pur",
+        "filePattern": "^front/packages/core/src/domain/.+\\.tsx?$",
+        "forbidden": [
+          "from\\s+['\"](react|react-native|expo[\\w/-]*|axios|openapi-fetch|@acrofunjam/api-client)['\"]",
+          "from\\s+['\"][./]+(application|infrastructure|ui)(/|['\"])",
+          "\\bfetch\\(",
+          "\\b(localStorage|window|document)\\."
+        ]
+      },
+      {
+        "name": "Application front sans framework ni adaptateur",
+        "filePattern": "^front/packages/core/src/application/.+\\.tsx?$",
+        "forbidden": [
+          "from\\s+['\"](react|react-native|expo[\\w/-]*|axios|openapi-fetch|@acrofunjam/api-client)['\"]",
+          "from\\s+['\"][./]+(infrastructure|ui)(/|['\"])",
+          "\\bfetch\\("
+        ]
+      },
+      {
+        "name": "Le client API ne connaît pas les apps",
+        "filePattern": "^front/packages/api-client/src/.+\\.tsx?$",
+        "forbidden": ["from\\s+['\"](react|react-native|expo[\\w/-]*)['\"]", "from\\s+['\"]@acrofunjam/(web|mobile)['\"]"]
+      }
+    ]
+  },
+  "stopTests": [
+    { "area": "api", "pathPrefix": "api/", "requires": "api/AcroFunJam.slnx", "command": "dotnet test --solution api/AcroFunJam.slnx --filter-not-trait \"Category=Integration\"" },
+    { "area": "front", "pathPrefix": "front/", "requires": "front/node_modules", "command": "npm test --prefix front --silent" }
+  ],
+  "maxStopRetries": 3
+}

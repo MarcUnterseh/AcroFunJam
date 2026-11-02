@@ -1,0 +1,13 @@
+{
+  "name": "@acrofunjam/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Client domain and use cases shared by the web and mobile apps. No runtime dependency.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  }
+}
