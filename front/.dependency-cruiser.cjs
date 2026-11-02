@@ -51,6 +51,14 @@ module.exports = {
       to: { path: '^apps/' },
     },
     {
+      name: 'apps-not-http-dtos',
+      severity: 'error',
+      comment:
+        'HTTP DTOs (generated OpenAPI schema) stay in api-client: app code works with core types. Only e2e fixtures may use them.',
+      from: { path: '^apps/[^/]+/src/' },
+      to: { path: '^packages/api-client/src/generated/' },
+    },
+    {
       name: 'apps-not-cross-import',
       severity: 'error',
       comment: 'The web and mobile apps share code through packages/*, never directly.',

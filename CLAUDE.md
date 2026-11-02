@@ -58,6 +58,9 @@ dotnet build api/AcroFunJam.slnx
 dotnet test --solution api/AcroFunJam.slnx --filter-not-trait "Category=Integration"   # rapide
 dotnet test --solution api/AcroFunJam.slnx                                             # complet (Docker requis)
 dotnet test --project api/tests/AcroFunJam.Domain.Tests                                # un seul projet
+dotnet tool restore                                                                    # outil local dotnet-ef (.config/dotnet-tools.json)
+dotnet ef database update --project api/src/AcroFunJam.Infrastructure --startup-project api/src/AcroFunJam.Infrastructure   # applique les migrations à la base du docker-compose
+dotnet ef migrations add <Nom> --project api/src/AcroFunJam.Infrastructure --startup-project api/src/AcroFunJam.Infrastructure --output-dir Persistence/Migrations
 dotnet run --project api/src/AcroFunJam.Api --launch-profile http                      # http://localhost:5252 (/scalar, /openapi/v1.json)
 
 # Front (TypeScript 6.0, workspaces npm)
@@ -66,6 +69,7 @@ npm test --prefix front              # tous les tests unitaires (Vitest + Jest m
 npm run lint --prefix front          # ESLint + dependency-cruiser
 npm run typecheck --prefix front     # tsc -b + tsc mobile
 npm run generate --prefix front/packages/api-client   # régénère le contrat depuis l'API lancée (ou -- <fichier>)
+npm run dev --prefix front/apps/web  # http://localhost:5173, proxy vers l'API (API_PROXY_TARGET, défaut :5252)
 npm run e2e --prefix front/apps/web  # playwright-bdd (une fois : npx playwright install chromium)
 npm start --prefix front/apps/mobile # Expo ; e2e mobile : maestro test front/apps/mobile/e2e/
 ```

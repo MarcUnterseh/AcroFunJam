@@ -1,4 +1,6 @@
+using AcroFunJam.Application.Catalog.ListPublishedPoses;
 using AcroFunJam.Infrastructure.Persistence;
+using AcroFunJam.Infrastructure.Persistence.Catalog;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +17,7 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddDbContext<AcroFunJamDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("AcroFunJam")));
+        services.AddScoped<IPublishedPosesReader, EfPublishedPosesReader>();
 
         return services;
     }

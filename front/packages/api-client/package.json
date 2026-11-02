@@ -5,7 +5,8 @@
   "type": "module",
   "description": "HTTP adapters implementing the ports of @acrofunjam/core, on top of a client generated from the API OpenAPI document.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./schema": "./src/generated/schema.ts"
   },
   "scripts": {
     "generate": "node scripts/generate.mjs",

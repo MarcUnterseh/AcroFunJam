@@ -1,3 +1,4 @@
+using AcroFunJam.Api.Endpoints.Catalog;
 using AcroFunJam.Application;
 using AcroFunJam.Infrastructure;
 using Scalar.AspNetCore;
@@ -21,6 +22,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapGet("/health", () => Results.Ok()).WithName("Health");
+app.MapCatalogEndpoints();
 
 await app.RunAsync();
 
