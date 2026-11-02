@@ -1,5 +1,7 @@
 using AcroFunJam.Application.Catalog.ListPublishedPoses;
+using AcroFunJam.Application.Identity;
 using AcroFunJam.Infrastructure.Persistence;
+using AcroFunJam.Infrastructure.Persistence.Identity;
 using AcroFunJam.Infrastructure.Persistence.Catalog;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +20,7 @@ public static class DependencyInjection
         services.AddDbContext<AcroFunJamDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("AcroFunJam")));
         services.AddScoped<IPublishedPosesReader, EfPublishedPosesReader>();
+        services.AddScoped<IAccountRepository, EfAccountRepository>();
 
         return services;
     }

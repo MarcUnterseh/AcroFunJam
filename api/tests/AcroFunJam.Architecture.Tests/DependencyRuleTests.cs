@@ -48,12 +48,14 @@ public sealed class DependencyRuleTests
     }
 
     [Fact]
-    public void Application_Should_NotReferenceEntityFrameworkOrAspNetCore_When_Compiled()
+    public void Application_Should_NotReferenceDatabaseOrWebFrameworks_When_Compiled()
     {
         Layers.ApplicationAssembly.GetReferencedAssemblies()
             .Select(a => a.Name ?? string.Empty)
             .Where(n => n.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.Ordinal) ||
-                        n.StartsWith("Microsoft.AspNetCore", StringComparison.Ordinal))
+                        n.StartsWith("Microsoft.AspNetCore", StringComparison.Ordinal) ||
+                        n.StartsWith("Microsoft.Extensions.Identity", StringComparison.Ordinal) ||
+                        n.StartsWith("Npgsql", StringComparison.Ordinal))
             .ShouldBeEmpty();
     }
 

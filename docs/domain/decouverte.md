@@ -54,6 +54,40 @@ AcroFunJam est un catalogue collaboratif de poses et de transitions d'acroyoga. 
   - une correspondance commune Error → statut HTTP 4xx dans l’Api ;
   - un seeder de démo en Development (ADR 0006).
 
+### Rôles (décidés le 2026-11-02, avant la story 2)
+- **Visiteur** (non authentifié) : consulte les poses, rien d’autre.
+- **Utilisateur** (authentifié) : propose des poses ou des modifications.
+- **Validateur** (authentifié) : valide les propositions des utilisateurs.
+- **Administrateur** (authentifié) : peut tout faire et attribue les rôles aux autres utilisateurs.
+- Les rôles se **cumulent** : un validateur est aussi un utilisateur, un administrateur a tous les droits.
+- Ce que propose un **validateur** ou un **administrateur** est **publié directement**, sans validation.
+- Le **premier administrateur** est désigné par configuration au déploiement (adresse e-mail), jamais en dur dans le code.
+- Authentification : comptes gérés par l’API (ADR 0008), exposés d’abord par l’API seule ; les écrans du site viendront avec « Proposer une pose ».
+
+### Story « Comptes et rôles » (validé le 2026-11-02)
+- Un **seul rôle ordonné** par compte : utilisateur < validateur < administrateur ; les capacités se cumulent (proposer ; + valider ; + gérer les rôles).
+- **Retirer** un rôle ramène le compte au rôle utilisateur ; rétrograder un administrateur = lui attribuer le rôle validateur ; retirer « validateur » à un administrateur est refusé.
+- Attribuer un rôle déjà détenu : accepté, sans effet. Le rôle utilisateur ne s’attribue ni ne se retire (suspension / suppression de compte : story à part).
+- Il reste toujours **au moins un administrateur** ; un administrateur peut retirer son propre rôle s’il en reste un autre.
+- Configuration du premier administrateur : **amorçage seulement**, tant qu’aucun administrateur n’existe, et **uniquement au déploiement** (option B après la revue de sécurité) : s’inscrire avec l’adresse désignée ne donne aucun rôle ; la personne s’inscrit, vérifie qu’elle se connecte, puis AcroFunJam est redéployé. Exiger une adresse confirmée viendra avec l’envoi d’e-mails.
+- L’administrateur désigne un utilisateur par son **adresse e-mail** ; adresse insensible à la casse.
+- Le retrait d’un rôle prend effet **dès l’action suivante**.
+- Refus de connexion générique ; l’inscription peut indiquer qu’une adresse est déjà utilisée ; pas de confirmation d’e-mail pour l’instant.
+- Capacités observables via « mon compte » (adresse, rôle, capacités). La gestion des étiquettes sera une capacité distincte.
+- Événements `RoleAssigned` / `RoleRevoked`, sans historique consultable.
+- Refusés également : rétrograder le dernier administrateur (lui attribuer « validateur ») ; retirer « validateur » à un utilisateur qui ne l’a pas ; attribuer le rôle utilisateur.
+
+#### Livraison de « Comptes et rôles » (2026-11-02)
+- 27 scénarios livrés (`specs/features/identite/comptes-et-roles.feature`, @Integration, vrai PostgreSQL).
+- Revue d’architecture : promotion du premier administrateur à l’inscription retirée (risque d’usurpation, option B) ; adresse e-mail validée (`identity.invalid-email`) ; index unique sur l’adresse ; auteur des changements de rôle dans les événements et journal d’audit.
+- Reportés : message de `/me` pour un compte supprimé (aujourd’hui « aucun compte n’a cette adresse ») ; démarrage de l’API impossible si la base est indisponible et qu’un premier administrateur est désigné (à documenter ou à rendre tolérant) ; publication des événements de domaine (aucun abonné pour l’instant) ; confirmation d’e-mail avant l’amorçage.
+
+### Découpage des stories suivantes (décidé le 2026-11-02)
+1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.
+2. **Proposer une pose** (Contribution) : reprend les règles de contenu de `specs/features/catalogue/publier-une-pose.feature` (brouillon) ; publication directe pour un validateur ou un administrateur.
+3. **Valider une proposition** (Contribution → Catalogue) : accepter (publication) ou refuser.
+4. **Proposer une modification** d’une pose publiée.
+
 ### Vocabulaire écarté
 - « figure », « posture » : remplacés par **pose**, ou **élément** quand il s'agit d'une pose ou d'une transition ;
 - « catégorie » : remplacé par **étiquette** ;
@@ -95,8 +129,8 @@ Le marqueur **[bloquant]** signale une question à trancher avant la story conce
 ### Contribution et validation
 - Une modification est-elle visible (par son auteur, par tous) avant validation ?
 - Faut-il un historique des versions d'un élément ?
-- Qui devient validateur, et comment ? Faut-il distinguer validateur et administrateur ?
-- Un validateur peut-il accepter sa propre proposition ? Peut-il publier directement sans proposition ?
+- ~~Qui devient validateur ? Faut-il distinguer validateur et administrateur ?~~ Tranché : un administrateur attribue les rôles ; validateur et administrateur sont distincts.
+- ~~Un validateur peut-il accepter sa propre proposition ?~~ Tranché : sa proposition est publiée directement, sans validation (idem pour un administrateur).
 - Peut-on proposer une transition vers une pose elle-même encore en attente de validation ? Faut-il des propositions groupées ?
 - Refus : un motif est-il obligatoire ? L'auteur peut-il amender puis resoumettre ?
 - Fusion de doublons : qui la fait et comment, avec quelles conséquences sur les transitions ?

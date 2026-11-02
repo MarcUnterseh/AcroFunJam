@@ -59,6 +59,30 @@ public sealed class TacticalPatternTests
             .ShouldBeEmpty();
     }
 
+    [Fact]
+    public void DomainEvents_Should_BeSealedRecordsNamedInThePastTense_When_DeclaredInTheDomain()
+    {
+        Layers.ConcreteTypes(Layers.DomainAssembly)
+            .Where(t => typeof(IDomainEvent).IsAssignableFrom(t))
+            .Where(t => !t.IsSealed || t.GetMethod("<Clone>$") is null || !t.Name.EndsWith("ed", StringComparison.Ordinal))
+            .Select(t => t.FullName)
+            .ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void DomainTypes_Should_NotExposePublicSetters_When_TheyAreNotAggregates()
+    {
+        Layers.DomainAssembly.GetTypes()
+            .Where(t => t.IsPublic && !IsAggregateRoot(t))
+            .SelectMany(t => t.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly))
+            .Where(p => p.SetMethod is { IsPublic: true } setter && !IsInitOnly(setter))
+            .Select(p => $"{p.DeclaringType?.Name}.{p.Name}")
+            .ShouldBeEmpty();
+    }
+
+    private static bool IsInitOnly(MethodInfo setter) =>
+        setter.ReturnParameter.GetRequiredCustomModifiers().Any(m => m.FullName == "System.Runtime.CompilerServices.IsExternalInit");
+
     public static TheoryData<string> NonApplicationAssemblies() =>
     [
         Layers.DomainAssembly.GetName().Name!,

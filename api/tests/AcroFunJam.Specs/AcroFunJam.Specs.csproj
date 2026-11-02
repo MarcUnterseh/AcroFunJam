@@ -12,6 +12,8 @@
   <ItemGroup>
     <PackageReference Include="Reqnroll.xunit.v3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="Respawn" />
   </ItemGroup>
 
   <!-- Source unique des scénarios : specs/features (ADR 0003), liés via l'item documenté ReqnrollFeatureFile. -->

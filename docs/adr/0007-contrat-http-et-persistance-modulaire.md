@@ -12,7 +12,8 @@ Première ressource exposée (`GET /catalog/poses`) : il faut fixer des conventi
 - Les énumérations métier sont exposées en **codes chaîne stables en anglais** (`discovery|beginner|intermediate|advanced`), déclarés comme enum dans l'OpenAPI. Les libellés (français) sont produits côté front par `@acrofunjam/core`, partagés par le web et le mobile.
 - Les listes sont **enveloppées** (`{ "poses": [...] }`) pour pouvoir ajouter pagination et métadonnées sans casser le contrat ; une liste vide renvoie `200` avec un tableau vide.
 - L'ordre d'une liste, quand il est spécifié par le métier, est **garanti par l'API** ; la règle de tri vit dans le domaine.
-- Les erreurs métier attendues sont converties en ProblemDetails par l'Api.
+- Les erreurs métier attendues sont converties en ProblemDetails par l'Api, avec leur code stable dans `title` (`<contexte>.<règle>`).
+- Exception : les endpoints de la bibliothèque d’identité (`/identity/register`, `/identity/login`…) gardent les réponses de la bibliothèque. Les refus d’autorisation sont des ProblemDetails : 401 pour un visiteur, 403 `identity.capability-required` avec la capacité manquante.
 
 **Persistance**
 - Un **schéma PostgreSQL par contexte** (`catalog`, …) dans la même base et le même `DbContext` tant que le monolithe reste modulaire.

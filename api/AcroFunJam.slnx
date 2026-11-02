@@ -6,6 +6,7 @@
     <Project Path="src/AcroFunJam.Infrastructure/AcroFunJam.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/AcroFunJam.Api.Tests/AcroFunJam.Api.Tests.csproj" />
     <Project Path="tests/AcroFunJam.Application.Tests/AcroFunJam.Application.Tests.csproj" />
     <Project Path="tests/AcroFunJam.Architecture.Tests/AcroFunJam.Architecture.Tests.csproj" />
     <Project Path="tests/AcroFunJam.Domain.Tests/AcroFunJam.Domain.Tests.csproj" />

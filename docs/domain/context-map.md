@@ -10,7 +10,7 @@ Déploiement : **monolithe modulaire**. Une seule API et une seule base de donn�
 | **Génération de flow** (`FlowGeneration`) | core | Tirer au hasard un chemin exécutable dans le graphe publié selon des critères (difficulté, longueur, étiquettes), ou répondre explicitement « critères trop restrictifs ». | unique |
 | **Répertoire** (`Repertoire`) | supporting | Ce que chaque pratiquant déclare maîtriser (poses, transitions) : déclaration et retrait d'une maîtrise, consultation de son répertoire. Fournit à la génération l'ensemble des éléments maîtrisés par un pratiquant. | unique |
 | **Contribution** (`Contribution`) | supporting | Cycle de vie des propositions (ajout, modification, ajout de photos) : soumission, file de validation, acceptation ou refus par un validateur. Déclenche la publication dans le catalogue. | unique |
-| **Identité** (`Identity`) | generic | Comptes, authentification, rôles (contributeur, validateur). À déléguer à une solution du marché (fournisseur OIDC ou ASP.NET Core Identity), à arbitrer par ADR. | unique |
+| **Identité** (`Identity`) | generic | Comptes, authentification (déléguées à ASP.NET Core Identity, ADR 0008), et règles produit des rôles : un rôle ordonné par compte, capacités, attribution et retrait, au moins un administrateur, amorçage du premier administrateur. | unique |
 | _Stockage des photos_ | generic (pas un contexte) | Stocker et servir les fichiers image. C'est un **port** (`IPhotoStorage`) et un adaptateur d'infrastructure (stockage blob), pas un contexte métier. | unique |
 
 ```mermaid
@@ -85,5 +85,19 @@ Lecture : la flèche va de l'amont (upstream) vers l'aval (downstream), sauf la 
 
 Conséquence à assumer : tant que la contribution n'existe pas, le Catalogue doit pouvoir être alimenté directement, par un validateur ou par un amorçage de données. Les commandes `PublishPose` / `PublishTransition` du Catalogue existent donc indépendamment de Contribution. C'est ce qui permet un *walking skeleton* sans le circuit de validation.
 
-## Identité et comptes (generic)
-Ne pas modéliser l'authentification. Il faut déléguer à un fournisseur (ASP.NET Core Identity ou un fournisseur OIDC externe) via un ADR. Le domaine n'a besoin que de : « qui est l'auteur » (`ContributorId`) et « a-t-il le rôle validateur ». La question de savoir si un compte est requis pour **consulter** reste ouverte. La consultation et la génération sont pensées anonymes par défaut.
+## Identité et comptes (generic, ADR 0008)
+On ne modélise pas l'authentification. Inscription, connexion, jetons, hachage et règles de mot de passe, unicité et normalisation de l'adresse sont **délégués à ASP.NET Core Identity** et exposés tels quels sous `/identity` (`MapIdentityApi`). La consultation du catalogue reste anonyme.
+
+**Ce qui relève de notre domaine** (`AcroFunJam.Domain/Identity`) :
+- `Role`, un *smart enum* ordonné (User < Validator < Administrator), qui porte la correspondance rôle → capacités (`Capabilities`, `Grants(capability)`) ;
+- `Capability` ;
+- `EmailAddress` ;
+- l'agrégat `Account` (`AccountId`, `EmailAddress`, `Role`). Il ne sait pas authentifier : il ne porte que la vue « rôle » du compte, et ses comportements protègent les règles de rôle (`AssignRole`, `RevokeRole`, `PromoteAsInitialAdministrator`, événements `RoleAssigned` / `RoleRevoked`).
+
+**Ce qui relève de l'Infrastructure** : `ApplicationUser` (utilisateur ASP.NET Core Identity avec une colonne `Role`, sans les tables de rôles d'Identity), le `IdentityDbContext` (schéma `identity`), et l'`AccountRepository`, qui reconstitue un `Account` à partir d'un `ApplicationUser`.
+
+**Invariant « au moins un administrateur »** : il est vérifié par `Account` à partir du nombre d'administrateurs fourni par le handler (`IAccountRepository.CountAdministrators`). Les changements de rôle s'exécutent dans une transaction `Serializable` (PostgreSQL), pour que deux rétrogradations simultanées ne puissent pas passer toutes les deux.
+
+**Capacités dans l'Api** : des policies `CanPropose`, `CanValidate` et `CanManageRoles` sont évaluées par un handler d'autorisation. Il relit le rôle courant via un port à chaque évaluation et applique `Role.Grants`. Le rôle figé dans le jeton n'est jamais utilisé.
+
+Les autres contextes ne voient que `UserId` (et ses alias `ContributorId`, `ValidatorId`, `PractitionerId`) et des capacités. Jamais `ApplicationUser`.
