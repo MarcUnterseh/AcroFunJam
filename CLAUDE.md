@@ -46,6 +46,7 @@ Api ──► Infrastructure ──► Application ──► Domain      apps/we
 - Pas de MediatR : handlers simples injectés. Pas d'exceptions pour les erreurs métier attendues : type `Result`.
 - Tags Gherkin : `@api`, `@web`, `@mobile` (cibles), `@wip` (en cours, exclu de la CI).
 - Tests lents : `[Trait("Category", "Integration")]` (C#) ou fichier `*.int.test.ts`.
+- Commits et PR : l'auteur est Marc (identité Git locale du dépôt, `maunterseh@outlook.com`). **Aucune ligne `Co-Authored-By` ni mention d'attribution à Claude** dans les messages de commit ou les descriptions de PR. Messages en anglais, style Conventional Commits.
 
 ## Commandes
 
