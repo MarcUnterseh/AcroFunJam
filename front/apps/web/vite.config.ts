@@ -18,11 +18,21 @@ const designTokens = (): Plugin => {
 
 export default defineConfig({
   plugins: [react(), designTokens()],
+  // Pre-bundled and warmed up at start: the first pages of the e2e runs do not wait for a re-optimisation.
+  optimizeDeps: {
+    include: ['react', 'react-dom/client', 'react-router', '@tanstack/react-query', 'openapi-fetch'],
+  },
   server: {
     port: 5173,
     strictPort: true,
+    warmup: { clientFiles: ['./src/main.tsx'] },
     // Anchored, so that pages of the site such as /catalogue or /membres are not sent to the API.
-    proxy: { '^/catalog/': apiTarget, '^/identity/': apiTarget, '^/me$': apiTarget },
+    proxy: {
+      '^/catalog/': apiTarget,
+      '^/contribution/': apiTarget,
+      '^/identity/': apiTarget,
+      '^/me$': apiTarget,
+    },
   },
   test: {
     environment: 'jsdom',

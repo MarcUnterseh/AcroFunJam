@@ -2,7 +2,7 @@ import { fail } from '@acrofunjam/core';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import { CurrentLocation, FakeAuthGateway, FakeSessionMemory, renderSite } from '../test/identity-harness';
+import { CurrentLocation, FakeAuthGateway, FakeSessionMemory, renderSite } from '../test/site-harness';
 
 const account = () => screen.getByRole('navigation', { name: 'Compte' });
 
@@ -90,6 +90,22 @@ describe('sign-in page', () => {
     await userEvent.click(within(alert).getByRole('button', { name: 'Réessayer' }));
 
     expect(await within(account()).findByText('alice@example.org')).toBeInTheDocument();
+  });
+
+  it('should keep the focus on « Réessayer » when retrying fails again, the alert being given anew', async () => {
+    const gateway = new FakeAuthGateway();
+    gateway.unreachable();
+    renderSite('/connexion', { gateway });
+    await userEvent.type(await screen.findByLabelText('Adresse e-mail'), 'alice@example.org');
+    await userEvent.type(screen.getByLabelText('Mot de passe', { exact: true }), 'Throne-Bird-2026');
+    await userEvent.click(screen.getByRole('button', { name: 'Se connecter' }));
+    const first = await screen.findByRole('alert');
+
+    await userEvent.click(within(first).getByRole('button', { name: 'Réessayer' }));
+
+    const again = await screen.findByRole('alert');
+    await waitFor(() => expect(again).not.toBe(first));
+    expect(within(screen.getByRole('alert')).getByRole('button', { name: 'Réessayer' })).toHaveFocus();
   });
 
   it('should go back to the page of origin and announce it when the sign-in succeeds', async () => {
@@ -211,6 +227,18 @@ describe('expired session', () => {
     expect(within(banner).getByRole('link', { name: 'Se connecter' })).toBeInTheDocument();
     expect(announcements()).toContain('Ta session a expiré. Tu peux te reconnecter.');
   });
+
+  it.each(['/connexion', '/inscription'])(
+    'should not show the banner on %s, where the person is already signing in again',
+    async (path) => {
+      renderSite(path, { memory: new FakeSessionMemory(true) });
+
+      // Wait until the session is read (visitor whose session expired).
+      await within(account()).findByRole('link', { name: 'Se connecter' });
+      expect(screen.queryByRole('region', { name: 'Session expirée' })).not.toBeInTheDocument();
+      expect(announcements()).not.toContain('Ta session a expiré. Tu peux te reconnecter.');
+    },
+  );
 
   it('should hide the banner when the person closes it', async () => {
     renderSite('/', { memory: new FakeSessionMemory(true) });

@@ -18,11 +18,14 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
+  // Half the cores locally: the dev server transforms modules on demand and would slow every worker down.
+  workers: process.env.CI ? 2 : '50%',
   reporter: process.env.CI ? [['html', { open: 'never' }], ['github']] : 'list',
   use: { baseURL, trace: 'on-first-retry' },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    command: 'npm run dev',
+    // CI serves a build (stable timings); locally, the dev server (dependencies pre-bundled, see vite.config).
+    command: process.env.CI ? 'npx vite build && npx vite preview --port 5173 --strictPort' : 'npm run dev',
     url: baseURL,
     reuseExistingServer: !process.env.CI,
   },

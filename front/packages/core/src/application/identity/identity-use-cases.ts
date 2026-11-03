@@ -56,23 +56,56 @@ export const register = async (
   return ok(await signedInWithCapabilities(gateway, credentials.value.email));
 };
 
-/** Signs out everywhere (the hint is forgotten, other tabs follow); stays signed in if the API cannot be reached. */
+/**
+ * What the person kept in the tab and must not leave behind on a shared device (such as the input kept by the
+ * form « Proposer une pose »). Declared here so that Identity does not depend on the contexts that keep data.
+ */
+export type ForgottenOnSignOut = { clear(): void };
+
+/**
+ * Signs out everywhere (the hint is forgotten, other tabs follow) and forgets what was kept in the tab;
+ * stays signed in, keeping everything, if the API cannot be reached.
+ */
 export const signOut = async (
   gateway: AuthGateway,
   memory: SessionMemory,
+  forgotten: readonly ForgottenOnSignOut[] = [],
 ): Promise<Result<Session, IdentityError>> => {
   const answer = await gateway.signOut();
   if (!answer.ok) return fail({ kind: 'refused', reason: answer.error });
 
   memory.forget();
+  for (const kept of forgotten) kept.clear();
   return ok(signedOut());
 };
 
-/** Reads the session at start-up or after a change: signed in, visitor, or visitor whose session expired. */
-export const loadSession = async (gateway: AuthGateway, memory: SessionMemory): Promise<Session> => {
+/**
+ * The session was read again: if a signed-in person became a visitor without the "expired" notice, the person
+ * signed out elsewhere (another tab). What was kept in the tab is forgotten, as on a sign-out here. An expired
+ * session keeps it: it is given back after signing in again.
+ */
+export const forgetWhenSignedOutElsewhere = (
+  previous: Session,
+  next: Session,
+  forgotten: readonly ForgottenOnSignOut[],
+): void => {
+  if (previous.status === 'signedIn' && next.status === 'visitor' && next.notice !== 'expired')
+    for (const kept of forgotten) kept.clear();
+};
+
+/**
+ * Reads the session at start-up or after a change: signed in, visitor, or visitor whose session expired.
+ * `known` is the session read before, if any.
+ */
+export const loadSession = async (
+  gateway: AuthGateway,
+  memory: SessionMemory,
+  known?: Session,
+): Promise<Session> => {
   const account = await gateway.currentAccount();
-  // Unreachable: offer the visitor header (the person may try to sign in), keep the hint for later.
-  if (!account.ok) return { status: 'visitor' };
+  // Unreachable: an outage changes nothing to the session known so far (signed in, or expired). Otherwise,
+  // offer the visitor header (the person may try to sign in), and keep the hint for later.
+  if (!account.ok) return known ?? { status: 'visitor' };
 
   const session = sessionLoaded(account.value, { hadSession: memory.wasSignedIn() });
   // An expired session keeps its hint until the notice is dismissed (or the person signs in again):

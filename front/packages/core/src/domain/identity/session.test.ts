@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { initialSession, noticeDismissed, sessionLoaded, signedIn, signedOut } from './session';
+import { canPropose, initialSession, noticeDismissed, sessionLoaded, signedIn, signedOut } from './session';
 
 describe('session', () => {
   it('should start by checking the session when the site opens', () => {
@@ -36,4 +36,21 @@ describe('session', () => {
     });
     expect(signedOut()).toEqual({ status: 'visitor' });
   });
+});
+
+describe('canPropose', () => {
+  it('should be true when the signed-in person has the capability "propose"', () => {
+    expect(canPropose(signedIn('alice@example.org', ['propose']))).toBe(true);
+  });
+
+  it('should be false when the signed-in person lacks the capability "propose"', () => {
+    expect(canPropose(signedIn('alice@example.org', []))).toBe(false);
+  });
+
+  it.each([initialSession, signedOut(), { status: 'visitor', notice: 'expired' } as const])(
+    'should be false when nobody is signed in (%o)',
+    (session) => {
+      expect(canPropose(session)).toBe(false);
+    },
+  );
 });

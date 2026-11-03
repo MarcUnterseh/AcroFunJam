@@ -141,6 +141,31 @@ AcroFunJam est un catalogue collaboratif de poses et de transitions d'acroyoga. 
   - Bow ne peut ni l’un ni l’autre ;
   - Hand-to-Hand (L-base) est intermédiaire en base, avancé en flyer.
 
+#### Livraison de la story 3 (2026-11-03)
+- **Trois étapes**, commitées séparément :
+  - A : l'API, avec le contexte Contribution, le noyau partagé et la publication directe (ADR 0014 à 0020) ;
+  - B : la refonte du catalogue web, avec la couche de présentation partagée (ADR 0021) ;
+  - C : le formulaire web.
+- Tous les scénarios @api et @web de la story sont livrés ; il ne reste plus aucun `@wip` dans le dépôt.
+- **Décisions prises en route**, sur recommandation des revues :
+  - un compte supprimé reçoit 401 `identity.account-deleted` de toute policy de capacité ;
+  - le lien « Proposer une pose » du catalogue n'apparaît qu'une fois les poses reçues : en tête de page s'il y en a, dans le bloc vide sinon ;
+  - page « Page introuvable » en repli du routeur ;
+  - un code d'erreur inconnu de l'API affiche « Ta proposition n'a pas pu être envoyée : le site doit être mis à jour. Recharge la page, puis réessaie. Ta saisie est conservée. », avec un bouton « Recharger la page » ;
+  - une réponse 201 au statut illisible affiche le succès neutre « Ta proposition est envoyée. » ;
+  - la saisie conservée est propre à la personne, et effacée à la déconnexion, y compris dans un autre onglet ;
+  - le bandeau global « session expirée » est masqué sur les pages qui ont leur propre alerte (connexion, inscription, proposition) ;
+  - une personne connectée sans la capacité de proposer est redirigée vers le catalogue. Aucun rôle n'est concerné aujourd'hui.
+- **E2e** : en CI, ils tournent sur un build (`vite preview`). En local, sur le serveur de dev, avec un préchauffage des dépendances.
+- **Reportés** :
+  - déplacer `identity-labels` vers `core/presentation` ;
+  - icône d'attente des boutons occupés (sur tout le site) ;
+  - définitions concrètes des niveaux de difficulté, à rédiger avec l'expert acroyoga ;
+  - « Mes propositions », avec « Valider une proposition » ;
+  - recherche dans le catalogue, vers 30 poses ;
+  - autres noms (alias) ;
+  - limite de taille du corps des requêtes, non testable avec TestServer.
+
 ### Découpage des stories suivantes (décidé le 2026-11-02)
 1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.
 2. **Proposer une pose** (Contribution) : reprend les règles de contenu de `specs/features/catalogue/publier-une-pose.feature` (brouillon) ; publication directe pour un validateur ou un administrateur.

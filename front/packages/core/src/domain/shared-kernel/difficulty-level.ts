@@ -1,7 +1,13 @@
-/** Difficulty of a pose or transition for one role, from the most accessible to the most demanding. */
+/**
+ * Difficulty of a pose or transition for one role, from the most accessible to the most demanding.
+ * Shared kernel of Catalog and Contribution (ADR 0015).
+ */
 export type DifficultyLevel = 'discovery' | 'beginner' | 'intermediate' | 'advanced';
 
-/** The ordered scale: découverte < débutant < intermédiaire < avancé. Labels: presentation/catalog-labels. */
+/**
+ * The ordered scale: découverte < débutant < intermédiaire < avancé.
+ * Labels: presentation/shared-kernel/difficulty-level-labels.
+ */
 export const difficultyScale: readonly DifficultyLevel[] = [
   'discovery',
   'beginner',

@@ -308,13 +308,13 @@ Fonctionnalité: Proposer une pose
   # Le lien n'apparaît ni pour un visiteur ni dans l'en-tête. État vide : voir catalogue/consulter-les-poses.feature.
   Règle: Seule une personne connectée est invitée à proposer une pose depuis le catalogue
 
-    @web @wip
+    @web
     Scénario: Un visiteur n'est pas invité à proposer une pose
       Soit la pose publiée "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Quand un visiteur consulte les poses du catalogue
       Alors le catalogue n'invite pas à proposer une pose
 
-    @web @wip
+    @web
     Scénario: Une personne connectée est invitée à proposer une pose depuis le catalogue
       Soit la pose publiée "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Et Alice est connectée sur le site avec l'adresse "alice@example.org"
@@ -324,12 +324,12 @@ Fonctionnalité: Proposer une pose
   # Un visiteur n'accède jamais au formulaire de proposition.
   Règle: Un visiteur qui accède directement à la page « Proposer une pose » doit d'abord se connecter
 
-    @web @wip
+    @web
     Scénario: Un visiteur qui accède directement à la page « Proposer une pose » est invité à se connecter
       Quand un visiteur accède directement à la page « Proposer une pose »
       Alors le site invite le visiteur à se connecter, sans lui présenter le formulaire de proposition
 
-    @web @wip
+    @web
     Scénario: Après la connexion, la personne arrive sur le formulaire de proposition
       Soit Alice a un compte avec l'adresse "alice@example.org" et le mot de passe "Throne-Bird-2026"
       Et Alice a accédé directement à la page « Proposer une pose » en tant que visiteur
@@ -338,7 +338,7 @@ Fonctionnalité: Proposer une pose
 
   Règle: Le formulaire annonce à un validateur ou un administrateur que la pose sera publiée directement
 
-    @web @wip
+    @web
     Plan du Scénario: Le formulaire annonce à un <rôle> que sa pose sera publiée directement
       Soit Bruno est <rôle>, connecté sur le site
       Quand Bruno commence à proposer une pose sur le site
@@ -352,26 +352,26 @@ Fonctionnalité: Proposer une pose
   # Après l'envoi : un message de confirmation, avec « Proposer une autre pose » et « Voir le catalogue ».
   Règle: Sur le site, le contributeur sait ce que devient sa proposition et choisit la suite
 
-    @web @wip
+    @web
     Scénario: Un utilisateur qui propose une pose est informé qu'elle est en attente de validation
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
       Quand Alice propose sur le site la pose "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Alors le site indique à Alice que sa proposition de la pose "Throne" est en attente de validation
 
-    @web @wip
+    @web
     Scénario: Un validateur qui propose une pose est informé qu'elle est publiée dans le catalogue
       Soit Bruno est validateur, connecté sur le site
       Quand Bruno propose sur le site la pose "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Alors le site indique à Bruno que la pose "Throne" est publiée dans le catalogue
 
-    @web @wip
+    @web
     Scénario: Proposer une autre pose présente un formulaire vide
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
       Et Alice a proposé sur le site la pose "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Quand Alice choisit de proposer une autre pose
       Alors le formulaire de proposition est vide
 
-    @web @wip
+    @web
     Scénario: La pose publiée par un validateur apparaît dans le catalogue qu'il choisit de voir
       Soit Bruno est validateur, connecté sur le site
       Et Bruno a proposé sur le site la pose "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
@@ -384,7 +384,7 @@ Fonctionnalité: Proposer une pose
     Contexte:
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
 
-    @web @wip
+    @web
     Plan du Scénario: Le site signale une proposition <cas>
       Quand Alice propose sur le site une pose <cas>
       Alors le site indique que <motif>
@@ -397,7 +397,7 @@ Fonctionnalité: Proposer une pose
         | sans préciser si elle peut commencer un flow | il faut préciser si la pose peut commencer un flow |
         | sans préciser si elle peut terminer un flow  | il faut préciser si la pose peut terminer un flow  |
 
-    @web @wip
+    @web
     Scénario: Le site signale un nom plus long que la longueur maximale
       Quand Alice propose sur le site une pose dont le nom compte 61 caractères
       Alors le site indique que le nom de la pose ne doit pas dépasser 60 caractères
@@ -405,7 +405,7 @@ Fonctionnalité: Proposer une pose
   # Une seule règle vérifiée par l'API suffit à montrer que le site relaie le motif.
   Règle: Le site explique pourquoi une proposition n'est pas reçue
 
-    @web @wip
+    @web
     Scénario: Le site signale qu'une pose de ce nom existe déjà dans le catalogue
       Soit la pose publiée "High Bird" de difficulté base "intermédiaire" et de difficulté flyer "intermédiaire"
       Et Alice est connectée sur le site avec l'adresse "alice@example.org"
@@ -415,7 +415,7 @@ Fonctionnalité: Proposer une pose
   # Un incident technique ne doit pas passer pour un refus, ni faire perdre la saisie (comme à la story 2b).
   Règle: Le site conserve la saisie quand la proposition n'a pas pu aboutir
 
-    @web @wip
+    @web
     Scénario: Le site signale qu'AcroFunJam est injoignable et conserve la pose saisie
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
       Et AcroFunJam est momentanément injoignable
@@ -431,12 +431,12 @@ Fonctionnalité: Proposer une pose
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
       Et la session d'Alice a expiré
 
-    @web @wip
+    @web
     Scénario: Le formulaire signale que la session a expiré pendant la saisie
       Quand Alice propose sur le site la pose "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Alors le formulaire de proposition informe Alice que sa session a expiré et qu'elle peut se connecter de nouveau
 
-    @web @wip
+    @web
     Scénario: Après s'être reconnectée, la personne retrouve la pose qu'elle avait saisie
       Soit Alice a tenté de proposer sur le site la pose "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Quand Alice se connecte de nouveau sur le site

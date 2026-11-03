@@ -16,6 +16,7 @@ Une pose proposée doit être publiable telle quelle, et l'unicité de son nom s
 - Le noyau reste **minimal** : des value objects, ni agrégat, ni port, ni dépendance vers un contexte. Le Catalogue (core) en est le propriétaire.
 - `PoseName` et `DifficultyLevel` quittent `Domain/Catalog` (refactoring sous tests verts).
 - Un test d'architecture vérifie que `SharedKernel` ne dépend d'aucun contexte ; le test d'isolation des contextes autorise `Common` et `SharedKernel`.
+- Côté front (story 3, étape C) : `core/src/domain/shared-kernel` contient `DifficultyLevel` (échelle et rang) et `pose-name` (`normalizePoseName`, `poseNamePolicy`, `poseNameLength` en points de code NFC, `checkPoseName`) ; ses libellés sont dans `core/src/presentation/shared-kernel`. La règle dependency-cruiser `bounded-contexts-isolated` interdit à `catalog`, `contribution` et `identity` de s'importer entre eux, dans chaque couche de `core` et dans `api-client` : seuls `shared-kernel` et `common` sont partagés. Un besoin entre contextes passe par les apps (composition root, `routes.tsx`) ou par un type déclaré du côté qui en a besoin (`ForgottenOnSignOut` dans Identity, capacités en chaînes dans `publishesDirectly`).
 - Les codes de difficulté (`discovery`…) ont une seule correspondance, `DifficultyLevel.FromCode` / `ToCode`, utilisée par l'Infrastructure. L'Api garde son enum `DifficultyCode` (déclaré comme enum dans l'OpenAPI, ADR 0007), déplacé dans `Endpoints/Common`.
 
 ## Conséquences

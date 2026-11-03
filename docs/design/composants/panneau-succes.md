@@ -22,7 +22,7 @@ Variante validateur ou administrateur : `h2` « La pose « Throne » est publié
 
 | Élément | Tokens |
 |---|---|
-| Panneau | fond `successSurface`, barre gauche `sizes.accentBar` `success`, rayon `radius.md`, padding `spacing.lg` (en mobile `spacing.md` à droite) |
+| Panneau | fond `successSurface`, barre gauche `sizes.accentBar` `success`, rayon `radius.md`, padding `spacing.lg` ; en mobile (< `breakpoints.md`) `spacing.md` à droite, `spacing.lg` partout à partir de `breakpoints.md` (40em) |
 | Icône | cercle + coche, `sizes.iconLarge` (32), `success` (5,7:1 sur `successSurface`), `aria-hidden` ; marge basse `spacing.sm` |
 | Titre (`h2`) | `size.lg`, `weight.bold`, `text` (14,4:1), interligne `tight` ; reçoit le focus programmatique (`tabindex="-1"`) |
 | Texte | `size.md`, `regular`, `text` ; marge haute `spacing.sm` |

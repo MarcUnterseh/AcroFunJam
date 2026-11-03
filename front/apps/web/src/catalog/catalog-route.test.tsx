@@ -2,7 +2,7 @@ import { fail, ok, type CatalogGateway, type PoseSummary, type Result } from '@a
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import { FakeAuthGateway, renderSite } from '../test/identity-harness';
+import { FakeAuthGateway, renderSite } from '../test/site-harness';
 
 const throne: PoseSummary = {
   id: 'p-1',

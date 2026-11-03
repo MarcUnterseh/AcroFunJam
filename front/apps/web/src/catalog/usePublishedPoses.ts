@@ -13,11 +13,14 @@ export class CatalogLoadingFailed extends Error {
   }
 }
 
+/** Cache key of the published poses: a page that publishes a pose invalidates it. */
+export const publishedPosesKey = ['catalog', 'poses'] as const;
+
 /** Published poses of the catalog, through the listPublishedPoses use case of @acrofunjam/core. */
 export function usePublishedPoses() {
   const gateway = useCatalogGateway();
   return useQuery<readonly PoseSummary[], CatalogLoadingFailed>({
-    queryKey: ['catalog', 'poses'],
+    queryKey: publishedPosesKey,
     queryFn: async () => {
       const result = await listPublishedPoses(gateway);
       if (!result.ok) {

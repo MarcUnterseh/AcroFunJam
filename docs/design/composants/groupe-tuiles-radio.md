@@ -10,7 +10,7 @@ Difficulté base                                   <- legend
 ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
 │ ○ Découverte     │ │ ◉ Débutant       │ │ ○ Intermédiaire  │ │ ○ Avancé         │   48 px
 └──────────────────┘ └━━━━━━━━━━━━━━━━━━┘ └──────────────────┘ └──────────────────┘
-                       coché : bordure 2 px, radio plein, libellé en gras, fond teinté
+                       coché : bordure 2 px, radio plein, libellé semi-gras, fond teinté
 ```
 
 Balisage : `fieldset` > `legend` + erreur (`p`) + conteneur des tuiles ; chaque tuile est un `label` qui **englobe** son `input type="radio"` et son texte (toute la tuile est cliquable). Les radios d'un groupe partagent le même `name` ; flèches pour changer de choix, Tab pour quitter le groupe (comportement natif).
@@ -33,7 +33,7 @@ Balisage : `fieldset` > `legend` + erreur (`p`) + conteneur des tuiles ; chaque 
 | ≥ 19,5em | **2 × 2** | 2 tuiles côte à côte |
 | ≥ 4 × `tileMinWidth` + 3 × `spacing.sm` (632 px, **39,5em**) | **4 sur une ligne** | 2 tuiles sur les 2 premières colonnes de 4 (même largeur que les tuiles de niveau, alignées à gauche) |
 
-- En pratique : 1 colonne sur un écran de 320 px ou en zoom 200 % ; 2 × 2 à partir d'environ 360 px ; 4 sur une ligne dans la carte du formulaire en grand écran (colonne `sizes.formWideMaxWidth`, 640 px).
+- En pratique : 1 colonne à 320 px de large (un écran de 1280 px en zoom 400 %) ; 2 × 2 à partir d'environ 360 px (dont un écran de 1280 px en zoom 200 %) ; 4 sur une ligne dans la carte du formulaire en grand écran (colonne `sizes.formWideMaxWidth`, 640 px).
 - Comme pour la media query de 40em, CSS ne peut pas lire un token dans une requête de conteneur : écrire `19.5em` et `39.5em` avec un commentaire qui renvoie à ce calcul.
 
 ## États (par tuile)
@@ -43,13 +43,13 @@ Balisage : `fieldset` > `legend` + erreur (`p`) + conteneur des tuiles ; chaque 
 | Repos | fond `background`, bordure 1 px `border` (3,3:1 sur `background`, 3,2:1 sur `surface`), libellé `regular` |
 | Survol (pointeur fin) | fond `surfaceHover`, bordure 1 px `text` |
 | Focus clavier (`label:has(input:focus-visible)`) | anneau `focus` `focusRingWidth` autour de **la tuile entière**, décalé `focusRingOffset`, rayon `radius.md` ; l'anneau natif du radio est retiré seulement parce que celui de la tuile le remplace |
-| **Coché** (`label:has(input:checked)`) | bordure **`borderWidthStrong` (2 px) `selected`** (7,3:1 sur `background`), padding réduit de 1 px pour que le texte ne bouge pas ; fond `selectedSurface` (texte 14,2:1) ; radio plein `selected` ; libellé **`weight.bold`** |
+| **Coché** (`label:has(input:checked)`) | bordure **`borderWidthStrong` (2 px) `selected`** (7,3:1 sur `background`), padding réduit de 1 px pour que le texte ne bouge pas ; fond `selectedSurface` (texte 14,2:1) ; radio plein `selected` ; libellé **`weight.semibold`** (le gras complet élargissait le libellé et le faisait passer à la ligne dans les tuiles étroites) |
 | Coché + survol | inchangé (fond `selectedSurface`) |
 | Coché + focus | état coché + anneau `focus` |
 | Groupe invalide | tuiles en bordure **2 px `danger`** (5,5:1), comme un champ invalide ; message d'erreur avec icône sous la legend |
 | Désactivé | non utilisé (pendant l'envoi, seul le bouton passe en `aria-disabled`) |
 
-L'état coché se lit sans la couleur : **radio plein**, **bordure doublée**, **libellé en gras**. L'erreur se lit sans la couleur : icône + texte + bordure 2 px.
+L'état coché se lit sans la couleur : **radio plein**, **bordure doublée**, **libellé semi-gras**. L'erreur se lit sans la couleur : icône + texte + bordure 2 px.
 
 `selected` est un brun terre cuite plus sombre que `primary` : il reste dans l'identité, mais sa clarté et sa teinte le séparent de `danger`, qui peut s'afficher dans le même `fieldset`.
 
@@ -85,4 +85,4 @@ Peut-on terminer un flow sur cette pose ?
 
 ## Mobile (React Native)
 
-Pas de radio natif : `Pressable` avec `accessibilityRole="radio"` et `accessibilityState={{ checked }}`, dans une `View` `accessibilityRole="radiogroup"` étiquetée par la legend ; mêmes tuiles, même rendu coché (bordure 2 px `selected`, cercle plein dessiné, libellé en gras) ; 2 colonnes, 1 en dessous de 312 px de large.
+Pas de radio natif : `Pressable` avec `accessibilityRole="radio"` et `accessibilityState={{ checked }}`, dans une `View` `accessibilityRole="radiogroup"` étiquetée par la legend ; mêmes tuiles, même rendu coché (bordure 2 px `selected`, cercle plein dessiné, libellé semi-gras) ; 2 colonnes, 1 en dessous de 312 px de large.

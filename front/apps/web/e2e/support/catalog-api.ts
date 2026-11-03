@@ -39,6 +39,10 @@ export class CatalogApi {
     return this.poses.length;
   }
 
+  get publishedNames(): string[] {
+    return this.poses.map((pose) => pose.name);
+  }
+
   setUnreachable(unreachable: boolean): void {
     this.unreachable = unreachable;
   }

@@ -1,4 +1,4 @@
-import type { DifficultyLevel } from './difficulty-level';
+import type { DifficultyLevel } from '../shared-kernel/difficulty-level';
 
 /** A published pose as listed in the catalog. */
 export type PoseSummary = {

@@ -148,9 +148,11 @@ main {
   cursor: pointer;
 }
 
+/* Mobile: full width, a long label wraps rather than overflows (« Proposer une autre pose » at 200 %). */
 .button--primary {
   min-height: var(--afj-size-control);
   width: 100%;
+  white-space: normal;
   border: none;
   color: var(--afj-color-primary-contrast);
   background: var(--afj-color-primary);
@@ -351,6 +353,7 @@ main {
 
 /* Mobile: full width, the label may wrap rather than overflow. */
 .link-button {
+  min-height: var(--afj-size-control);
   white-space: normal;
 }
 
@@ -519,11 +522,267 @@ main {
   font-weight: var(--afj-font-weight-regular);
 }
 
+/* --- Sign-in context line (story 3) ------------------------------------------------------------ */
+
+.identity-page h1:has(+ .identity-page__context) {
+  margin-bottom: var(--afj-spacing-sm);
+}
+
+.identity-page__context {
+  margin: 0 0 var(--afj-spacing-lg);
+  color: var(--afj-color-text-muted);
+}
+
+/* --- Form « Proposer une pose » (docs/design/ecrans/3-proposer-une-pose.md) ------------------ */
+
+.proposal-page {
+  max-width: var(--afj-size-form-wide-max-width);
+  margin: 0 auto;
+}
+
+.proposal-page h1 {
+  margin-bottom: var(--afj-spacing-sm);
+}
+
+.proposal-page__introduction {
+  margin: 0 0 var(--afj-spacing-lg);
+  color: var(--afj-color-text-muted);
+}
+
+/* Static information box (bandeau-information.md tokens, without "Fermer"). */
+.info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--afj-spacing-sm);
+  margin: var(--afj-spacing-sm) 0 var(--afj-spacing-sm);
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+  background: var(--afj-color-info-surface);
+  border-left: var(--afj-size-accent-bar) solid var(--afj-color-info);
+  border-radius: var(--afj-radius-md);
+}
+
+.info-box p {
+  margin: 0;
+}
+
+.info-box .icon {
+  color: var(--afj-color-info);
+}
+
+.proposal-form {
+  display: grid;
+  gap: var(--afj-spacing-lg);
+}
+
+/* Name counter (champ.md): under the help, aligned right, steady digits. */
+.field__counter {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: var(--afj-spacing-xs);
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--afj-color-text-muted);
+}
+
+.field__counter--over {
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-danger);
+}
+
+/* Information variant of the form alert (alerte-formulaire.md): expired session, input kept. */
+.form-alert--info {
+  background: var(--afj-color-info-surface);
+  border-left-color: var(--afj-color-info);
+}
+
+.form-alert--info .icon {
+  color: var(--afj-color-info);
+}
+
+.form-alert__content a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--afj-size-touch-target);
+  border-radius: var(--afj-radius-sm);
+}
+
+/* Group of radio tiles (docs/design/composants/groupe-tuiles-radio.md). */
+.tile-group {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+/* The container query is carried by a div rather than by the fieldset, whose rendering varies. */
+.tile-group__container {
+  container-type: inline-size;
+}
+
+.tile-group legend {
+  margin-bottom: var(--afj-spacing-sm);
+  padding: 0;
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.tile-group__error {
+  margin-bottom: var(--afj-spacing-sm);
+}
+
+.tile-group__tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--afj-spacing-sm);
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  gap: var(--afj-spacing-sm);
+  min-block-size: var(--afj-size-control);
+  min-inline-size: 0;
+  padding: var(--afj-spacing-xs) var(--afj-spacing-sm);
+  background: var(--afj-color-background);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md);
+  cursor: pointer;
+}
+
+.tile span {
+  overflow-wrap: anywhere;
+}
+
+.tile input {
+  flex-shrink: 0;
+  inline-size: var(--afj-size-icon);
+  block-size: var(--afj-size-icon);
+  margin: 0;
+  accent-color: var(--afj-color-selected);
+}
+
+/* The ring goes around the whole tile, which replaces the ring of the radio; without :has, the radio
+   keeps its own ring. */
+@supports selector(:has(*)) {
+  .tile input:focus-visible {
+    outline: none;
+  }
+
+  .tile:has(input:focus-visible) {
+    outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus);
+    outline-offset: var(--afj-size-focus-ring-offset);
+  }
+}
+
+/* Checked: thicker border, tinted background, semibold label (not carried by the colour alone). */
+.tile:has(input:checked) {
+  padding: calc(var(--afj-spacing-xs) - var(--afj-size-border-width))
+    calc(var(--afj-spacing-sm) - var(--afj-size-border-width));
+  background: var(--afj-color-selected-surface);
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-selected);
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.tile-group--invalid .tile {
+  padding: calc(var(--afj-spacing-xs) - var(--afj-size-border-width))
+    calc(var(--afj-spacing-sm) - var(--afj-size-border-width));
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-danger);
+}
+
+/* Columns by container width, in em to follow the text size:
+   19.5em = 2 × sizes.tileMinWidth + spacing.sm (312 px); 39.5em = 4 × tileMinWidth + 3 × spacing.sm (632 px). */
+@container (width >= 19.5em) {
+  .tile-group__tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tile-group__tiles .tile {
+    min-inline-size: var(--afj-size-tile-min-width);
+  }
+}
+
+/* Four levels on a line; Yes / No on the first two of four columns, as wide as the level tiles. */
+@container (width >= 39.5em) {
+  .tile-group__tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.flow-questions {
+  display: grid;
+  gap: var(--afj-spacing-md);
+}
+
+.flow-questions__help {
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+.flow-questions__help p {
+  margin: 0;
+}
+
+/* Success panel (docs/design/composants/panneau-succes.md), then the actions, on the page background. */
+.proposal-success {
+  margin-top: var(--afj-spacing-lg);
+}
+
+.success-panel {
+  padding: var(--afj-spacing-lg) var(--afj-spacing-md) var(--afj-spacing-lg) var(--afj-spacing-lg);
+  background: var(--afj-color-success-surface);
+  border-left: var(--afj-size-accent-bar) solid var(--afj-color-success);
+  border-radius: var(--afj-radius-md);
+}
+
+.success-panel .icon {
+  display: block;
+  inline-size: var(--afj-size-icon-large);
+  block-size: var(--afj-size-icon-large);
+  margin-bottom: var(--afj-spacing-sm);
+  color: var(--afj-color-success);
+}
+
+.success-panel__title {
+  margin: 0;
+  font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-bold);
+  line-height: var(--afj-line-height-tight);
+  overflow-wrap: anywhere;
+}
+
+.success-panel__title:focus-visible {
+  border-radius: var(--afj-radius-sm);
+}
+
+.success-panel__text {
+  margin: var(--afj-spacing-sm) 0 0;
+}
+
+.proposal-success__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--afj-spacing-sm);
+  margin-top: var(--afj-spacing-lg);
+}
+
+.proposal-success__actions .button {
+  width: 100%;
+}
+
 /* --- High contrast mode ------------------------------------------------------------------- */
 
 @media (forced-colors: active) {
   .link-button {
     border: var(--afj-size-border-width) solid transparent;
+  }
+
+  .tile {
+    border-color: CanvasText;
+  }
+
+  .tile:has(input:checked) {
+    border-color: Highlight;
   }
 
   .difficulty-dots__dot {
@@ -559,6 +818,20 @@ main {
 
   .field input:hover {
     border-color: var(--afj-color-text);
+  }
+
+  .tile:hover {
+    background: var(--afj-color-surface-hover);
+    border-color: var(--afj-color-text);
+  }
+
+  .tile:has(input:checked):hover {
+    background: var(--afj-color-selected-surface);
+    border-color: var(--afj-color-selected);
+  }
+
+  .tile-group--invalid .tile:hover {
+    border-color: var(--afj-color-danger);
   }
 }
 
@@ -612,6 +885,30 @@ main {
     background: var(--afj-color-surface);
     border: var(--afj-size-border-width) solid var(--afj-color-divider);
     border-radius: var(--afj-radius-lg);
+  }
+
+  .proposal-page {
+    max-width: calc(var(--afj-size-form-wide-max-width) + 2 * var(--afj-spacing-xl));
+    margin-top: var(--afj-spacing-xl);
+    padding: var(--afj-spacing-xl);
+    background: var(--afj-color-surface);
+    border: var(--afj-size-border-width) solid var(--afj-color-divider);
+    border-radius: var(--afj-radius-lg);
+  }
+
+  .proposal-success__actions {
+    flex-direction: row;
+    gap: var(--afj-spacing-md);
+  }
+
+  .proposal-success__actions .button {
+    width: auto;
+    white-space: nowrap;
+  }
+
+  /* Same padding on every side once the screen is wide enough (panneau-succes.md). */
+  .success-panel {
+    padding: var(--afj-spacing-lg);
   }
 }
 

@@ -239,7 +239,7 @@ Encadré d'information statique à la place de « Tous les champs sont obligatoi
 ┃     apparaîtra dans le catalogue dès l'envoi.
 ```
 
-Mêmes tokens que `bandeau-information.md` (fond `infoSurface`, barre `info`, icône info, texte `text` 13,9:1), **sans** bouton « Fermer », largeur de la colonne, marge basse `spacing.lg`. La mention « Tous les champs sont obligatoires. » suit l'encadré en `textMuted`. Pas d'encadré pour un utilisateur : rien d'inhabituel à lui signaler.
+Mêmes tokens que `bandeau-information.md` (fond `infoSurface`, barre `info`, icône info, texte `text` 13,9:1), **sans** bouton « Fermer », largeur de la colonne, marge basse `spacing.sm` (l'introduction qui suit porte déjà la marge `spacing.lg` avant le premier champ). La mention « Tous les champs sont obligatoires. » suit l'encadré en `textMuted`. Pas d'encadré pour un utilisateur : rien d'inhabituel à lui signaler.
 
 ### Erreurs de saisie (avant l'envoi)
 
@@ -278,7 +278,7 @@ Le formulaire (et l'introduction) est remplacé par le panneau de succès (`pann
 │ [      Voir le catalogue     ] │  lien-bouton secondaire
 ```
 
-En grand écran, le panneau est dans la carte (`successSurface` sur `surface`), actions côte à côte sous le panneau.
+En grand écran, le panneau est dans la carte (`successSurface` sur `surface`), padding `spacing.lg` sur les quatre côtés, actions côte à côte sous le panneau. Statut illisible (API plus récente que le site) : titre neutre « Ta proposition est envoyée. », sans texte, mêmes actions.
 
 ### Visiteur qui ouvre directement la page
 
@@ -291,5 +291,5 @@ Redirection vers « Se connecter » (comportement) : aucun écran propre ; le fo
 - Tuiles : `label` englobant, radio natif visible, `:has(:checked)` et `:has(:focus-visible)` ; jamais `outline: none` sans l'anneau de la tuile.
 - Difficulté jamais codée par la couleur ; échelle à points `aria-hidden`.
 - Cible ≥ 44 px partout (tuiles 48, liens-boutons 48, « Réessayer » 44).
-- 320 px et zoom 200 % : tuiles en une colonne, valeurs des cartes sous leur terme, aucun défilement horizontal (1.4.10).
+- 320 px (zoom 400 % sur 1280 px) : tuiles en une colonne, valeurs des cartes sous leur terme ; zoom 200 % : tuiles 2 × 2 ; aucun défilement horizontal (1.4.10).
 - `forced-colors: active` vérifié sur les tuiles (état coché visible) et le lien-bouton primaire.

@@ -32,5 +32,9 @@ export const signedIn = (email: string, capabilities: readonly Capability[] = []
 
 export const signedOut = (): Session => ({ status: 'visitor' });
 
+/** The person is signed in and the role allows proposing (capability "propose", ADR 0019). */
+export const canPropose = (session: Session): boolean =>
+  session.status === 'signedIn' && session.capabilities.includes('propose');
+
 export const noticeDismissed = (session: Session): Session =>
   session.status === 'visitor' ? { status: 'visitor' } : session;

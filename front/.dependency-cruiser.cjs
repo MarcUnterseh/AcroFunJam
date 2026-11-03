@@ -2,6 +2,8 @@
  * Dependency rule of the front monorepo (clean-architecture skill, ADR 0002):
  * apps/* -> api-client, core, ui-tokens ; api-client -> core ; core/application -> core/domain ;
  * core/presentation (labels shared by the apps) -> core/domain ; core/domain -> nothing.
+ * Inside core and api-client, the bounded contexts (catalog, contribution, identity) only share
+ * domain/shared-kernel (ADR 0015) and domain/common.
  * @type {import('dependency-cruiser').IConfiguration}
  */
 module.exports = {
@@ -46,6 +48,18 @@ module.exports = {
       from: { path: '^packages/core/src/presentation' },
       to: {
         pathNot: ['^packages/core/src/(presentation|domain)'],
+      },
+    },
+    {
+      name: 'bounded-contexts-isolated',
+      severity: 'error',
+      comment:
+        'Catalog, Contribution and Identity do not import each other (in each layer of core, and in api-client): ' +
+        'only the shared kernel (ADR 0015) and common are shared. A need across contexts goes through the apps.',
+      from: { path: '^packages/(?:core/src/[a-z]+|api-client/src)/(catalog|contribution|identity)/' },
+      to: {
+        path: '^packages/(?:core/src/[a-z]+|api-client/src)/(?:catalog|contribution|identity)/',
+        pathNot: '^packages/(?:core/src/[a-z]+|api-client/src)/$1/',
       },
     },
     {

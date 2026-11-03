@@ -10,7 +10,8 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { useAnnounce } from '../layout/Announcer';
 import { Icon } from '../layout/Icon';
-import { Field, FormAlert, PasswordField } from './form-controls';
+import { Field, FormAlert, PasswordField } from '../layout/form-controls';
+import { signInPath } from '../paths';
 import { safeReturnPath } from './return-path';
 import { useSession } from './SessionContext';
 
@@ -55,9 +56,12 @@ const refusalOf = (error: IdentityError): Refusal | null => {
 /** The "Se connecter" and "S'inscrire" pages: same fields, same states (docs/design/ecrans/2b-…). */
 export function IdentityForm({
   kind,
+  context,
   onSubmit,
 }: {
   kind: Kind;
+  /** Static line under the title: why the person has to sign in (« Connecte-toi pour proposer une pose. »). */
+  context?: string | undefined;
   onSubmit: (input: { email: string; password: string }) => Promise<Result<Session, IdentityError>>;
 }) {
   const text = texts[kind];
@@ -72,6 +76,8 @@ export function IdentityForm({
   const succeeded = useRef(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const retryButton = useRef<HTMLButtonElement>(null);
+  const [focusRetry, setFocusRetry] = useState(false);
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const announce = useAnnounce();
@@ -82,6 +88,14 @@ export function IdentityForm({
     document.title = `${text.title} – AcroFunJam`;
   }, [text.title]);
 
+  // The alert stays while retrying (its button keeps the focus); the new alert, given anew to be announced
+  // again (key), gets the focus back on its « Réessayer ».
+  useEffect(() => {
+    if (!focusRetry) return;
+    retryButton.current?.focus();
+    setFocusRetry(false);
+  }, [focusRetry]);
+
   // Already signed in (and not because of this form): nothing to do here, go back.
   if (session.status === 'signedIn' && !succeeded.current) return <Navigate to={returnPath} replace />;
 
@@ -90,16 +104,15 @@ export function IdentityForm({
     return error ? identityErrorLabel(error.code) : undefined;
   };
 
-  const submit = async (event?: FormEvent) => {
+  const submit = async (event?: FormEvent, retrying = false) => {
     event?.preventDefault();
     if (submitting.current) return; // no double submission, even before the next render
     submitting.current = true;
     setBusy(true);
-    setRefusal(null); // a refusal identical to the previous one is announced again
     const result = await onSubmit({ email, password });
     submitting.current = false;
     setBusy(false);
-    setAttempt((n) => n + 1);
+    setAttempt((n) => n + 1); // a refusal identical to the previous one is announced again
     if (result.ok) {
       succeeded.current = true;
       announce(text.success);
@@ -107,17 +120,20 @@ export function IdentityForm({
       return;
     }
     if (result.error.kind === 'invalid-input') {
+      setRefusal(null);
       setFieldErrors(result.error.errors);
       (result.error.errors[0]?.field === 'email' ? emailRef : passwordRef).current?.focus();
       return;
     }
     setFieldErrors([]);
     setRefusal(refusalOf(result.error));
+    if (retrying) setFocusRetry(true);
   };
 
   return (
     <section className="identity-page">
       <h1 tabIndex={-1}>{text.title}</h1>
+      {context && <p className="identity-page__context">{context}</p>}
       <form aria-label={text.title} noValidate onSubmit={(event) => void submit(event)}>
         {refusal && (
           <FormAlert key={attempt}>
@@ -126,15 +142,21 @@ export function IdentityForm({
               <div>
                 <p>{refusal.message}</p>
                 {refusal.canRetry && (
-                  <button type="button" className="button button--secondary" onClick={() => void submit()}>
-                    Réessayer
+                  <button
+                    ref={retryButton}
+                    type="button"
+                    className="button button--secondary"
+                    aria-disabled={busy || undefined}
+                    onClick={() => void submit(undefined, true)}
+                  >
+                    {busy ? text.busy : 'Réessayer'}
                   </button>
                 )}
               </div>
             ) : (
               <p>
                 Ton compte est créé, mais la connexion n'a pas pu aboutir.{' '}
-                <Link to={`/connexion${retourParam}`}>Se connecter</Link>
+                <Link to={signInPath(returnPath)}>Se connecter</Link>
               </p>
             )}
           </FormAlert>

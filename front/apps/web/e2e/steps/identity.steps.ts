@@ -1,9 +1,8 @@
 import { expect, type Page } from '@playwright/test';
 import { Given, Then, When } from '../fixtures';
 import { IdentityForm, SiteHeader } from '../pages/identity-pages';
+import { defaultPassword, expectSignedIn, signInThroughTheSite } from '../support/people';
 import { setAcroFunJamReachable } from '../support/reachability';
-
-const defaultPassword = 'Throne-Bird-2026';
 
 /** Messages displayed by the site (informal tone, docs/design), for the reasons stated by the scenarios. */
 const messages: Record<string, string> = {
@@ -21,20 +20,6 @@ const message = (reason: string): string => {
   const text = messages[reason];
   if (!text) throw new Error(`Motif inconnu : ${reason}`);
   return text;
-};
-
-/** Signs in from the page being consulted (the home page if none), through the header link. */
-const signInThroughTheSite = async (page: Page, email: string, password: string) => {
-  if (!page.url().startsWith('http')) await page.goto('/');
-  await new SiteHeader(page).openSignIn();
-  const form = new IdentityForm(page, 'Se connecter');
-  await form.fill(email, password);
-  await form.submit();
-};
-
-const expectSignedIn = async (page: Page, email: string) => {
-  await expect(new SiteHeader(page).account).toContainText(email);
-  await expect(new SiteHeader(page).account.getByRole('button', { name: 'Se déconnecter' })).toBeVisible();
 };
 
 // --- Accounts ------------------------------------------------------------------------------
@@ -119,9 +104,9 @@ Given('{word} consulte les poses du catalogue en tant que visiteur', async ({ pa
 
 Given(
   /^la connexion d'(\w+) n'a pas pu aboutir car AcroFunJam était injoignable$/,
-  async ({ page, identityApi, catalogApi }, name: string) => {
+  async ({ page, identityApi, catalogApi, contributionApi }, name: string) => {
     const person = identityApi.people.get(name)!;
-    setAcroFunJamReachable({ identityApi, catalogApi }, false);
+    setAcroFunJamReachable({ identityApi, catalogApi, contributionApi }, false);
     await signInThroughTheSite(page, person.email, person.password);
     await expect(page.getByRole('alert')).toContainText('Impossible de joindre AcroFunJam');
   },

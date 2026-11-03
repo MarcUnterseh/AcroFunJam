@@ -118,7 +118,8 @@ Then(
 );
 
 Then("le catalogue n'invite pas à proposer une pose", async ({ catalogPage, header }) => {
-  await expect(catalogPage.emptyCatalogMessage).toBeVisible();
+  // Wait until the poses are received, empty catalog or not: the link would only appear then.
+  await expect(catalogPage.emptyCatalogMessage.or(catalogPage.poseList)).toBeVisible();
   // Wait until the session is known: the invitation would only appear once the person is signed in.
   await expect(header.account.getByRole('link', { name: 'Se connecter' })).toBeVisible();
   await expect(catalogPage.firstPoseInvitation).toHaveCount(0);
@@ -133,12 +134,18 @@ Then('le catalogue invite à proposer la première pose', async ({ catalogPage }
   await expect(catalogPage.proposePoseLinks).toHaveAttribute('href', '/proposer-une-pose');
 });
 
+Then('le catalogue invite à proposer une pose', async ({ catalogPage }) => {
+  await expect(catalogPage.poseList).toBeVisible();
+  await expect(catalogPage.proposePoseLinks).toHaveCount(1);
+  await expect(catalogPage.proposePoseLinks).toHaveAttribute('href', '/proposer-une-pose');
+});
+
 // --- Loading failure ------------------------------------------------------------------------
 
 Given(
   'le chargement du catalogue a échoué car AcroFunJam était injoignable',
-  async ({ identityApi, catalogApi, catalogPage }) => {
-    setAcroFunJamReachable({ identityApi, catalogApi }, false);
+  async ({ identityApi, catalogApi, contributionApi, catalogPage }) => {
+    setAcroFunJamReachable({ identityApi, catalogApi, contributionApi }, false);
     await catalogPage.open();
     await expect(catalogPage.loadingFailure).toContainText('Impossible de charger le catalogue.');
   },
