@@ -1,13 +1,382 @@
-:root {
-  font-family: system-ui, sans-serif;
-  color: #212529;
-  background: #ffffff;
+/* Only design tokens (virtual:tokens.css, ADR 0012): no colour nor length written here (stylelint).
+   Breakpoint: 40em = breakpoints.md (640) / 16; a CSS variable cannot be used in a media query. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  font-family: var(--afj-font-family);
+  font-size: var(--afj-font-size-md);
+  line-height: var(--afj-line-height-normal);
+  color: var(--afj-color-text);
+  background: var(--afj-color-background);
+}
+
+h1 {
+  font-size: var(--afj-font-size-xl);
+  line-height: var(--afj-line-height-tight);
+  margin: 0 0 var(--afj-spacing-lg);
+}
+
+a {
+  color: var(--afj-color-primary);
+}
+
+:focus-visible {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus);
+  outline-offset: var(--afj-size-focus-ring-offset);
+}
+
+/* The skip link gives the focus to main: no ring on the whole content (its h1 keeps one). */
+main:focus {
+  outline: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--afj-spacing-sm);
+  top: calc(-1 * var(--afj-size-control));
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+  background: var(--afj-color-background);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-sm);
+}
+
+.skip-link:focus {
+  top: var(--afj-spacing-sm);
 }
 
 main {
-  padding: 1.5rem;
+  max-width: var(--afj-size-content-max-width);
+  margin: 0 auto;
+  padding: var(--afj-spacing-lg) var(--afj-spacing-md);
+}
+
+.icon {
+  inline-size: var(--afj-size-icon);
+  block-size: var(--afj-size-icon);
+  flex-shrink: 0;
+}
+
+/* --- Header (docs/design/composants/en-tete.md) ------------------------------------------ */
+
+.site-header {
+  background: var(--afj-color-surface);
+  border-bottom: var(--afj-size-border-width) solid var(--afj-color-divider);
+}
+
+/* Mobile: two stable rows (brand, then account) whatever the state, so that the page never jumps. */
+.site-header__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: var(--afj-spacing-xs);
+  max-width: var(--afj-size-content-max-width);
+  margin-inline: auto;
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+}
+
+.site-header__brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--afj-size-touch-target);
+  justify-self: start;
+  font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-bold);
+  color: var(--afj-color-text);
+  text-decoration: none;
+}
+
+.site-header__account {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--afj-spacing-sm);
+  min-width: 0;
+  min-height: var(--afj-size-touch-target);
+}
+
+.site-header__email {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: var(--afj-size-account-label-max-width);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: end;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+.site-header .button {
+  flex-shrink: 0;
+  width: auto;
+  min-height: var(--afj-size-touch-target);
+}
+
+[aria-current='page'] {
+  text-decoration: underline;
+  text-decoration-thickness: var(--afj-size-border-width-strong);
+}
+
+/* --- Buttons (docs/design/composants/bouton.md) ---------------------------------------------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--afj-spacing-xs);
+  min-height: var(--afj-size-touch-target);
+  padding: 0 var(--afj-spacing-md);
+  border-radius: var(--afj-radius-md);
+  font: inherit;
+  font-weight: var(--afj-font-weight-semibold);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button--primary {
+  min-height: var(--afj-size-control);
+  width: 100%;
+  border: none;
+  color: var(--afj-color-primary-contrast);
+  background: var(--afj-color-primary);
+}
+
+.button--primary:active {
+  background: var(--afj-color-primary-active);
+}
+
+.button--secondary {
+  color: var(--afj-color-text);
+  background: transparent;
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+}
+
+.button--secondary:active {
+  background: var(--afj-color-divider);
+}
+
+.button[aria-disabled='true'] {
+  cursor: progress;
+}
+
+/* --- Identity pages (docs/design/ecrans/2b-se-connecter-sur-le-site.md) ---------------------- */
+
+.identity-page {
+  max-width: var(--afj-size-form-max-width);
+  margin: 0 auto;
+}
+
+.identity-page form {
+  display: grid;
+  gap: var(--afj-spacing-md);
+}
+
+.identity-page form > .button--primary {
+  margin-top: var(--afj-spacing-sm);
+}
+
+.identity-page__switch {
+  margin: var(--afj-spacing-lg) 0 0;
+}
+
+.field {
+  display: grid;
+  gap: var(--afj-spacing-xs);
+}
+
+.field label {
+  margin-bottom: calc(var(--afj-spacing-sm) - var(--afj-spacing-xs));
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.field__control {
+  display: flex;
+  gap: var(--afj-spacing-sm);
+}
+
+.field input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--afj-size-control);
+  padding: 0 var(--afj-spacing-md);
+  font: inherit;
+  color: var(--afj-color-text);
+  background: var(--afj-color-background);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md);
+}
+
+/* Thicker border on error, padding compensated so that the text does not move. */
+.field input[aria-invalid='true'] {
+  padding-inline: calc(var(--afj-spacing-md) - var(--afj-size-border-width));
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-danger);
+}
+
+.field__toggle {
+  min-width: var(--afj-size-touch-target);
+  min-height: var(--afj-size-control);
+  padding: 0 var(--afj-spacing-md);
+  font: inherit;
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text);
+  background: transparent;
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md);
+  cursor: pointer;
+}
+
+.field__toggle:active {
+  background: var(--afj-color-divider);
+}
+
+.field__help {
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+.field__error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--afj-spacing-xs);
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-danger);
+}
+
+/* --- Form alert (docs/design/composants/alerte-formulaire.md) ------------------------------- */
+
+.form-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--afj-spacing-sm);
+  padding: var(--afj-spacing-md);
+  padding-inline-start: var(--afj-spacing-lg);
+  background: var(--afj-color-danger-surface);
+  border-left: var(--afj-size-accent-bar) solid var(--afj-color-danger);
+  border-radius: var(--afj-radius-md);
+}
+
+.form-alert .icon {
+  color: var(--afj-color-danger);
+}
+
+.form-alert p {
+  margin: 0 0 var(--afj-spacing-sm);
+}
+
+.form-alert p:last-child {
+  margin-bottom: 0;
+}
+
+.form-alert a {
+  color: var(--afj-color-text);
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+/* --- Expired session banner (docs/design/composants/bandeau-information.md) --------------- */
+
+.info-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--afj-spacing-md);
+  width: calc(100% - 2 * var(--afj-spacing-md));
+  max-width: calc(var(--afj-size-content-max-width) - 2 * var(--afj-spacing-md));
+  margin: var(--afj-spacing-md) auto 0;
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+  background: var(--afj-color-info-surface);
+  border-left: var(--afj-size-accent-bar) solid var(--afj-color-info);
+  border-radius: var(--afj-radius-md);
+}
+
+.info-banner p {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--afj-spacing-xs);
+  margin: 0;
+}
+
+.info-banner .icon {
+  color: var(--afj-color-info);
+}
+
+.info-banner a {
+  color: var(--afj-color-text);
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.info-banner__close {
+  min-width: var(--afj-size-touch-target);
+  min-height: var(--afj-size-touch-target);
+  font: inherit;
+  color: var(--afj-color-text);
+  background: none;
+  border: none;
+  border-radius: var(--afj-radius-md);
+  cursor: pointer;
+}
+
+/* --- Hover, for fine pointers only ------------------------------------------------------ */
+
+@media (hover: hover) {
+  a:hover {
+    text-decoration-thickness: var(--afj-size-border-width-strong);
+  }
+
+  .site-header__brand:hover {
+    text-decoration: underline;
+  }
+
+  .button--primary:hover {
+    color: var(--afj-color-primary-contrast);
+    background: var(--afj-color-primary-hover);
+  }
+
+  .button--secondary:hover,
+  .field__toggle:hover,
+  .info-banner__close:hover {
+    background: var(--afj-color-surface-hover);
+  }
+
+  .field input:hover {
+    border-color: var(--afj-color-text);
+  }
+}
+
+/* --- Wide screens -------------------------------------------------------------------------- */
+
+@media (width >= 40em) {
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: var(--afj-spacing-lg);
+  }
+
+  .identity-page {
+    max-width: calc(var(--afj-size-form-max-width) + 2 * var(--afj-spacing-xl));
+    margin-top: var(--afj-spacing-xl);
+    padding: var(--afj-spacing-xl);
+    background: var(--afj-color-surface);
+    border: var(--afj-size-border-width) solid var(--afj-color-divider);
+    border-radius: var(--afj-radius-lg);
+  }
 }

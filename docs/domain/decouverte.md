@@ -82,6 +82,25 @@ AcroFunJam est un catalogue collaboratif de poses et de transitions d'acroyoga. 
 - Revue d’architecture : promotion du premier administrateur à l’inscription retirée (risque d’usurpation, option B) ; adresse e-mail validée (`identity.invalid-email`) ; index unique sur l’adresse ; auteur des changements de rôle dans les événements et journal d’audit.
 - Reportés : message de `/me` pour un compte supprimé (aujourd’hui « aucun compte n’a cette adresse ») ; démarrage de l’API impossible si la base est indisponible et qu’un premier administrateur est désigné (à documenter ou à rendre tolérant) ; publication des événements de domaine (aucun abonné pour l’instant) ; confirmation d’e-mail avant l’amorçage.
 
+### Story 2b « S’inscrire et se connecter sur le site » (validé le 2026-11-03)
+- L’inscription **connecte aussitôt** ; après connexion ou inscription, retour à la **page d’origine** (pages du site uniquement).
+- En-tête : visiteur → « Se connecter », « S’inscrire » ; connecté → son adresse et « Se déconnecter », sans le rôle (il ira dans « Mon compte »).
+- **Pages dédiées** « Se connecter » / « S’inscrire » avec un routeur minimal (ADR).
+- Session portée par des **cookies sécurisés gérés par l’API** (HttpOnly, SameSite=Strict), sans case « rester connecté » (ADR) ; une déconnexion vaut pour tous les onglets ; l’app mobile garde des jetons.
+- **Règle de mot de passe** : au moins **10 caractères**, sans exigence de composition (phrases de passe). Exigence affichée avant la saisie, vérifiée par le site avant l’envoi avec la même règle que l’API.
+- Session expirée : bandeau discret, la personne reste sur sa page et peut se reconnecter.
+- **Verrouillage** après plusieurs échecs de connexion conservé (réglages par défaut d’ASP.NET Identity), avec un message dédié.
+- Bouton d’inscription : « Créer mon compte ».
+- Identité visuelle (`docs/design/principes.md`) : couleur principale terre cuite, police système, **tutoiement**, tournures épicènes, logo textuel.
+- Scénarios ajoutés : API injoignable, champs vides ou adresse mal formée.
+- Hors 2b : « mot de passe oublié » (story suivante, nécessite l’envoi d’e-mails) ; confirmation de l’adresse e-mail.
+
+#### Livraison de la story 2b (2026-11-03)
+- 22 scénarios @web (« se-connecter-sur-le-site.feature ») et 4 scénarios @api (mot de passe, verrouillage) livrés ; le renouvellement de session est vérifié côté API seulement (`SessionCookieTests`, horloge simulée).
+- Décisions prises en route : en-tête « visiteur » quand l’API est injoignable au chargement ; l’indice de session n’est effacé qu’à la fermeture du bandeau « session expirée » (robuste aux lectures concurrentes) ; une personne connectée qui ouvre « Se connecter » ou « S’inscrire » est renvoyée à sa page d’origine ; jamais de retour vers une page d’identité.
+- Revues (architecture, UX, visuel) : points bloquants et importants corrigés.
+- Reportés : libellés d’interface de `core/domain` vers un module de présentation et `AuthFailure` vers le port ; `Session.email` typé `EmailAddress` ; exposer la longueur minimale du mot de passe dans l’OpenAPI pour vérifier la cohérence API ↔ site ; titre `h2` et icône d’attente dans les zones d’alerte et boutons occupés ; lien « Connecte-toi » sur « adresse déjà utilisée » ; remasquer le mot de passe à l’envoi ; libellé « Fermer le message » ; mettre à jour `docs/design/` (bouton du mot de passe séparé du champ, pas de résumé des erreurs) ; story « mot de passe oublié ».
+
 ### Découpage des stories suivantes (décidé le 2026-11-02)
 1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.
 2. **Proposer une pose** (Contribution) : reprend les règles de contenu de `specs/features/catalogue/publier-une-pose.feature` (brouillon) ; publication directe pour un validateur ou un administrateur.

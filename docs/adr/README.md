@@ -11,3 +11,7 @@
 | [0007](0007-contrat-http-et-persistance-modulaire.md) | Conventions du contrat HTTP et persistance modulaire | proposé |
 | [0008](0008-identite-et-roles.md) | Identité : comptes ASP.NET Core Identity et rôles cumulatifs | accepté |
 | [0009](0009-specs-adossees-a-une-bibliotheque.md) | Specs d’acceptation adossées à une bibliothèque : vraie base PostgreSQL | accepté |
+| [0010](0010-routeur-du-site-web.md) | Routeur du site web (React Router) et pages dédiées | accepté |
+| [0011](0011-session-web-et-mots-de-passe.md) | Session du site en cookies, règle de mot de passe (10 caractères) | accepté |
+| [0012](0012-tokens-en-variables-css.md) | Design tokens exposés au web en variables CSS | accepté |
+| [0013](0013-expiration-et-onglets.md) | Expiration de session et synchronisation entre onglets (indice en localStorage) | accepté |

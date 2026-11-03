@@ -16,6 +16,7 @@ public sealed class ApiSecurityTests : IClassFixture<ApiSecurityTests.ApiFactory
     [
         "/identity/register", "/identity/login", "/identity/refresh", "/identity/confirmEmail",
         "/identity/resendConfirmationEmail", "/identity/forgotPassword", "/identity/resetPassword",
+        "/identity/logout", // ends the session of whoever calls it: nothing to protect
     ];
 
     private static readonly string[] CapabilityPolicies = [Capabilities.CanPropose, Capabilities.CanValidate, Capabilities.CanManageRoles];

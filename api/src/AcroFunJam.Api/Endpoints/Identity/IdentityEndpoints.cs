@@ -8,6 +8,7 @@ using AcroFunJam.Application.Identity.RevokeRole;
 using AcroFunJam.Domain.Identity;
 using AcroFunJam.Infrastructure.Persistence.Identity;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
 
 namespace AcroFunJam.Api.Endpoints.Identity;
 
@@ -20,6 +21,9 @@ public static class IdentityEndpoints
         // Registration, sign-in and tokens come from ASP.NET Core Identity, exposed as is (ADR 0008).
         // Registering never grants a role: the initial administrator is only promoted at start-up.
         identity.MapIdentityApi<ApplicationUser>();
+
+        // Ends the web session (the library has no logout endpoint). Idempotent: always 204.
+        identity.MapPost("/logout", SignOut).WithName("SignOut").AllowAnonymous();
 
         identity.MapPost("/role-assignments", AssignRole).WithName("AssignRole").RequireAuthorization(Capabilities.CanManageRoles);
         identity.MapPost("/role-revocations", RevokeRole).WithName("RevokeRole").RequireAuthorization(Capabilities.CanManageRoles);
@@ -39,6 +43,12 @@ public static class IdentityEndpoints
 
         var account = result.Value!;
         return TypedResults.Ok(new MyAccountResponse(account.Email.Value, account.Role.Code, [.. account.Role.Capabilities.Select(CapabilityCode)]));
+    }
+
+    private static async Task<NoContent> SignOut(SignInManager<ApplicationUser> signInManager)
+    {
+        await signInManager.SignOutAsync();
+        return TypedResults.NoContent();
     }
 
     private static async Task<Results<NoContent, ProblemHttpResult>> AssignRole(

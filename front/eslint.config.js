@@ -22,6 +22,15 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
   },
   {
+    // Ignored arguments start with "_" (e.g. playwright-bdd passes one argument per captured value).
+    rules: { '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }] },
+  },
+  {
+    // playwright-bdd steps always receive the fixtures object first, even when they use none.
+    files: ['apps/web/e2e/**/*.ts'],
+    rules: { 'no-empty-pattern': 'off' },
+  },
+  {
     files: ['**/*.cjs'],
     languageOptions: { sourceType: 'commonjs' },
     rules: { '@typescript-eslint/no-require-imports': 'off' },

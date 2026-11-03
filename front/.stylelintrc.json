@@ -1,0 +1,36 @@
+{
+  "extends": [
+    "stylelint-config-standard"
+  ],
+  "rules": {
+    "color-no-hex": true,
+    "color-named": "never",
+    "function-disallowed-list": [
+      "rgb",
+      "rgba",
+      "hsl",
+      "hsla"
+    ],
+    "unit-allowed-list": [
+      [
+        "em",
+        "rem",
+        "fr",
+        "%",
+        "deg",
+        "ms",
+        "s"
+      ],
+      {
+        "ignoreProperties": {
+          "px": [
+            "width",
+            "height"
+          ]
+        }
+      }
+    ],
+    "selector-class-pattern": null,
+    "no-descending-specificity": null
+  }
+}

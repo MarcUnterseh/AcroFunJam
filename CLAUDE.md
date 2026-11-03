@@ -81,7 +81,7 @@ CI : `.github/workflows/ci.yml` (jobs `api`, `front`, `e2e-web`).
 
 ## Outillage Claude de ce dépôt
 
-- **Agents** (`.claude/agents/`) : `acroyoga-expert` (confirme ou challenge ce que l'utilisateur dit du métier), `bdd-analyst`, `domain-expert`, `tdd-red`, `tdd-green`, `tdd-refactor`, `architecture-reviewer`.
+- **Agents** (`.claude/agents/`) : `acroyoga-expert` (confirme ou challenge ce que l'utilisateur dit du métier), `ux-expert` (parcours, états, libellés, accessibilité des écrans), `ui-designer` (identité visuelle, tokens `@acrofunjam/ui-tokens`, spécifications dans `docs/design/`), `bdd-analyst`, `domain-expert`, `tdd-red`, `tdd-green`, `tdd-refactor`, `architecture-reviewer`.
 - **Skills** (`.claude/skills/`) : `/feature`, `/tdd`, `/bootstrap`, `/new-bounded-context`, `/adr`, et les références `ddd-patterns`, `clean-architecture`, `gherkin`.
 - **Hooks** (`.claude/hooks/`, configuration dans `.claude/hooks/config.json`) :
   - `session-context` : rappelle la phase TDD courante au démarrage ;

@@ -1,3 +1,4 @@
+using AcroFunJam.Api.Authentication;
 using AcroFunJam.Api.Authorization;
 using AcroFunJam.Api.Endpoints.Catalog;
 using AcroFunJam.Api.Endpoints.Identity;
@@ -17,8 +18,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCapabilityPolicies();
 builder.Services.AddHostedService<InitialAdministratorStartup>();
 builder.Services
-    .AddIdentityApiEndpoints<ApplicationUser>(options => options.User.RequireUniqueEmail = true)
+    .AddIdentityApiEndpoints<ApplicationUser>(AccountRules.Apply)
     .AddEntityFrameworkStores<AcroFunJamDbContext>();
+builder.Services.ConfigureApplicationCookie(SessionCookie.Configure);
 
 var app = builder.Build();
 

@@ -100,4 +100,11 @@ On ne modélise pas l'authentification. Inscription, connexion, jetons, hachage 
 
 **Capacités dans l'Api** : des policies `CanPropose`, `CanValidate` et `CanManageRoles` sont évaluées par un handler d'autorisation. Il relit le rôle courant via un port à chaque évaluation et applique `Role.Grants`. Le rôle figé dans le jeton n'est jamais utilisé.
 
+**Langage publié pour les clients (story 2b)** :
+- `/identity/*` : les réponses de la bibliothèque, figées par des tests de contrat d'`AcroFunJam.Api.Tests` (clés `DuplicateEmail` / `DuplicateUserName` / `PasswordTooShort` / `InvalidEmail` de la `ValidationProblem`, 401 avec le détail `Failed` ou `LockedOut`) ;
+- `POST /identity/logout` (le nôtre, anonyme, 204) ;
+- `GET /me`.
+
+Le site s'authentifie par cookie (`?useCookies=true`), le mobile par jeton porteur. L'adaptateur `createAuthGateway` (api-client) est la couche anti-corruption qui traduit ces réponses en erreurs typées du port `AuthGateway` de `@acrofunjam/core`.
+
 Les autres contextes ne voient que `UserId` (et ses alias `ContributorId`, `ValidatorId`, `PractitionerId`) et des capacités. Jamais `ApplicationUser`.

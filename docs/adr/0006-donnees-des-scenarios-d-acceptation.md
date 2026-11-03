@@ -16,6 +16,10 @@ Les premiers scénarios (story « Consulter les poses du catalogue ») supposent
 - `@web` : l'API est simulée au niveau HTTP (`page.route`) par une fixture typée avec le schéma OpenAPI généré, pour détecter une dérive du contrat.
 - Pas de données de démo dans les migrations. Si une démo est voulue, un seeder idempotent d'Infrastructure, limité à l'environnement Development et testé.
 
+## Complément (story 2b, 2026-11-03)
+- Les fixtures e2e simulent l’API au niveau du **contexte** du navigateur (`context.route`), pour que plusieurs onglets partagent l’API simulée, les cookies et le stockage.
+- Le faux de l’API d’identité reproduit les réponses de la bibliothèque (clés `DuplicateEmail`, `PasswordTooShort`, détail `LockedOut`…) ; des **tests de contrat** dans `AcroFunJam.Api.Tests` figent ces réponses, pour que le faux et l’adaptateur du front ne dérivent pas de la réalité.
+
 ## Conséquences
 - Les scénarios `@api` ne vérifient pas la persistance : les tests `Category=Integration` de l'Infrastructure en ont la charge.
 - Les faux doivent rester triviaux (aucune règle métier dedans).

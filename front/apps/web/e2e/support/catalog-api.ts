@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { BrowserContext } from '@playwright/test';
 import type { components } from '@acrofunjam/api-client/schema';
 
 type PoseListResponse = components['schemas']['PoseListResponse'];
@@ -12,7 +12,7 @@ export type DifficultyCode = components['schemas']['DifficultyCode'];
 export class CatalogApi {
   private readonly poses: PoseSummaryResponse[] = [];
 
-  constructor(private readonly page: Page) {}
+  constructor(private readonly context: BrowserContext) {}
 
   publish(pose: { name: string; baseDifficulty: DifficultyCode; flyerDifficulty: DifficultyCode }): void {
     this.poses.push({ id: crypto.randomUUID(), ...pose });
@@ -23,7 +23,7 @@ export class CatalogApi {
   }
 
   async start(): Promise<void> {
-    await this.page.route('**/catalog/poses', async (route) => {
+    await this.context.route('**/catalog/poses', async (route) => {
       const body: PoseListResponse = { poses: this.poses };
       await route.fulfill({ json: body });
     });

@@ -6,8 +6,9 @@ Fonctionnalité: Comptes et rôles
   Je veux m'inscrire, me connecter et, si je suis administrateur, attribuer ou retirer les rôles des autres utilisateurs
 
   # Contexte Identité (generic), ADR 0008 : comptes délégués à ASP.NET Core Identity.
-  # On ne spécifie pas ce que la bibliothèque garantit déjà (règles de mot de passe, hachage,
-  # durée de validité d'une connexion…) : seules les règles propres au produit figurent ici.
+  # On ne spécifie pas ce que la bibliothèque garantit déjà (hachage, durée de validité d'une connexion…) :
+  # seules les règles propres au produit figurent ici, dont la règle de mot de passe et le verrouillage
+  # choisis à la story 2b (decouverte.md).
   # Rôles cumulatifs : utilisateur ⊂ validateur ⊂ administrateur. Un visiteur n'est pas connecté.
   # Les capacités « proposer » et « accepter ou refuser une proposition » n'existent pas encore :
   # elles sont observées en consultant ses capacités (Q1).
@@ -36,6 +37,24 @@ Fonctionnalité: Comptes et rôles
         | alice@example.org |
         | Alice@Example.org |
 
+  # Story 2b : au moins 10 caractères, sans exigence de composition, pour autoriser les phrases de passe.
+  Règle: Un mot de passe contient au moins 10 caractères, quelle que soit sa composition
+
+    @api
+    Scénario: Une inscription avec un mot de passe de moins de 10 caractères est refusée
+      Quand une personne s'inscrit avec l'adresse "alice@example.org" et le mot de passe "Throne-26"
+      Alors l'inscription est refusée car le mot de passe doit contenir au moins 10 caractères
+
+    @api
+    Plan du Scénario: Un mot de passe d'au moins 10 caractères est accepté sans majuscule ni symbole (<cas>)
+      Quand Alice s'inscrit avec l'adresse "alice@example.org" et le mot de passe "<mot de passe>"
+      Alors Alice a pour seul rôle utilisateur
+
+      Exemples:
+        | cas                      | mot de passe        |
+        | phrase de passe          | une phrase de passe |
+        | exactement 10 caractères | throne2026          |
+
   # Q11 : même motif que l'adresse soit inconnue ou le mot de passe incorrect.
   Règle: Seule une personne inscrite qui donne son mot de passe se connecte
 
@@ -55,6 +74,16 @@ Fonctionnalité: Comptes et rôles
         | cas                                | adresse           | mot de passe     |
         | le mot de passe est incorrect      | alice@example.org | Star-2026        |
         | l'adresse ne sert à aucun compte   | paul@example.org  | Throne-Bird-2026 |
+
+  # Story 2b : verrouillage conservé, réglages par défaut d'ASP.NET Core Identity (5 échecs, 5 minutes).
+  Règle: Après 5 tentatives de connexion échouées, le compte est temporairement verrouillé
+
+    @api
+    Scénario: Après 5 tentatives échouées, la connexion est temporairement bloquée, même avec le bon mot de passe
+      Soit Alice a un compte avec l'adresse "alice@example.org" et le mot de passe "Throne-Bird-2026"
+      Et 5 tentatives de connexion avec l'adresse "alice@example.org" ont échoué
+      Quand Alice se connecte avec l'adresse "alice@example.org" et le mot de passe "Throne-Bird-2026"
+      Alors la connexion est refusée car le compte est temporairement verrouillé
 
   # Q1 : les capacités sont observées en consultant ses capacités.
   # Q13 : « gérer la liste des étiquettes » sera ajoutée avec la story correspondante.

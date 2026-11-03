@@ -15,12 +15,16 @@ Si `api/AcroFunJam.slnx` ou `front/package.json` n'existent pas, propose d'abord
 
 ## 1. Découverte BDD (agent `bdd-analyst`)
 Délègue l'example mapping et l'écriture des scénarios `@wip`.
-Soumets ensuite les règles, les exemples et le vocabulaire à l'agent `acroyoga-expert`, qui les confirme ou les challenge ; ses questions s'ajoutent aux questions ouvertes.
+Soumets ensuite les règles, les exemples et le vocabulaire à l'agent `acroyoga-expert`, qui les confirme ou les challenge ; ses questions s'ajoutent aux questions ouvertes (inutile si la story ne contient aucun terme ni règle de l'acroyoga).
+Si la story touche une interface (`@web`, `@mobile`) : soumets aussi les scénarios à l'agent `ux-expert` (parcours, états, libellés, accessibilité) ; ses questions s'ajoutent aux questions ouvertes.
 **Point d'arrêt** : présente à l'utilisateur la carte, les questions ouvertes et les scénarios, puis attends sa validation avant de continuer. Les questions ouvertes doivent être tranchées par lui.
 
 ## 2. Modélisation (agent `domain-expert`)
 Délègue la modélisation à partir des scénarios validés. Récupère la **test list** ordonnée.
 Si un nouveau contexte délimité apparaît : `/new-bounded-context`. Si une décision structurante est prise : `/adr`.
+
+### 2b. Conception visuelle (agent `ui-designer`), si la story touche une interface
+Transmets-lui les scénarios validés et la sortie de l'`ux-expert`. Il ajoute ou ajuste les tokens de `@acrofunjam/ui-tokens` et spécifie les composants et les écrans dans `docs/design/`. Présente à l'utilisateur ses choix visuels structurants (identité, palette, police) avant de les implémenter.
 
 ## 3. Double boucle, pour chaque scénario (dans l'ordre conseillé)
 
@@ -45,6 +49,7 @@ Retire le tag `@wip` du scénario, puis lance toutes les suites rapides.
 
 ## 4. Revue (agent `architecture-reviewer`)
 Corrige les points 🔴 et 🟠 (via de nouveaux cycles TDD si un comportement change).
+Si la story touche une interface, lance en parallèle une revue `ux-expert` (parcours, états, accessibilité des écrans livrés) et une revue `ui-designer` (respect des tokens et des spécifications de `docs/design/`).
 
 ## 5. Clôture
 - Supprime `.claude/.state/tdd-phase`.

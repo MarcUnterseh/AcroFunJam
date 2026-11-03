@@ -5,6 +5,10 @@
   "type": "module",
   "description": "Design tokens (colors, typography, spacing) shared by the web and mobile apps.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./css": "./src/css-variables.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
   }
 }

@@ -28,6 +28,40 @@ public sealed class AccountSteps(People people)
     public async Task WhenAPersonRegisters(string email) =>
         _lastResponse = await people.Register(SomeOne, email);
 
+    [When("une personne s'inscrit avec l'adresse {string} et le mot de passe {string}")]
+    public async Task WhenAPersonRegistersWithPassword(string email, string password) =>
+        _lastResponse = await people.Register(SomeOne, email, password);
+
+    [When("{word} s'inscrit avec l'adresse {string} et le mot de passe {string}")]
+    public async Task WhenSomeoneRegistersWithPassword(string name, string email, string password) =>
+        (await people.Register(name, email, password)).EnsureSuccessStatusCode();
+
+    [Given("{int} tentatives de connexion avec l'adresse {string} ont échoué")]
+    public async Task GivenFailedSignInAttempts(int attempts, string email)
+    {
+        for (var attempt = 0; attempt < attempts; attempt++)
+        {
+            var response = await people.SignIn(SomeOne, email, "not-the-right-password");
+            response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        }
+    }
+
+    [Then("l'inscription est refusée car le mot de passe doit contenir au moins 10 caractères")]
+    public async Task ThenTheRegistrationIsRefusedForAShortPassword()
+    {
+        _lastResponse.ShouldNotBeNull().StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await _lastResponse.Content.ReadAsStringAsync()).ShouldContain("PasswordTooShort");
+    }
+
+    [Then("la connexion est refusée car le compte est temporairement verrouillé")]
+    public async Task ThenTheSignInIsRefusedBecauseLockedOut()
+    {
+        _lastResponse.ShouldNotBeNull().StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        // Contract relied on by the site (api-client compares detail === "LockedOut", case-sensitive).
+        var problem = await _lastResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+        problem.GetProperty("detail").GetString().ShouldBe("LockedOut", StringCompareShould.IgnoreLineEndings);
+    }
+
     [When("{word} se connecte avec l'adresse {string} et le mot de passe {string}")]
     public async Task WhenSomeoneSignsIn(string name, string email, string password) =>
         _lastResponse = await people.SignIn(name, email, password);
