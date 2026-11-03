@@ -11,7 +11,7 @@ Fonctionnalité: Consulter les poses du catalogue
   # Refonte de la liste (décidée le 2026-11-03 avec la story « Proposer une pose ») : poses présentées en cartes
   # (mise en forme : docs/design/, hors scénarios), indicateurs en Oui / Non explicites, nombre de poses,
   # légende de l'échelle, avertissement de responsabilité sous la légende, état vide qui invite une personne
-  # connectée à proposer la première pose. Les scénarios de la refonte sont @wip.
+  # connectée à proposer la première pose. Les scénarios @web de la refonte sont livrés (story 3, étape B).
   # Hors périmètre : vignette photo, recherche, filtres, pagination ; définitions concrètes des niveaux
   # (textes à rédiger plus tard : seule l'échelle ordonnée est vérifiée).
   # L'invitation à proposer une pose depuis un catalogue non vide est spécifiée dans contribution/proposer-une-pose.feature.
@@ -32,7 +32,7 @@ Fonctionnalité: Consulter les poses du catalogue
         | Bird      | découverte      | découverte       |
         | High Bird | intermédiaire   | intermédiaire    |
 
-    @web @wip
+    @web
     Scénario: Le catalogue annonce le nombre de poses publiées
       Soit les poses publiées "Throne", "Bird" et "High Bird" dans le catalogue
       Quand un visiteur consulte les poses du catalogue
@@ -56,13 +56,13 @@ Fonctionnalité: Consulter les poses du catalogue
 
   Règle: Le catalogue présente l'échelle de difficulté et l'avertissement de responsabilité
 
-    @web @wip
+    @web
     Scénario: Un visiteur voit la légende de l'échelle de difficulté
       Soit la pose publiée "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Quand un visiteur consulte les poses du catalogue
       Alors le catalogue présente l'échelle de difficulté découverte < débutant < intermédiaire < avancé
 
-    @web @wip
+    @web
     Scénario: Un visiteur voit l'avertissement de responsabilité sous la légende
       Soit la pose publiée "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Quand un visiteur consulte les poses du catalogue
@@ -73,7 +73,7 @@ Fonctionnalité: Consulter les poses du catalogue
   Règle: Chaque pose indique si elle peut commencer un flow et si elle peut terminer un flow
 
     # Whale « peut commencer, ne peut pas terminer » : convention d'enseignement, discutable.
-    # Mêmes exemples pour les deux cibles : livrés côté @api (story 3, étape A), en cours côté @web (refonte du catalogue).
+    # Mêmes exemples pour les deux cibles : livrés côté @api (story 3, étape A) et côté @web (étape B, refonte du catalogue).
     Plan du Scénario: La pose "<nom>" est présentée avec ses indicateurs de début et de fin de flow
       Soit la pose publiée "<nom>" qui <commencer> commencer un flow et <terminer> terminer un flow
       Quand un visiteur consulte les poses du catalogue
@@ -87,7 +87,7 @@ Fonctionnalité: Consulter les poses du catalogue
         | Whale       | peut        | ne peut pas |
         | Bow         | ne peut pas | ne peut pas |
 
-      @web @wip
+      @web
       Exemples: Site
         | nom         | commencer   | terminer    |
         | Bird        | peut        | peut        |
@@ -104,13 +104,13 @@ Fonctionnalité: Consulter les poses du catalogue
       Alors le visiteur est informé que le catalogue ne contient encore aucune pose
 
     # Un visiteur ne voit aucune invitation à proposer une pose, même dans l'état vide.
-    @web @wip
+    @web
     Scénario: Un catalogue vide n'invite pas un visiteur à proposer une pose
       Soit un catalogue sans aucune pose publiée
       Quand un visiteur consulte les poses du catalogue
       Alors le catalogue n'invite pas à proposer une pose
 
-    @web @wip
+    @web
     Scénario: Un catalogue vide invite une personne connectée à proposer la première pose
       Soit un catalogue sans aucune pose publiée
       Et Alice est connectée sur le site avec l'adresse "alice@example.org"
@@ -149,13 +149,13 @@ Fonctionnalité: Consulter les poses du catalogue
   # Le site distingue un AcroFunJam injoignable d'un catalogue vide.
   Règle: Le site signale un catalogue impossible à charger et permet de réessayer
 
-    @web @wip
+    @web
     Scénario: Le site signale que le catalogue n'a pas pu être chargé
       Soit AcroFunJam est momentanément injoignable
       Quand un visiteur consulte les poses du catalogue
       Alors le site indique « Impossible de charger le catalogue. Vérifie ta connexion Internet, puis réessaie. »
 
-    @web @wip
+    @web
     Scénario: Un visiteur charge le catalogue en réessayant quand AcroFunJam est de nouveau joignable
       Soit la pose publiée "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Et le chargement du catalogue a échoué car AcroFunJam était injoignable

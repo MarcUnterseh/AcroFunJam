@@ -6,10 +6,13 @@ describe('session', () => {
     expect(initialSession).toEqual({ status: 'checking' });
   });
 
-  it('should be signed in with the address when an account is loaded', () => {
-    expect(sessionLoaded({ email: 'alice@example.org' }, { hadSession: false })).toEqual({
+  it('should be signed in with the address and the capabilities when an account is loaded', () => {
+    expect(
+      sessionLoaded({ email: 'alice@example.org', capabilities: ['propose'] }, { hadSession: false }),
+    ).toEqual({
       status: 'signedIn',
       email: 'alice@example.org',
+      capabilities: ['propose'],
     });
   });
 
@@ -26,7 +29,11 @@ describe('session', () => {
   });
 
   it('should be signed in when signing in, and a visitor when signing out', () => {
-    expect(signedIn('alice@example.org')).toEqual({ status: 'signedIn', email: 'alice@example.org' });
+    expect(signedIn('alice@example.org')).toEqual({
+      status: 'signedIn',
+      email: 'alice@example.org',
+      capabilities: [],
+    });
     expect(signedOut()).toEqual({ status: 'visitor' });
   });
 });

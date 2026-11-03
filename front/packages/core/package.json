@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Client domain and use cases shared by the web and mobile apps. No runtime dependency.",
+  "description": "Client domain, use cases and presentation labels shared by the web and mobile apps. No runtime dependency.",
   "exports": {
     ".": "./src/index.ts"
   },

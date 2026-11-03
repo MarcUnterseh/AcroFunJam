@@ -25,7 +25,16 @@ export const signIn = async (
   if (!answer.ok) return fail({ kind: 'refused', reason: answer.error });
 
   memory.remember();
-  return ok(signedIn(credentials.value.email));
+  return ok(await signedInWithCapabilities(gateway, credentials.value.email));
+};
+
+/**
+ * Reads the account just signed in, for its capabilities (ADR 0019). If it cannot be read, the person is
+ * signed in without any capability: the safe side, and the session is read again at the next navigation.
+ */
+const signedInWithCapabilities = async (gateway: AuthGateway, email: string): Promise<Session> => {
+  const account = await gateway.currentAccount();
+  return signedIn(email, account.ok && account.value ? account.value.capabilities : []);
 };
 
 /** Registering signs in at once (story 2b): register, then sign in. */
@@ -44,7 +53,7 @@ export const register = async (
   if (!signedInAnswer.ok) return fail({ kind: 'registered-but-not-signed-in' });
 
   memory.remember();
-  return ok(signedIn(credentials.value.email));
+  return ok(await signedInWithCapabilities(gateway, credentials.value.email));
 };
 
 /** Signs out everywhere (the hint is forgotten, other tabs follow); stays signed in if the API cannot be reached. */

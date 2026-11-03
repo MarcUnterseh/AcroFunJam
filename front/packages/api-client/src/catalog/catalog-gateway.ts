@@ -21,7 +21,10 @@ const difficultyLevels: readonly string[] = [
 const isDifficultyLevel = (code: string): code is DifficultyLevel => difficultyLevels.includes(code);
 
 const isKnown = (pose: PoseSummaryResponse): boolean =>
-  isDifficultyLevel(pose.baseDifficulty) && isDifficultyLevel(pose.flyerDifficulty);
+  isDifficultyLevel(pose.baseDifficulty) &&
+  isDifficultyLevel(pose.flyerDifficulty) &&
+  typeof pose.canStartFlow === 'boolean' &&
+  typeof pose.canEndFlow === 'boolean';
 
 // HTTP DTOs never leak into core: they are mapped to the client domain here.
 const toPoseSummary = (pose: PoseSummaryResponse): PoseSummary => ({
@@ -29,6 +32,8 @@ const toPoseSummary = (pose: PoseSummaryResponse): PoseSummary => ({
   name: pose.name,
   baseDifficulty: pose.baseDifficulty,
   flyerDifficulty: pose.flyerDifficulty,
+  canStartFlow: pose.canStartFlow,
+  canEndFlow: pose.canEndFlow,
 });
 
 /** HTTP adapter of the CatalogGateway port of @acrofunjam/core. */

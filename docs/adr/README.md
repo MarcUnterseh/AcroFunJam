@@ -22,3 +22,4 @@
 | [0018](0018-contrat-http-de-contribution.md) | Contrat HTTP de Contribution (complète 0007) | accepté |
 | [0019](0019-capacites-et-saisie-conservee-cote-site.md) | Côté site : capacités plutôt que rôle, saisie conservée dans l’onglet | accepté |
 | [0020](0020-specs-de-contribution-sur-une-vraie-base.md) | Specs @api de Contribution sur une vraie base (amende 0006 et 0009) | accepté |
+| [0021](0021-couche-presentation-du-front-partage.md) | Couche de présentation partagée du front (`core/src/presentation`, complète 0002) | accepté |

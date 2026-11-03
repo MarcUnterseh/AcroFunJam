@@ -98,7 +98,36 @@ describe('createAuthGateway.currentAccount', () => {
       body: { email: 'alice@example.org', role: 'user', capabilities: ['propose'] },
     });
 
-    expect(await gateway.currentAccount()).toEqual(ok({ email: 'alice@example.org' }));
+    expect(await gateway.currentAccount()).toEqual(
+      ok({ email: 'alice@example.org', capabilities: ['propose'] }),
+    );
+  });
+
+  it.each([['propose'], [null], [undefined]])(
+    'should read no capability when the API does not send a list (%s)',
+    async (capabilities) => {
+      const { gateway } = gatewayAnswering({
+        status: 200,
+        body: { email: 'alice@example.org', role: 'user', capabilities },
+      });
+
+      expect(await gateway.currentAccount()).toEqual(ok({ email: 'alice@example.org', capabilities: [] }));
+    },
+  );
+
+  it('should keep the known capabilities and ignore the unknown codes', async () => {
+    const { gateway } = gatewayAnswering({
+      status: 200,
+      body: {
+        email: 'vera@example.org',
+        role: 'validator',
+        capabilities: ['propose', 'validate-proposals', 'fly-solo'],
+      },
+    });
+
+    expect(await gateway.currentAccount()).toEqual(
+      ok({ email: 'vera@example.org', capabilities: ['propose', 'validate-proposals'] }),
+    );
   });
 
   it('should return no account when there is no session', async () => {
@@ -111,14 +140,17 @@ describe('createAuthGateway.currentAccount', () => {
 });
 
 describe('createAuthGateway robustness', () => {
-  it.each([403, 404, 400])('should report the API as unreachable when /me answers an unexpected %i', async (status) => {
-    expect(await gatewayAnswering({ status }).gateway.currentAccount()).toEqual(fail('unreachable'));
-  });
+  it.each([403, 404, 400])(
+    'should report the API as unreachable when /me answers an unexpected %i',
+    async (status) => {
+      expect(await gatewayAnswering({ status }).gateway.currentAccount()).toEqual(fail('unreachable'));
+    },
+  );
 
   it('should refuse the registration generically when the API reports an unknown rule', async () => {
-    expect(await gatewayAnswering(validationProblem('PasswordRequiresDigit')).gateway.register(alice)).toEqual(
-      fail('registration-refused'),
-    );
+    expect(
+      await gatewayAnswering(validationProblem('PasswordRequiresDigit')).gateway.register(alice),
+    ).toEqual(fail('registration-refused'));
   });
 
   it('should report the API as unreachable when it answers a server error', async () => {

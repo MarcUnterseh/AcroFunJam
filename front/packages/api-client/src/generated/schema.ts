@@ -52,6 +52,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/contribution/pose-proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ProposePose"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/identity/register": {
         parameters: {
             query?: never;
@@ -567,12 +583,41 @@ export interface components {
         PoseListResponse: {
             poses: components["schemas"]["PoseSummaryResponse"][];
         };
+        PoseProposalResponse: {
+            /** Format: uuid */
+            id: string;
+            status: components["schemas"]["ProposalStatusCode"];
+            name: string;
+            baseDifficulty: components["schemas"]["DifficultyCode"];
+            flyerDifficulty: components["schemas"]["DifficultyCode"];
+            canStartFlow: boolean;
+            canEndFlow: boolean;
+        };
         PoseSummaryResponse: {
             /** Format: uuid */
             id: string;
             name: string;
             baseDifficulty: components["schemas"]["DifficultyCode"];
             flyerDifficulty: components["schemas"]["DifficultyCode"];
+            canStartFlow: boolean;
+            canEndFlow: boolean;
+        };
+        ProblemDetails: {
+            type?: null | string;
+            title?: null | string;
+            /** Format: int32 */
+            status?: null | number | string;
+            detail?: null | string;
+            instance?: null | string;
+        };
+        /** @enum {unknown} */
+        ProposalStatusCode: "pending" | "accepted";
+        ProposePoseRequest: {
+            name: null | string;
+            baseDifficulty: null | string;
+            flyerDifficulty: null | string;
+            canStartFlow: null | boolean;
+            canEndFlow: null | boolean;
         };
         RefreshRequest: {
             refreshToken: string;
@@ -671,6 +716,66 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PoseListResponse"];
+                };
+            };
+        };
+    };
+    ProposePose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProposePoseRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PoseProposalResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
         };

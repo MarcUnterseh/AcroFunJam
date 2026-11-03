@@ -29,11 +29,13 @@ Les choix sont justifiés dans `docs/adr/`. Le langage omniprésent est dans `do
 ```
 API (C#)                                Front (TS)
 Api ──► Infrastructure ──► Application ──► Domain      apps/web, apps/mobile ──► packages/api-client ──► packages/core/application ──► packages/core/domain
-  └──────────────────────────► Application                    └───────────────────────────────────────► packages/core/application
+  └──────────────────────────► Application                    ├───────────────────────────────────────► packages/core/application
+                                                              └──► packages/core/presentation (libellés partagés) ──► packages/core/domain
 ```
 
 - `Domain` : aucune dépendance (ni EF, ni ASP.NET, ni React, ni `fetch`).
 - `Application` : cas d'usage (commands/queries + handlers), **ports** (interfaces) ; dépend uniquement du domaine.
+- `core/presentation` (front) : libellés et mises en forme partagés par le web et le mobile ; dépend uniquement du domaine (ADR 0021).
 - `Infrastructure` / `api-client` : adaptateurs qui implémentent les ports.
 - `Api` / `apps/*` : présentation + *composition root* (injection de dépendances).
 

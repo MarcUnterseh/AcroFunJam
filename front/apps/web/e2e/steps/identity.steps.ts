@@ -1,6 +1,7 @@
 import { expect, type Page } from '@playwright/test';
 import { Given, Then, When } from '../fixtures';
 import { IdentityForm, SiteHeader } from '../pages/identity-pages';
+import { setAcroFunJamReachable } from '../support/reachability';
 
 const defaultPassword = 'Throne-Bird-2026';
 
@@ -57,12 +58,6 @@ Given(
     identityApi.failSignIns(email, attempts);
   },
 );
-
-Given('AcroFunJam est momentanément injoignable', async ({ identityApi }) =>
-  identityApi.setUnreachable(true),
-);
-
-Given('AcroFunJam est de nouveau joignable', async ({ identityApi }) => identityApi.setUnreachable(false));
 
 // --- Registration ----------------------------------------------------------------------------
 
@@ -124,9 +119,9 @@ Given('{word} consulte les poses du catalogue en tant que visiteur', async ({ pa
 
 Given(
   /^la connexion d'(\w+) n'a pas pu aboutir car AcroFunJam était injoignable$/,
-  async ({ page, identityApi }, name: string) => {
+  async ({ page, identityApi, catalogApi }, name: string) => {
     const person = identityApi.people.get(name)!;
-    identityApi.setUnreachable(true);
+    setAcroFunJamReachable({ identityApi, catalogApi }, false);
     await signInThroughTheSite(page, person.email, person.password);
     await expect(page.getByRole('alert')).toContainText('Impossible de joindre AcroFunJam');
   },
@@ -203,10 +198,6 @@ Then(
 Then("l'en-tête propose de se connecter et de s'inscrire", async ({ header }) => {
   await expect(header.account.getByRole('link', { name: 'Se connecter' })).toBeVisible();
   await expect(header.account.getByRole('link', { name: "S'inscrire" })).toBeVisible();
-});
-
-Then('le site indique « {} »', async ({ page }, text: string) => {
-  await expect(page.getByText(text, { exact: true })).toBeVisible();
 });
 
 Then("le site indique que l'inscription est refusée car {}", async ({ page }, reason: string) => {

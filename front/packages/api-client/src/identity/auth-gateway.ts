@@ -1,5 +1,8 @@
-import { fail, ok, type AuthFailure, type AuthGateway, type Result } from '@acrofunjam/core';
+import { fail, isCapability, ok, type AuthFailure, type AuthGateway, type Result } from '@acrofunjam/core';
 import type { ApiClient } from '../client';
+import type { components } from '../generated/schema';
+
+type MyAccountResponse = components['schemas']['MyAccountResponse'];
 
 type ProblemBody = { readonly detail?: string | null; readonly errors?: Record<string, unknown> | null };
 
@@ -59,7 +62,12 @@ export const createAuthGateway = (client: ApiClient): AuthGateway => ({
     if (answer.value.response.status === 401) return ok(null);
     // Any other unexpected answer (403, 404 from a misconfigured proxy…): the session cannot be read.
     if (!answer.value.response.ok) return fail('unreachable');
-    const account = answer.value.data as { email: string };
-    return ok({ email: account.email });
+    const account = answer.value.data as MyAccountResponse;
+    // The server may evolve before the client is regenerated: anything but a list means no capability.
+    const codes: unknown[] = Array.isArray(account.capabilities) ? account.capabilities : [];
+    const capabilities = codes
+      .filter((code): code is string => typeof code === 'string')
+      .filter(isCapability);
+    return ok({ email: account.email, capabilities });
   },
 });

@@ -1,13 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { difficultyLevelLabel, type DifficultyLevel } from './difficulty-level';
+import { difficultyRank, difficultyScale, type DifficultyLevel } from './difficulty-level';
 
-describe('difficultyLevelLabel', () => {
-  it.each<[DifficultyLevel, string]>([
-    ['discovery', 'découverte'],
-    ['beginner', 'débutant'],
-    ['intermediate', 'intermédiaire'],
-    ['advanced', 'avancé'],
-  ])('should label %s as "%s" when displayed in French', (level, label) => {
-    expect(difficultyLevelLabel(level)).toBe(label);
+describe('difficultyScale', () => {
+  it('should order the levels from the most accessible to the most demanding', () => {
+    expect(difficultyScale).toEqual(['discovery', 'beginner', 'intermediate', 'advanced']);
+  });
+});
+
+describe('difficultyRank', () => {
+  it.each<[DifficultyLevel, number]>([
+    ['discovery', 1],
+    ['beginner', 2],
+    ['intermediate', 3],
+    ['advanced', 4],
+  ])('should rank %s at %i on the scale', (level, rank) => {
+    expect(difficultyRank(level)).toBe(rank);
   });
 });

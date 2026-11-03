@@ -1,6 +1,7 @@
 /**
  * Dependency rule of the front monorepo (clean-architecture skill, ADR 0002):
- * apps/* -> api-client, core, ui-tokens ; api-client -> core ; core/application -> core/domain ; core/domain -> nothing.
+ * apps/* -> api-client, core, ui-tokens ; api-client -> core ; core/application -> core/domain ;
+ * core/presentation (labels shared by the apps) -> core/domain ; core/domain -> nothing.
  * @type {import('dependency-cruiser').IConfiguration}
  */
 module.exports = {
@@ -35,6 +36,16 @@ module.exports = {
       from: { path: '^packages/core/src/application' },
       to: {
         pathNot: ['^packages/core/src/(application|domain)'],
+      },
+    },
+    {
+      name: 'core-presentation-only-domain',
+      severity: 'error',
+      comment:
+        'Labels shared by the apps (presentation) read the client domain only: no use case, no framework, no npm package.',
+      from: { path: '^packages/core/src/presentation' },
+      to: {
+        pathNot: ['^packages/core/src/(presentation|domain)'],
       },
     },
     {

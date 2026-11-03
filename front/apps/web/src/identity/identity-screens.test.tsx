@@ -6,6 +6,9 @@ import { CurrentLocation, FakeAuthGateway, FakeSessionMemory, renderSite } from 
 
 const account = () => screen.getByRole('navigation', { name: 'Compte' });
 
+/** Texts of the status regions: the site announcer, and the catalog while it loads. */
+const announcements = () => screen.getAllByRole('status').map((status) => status.textContent);
+
 describe('site header', () => {
   it('should offer to sign in or register, coming back to the current page, when the person is a visitor', async () => {
     renderSite('/?page=2');
@@ -34,7 +37,7 @@ describe('site header', () => {
     await userEvent.click(await within(account()).findByRole('button', { name: 'Se déconnecter' }));
 
     expect(await within(account()).findByRole('link', { name: 'Se connecter' })).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('Déconnexion effectuée.');
+    expect(announcements()).toContain('Déconnexion effectuée.');
     expect(memory.hadSession).toBe(false);
     await waitFor(() => expect(within(account()).getByRole('link', { name: 'Se connecter' })).toHaveFocus());
   });
@@ -97,7 +100,7 @@ describe('sign-in page', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Se connecter' }));
 
     await waitFor(() => expect(screen.getByLabelText('Adresse courante')).toHaveTextContent('/?page=2'));
-    expect(screen.getByRole('status')).toHaveTextContent('Connexion réussie.');
+    expect(announcements()).toContain('Connexion réussie.');
   });
 
   it('should let the person show then hide the password, the button naming what it does', async () => {
@@ -206,7 +209,7 @@ describe('expired session', () => {
     const banner = await screen.findByRole('region', { name: 'Session expirée' });
     expect(banner).toHaveTextContent('Ta session a expiré.');
     expect(within(banner).getByRole('link', { name: 'Se connecter' })).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('Ta session a expiré. Tu peux te reconnecter.');
+    expect(announcements()).toContain('Ta session a expiré. Tu peux te reconnecter.');
   });
 
   it('should hide the banner when the person closes it', async () => {

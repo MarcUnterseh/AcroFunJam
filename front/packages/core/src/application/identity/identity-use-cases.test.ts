@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fail, ok, type Result } from '../../domain/common/result';
 import type { AuthFailure } from '../../domain/identity/identity-labels';
-import type { AuthGateway } from './AuthGateway';
+import type { AuthGateway, CurrentAccount } from './AuthGateway';
 import { dismissExpiredNotice, loadSession, register, signIn, signOut } from './identity-use-cases';
 import type { SessionMemory } from './SessionMemoryPort';
 
@@ -12,7 +12,7 @@ class FakeAuthGateway implements AuthGateway {
   signInAnswer: Result<void, AuthFailure> = ok(undefined);
   registerAnswer: Result<void, AuthFailure> = ok(undefined);
   signOutAnswer: Result<void, AuthFailure> = ok(undefined);
-  account: Result<{ email: string } | null, AuthFailure> = ok(null);
+  account: Result<CurrentAccount | null, AuthFailure> = ok(null);
 
   async signIn() {
     this.calls.push('signIn');
@@ -45,15 +45,35 @@ class FakeSessionMemory implements SessionMemory {
 }
 
 describe('signIn', () => {
-  it('should remember the session when the credentials are accepted', async () => {
+  it('should remember the session and read the account, capabilities included, when the credentials are accepted', async () => {
     const gateway = new FakeAuthGateway();
+    gateway.account = ok({ email: 'alice@example.org', capabilities: ['propose', 'validate-proposals'] });
     const memory = new FakeSessionMemory();
 
     const result = await signIn(gateway, memory, alice);
 
-    expect(result).toEqual(ok({ status: 'signedIn', email: 'alice@example.org' }));
+    expect(result).toEqual(
+      ok({ status: 'signedIn', email: 'alice@example.org', capabilities: ['propose', 'validate-proposals'] }),
+    );
+    expect(gateway.calls).toEqual(['signIn', 'currentAccount']);
     expect(memory.hadSession).toBe(true);
   });
+
+  it.each([
+    ['cannot be reached', fail('unreachable' as const)],
+    ['does not see the session yet', ok(null)],
+  ])(
+    'should be signed in without any capability, the safe side, when the account %s right after signing in',
+    async (_case, account) => {
+      const gateway = new FakeAuthGateway();
+      gateway.account = account;
+
+      const result = await signIn(gateway, new FakeSessionMemory(), alice);
+
+      // Nothing is offered that the API might refuse; the session is read again at the next navigation.
+      expect(result).toEqual(ok({ status: 'signedIn', email: 'alice@example.org', capabilities: [] }));
+    },
+  );
 
   it('should not call the API when the input is invalid', async () => {
     const gateway = new FakeAuthGateway();
@@ -78,14 +98,15 @@ describe('signIn', () => {
 });
 
 describe('register', () => {
-  it('should register then sign in when the account is created', async () => {
+  it('should register, sign in, then read the account when the account is created', async () => {
     const gateway = new FakeAuthGateway();
+    gateway.account = ok({ email: 'alice@example.org', capabilities: ['propose'] });
     const memory = new FakeSessionMemory();
 
     const result = await register(gateway, memory, alice);
 
-    expect(result).toEqual(ok({ status: 'signedIn', email: 'alice@example.org' }));
-    expect(gateway.calls).toEqual(['register', 'signIn']);
+    expect(result).toEqual(ok({ status: 'signedIn', email: 'alice@example.org', capabilities: ['propose'] }));
+    expect(gateway.calls).toEqual(['register', 'signIn', 'currentAccount']);
     expect(memory.hadSession).toBe(true);
   });
 
@@ -143,12 +164,16 @@ describe('signOut', () => {
 });
 
 describe('loadSession', () => {
-  it('should be signed in and remember the session when the API knows the account', async () => {
+  it('should be signed in with the capabilities, and remember the session, when the API knows the account', async () => {
     const gateway = new FakeAuthGateway();
-    gateway.account = ok({ email: 'alice@example.org' });
+    gateway.account = ok({ email: 'vera@example.org', capabilities: ['propose', 'validate-proposals'] });
     const memory = new FakeSessionMemory();
 
-    expect(await loadSession(gateway, memory)).toEqual({ status: 'signedIn', email: 'alice@example.org' });
+    expect(await loadSession(gateway, memory)).toEqual({
+      status: 'signedIn',
+      email: 'vera@example.org',
+      capabilities: ['propose', 'validate-proposals'],
+    });
     expect(memory.hadSession).toBe(true);
   });
 

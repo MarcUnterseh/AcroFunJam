@@ -7,13 +7,14 @@ const AnnounceContext = createContext<(message: string) => void>(() => {});
  * (signed in, signed out) without moving the focus.
  */
 export function AnnouncerProvider({ children }: { children: ReactNode }) {
-  const [message, setMessage] = useState('');
-  const announce = useCallback((text: string) => setMessage(text), []);
+  // Each announcement gets a new node, so that the same message announced twice is read twice.
+  const [message, setMessage] = useState({ text: '', id: 0 });
+  const announce = useCallback((text: string) => setMessage(({ id }) => ({ text, id: id + 1 })), []);
   return (
     <AnnounceContext.Provider value={announce}>
       {children}
       <p role="status" className="visually-hidden">
-        {message}
+        <span key={message.id}>{message.text}</span>
       </p>
     </AnnounceContext.Provider>
   );

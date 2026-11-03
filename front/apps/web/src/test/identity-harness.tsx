@@ -3,6 +3,8 @@ import {
   ok,
   type AuthFailure,
   type AuthGateway,
+  type Capability,
+  type CatalogGateway,
   type Result,
   type SessionMemory,
 } from '@acrofunjam/core';
@@ -16,7 +18,8 @@ import { routes } from '../routes';
 
 export class FakeAuthGateway implements AuthGateway {
   calls: string[] = [];
-  account: { email: string } | null = null;
+  /** The account of the session; a user's capabilities unless stated otherwise. */
+  account: { email: string; capabilities?: Capability[] } | null = null;
   signInAnswer: Result<void, AuthFailure> = ok(undefined);
   registerAnswer: Result<void, AuthFailure> = ok(undefined);
 
@@ -35,7 +38,7 @@ export class FakeAuthGateway implements AuthGateway {
     return ok(undefined);
   }
   async currentAccount() {
-    return ok(this.account);
+    return ok(this.account && { capabilities: ['propose' as const], ...this.account });
   }
   unreachable() {
     this.signInAnswer = fail('unreachable');
@@ -69,13 +72,14 @@ export const renderSite = (
   {
     gateway = new FakeAuthGateway(),
     memory = new FakeSessionMemory(),
-  }: { gateway?: FakeAuthGateway; memory?: FakeSessionMemory } = {},
+    catalog = { listPublishedPoses: async () => ok([]) },
+  }: { gateway?: FakeAuthGateway; memory?: FakeSessionMemory; catalog?: CatalogGateway } = {},
   extra?: ReactNode,
 ) => {
   const router = createMemoryRouter(routes(extra), { initialEntries: [path] });
   const view = render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <CatalogGatewayProvider gateway={{ listPublishedPoses: async () => ok([]) }}>
+      <CatalogGatewayProvider gateway={catalog}>
         <IdentityProvider gateway={gateway} memory={memory}>
           <RouterProvider router={router} />
         </IdentityProvider>

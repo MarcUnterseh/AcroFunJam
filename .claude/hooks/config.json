@@ -3,7 +3,7 @@
     "productionGlobs": [
       { "pattern": "^api/src/[^/]+\\.Domain/.+\\.cs$", "testsRoot": "api/tests", "testExt": [".cs"] },
       { "pattern": "^api/src/[^/]+\\.Application/.+\\.cs$", "testsRoot": "api/tests", "testExt": [".cs"] },
-      { "pattern": "^front/packages/core/src/(domain|application)/.+\\.tsx?$", "testsRoot": "front/packages/core", "testExt": [".test.ts", ".test.tsx", ".spec.ts"] }
+      { "pattern": "^front/packages/core/src/(domain|application|presentation)/.+\\.tsx?$", "testsRoot": "front/packages/core", "testExt": [".test.ts", ".test.tsx", ".spec.ts"] }
     ],
     "exemptFilePatterns": [
       "\\.test\\.tsx?$",

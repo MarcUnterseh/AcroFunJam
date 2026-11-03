@@ -4,8 +4,22 @@ import type { PoseSummary } from '../../domain/catalog/pose-summary';
 import type { CatalogGateway } from './CatalogGateway';
 import { listPublishedPoses } from './list-published-poses';
 
-const throne: PoseSummary = { id: 'p-1', name: 'Throne', baseDifficulty: 'beginner', flyerDifficulty: 'discovery' };
-const bird: PoseSummary = { id: 'p-2', name: 'Bird', baseDifficulty: 'discovery', flyerDifficulty: 'discovery' };
+const throne: PoseSummary = {
+  id: 'p-1',
+  name: 'Throne',
+  baseDifficulty: 'beginner',
+  flyerDifficulty: 'discovery',
+  canStartFlow: true,
+  canEndFlow: true,
+};
+const bird: PoseSummary = {
+  id: 'p-2',
+  name: 'Bird',
+  baseDifficulty: 'discovery',
+  flyerDifficulty: 'discovery',
+  canStartFlow: true,
+  canEndFlow: true,
+};
 
 const gatewayAnswering = (answer: Result<readonly PoseSummary[]>): CatalogGateway => ({
   listPublishedPoses: async () => answer,

@@ -6,4 +6,8 @@ export type PoseSummary = {
   readonly name: string;
   readonly baseDifficulty: DifficultyLevel;
   readonly flyerDifficulty: DifficultyLevel;
+  /** The duo can settle into the pose directly from the ground. */
+  readonly canStartFlow: boolean;
+  /** The flyer can come down to the ground directly and safely. */
+  readonly canEndFlow: boolean;
 };
