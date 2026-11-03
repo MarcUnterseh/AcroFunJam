@@ -1,5 +1,6 @@
 using AcroFunJam.Application.Catalog.ListPublishedPoses;
 using AcroFunJam.Domain.Catalog;
+using AcroFunJam.Domain.SharedKernel;
 
 namespace AcroFunJam.Application.Tests.Catalog;
 
@@ -27,5 +28,6 @@ internal sealed class APublishedPose
     }
 
     public PublishedPoseSummary Build() =>
-        new(new PoseId(Guid.NewGuid()), new PoseName(_name), _baseDifficulty, _flyerDifficulty);
+        new(new PoseId(Guid.NewGuid()), PoseName.Create(_name).Value!, _baseDifficulty, _flyerDifficulty,
+            FlowBoundaries.Create(canStartFlow: true, canEndFlow: true).Value!);
 }

@@ -34,6 +34,14 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("base_difficulty");
 
+                    b.Property<bool>("CanEndFlow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("can_end_flow");
+
+                    b.Property<bool>("CanStartFlow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("can_start_flow");
+
                     b.Property<string>("FlyerDifficulty")
                         .IsRequired()
                         .HasColumnType("text")
@@ -44,9 +52,115 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<string>("NameKey")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name_key");
+
+                    b.Property<DateTimeOffset>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<Guid?>("SourceProposalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_proposal_id");
+
                     b.HasKey("Id");
 
-                    b.ToTable("poses", "catalog");
+                    b.HasIndex("NameKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_poses_name_key");
+
+                    b.ToTable("poses", "catalog", t =>
+                        {
+                            t.HasCheckConstraint("ck_poses_base_difficulty", "base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_poses_flyer_difficulty", "flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_poses_name_key", "name_key <> ''");
+
+                            t.HasCheckConstraint("ck_poses_name_length", "char_length(name) <= 60");
+                        });
+                });
+
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Contribution.PoseProposalRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("accepted_at");
+
+                    b.Property<Guid?>("AcceptedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("accepted_by");
+
+                    b.Property<string>("BaseDifficulty")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("base_difficulty");
+
+                    b.Property<bool>("CanEndFlow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("can_end_flow");
+
+                    b.Property<bool>("CanStartFlow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("can_start_flow");
+
+                    b.Property<Guid>("ContributorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("contributor_id");
+
+                    b.Property<string>("FlyerDifficulty")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("flyer_difficulty");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("NameKey")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name_key");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContributorId")
+                        .HasDatabaseName("ix_pose_proposals_contributor_id");
+
+                    b.HasIndex("NameKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_pose_proposals_pending_name_key")
+                        .HasFilter("status = 'pending'");
+
+                    b.ToTable("pose_proposals", "contribution", t =>
+                        {
+                            t.HasCheckConstraint("ck_pose_proposals_base_difficulty", "base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_pose_proposals_flyer_difficulty", "flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_pose_proposals_name_key", "name_key <> ''");
+
+                            t.HasCheckConstraint("ck_pose_proposals_name_length", "char_length(name) <= 60");
+
+                            t.HasCheckConstraint("ck_pose_proposals_status", "status IN ('pending', 'accepted')");
+                        });
                 });
 
             modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Identity.ApplicationUser", b =>

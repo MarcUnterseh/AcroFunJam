@@ -20,10 +20,12 @@ Ton mot de passe doit contenir au moins 10 caractères.           <- aide (facul
 | Champ | `size.md` (16 px, évite le zoom iOS), `regular` | texte `text`, fond `background` | hauteur `sizes.control`, padding horizontal `spacing.md`, rayon `radius.md`, bordure `borderWidth` `border` |
 | Aide | `size.sm` | `textMuted` | `spacing.xs` sous le champ |
 | Erreur | `size.sm`, `weight.semibold` | `danger` | `spacing.xs` sous l'aide (ou le champ) ; icône erreur `sizes.icon` à gauche, écart `spacing.xs`, alignée sur la première ligne |
+| Compteur (facultatif, story 3) | `size.sm`, chiffres à chasse fixe (`tabular-nums`) ; au-delà de la limite `semibold` + icône erreur | `textMuted` ; au-delà de la limite `danger` | `spacing.xs` sous l'aide, aligné à droite ; affiché seulement près de la limite (nom de pose : à partir de 50 / 60) |
 
-- Champs successifs séparés de `spacing.md` (bloc libellé → erreur).
+- Champs successifs séparés de `spacing.md` (bloc libellé → erreur) ; `spacing.lg` dans un formulaire qui contient des groupes de tuiles (`ecrans/3-proposer-une-pose.md`).
+- Ordre sous le champ : aide, compteur, erreur.
 - Pas de texte indicatif (*placeholder*) en guise de libellé ; s'il y en a un, il est en `textMuted`.
-- Aucun astérisque : tous les champs de la story 2b sont obligatoires, ce que dit l'introduction du formulaire si besoin (question au `ux-expert`).
+- Aucun astérisque : tous les champs des stories 2b et 3 sont obligatoires ; l'introduction du formulaire le dit (« Tous les champs sont obligatoires. », story 3).
 
 ## Liaisons accessibles (rappel, comportement porté par le code)
 

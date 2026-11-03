@@ -1,6 +1,7 @@
 using AcroFunJam.Api.Authentication;
 using AcroFunJam.Api.Authorization;
 using AcroFunJam.Api.Endpoints.Catalog;
+using AcroFunJam.Api.Endpoints.Contribution;
 using AcroFunJam.Api.Endpoints.Identity;
 using AcroFunJam.Api.OpenApi;
 using AcroFunJam.Application;
@@ -39,6 +40,7 @@ if (app.Environment.IsDevelopment())
 
 app.MapGet("/health", () => Results.Ok()).WithName("Health");
 app.MapCatalogEndpoints();
+app.MapContributionEndpoints();
 app.MapIdentityEndpoints();
 
 await app.RunAsync();

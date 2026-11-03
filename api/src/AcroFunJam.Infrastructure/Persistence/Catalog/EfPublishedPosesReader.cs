@@ -1,5 +1,7 @@
 using AcroFunJam.Application.Catalog.ListPublishedPoses;
 using AcroFunJam.Domain.Catalog;
+using AcroFunJam.Domain.Common;
+using AcroFunJam.Domain.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
 namespace AcroFunJam.Infrastructure.Persistence.Catalog;
@@ -16,17 +18,19 @@ public sealed class EfPublishedPosesReader(AcroFunJamDbContext context) : IPubli
     private static PublishedPoseSummary ToSummary(PoseRecord record) =>
         new(
             new PoseId(record.Id),
-            new PoseName(record.Name),
+            Valid(PoseName.Create(record.Name), $"name '{record.Name}'"),
             ToDifficultyLevel(record.BaseDifficulty),
-            ToDifficultyLevel(record.FlyerDifficulty));
+            ToDifficultyLevel(record.FlyerDifficulty),
+            Valid(FlowBoundaries.Create(record.CanStartFlow, record.CanEndFlow), "flow indicators"));
+
+    /// <summary>Stored data always met the rules when written: breaking them now is a bug, reported as such.</summary>
+    private static T Valid<T>(Result<T> value, string what) =>
+        value.IsSuccess
+            ? value.Value!
+            : throw new InvalidOperationException($"Invalid {what} in catalog.poses: {value.Error!.Code}.");
 
     private static DifficultyLevel ToDifficultyLevel(string code) =>
-        code switch
-        {
-            "discovery" => DifficultyLevel.Discovery,
-            "beginner" => DifficultyLevel.Beginner,
-            "intermediate" => DifficultyLevel.Intermediate,
-            "advanced" => DifficultyLevel.Advanced,
-            _ => throw new InvalidOperationException($"Unknown difficulty code '{code}' in catalog.poses."),
-        };
+        DifficultyLevel.FromCode(code) is { IsSuccess: true } level
+            ? level.Value
+            : throw new InvalidOperationException($"Unknown difficulty code '{code}' in catalog.poses.");
 }

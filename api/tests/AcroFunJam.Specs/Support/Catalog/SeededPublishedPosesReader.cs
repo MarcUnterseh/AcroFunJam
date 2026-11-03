@@ -1,5 +1,6 @@
 using AcroFunJam.Application.Catalog.ListPublishedPoses;
 using AcroFunJam.Domain.Catalog;
+using AcroFunJam.Domain.SharedKernel;
 
 namespace AcroFunJam.Specs.Support.Catalog;
 
@@ -11,17 +12,9 @@ internal sealed class SeededPublishedPosesReader(CatalogTestData catalog) : IPub
         [
             .. catalog.PublishedPoses.Select(p => new PublishedPoseSummary(
                 new PoseId(Guid.NewGuid()),
-                new PoseName(p.Name),
-                ToLevel(p.BaseDifficulty),
-                ToLevel(p.FlyerDifficulty))),
+                PoseName.Create(p.Name).Value!,
+                DifficultyLevel.FromCode(p.BaseDifficulty).Value,
+                DifficultyLevel.FromCode(p.FlyerDifficulty).Value,
+                FlowBoundaries.Create(p.CanStartFlow, p.CanEndFlow).Value!)),
         ]);
-
-    private static DifficultyLevel ToLevel(string code) => code switch
-    {
-        "discovery" => DifficultyLevel.Discovery,
-        "beginner" => DifficultyLevel.Beginner,
-        "intermediate" => DifficultyLevel.Intermediate,
-        "advanced" => DifficultyLevel.Advanced,
-        _ => throw new ArgumentOutOfRangeException(nameof(code), code, "Unknown difficulty code."),
-    };
 }

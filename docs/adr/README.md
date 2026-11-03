@@ -15,3 +15,10 @@
 | [0011](0011-session-web-et-mots-de-passe.md) | Session du site en cookies, règle de mot de passe (10 caractères) | accepté |
 | [0012](0012-tokens-en-variables-css.md) | Design tokens exposés au web en variables CSS | accepté |
 | [0013](0013-expiration-et-onglets.md) | Expiration de session et synchronisation entre onglets (indice en localStorage) | accepté |
+| [0014](0014-contexte-contribution.md) | Contexte Contribution : un agrégat par type de proposition | accepté |
+| [0015](0015-noyau-partage-catalogue-contribution.md) | Noyau partagé Catalogue / Contribution | accepté |
+| [0016](0016-integration-contribution-catalogue.md) | Intégration Contribution → Catalogue (appel synchrone, une transaction) et Identité → Contribution | accepté |
+| [0017](0017-cle-de-comparaison-et-unicite-du-nom.md) | Clé de comparaison du nom de pose et unicité (index, verrou consultatif) | accepté |
+| [0018](0018-contrat-http-de-contribution.md) | Contrat HTTP de Contribution (complète 0007) | accepté |
+| [0019](0019-capacites-et-saisie-conservee-cote-site.md) | Côté site : capacités plutôt que rôle, saisie conservée dans l’onglet | accepté |
+| [0020](0020-specs-de-contribution-sur-une-vraie-base.md) | Specs @api de Contribution sur une vraie base (amende 0006 et 0009) | accepté |

@@ -12,7 +12,12 @@ public sealed class People(Deployment deployment) : IDisposable
 
     public Person this[string name] => _people[name];
 
-    public static string DefaultEmail(string name) => $"{name.ToLowerInvariant()}@example.org";
+    /// <summary>"chloe@example.org" for Chloé: the identity library only accepts ASCII user names.</summary>
+    public static string DefaultEmail(string name) => $"{WithoutAccents(name).ToLowerInvariant()}@example.org";
+
+    private static string WithoutAccents(string text) =>
+        string.Concat(text.Normalize(System.Text.NormalizationForm.FormD)
+            .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark));
 
     public async Task<HttpResponseMessage> Register(string name, string email, string password = DefaultPassword)
     {

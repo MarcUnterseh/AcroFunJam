@@ -1,5 +1,9 @@
+using AcroFunJam.Application.Catalog.IsPoseNamePublished;
 using AcroFunJam.Application.Catalog.ListPublishedPoses;
+using AcroFunJam.Application.Catalog.PublishPose;
+using AcroFunJam.Domain.Catalog;
 using AcroFunJam.Application.Common;
+using AcroFunJam.Application.Contribution.ProposePose;
 using AcroFunJam.Application.Identity.AssignRole;
 using AcroFunJam.Application.Identity.BootstrapInitialAdministrator;
 using AcroFunJam.Application.Identity.GetMyAccount;
@@ -15,10 +19,13 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<IQueryHandler<ListPublishedPoses, IReadOnlyList<PublishedPoseSummary>>, ListPublishedPosesHandler>();
+        services.AddScoped<ICommandHandler<PublishPose, PoseId>, PublishPoseHandler>();
+        services.AddScoped<IQueryHandler<IsPoseNamePublished, bool>, IsPoseNamePublishedHandler>();
         services.AddScoped<IQueryHandler<GetMyAccount, MyAccountDto>, GetMyAccountHandler>();
         services.AddScoped<ICommandHandler<AssignRole, bool>, AssignRoleHandler>();
         services.AddScoped<ICommandHandler<RevokeRole, bool>, RevokeRoleHandler>();
         services.AddScoped<ICommandHandler<BootstrapInitialAdministrator, bool>, BootstrapInitialAdministratorHandler>();
+        services.AddScoped<ICommandHandler<ProposePose, PoseProposalDto>, ProposePoseHandler>();
         return services;
     }
 }

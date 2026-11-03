@@ -1,6 +1,6 @@
 # Carte des contextes
 
-Version initiale du 2026-11-02, avant la première user story. Les contextes seront créés au fil des stories avec `/new-bounded-context`. Décisions de découverte : `decouverte.md`.
+Version initiale du 2026-11-02, avant la première user story. Les contextes seront créés au fil des stories avec `/new-bounded-context`. Décisions de découverte : `decouverte.md`. Mise à jour du 2026-11-03 (story 3 « Proposer une pose ») : création de Contribution, noyau partagé avec le Catalogue, publication directe.
 
 Déploiement : **monolithe modulaire**. Une seule API et une seule base de données, un module par contexte (dossiers ou namespaces dans chaque couche, schémas de base séparés). Aucun contexte ne référence les types internes d'un autre.
 
@@ -23,6 +23,7 @@ flowchart LR
   PS[("Stockage photos<br/>(port / adaptateur)")]
 
   CO -- "Customer / Supplier<br/>commandes de publication<br/>(Open Host Service du Catalogue)" --> CA
+  CO <-.->|"Shared Kernel<br/>PoseName, PoseNameKey,<br/>Difficulty, FlowBoundaries"| CA
   CA -- "Open Host Service + Published Language<br/>« graphe publié » (lecture)" --> FG
   CA -- "Published Language (identifiants d'éléments)<br/>+ événements PoseRetired / PoseMerged…" --> RE
   RE -- "Open Host Service<br/>« éléments maîtrisés par un pratiquant »" --> FG
@@ -40,14 +41,27 @@ Lecture : la flèche va de l'amont (upstream) vers l'aval (downstream), sauf la 
 
 ### Contribution → Catalogue : Customer / Supplier, via l'Open Host Service du Catalogue
 - Quand un validateur **accepte** une proposition, le cas d'usage `AcceptProposal` de Contribution appelle un port `ICatalogPublisher` (défini dans Contribution.Application). Son adaptateur (Infrastructure, couche anti-corruption) traduit la proposition en commande du Catalogue : `PublishPose`, `PublishTransition`, `RevisePose`, `AttachPhotos`…
-- Le Catalogue **reste maître de ses invariants** : il peut refuser la publication (pose de départ disparue, étiquette retirée entre-temps, nom en doublon…). L'acceptation échoue alors avec un `Result` en erreur, et la proposition reste « soumise ». Choix d'un appel synchrone, dans le même processus, plutôt que d'un événement `ProposalAccepted` consommé à terme : on évite l'état incohérent « acceptée mais non publiable », qu'il faudrait compenser.
+- Le Catalogue **reste maître de ses invariants** : il peut refuser la publication (pose de départ disparue, étiquette retirée entre-temps, nom en doublon…). L'acceptation échoue alors avec un `Result` en erreur, et la proposition reste « en attente de validation ». Choix d'un appel synchrone, dans le même processus, plutôt que d'un événement `ProposalAccepted` consommé à terme : on évite l'état incohérent « acceptée mais non publiable », qu'il faudrait compenser.
 - Le Catalogue ne connaît pas les propositions. Il reçoit seulement la référence de la proposition d'origine (`SourceProposalId`) pour la traçabilité.
+- **Publication directe (story 3)** : le cas d'usage `ProposePose` d'un validateur ou d'un administrateur crée une `PoseProposal` acceptée aussitôt, puis appelle `ICatalogPublisher.PublishPose` **dans la même transaction** (même `DbContext`, deux schémas). Si le Catalogue refuse, rien n'est enregistré. C'est une exception assumée à « une commande, un agrégat », pour la même raison que l'acceptation.
+- **Unicité du nom à travers les deux contextes** : la clé de comparaison (`PoseNameKey`, noyau partagé) est stockée dans `catalog.poses` (index unique) et dans `contribution.pose_proposals` (index unique partiel sur les propositions en attente). Contribution interroge le Catalogue par un port `ICatalogPoseNames` (ACL, qui appelle la query `IsPoseNamePublished` du Catalogue) avant de soumettre ; un verrou transactionnel par clé (`pg_advisory_xact_lock`) sérialise les propositions concurrentes d'un même nom. Le Catalogue revérifie à la publication.
+- Les adaptateurs qui relient deux contextes (`ICatalogPublisher`, `ICatalogPoseNames`, `IContributors`) vivent dans un espace de noms d'intégration de l'Infrastructure (`AcroFunJam.Infrastructure.ContextIntegration`), hors de tout espace de noms de contexte : c'est la seule couche qui voit les deux côtés.
+
+### Catalogue ⇄ Contribution : Shared Kernel (story 3)
+- Le contenu d'une pose (`PoseName`, `PoseNameKey`, `DifficultyLevel`, `Difficulty`, `FlowBoundaries` et leurs erreurs `pose.*`) vit dans `AcroFunJam.Domain.SharedKernel`, côté front dans `core/src/domain/shared-kernel`. Raison : l'unicité du nom s'apprécie à travers les deux contextes avec **la même** clé, et une pose proposée doit être publiable telle quelle. Une duplication dériverait précisément sur l'invariant commun.
+- Le noyau reste minimal, sans agrégat ni dépendance vers un contexte. Le Catalogue en est le propriétaire (core) ; une seule équipe, donc un coût de coordination nul.
+
+### Identité → Contribution : Conformist, via un port
+- Contribution ne lit jamais le rôle dans les claims. Le port `IContributors` (Contribution.Application) renvoie un `Contributor` (`ContributorId`, `IsValidator`), lu au moment de la proposition. L'adaptateur interroge le rôle **courant** du compte (même source que les policies) et traduit la capacité `ValidateProposals` en `IsValidator`. La règle « la proposition d'un validateur est publiée directement » reste dans l'agrégat `PoseProposal`.
 
 ### Langage publié du Catalogue (à partir de la story 1)
-- `GET /catalog/poses` renvoie toujours `200 { "poses": [ { "id", "name", "baseDifficulty", "flyerDifficulty" } ] }`. Si le catalogue est vide, la réponse est `poses: []` (jamais 204 ni 404).
+- `GET /catalog/poses` renvoie toujours `200 { "poses": [ { "id", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow" } ] }`. Les deux booléens obligatoires sont ajoutés par la story « Proposer une pose » (refonte de la liste, 2026-11-03), sans casser le contrat : les difficultés restent à plat. Le nombre de poses se déduit de la liste (pas de champ `count` tant qu'il n'y a pas de pagination). Si le catalogue est vide, la réponse est `poses: []` (jamais 204 ni 404).
 - Les niveaux de difficulté circulent sous forme de **codes stables** : `discovery | beginner | intermediate | advanced`. Les libellés français (découverte, débutant, intermédiaire, avancé) relèvent de la présentation et sont produits côté front (`@acrofunjam/core`).
-- L'ordre de la liste est garanti par l'API, selon l'ordre du catalogue défini par le domaine (`PoseName`). Le front ne trie pas.
-- Côté lecture, il n'y a pas d'agrégat `Pose` tant qu'aucune écriture n'existe : un port de lecture (`IPublishedPosesReader`) projette directement le modèle de lecture (CQRS léger). L'agrégat `Pose` naîtra avec la story « publier une pose ».
+- L'ordre de la liste est garanti par l'API, selon l'ordre du catalogue défini par le domaine (`PoseNameKey`, puis le nom exact). Le front ne trie pas.
+- Côté lecture, un port de lecture (`IPublishedPosesReader`) projette directement le modèle de lecture (CQRS léger). Côté écriture, l'agrégat `Pose` naît avec la story « Proposer une pose » (commande `PublishPose`, événement `PosePublished`), utilisée par la publication directe, puis par l'acceptation et un éventuel seeder de démonstration.
+
+### Langage publié de Contribution (story 3)
+- `POST /contribution/pose-proposals` (capacité `CanPropose`) : corps `{ "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow" }`, réponse `201 { "id", "status": "pending" | "accepted", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow" }`. Un contenu irrecevable donne 400 et un nom déjà pris 409, en ProblemDetails avec le code stable dans `title`. Un visiteur reçoit 401. Un compte supprimé depuis la connexion reçoit aussi 401 : `identity.account-deleted` si la policy le détecte, `contribution.unknown-contributor` si le cas d'usage le détecte (ADR 0018).
 
 ### Catalogue → Génération de flow : Open Host Service + Published Language
 - La génération possède **son propre modèle minimal** du graphe (`FlowGraph` : nœuds avec `CanStartFlow` / `CanEndFlow` et une difficulté, arêtes orientées avec une difficulté et des étiquettes), sans nom, description ni photo.

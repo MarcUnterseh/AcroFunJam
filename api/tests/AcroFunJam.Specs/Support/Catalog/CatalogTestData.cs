@@ -1,11 +1,12 @@
 namespace AcroFunJam.Specs.Support.Catalog;
 
 /// <summary>A published pose seeded by a "Soit" step (difficulties as API codes).</summary>
-public sealed record SeededPose(string Name, string BaseDifficulty, string FlyerDifficulty);
+public sealed record SeededPose(string Name, string BaseDifficulty, string FlyerDifficulty, bool CanStartFlow = true, bool CanEndFlow = true);
 
 /// <summary>
-/// Poses published in the catalog for the current scenario. No publishing use case exists yet,
-/// so the steps seed them here and the API factory exposes them behind the read port (ADR 0006).
+/// Poses published in the catalog for the current scenario of a feature without database: the steps seed them
+/// here and the API factory exposes them behind the read port (ADR 0006). @Integration features publish them
+/// through the PublishPose command instead (<see cref="CatalogPublishing"/>, ADR 0020).
 /// </summary>
 public sealed class CatalogTestData
 {

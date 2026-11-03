@@ -1,5 +1,7 @@
 using AcroFunJam.Application.Catalog.ListPublishedPoses;
 using AcroFunJam.Domain.Catalog;
+using AcroFunJam.Domain.SharedKernel;
+using AcroFunJam.Infrastructure.Persistence;
 using AcroFunJam.Infrastructure.Persistence.Catalog;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,30 +11,50 @@ namespace AcroFunJam.Infrastructure.Tests.Persistence.Catalog;
 public sealed class EfPublishedPosesReaderTests(PostgreSqlFixture database) : IClassFixture<PostgreSqlFixture>
 {
     [Fact]
-    public async Task GetPublishedPoses_Should_ReturnStoredPoses_When_TableContainsPoses()
+    public async Task GetPublishedPoses_Should_ThrowExplicitly_When_AStoredNameBreaksTheRules()
     {
         var ct = TestContext.Current.CancellationToken;
-        var bird = new PoseRecord { Id = Guid.NewGuid(), Name = "Bird", BaseDifficulty = "discovery", FlyerDifficulty = "beginner" };
-        var throne = new PoseRecord { Id = Guid.NewGuid(), Name = "Throne", BaseDifficulty = "beginner", FlyerDifficulty = "intermediate" };
-        var star = new PoseRecord { Id = Guid.NewGuid(), Name = "Star", BaseDifficulty = "advanced", FlyerDifficulty = "advanced" };
         await using (var arrangeContext = database.CreateDbContext())
         {
             await arrangeContext.Database.MigrateAsync(ct);
-            arrangeContext.Set<PoseRecord>().AddRange(bird, throne, star);
-            await arrangeContext.SaveChangesAsync(ct);
+            await arrangeContext.Set<PoseRecord>().ExecuteDeleteAsync(ct);
+            await arrangeContext.Database.ExecuteSqlRawAsync(
+                """
+                INSERT INTO catalog.poses (id, name, name_key, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow, published_at)
+                VALUES (gen_random_uuid(), '---', 'x', 'discovery', 'discovery', true, true, now())
+                """, ct);
+        }
+
+        await using var context = database.CreateDbContext();
+
+        var error = await Should.ThrowAsync<InvalidOperationException>(() => new EfPublishedPosesReader(context).GetPublishedPoses(ct));
+        error.Message.ShouldContain("'---'");
+        await context.Set<PoseRecord>().ExecuteDeleteAsync(ct);
+    }
+
+    [Fact]
+    public async Task GetPublishedPoses_Should_ReturnStoredPoses_When_TableContainsPoses()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        Pose[] poses = [EfPoseRepositoryTests.APublishedPose("Bird"), EfPoseRepositoryTests.APublishedPose("Throne")];
+        await using (var arrangeContext = database.CreateDbContext())
+        {
+            await arrangeContext.Database.MigrateAsync(ct);
+            await arrangeContext.Set<PoseRecord>().ExecuteDeleteAsync(ct);
+            var aggregates = new TrackedAggregates();
+            var repository = new EfPoseRepository(arrangeContext, aggregates);
+            foreach (var pose in poses) repository.Add(pose);
+            await UnitOfWorks.For(arrangeContext, aggregates).SaveChanges(ct);
         }
 
         await using var context = database.CreateDbContext();
         var reader = new EfPublishedPosesReader(context);
 
-        var poses = await reader.GetPublishedPoses(ct);
+        var published = await reader.GetPublishedPoses(ct);
 
-        poses.ShouldBe(
-            [
-                new PublishedPoseSummary(new PoseId(bird.Id), new PoseName("Bird"), DifficultyLevel.Discovery, DifficultyLevel.Beginner),
-                new PublishedPoseSummary(new PoseId(throne.Id), new PoseName("Throne"), DifficultyLevel.Beginner, DifficultyLevel.Intermediate),
-                new PublishedPoseSummary(new PoseId(star.Id), new PoseName("Star"), DifficultyLevel.Advanced, DifficultyLevel.Advanced),
-            ],
+        published.ShouldBe(
+            poses.Select(p => new PublishedPoseSummary(
+                p.Id, p.Name, DifficultyLevel.Intermediate, DifficultyLevel.Advanced, FlowBoundaries.Create(canStartFlow: true, canEndFlow: false).Value!)),
             ignoreOrder: true);
     }
 }

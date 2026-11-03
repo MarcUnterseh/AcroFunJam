@@ -7,6 +7,9 @@ public static class IdentityErrors
 {
     public static readonly Error AccountNotFound = new("identity.account-not-found", "Aucun compte n'a cette adresse e-mail.");
 
+    /// <summary>The session is valid but its account has been deleted since signing in (answered as an expired session).</summary>
+    public static readonly Error AccountDeleted = new("identity.account-deleted", "Ce compte n'existe plus : reconnectez-vous.");
+
     public static readonly Error InvalidEmail = new("identity.invalid-email", "L'adresse e-mail est absente ou invalide.");
 
     public static readonly Error UnknownRole = new("identity.unknown-role", "Ce rôle n'existe pas.");

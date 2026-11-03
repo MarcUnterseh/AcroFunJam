@@ -1,4 +1,5 @@
 using AcroFunJam.Domain.Catalog;
+using AcroFunJam.Domain.SharedKernel;
 
 namespace AcroFunJam.Application.Catalog.ListPublishedPoses;
 
@@ -7,4 +8,5 @@ public sealed record PublishedPoseSummary(
     PoseId Id,
     PoseName Name,
     DifficultyLevel BaseDifficulty,
-    DifficultyLevel FlyerDifficulty);
+    DifficultyLevel FlyerDifficulty,
+    FlowBoundaries Flow);

@@ -18,6 +18,13 @@ public static class IntegrationDatabase
 
     public static string? ConnectionString => _container?.GetConnectionString();
 
+    /// <summary>Whether the scenario belongs to an @Integration feature (or is tagged so).</summary>
+    public static bool IsUsedBy(Reqnroll.ScenarioInfo scenario)
+    {
+        ArgumentNullException.ThrowIfNull(scenario);
+        return scenario.CombinedTags.Contains("Integration", StringComparer.Ordinal);
+    }
+
     public static async Task EnsureStarted()
     {
         await Gate.WaitAsync();

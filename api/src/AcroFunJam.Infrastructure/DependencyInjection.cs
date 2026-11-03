@@ -1,8 +1,13 @@
+using AcroFunJam.Application.Catalog;
 using AcroFunJam.Application.Catalog.ListPublishedPoses;
+using AcroFunJam.Application.Common;
+using AcroFunJam.Application.Contribution;
 using AcroFunJam.Application.Identity;
+using AcroFunJam.Infrastructure.ContextIntegration;
 using AcroFunJam.Infrastructure.Persistence;
-using AcroFunJam.Infrastructure.Persistence.Identity;
 using AcroFunJam.Infrastructure.Persistence.Catalog;
+using AcroFunJam.Infrastructure.Persistence.Contribution;
+using AcroFunJam.Infrastructure.Persistence.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,8 +24,26 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddDbContext<AcroFunJamDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("AcroFunJam")));
+        services.AddScoped<TrackedAggregates>();
+        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+
+        // Catalog
+        services.AddSingleton(CatalogUniqueConstraints.PoseNameKey);
         services.AddScoped<IPublishedPosesReader, EfPublishedPosesReader>();
+        services.AddScoped<IPoseRepository, EfPoseRepository>();
+
+        // Identity
         services.AddScoped<IAccountRepository, EfAccountRepository>();
+
+        // Contribution
+        services.AddSingleton(ContributionUniqueConstraints.PendingPoseNameKey);
+        services.AddScoped<IPoseProposalRepository, EfPoseProposalRepository>();
+
+        // Anti-corruption layers between contexts (ADR 0016)
+        services.AddScoped<IContributors, IdentityContributors>();
+        services.AddScoped<ICatalogPublisher, CatalogPublisher>();
+        services.AddScoped<ICatalogPoseNames, CatalogPoseNames>();
+        services.AddScoped<IPoseNameReservation, PgPoseNameReservation>(); // names of both contexts (ADR 0017)
 
         return services;
     }

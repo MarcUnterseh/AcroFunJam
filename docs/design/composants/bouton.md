@@ -1,6 +1,6 @@
 # Bouton
 
-Élément `<button>` (action) ou `<a>` stylé en bouton (navigation : « Se connecter », « S'inscrire » de l'en-tête). Le rôle sémantique suit la nature de l'action, pas l'apparence.
+Élément `<button>` (action) ou `<a>` stylé en bouton (navigation : « Se connecter », « S'inscrire » de l'en-tête ; « Proposer une pose », voir `lien-bouton.md`). Le rôle sémantique suit la nature de l'action, pas l'apparence.
 
 ## Structure
 
@@ -15,7 +15,7 @@
 | Variante | Fond | Texte | Bordure | Usage |
 |---|---|---|---|---|
 | **Primaire** | `primary` | `primaryContrast` | aucune | une seule par formulaire : « Se connecter », « Créer mon compte » ; « S'inscrire » dans l'en-tête |
-| **Secondaire** | transparent | `text` | `borderWidth` `border` | « Se connecter » et « Se déconnecter » dans l'en-tête, « Afficher » du champ mot de passe |
+| **Secondaire** | transparent | `text` | `borderWidth` `border` | « Se connecter » et « Se déconnecter » dans l'en-tête, « Afficher » du champ mot de passe, « Réessayer » dans une alerte (largeur du contenu) |
 | **Lien** | transparent | `primary`, souligné | aucune | « S'inscrire » / « Se connecter » sous un formulaire, lien du bandeau |
 
 La variante lien garde une zone cliquable ≥ 44 × 44 px (padding vertical), même si son texte est en ligne.

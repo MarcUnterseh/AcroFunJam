@@ -101,6 +101,46 @@ AcroFunJam est un catalogue collaboratif de poses et de transitions d'acroyoga. 
 - Revues (architecture, UX, visuel) : points bloquants et importants corrigés.
 - Reportés : libellés d’interface de `core/domain` vers un module de présentation et `AuthFailure` vers le port ; `Session.email` typé `EmailAddress` ; exposer la longueur minimale du mot de passe dans l’OpenAPI pour vérifier la cohérence API ↔ site ; titre `h2` et icône d’attente dans les zones d’alerte et boutons occupés ; lien « Connecte-toi » sur « adresse déjà utilisée » ; remasquer le mot de passe à l’envoi ; libellé « Fermer le message » ; mettre à jour `docs/design/` (bouton du mot de passe séparé du champ, pas de résumé des erreurs) ; story « mot de passe oublié ».
 
+### Story 3 « Proposer une pose » (validé le 2026-11-03)
+- La proposition d’un **utilisateur** est **en attente de validation**. Elle n’apparaît pas dans le catalogue, même pour son contributeur.
+- La proposition d’un **validateur** ou d’un **administrateur** est **publiée directement**. Dans le modèle, c’est une proposition acceptée aussitôt, ce qui garde la trace du contributeur.
+- **Visiteur** : aucun lien « Proposer une pose ». S’il ouvre directement `/proposer-une-pose`, il est redirigé vers « Se connecter », puis ramené au formulaire. Une personne connectée trouve le lien sur le catalogue et dans l’état vide, pas dans l’en-tête.
+- **Contenu** :
+  - les champs : nom, difficulté base, difficulté flyer, « peut commencer un flow », « peut terminer un flow » ;
+  - tous sont obligatoires, sans valeur par défaut, et les indicateurs se renseignent par oui ou non sans présélection ;
+  - hors périmètre : description, photos, alias, poses à plus de deux personnes.
+- **Nom** :
+  - les espaces en début et en fin sont supprimés et les espaces intérieurs réduits à un seul ; le reste est conservé tel que saisi ; 60 caractères au plus ;
+  - **clé de comparaison**, commune à l’unicité et à l’ordre alphabétique : sans tenir compte de la casse ni des accents, la ponctuation (trait d’union, apostrophe, parenthèses) comptant comme un espace. Cette clé **révise la règle d’ordre de la story 1** ;
+  - décisions du porteur du produit (2026-11-03) : tout caractère qui n’est ni une lettre ni un chiffre compte comme un espace dans la clé, `&`, `+` et `/` compris ; un nom fait uniquement de ponctuation ou de symboles (clé vide, ex. « --- ») est irrecevable, comme un nom absent ;
+  - un nom déjà pris par une pose publiée **ou par une proposition en attente** est irrecevable pour tous, validateurs compris.
+- **Indicateurs** :
+  - « peut commencer » : le duo s’installe dans la pose directement depuis le sol ;
+  - « peut terminer » : le flyer redescend au sol directement et sans danger.
+  - « Montée » et « descente » ne sont tolérés que dans les textes d’aide.
+- **Échelle de difficulté** : elle reste fermée à 4 niveaux. Une définition concrète de chaque niveau sera rédigée avec l’expert, puis validée par le porteur du produit.
+- **Le site connaît le rôle** (`/me`) : à un validateur, l’introduction du formulaire annonce une publication directe.
+- **Compte supprimé** entre la connexion et l’envoi (décision du 2026-11-03) : la proposition est refusée avec un 401, que le site traite comme une session expirée, sans nouveau cas d’erreur.
+- **Après l’envoi** : un message de confirmation, avec « Proposer une autre pose » et « Voir le catalogue ». « Mes propositions » est programmée avec ou juste après « Valider une proposition ».
+- **Session expirée** pendant la saisie : la saisie est conservée dans l’onglet et retrouvée après la reconnexion ; sur cette page, l’alerte du formulaire remplace le bandeau global.
+- **Refonte de la liste du catalogue** (révise la story 1) :
+  - des cartes plutôt qu’un tableau ;
+  - les difficultés base et flyer, et les **indicateurs** affichés en oui ou non explicites ;
+  - le nombre de poses ;
+  - une légende de l’échelle, avec l’avertissement de responsabilité juste en dessous ;
+  - un état vide avec une invitation à proposer, réservée aux personnes connectées ;
+  - un message maîtrisé et le bouton « Réessayer » quand le catalogue ne peut pas être chargé.
+- **Hors story 3** :
+  - la vignette photo ;
+  - la recherche et les filtres : story dédiée vers 30 poses publiées ;
+  - les alias et les autres noms.
+- Exemples corrigés par l’expert acroyoga :
+  - Throne, Star et Bird peuvent commencer et terminer un flow ;
+  - Folded Leaf peut seulement terminer ;
+  - Whale peut seulement commencer (convention d’enseignement) ;
+  - Bow ne peut ni l’un ni l’autre ;
+  - Hand-to-Hand (L-base) est intermédiaire en base, avancé en flyer.
+
 ### Découpage des stories suivantes (décidé le 2026-11-02)
 1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.
 2. **Proposer une pose** (Contribution) : reprend les règles de contenu de `specs/features/catalogue/publier-une-pose.feature` (brouillon) ; publication directe pour un validateur ou un administrateur.

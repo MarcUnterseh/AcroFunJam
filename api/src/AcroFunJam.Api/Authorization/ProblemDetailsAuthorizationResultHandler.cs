@@ -1,3 +1,4 @@
+using AcroFunJam.Api.Endpoints.Common;
 using AcroFunJam.Domain.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
@@ -11,6 +12,13 @@ internal sealed class ProblemDetailsAuthorizationResultHandler : IAuthorizationM
 
     public async Task HandleAsync(RequestDelegate next, HttpContext context, AuthorizationPolicy policy, PolicyAuthorizationResult authorizeResult)
     {
+        if (authorizeResult.Forbidden && IsAccountDeleted(authorizeResult))
+        {
+            // Signed in, but the account no longer exists: the site handles it as an expired session (ADR 0018).
+            await IdentityErrors.AccountDeleted.ToProblem().ExecuteAsync(context);
+            return;
+        }
+
         if (authorizeResult.Forbidden)
         {
             var missing = authorizeResult.AuthorizationFailure?.FailedRequirements.OfType<CapabilityRequirement>().FirstOrDefault();
@@ -24,6 +32,9 @@ internal sealed class ProblemDetailsAuthorizationResultHandler : IAuthorizationM
 
         await _default.HandleAsync(next, context, policy, authorizeResult);
     }
+
+    private static bool IsAccountDeleted(PolicyAuthorizationResult result) =>
+        result.AuthorizationFailure?.FailureReasons.Any(r => r.Message == CapabilityAuthorizationHandler.AccountDeleted) == true;
 
     private static string Describe(Capability? capability) => capability switch
     {

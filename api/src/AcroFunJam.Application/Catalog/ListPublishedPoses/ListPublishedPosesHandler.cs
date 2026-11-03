@@ -1,6 +1,6 @@
 using AcroFunJam.Application.Common;
-using AcroFunJam.Domain.Catalog;
 using AcroFunJam.Domain.Common;
+using AcroFunJam.Domain.SharedKernel;
 
 namespace AcroFunJam.Application.Catalog.ListPublishedPoses;
 

@@ -27,8 +27,7 @@ Composants : `../composants/`. Principes et tokens : `../principes.md`. Scénari
 │                                │  spacing.lg
 │ Se connecter                   │  h1
 │                                │  spacing.lg
-│ ┃(!) La connexion a échoué     │  zone d'alerte (après un envoi refusé)
-│ ┃    L'adresse e-mail ou le    │
+│ ┃(!) L'adresse e-mail ou le    │  zone d'alerte (après un envoi refusé)
 │ ┃    mot de passe est incorrect│
 │                                │  spacing.lg
 │ Adresse e-mail                 │
@@ -37,9 +36,9 @@ Composants : `../composants/`. Principes et tokens : `../principes.md`. Scénari
 │ └────────────────────────────┘ │
 │                                │  spacing.md
 │ Mot de passe                   │
-│ ┌───────────────────┬────────┐ │
-│ │                   │Afficher│ │
-│ └───────────────────┴────────┘ │
+│ ┌──────────────────┐ ┌───────┐ │
+│ │                  │ │Affich.│ │  champ et bouton séparés (spacing.sm)
+│ └──────────────────┘ └───────┘ │
 │                                │  spacing.lg
 │ ┌────────────────────────────┐ │
 │ │        Se connecter        │ │  bouton primaire, pleine largeur
@@ -67,7 +66,7 @@ Composants : `../composants/`. Principes et tokens : `../principes.md`. Scénari
 │                   │ Adresse e-mail               │                   │
 │                   │ [                          ] │                   │
 │                   │ Mot de passe                 │                   │
-│                   │ [                 ][Afficher]│                   │
+│                   │ [               ] [Afficher] │                   │
 │                   │                              │                   │
 │                   │ [        Se connecter      ] │                   │
 │                   │                              │                   │
@@ -88,21 +87,17 @@ Même gabarit que « Se connecter ».
 
 ```
 │ S'inscrire                     │  h1
-│                                │
-│ ┃(!) Le formulaire contient    │  zone d'alerte (erreurs de saisie)
-│ ┃    1 erreur                  │
-│ ┃    • Mot de passe : au moins │
-│ ┃      10 caractères.          │
-│                                │
+│                                │  pas de résumé des erreurs : le focus va
+│                                │  au premier champ en erreur
 │ Adresse e-mail                 │
 │ ┌────────────────────────────┐ │
 │ │ alice@example.org          │ │
 │ └────────────────────────────┘ │
 │                                │
 │ Mot de passe                   │
-│ ┏━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┓ │  bordure 2 px danger (invalide)
-│ ┃ ••••••            ┃Afficher┃ │
-│ ┗━━━━━━━━━━━━━━━━━━━┻━━━━━━━━┛ │
+│ ┏━━━━━━━━━━━━━━━━━━┓ ┌───────┐ │  bordure 2 px danger sur le champ seul
+│ ┃ ••••••           ┃ │Affich.│ │
+│ ┗━━━━━━━━━━━━━━━━━━┛ └───────┘ │
 │ Ton mot de passe doit contenir au moins 10 caractères.        │  aide, textMuted, visible dès l'arrivée
 │ (!) Le mot de passe doit       │  erreur, danger + icône
 │     contenir au moins 10       │
@@ -116,7 +111,8 @@ Même gabarit que « Se connecter ».
 │ Se connecter                   │  lien
 ```
 
-- Adresse déjà utilisée : zone d'alerte en refus global (« L'inscription a échoué » / « Cette adresse e-mail sert déjà à un compte. ») ; en plus, le lien « Se connecter » sous le formulaire suffit ; pas de second lien dans l'alerte (question au `ux-expert`).
+- Adresse déjà utilisée : zone d'alerte en refus global (« Cette adresse e-mail sert déjà à un compte. ») ; le lien « Se connecter » sous le formulaire suffit pour l'instant (lien « Connecte-toi » dans l'alerte : reporté).
+- Mise à jour après implémentation : pas de résumé des erreurs de saisie, bouton « Afficher » séparé du champ (`alerte-formulaire.md`, `champ-mot-de-passe.md`).
 - **Grand écran** : carte identique à « Se connecter ».
 
 ## En-tête du catalogue

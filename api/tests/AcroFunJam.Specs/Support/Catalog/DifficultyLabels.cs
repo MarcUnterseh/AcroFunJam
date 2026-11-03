@@ -15,4 +15,7 @@ public static class DifficultyLabels
         CodesByLabel.TryGetValue(label, out var code)
             ? code
             : throw new ArgumentOutOfRangeException(nameof(label), label, "Niveau de difficulté inconnu.");
+
+    /// <summary>The code of a known label; an unknown label (e.g. "expert") is sent as is, for the API to refuse it.</summary>
+    public static string ToCodeOrAsIs(string label) => CodesByLabel.GetValueOrDefault(label, label);
 }

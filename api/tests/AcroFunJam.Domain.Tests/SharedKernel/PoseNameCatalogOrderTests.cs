@@ -1,11 +1,12 @@
-using AcroFunJam.Domain.Catalog;
+using AcroFunJam.Domain.SharedKernel;
 
-namespace AcroFunJam.Domain.Tests.Catalog;
+namespace AcroFunJam.Domain.Tests.SharedKernel;
 
+/// <summary>Catalog order: the comparison key in ordinal order, then the exact name (ADR 0017).</summary>
 public sealed class PoseNameCatalogOrderTests
 {
     private static int Compare(string left, string right) =>
-        PoseName.CatalogOrder.Compare(new PoseName(left), new PoseName(right));
+        PoseName.CatalogOrder.Compare(PoseName.Create(left).Value!, PoseName.Create(right).Value!);
 
     [Fact]
     public void Compare_Should_OrderAlphabetically_When_NamesDiffer()
@@ -22,10 +23,17 @@ public sealed class PoseNameCatalogOrderTests
     }
 
     [Fact]
-    public void Compare_Should_IgnoreHyphens_When_NamesContainHyphens()
+    public void Compare_Should_CountHyphensAsSpaces_When_NamesContainHyphens()
     {
-        // With the hyphen, "Hand-to-Hand" < "Handstand" ('-' sorts before 's'); without it, "handtohand" > "handstand".
-        Compare("Handstand", "Hand-to-Hand").ShouldBeLessThan(0);
+        // Revises story 1, where hyphens were removed: "hand to hand" < "handstand" (a space sorts before letters).
+        Compare("Hand-to-Hand", "Handstand").ShouldBeLessThan(0);
+    }
+
+    [Fact]
+    public void Compare_Should_IgnoreAccents_When_ANameIsAccented()
+    {
+        Compare("Bird", "Étoile").ShouldBeLessThan(0);
+        Compare("Étoile", "Folded Leaf").ShouldBeLessThan(0);
     }
 
     [Fact]

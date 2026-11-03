@@ -13,9 +13,24 @@ public static class ProblemResults
         ["identity.concurrent-role-change"] = StatusCodes.Status409Conflict,
         ["identity.unknown-role"] = StatusCodes.Status400BadRequest,
         ["identity.invalid-email"] = StatusCodes.Status400BadRequest,
+        // Content of a pose (shared kernel, ADR 0018).
+        ["pose.name-required"] = StatusCodes.Status400BadRequest,
+        ["pose.name-too-long"] = StatusCodes.Status400BadRequest,
+        ["pose.base-difficulty-required"] = StatusCodes.Status400BadRequest,
+        ["pose.flyer-difficulty-required"] = StatusCodes.Status400BadRequest,
+        ["pose.unknown-difficulty-level"] = StatusCodes.Status400BadRequest,
+        ["pose.can-start-flow-required"] = StatusCodes.Status400BadRequest,
+        ["pose.can-end-flow-required"] = StatusCodes.Status400BadRequest,
+        // Name already taken (ADR 0017, ADR 0018).
+        ["contribution.pose-name-already-in-catalog"] = StatusCodes.Status409Conflict,
+        ["contribution.pose-name-already-pending"] = StatusCodes.Status409Conflict,
+        ["catalog.pose-name-taken"] = StatusCodes.Status409Conflict,
+        // The account was deleted after signing in: the site handles it as an expired session (ADR 0018).
+        ["contribution.unknown-contributor"] = StatusCodes.Status401Unauthorized,
+        ["identity.account-deleted"] = StatusCodes.Status401Unauthorized,
     };
 
-    /// <summary>404, 409 or 400 for the listed codes; otherwise 422 (a business rule refused the request).</summary>
+    /// <summary>The status of the listed codes; otherwise 422 (a business rule refused the request).</summary>
     public static ProblemHttpResult ToProblem(this Error error)
     {
         ArgumentNullException.ThrowIfNull(error);

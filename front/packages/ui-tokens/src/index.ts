@@ -41,6 +41,13 @@ export const colors = {
   infoSurface: '#E7F5FF',
   /** Background of a disabled control; its text uses textMuted (5.1:1). */
   disabledSurface: '#E9ECEF',
+  /**
+   * Checked choice (radio tile): 2px border and radio dot. Darker than primary so that it is not mistaken for danger.
+   * 7.3:1 on background, 6.9:1 on surface, 6.7:1 on selectedSurface.
+   */
+  selected: '#9A3412',
+  /** Background of a checked choice. text on it: 14.2:1. */
+  selectedSurface: '#FFF4E6',
 } as const;
 
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48 } as const;
@@ -73,12 +80,20 @@ export const sizes = {
   focusRingOffset: 2,
   /** Maximum width of a form column. */
   formMaxWidth: 400,
+  /** Maximum width of a form column with choice tiles (four tiles on one line). */
+  formWideMaxWidth: 640,
+  /** Minimum width of a choice tile, so that the longest level name stays on one line next to its radio. */
+  tileMinWidth: 152,
   /** Maximum width of the page content. */
   contentMaxWidth: 1040,
   /** Maximum width of the signed-in e-mail address in the header before ellipsis (large screens). */
   accountLabelMaxWidth: 320,
   /** Icon size inside text (alerts, field errors, buttons). */
   icon: 20,
+  /** Icon heading a panel (success panel). */
+  iconLarge: 32,
+  /** Diameter of a dot of the decorative difficulty scale. */
+  scaleDot: 8,
 } as const;
 
 /** Minimum viewport widths (web media queries, mobile tablets). */

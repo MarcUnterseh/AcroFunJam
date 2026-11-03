@@ -51,6 +51,44 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
         HasBearerRequirement(paths.GetProperty("/catalog/poses").GetProperty("get")).ShouldBeFalse();
     }
 
+    [Fact]
+    public async Task OpenApiDocument_Should_RequireTheFlowIndicators_When_DescribingAPoseOfTheCatalog()
+    {
+        using var client = api.CreateClient();
+
+        var document = await client.GetFromJsonAsync<JsonElement>(new Uri("/openapi/v1.json", UriKind.Relative), Ct);
+        var pose = document.GetProperty("components").GetProperty("schemas").GetProperty("PoseSummaryResponse");
+
+        pose.GetProperty("required").EnumerateArray().Select(p => p.GetString())
+            .ShouldBe(["id", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow"], ignoreOrder: true);
+        pose.GetProperty("properties").GetProperty("canStartFlow").GetProperty("type").GetString().ShouldBe("boolean");
+        pose.GetProperty("properties").GetProperty("canEndFlow").GetProperty("type").GetString().ShouldBe("boolean");
+    }
+
+    [Fact]
+    public async Task OpenApiDocument_Should_DescribeThePoseProposal_When_TheContributionContextIsExposed()
+    {
+        using var client = api.CreateClient();
+
+        var document = await client.GetFromJsonAsync<JsonElement>(new Uri("/openapi/v1.json", UriKind.Relative), Ct);
+        var paths = document.GetProperty("paths");
+        var schemas = document.GetProperty("components").GetProperty("schemas");
+
+        var propose = paths.GetProperty("/contribution/pose-proposals").GetProperty("post");
+        HasBearerRequirement(propose).ShouldBeTrue();
+        var responses = propose.GetProperty("responses");
+        foreach (var status in new[] { "201", "400", "401", "403", "409" })
+        {
+            responses.TryGetProperty(status, out _).ShouldBeTrue($"response {status} is documented");
+        }
+
+        responses.GetProperty("409").GetProperty("content").TryGetProperty("application/problem+json", out _).ShouldBeTrue();
+        schemas.GetProperty("PoseProposalResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
+            .ShouldBe(["id", "status", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow"], ignoreOrder: true);
+        schemas.GetProperty("ProposalStatusCode").GetProperty("enum").EnumerateArray().Select(v => v.GetString())
+            .ShouldBe(["pending", "accepted"], ignoreOrder: true);
+    }
+
     private static bool HasBearerRequirement(JsonElement operation) =>
         operation.TryGetProperty("security", out var security)
         && security.EnumerateArray().Any(requirement => requirement.TryGetProperty("Bearer", out _));

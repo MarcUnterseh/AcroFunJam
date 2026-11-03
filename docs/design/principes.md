@@ -35,6 +35,14 @@ Une couleur d'accent (primaire), des neutres, et trois couleurs de retour (dange
 | `success` / `successSurface` | `#237032` / `#EBFBEE` | confirmations |
 | `info` / `infoSurface` | `#1864AB` / `#E7F5FF` | informations (session expirée) |
 | `disabledSurface` | `#E9ECEF` | fond d'un contrôle désactivé |
+| `selected` | `#9A3412` brun terre cuite | bordure 2 px et radio d'un **choix coché** (tuile radio), story 3 |
+| `selectedSurface` | `#FFF4E6` | fond d'un choix coché, story 3 |
+
+### Ajouts de la story 3 (proposition du 2026-11-03)
+
+- `selected` / `selectedSurface` : l'état coché d'une tuile reste dans l'identité (terre cuite) sans être confondu avec `danger` : `selected` est nettement plus sombre (luminance 0,094 contre 0,142) et plus brun que rouge. Même valeur que `primaryHover` aujourd'hui, mais rôle distinct : l'un peut évoluer sans l'autre.
+- Aucune couleur par niveau de difficulté (ni vert, ni orange, ni rouge) : la difficulté est écrite en toutes lettres, avec une échelle à points de forme (pleins / vides) en renfort décoratif.
+- Les cartes du catalogue réutilisent `surface` et `divider` : pas de nouvelle surface.
 
 ### Ajustements par rapport aux tokens initiaux
 
@@ -66,6 +74,8 @@ Texte (seuil 4,5:1) :
 | `danger` | `background` / `surface` / `dangerSurface` | 5,5:1 / 5,2:1 / 5,1:1 |
 | `success` | `background` / `successSurface` | 6,1:1 / 5,7:1 |
 | `info` | `background` / `surface` / `infoSurface` | 6,1:1 / 5,8:1 / 5,5:1 |
+| `text` | `selectedSurface` / `successSurface` | 14,2:1 / 14,4:1 |
+| `textMuted` | `successSurface` / `infoSurface` / `selectedSurface` | 5,7:1 / 5,5:1 / 5,6:1 |
 
 Composants et éléments graphiques (seuil 3:1) :
 
@@ -75,6 +85,10 @@ Composants et éléments graphiques (seuil 3:1) :
 | `danger` (contour d'un champ invalide) | `background` | 5,5:1 |
 | `focus` (anneau, toujours séparé du composant par un écart de fond) | `background` / `surface` | 6,1:1 / 5,8:1 |
 | `primary` (fond de bouton) | `background` | 5,2:1 |
+| `selected` (bordure de tuile cochée, radio) | `background` / `surface` / `selectedSurface` | 7,3:1 / 6,9:1 / 6,7:1 |
+| `border` (tuile au repos, point vide de l'échelle, bouton « Réessayer ») | `background` / `surface` / `dangerSurface` | 3,3:1 / 3,2:1 / 3,1:1 |
+| `success` (icône du panneau de succès) | `successSurface` | 5,7:1 |
+| `text` (point plein de l'échelle) | `surface` | 14,6:1 |
 
 `divider` (1,3:1 sur blanc) est réservé aux séparateurs décoratifs ; il ne délimite jamais un contrôle.
 
@@ -112,16 +126,17 @@ Rien en dessous de 14 px. Les champs restent à 16 px (évite le zoom automatiqu
 
 - **Espacements** (`spacing.*`, base 4) : `xs` 4, `sm` 8, `md` 16, `lg` 24, `xl` 32, `xxl` 48 (ajout). Règle : `xs` entre une icône et son texte, `sm` entre un libellé et son champ, `md` entre les champs et entre éléments d'un même groupe, `lg` entre blocs et pour les marges de page en mobile, `xl`/`xxl` pour l'air autour du contenu en grand écran.
 - **Rayons** (`radius.*`) : `sm` 4 (anneau de focus des liens, petites étiquettes), `md` 8 (champs, boutons, alertes, bandeaux), `lg` 16 (carte de formulaire en grand écran). Les formes arrondies mais nettes évoquent la souplesse sans infantiliser.
-- **Tailles** (`sizes.*`, ajout) : cible tactile minimale `touchTarget` 44 ; hauteur de champ et de bouton `control` 48 ; bordures `borderWidth` 1 / `borderWidthStrong` 2 ; barre d'accent `accentBar` 4 ; icônes `icon` 20 ; colonnes `formMaxWidth` 400 et `contentMaxWidth` 1040.
+- **Tailles** (`sizes.*`, ajout) : cible tactile minimale `touchTarget` 44 ; hauteur de champ et de bouton `control` 48 ; bordures `borderWidth` 1 / `borderWidthStrong` 2 ; barre d'accent `accentBar` 4 ; icônes `icon` 20 ; colonnes `formMaxWidth` 400 et `contentMaxWidth` 1040. Story 3 : colonne `formWideMaxWidth` 640 (formulaire à tuiles), largeur mini d'une tuile `tileMinWidth` 152, icône de panneau `iconLarge` 32, point de l'échelle de difficulté `scaleDot` 8.
+- **Grille du catalogue** : 1 colonne, puis 2 à partir de `breakpoints.md`, 3 à partir de `breakpoints.lg` ; écarts `spacing.md` (mobile) et `spacing.lg`. Le nombre de colonnes n'est pas un token (structure, pas une valeur visuelle).
 - **Points de rupture** (`breakpoints.*`, ajout) : `md` 640, `lg` 1024. Mobile d'abord : styles de base pour < 640 px.
 
 ## Icônes
 
-Cinq icônes suffisent pour la story 2b : erreur (cercle + point d'exclamation), information (cercle + « i »), succès (coche), œil, œil barré. Recommandation : SVG en ligne dessinés dans le dépôt (trait 2 px, `currentColor`, `aria-hidden="true"` car toujours accompagnés d'un texte), **sans bibliothèque d'icônes** (une bibliothèque demanderait un ADR).
+Mises en œuvre en 2b : erreur (cercle + point d'exclamation), information (cercle + « i ») ; le bouton du mot de passe est en texte seul (pas d'œil). Story 3 : **coche** et **tiret** (valeurs Oui / Non des cartes, `sizes.icon`), **plus** (lien « Proposer une pose »), **succès** (cercle + coche, `sizes.iconLarge`). SVG en ligne dessinés dans le dépôt (trait 2 px sur une grille de 20, `currentColor`, `aria-hidden="true"` car toujours accompagnés d'un texte), **sans bibliothèque d'icônes** (une bibliothèque demanderait un ADR).
 
 ## Mouvement
 
-Pas d'animation dans la story 2b. Les transitions de couleur au survol, si on en met, durent au plus 150 ms et sont supprimées sous `prefers-reduced-motion: reduce`. Aucun indicateur qui clignote ou tourne en boucle sans respecter ce réglage.
+Pas d'animation dans les stories 2b et 3 (ni apparition du panneau de succès, ni coche animée). Les transitions de couleur au survol, si on en met, durent au plus 150 ms et sont supprimées sous `prefers-reduced-motion: reduce`. Aucun indicateur qui clignote ou tourne en boucle sans respecter ce réglage.
 
 ## Traduction des tokens côté web (ADR 0012, implémentée)
 
@@ -145,4 +160,4 @@ Pourquoi : le site garde du CSS standard (`:hover`, `:focus-visible`, media quer
 
 ## Hors périmètre pour l'instant
 
-Mode sombre, logo, illustrations, photos des poses (story suivante candidate). Les tokens nommés par rôle permettront d'ajouter un thème sombre sans toucher aux écrans.
+Mode sombre, logo, illustrations, photos des poses (emplacement de vignette prévu dans `composants/carte-pose.md`, non implémenté). Les tokens nommés par rôle permettront d'ajouter un thème sombre sans toucher aux écrans.
