@@ -225,7 +225,8 @@ describe('expired session', () => {
     const banner = await screen.findByRole('region', { name: 'Session expirée' });
     expect(banner).toHaveTextContent('Ta session a expiré.');
     expect(within(banner).getByRole('link', { name: 'Se connecter' })).toBeInTheDocument();
-    expect(announcements()).toContain('Ta session a expiré. Tu peux te reconnecter.');
+    // Announced by an effect of the banner, hence in a render that follows the one that shows it.
+    await waitFor(() => expect(announcements()).toContain('Ta session a expiré. Tu peux te reconnecter.'));
   });
 
   it.each(['/connexion', '/inscription'])(
