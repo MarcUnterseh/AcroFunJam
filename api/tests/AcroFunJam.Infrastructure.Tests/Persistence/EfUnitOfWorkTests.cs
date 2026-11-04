@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AcroFunJam.Infrastructure.Tests.Persistence;
 
-/// <summary>A unique index violation is a business error, never a 500 (ADR 0017).</summary>
+/// <summary>A unique index violation or a concurrent decision is a business error, never a 500 (ADR 0017, ADR 0022).</summary>
 [Trait("Category", "Integration")]
 public sealed class EfUnitOfWorkTests(PostgreSqlFixture database) : IClassFixture<PostgreSqlFixture>, IAsyncLifetime
 {
@@ -65,6 +65,63 @@ public sealed class EfUnitOfWorkTests(PostgreSqlFixture database) : IClassFixtur
         var aggregates = new TrackedAggregates();
         new EfPoseRepository(context, aggregates).Add(EfPoseRepositoryTests.APublishedPose("bird"));
 
-        await Should.ThrowAsync<DbUpdateException>(() => new EfUnitOfWork(context, aggregates, []).SaveChanges(Ct));
+        await Should.ThrowAsync<DbUpdateException>(() => new EfUnitOfWork(context, aggregates, [], []).SaveChanges(Ct));
+    }
+
+    private static readonly DateTimeOffset DecidedAt = new(2026, 11, 4, 9, 0, 0, TimeSpan.Zero);
+
+    private static Validator AValidator() => new(new ValidatorId(Guid.NewGuid()), CanDecide: true);
+
+    /// <summary>A decision use case in progress: its own context, with the proposal loaded and decided, not saved yet.</summary>
+    private sealed record PendingDecision(AcroFunJamDbContext Context, EfUnitOfWork UnitOfWork) : IAsyncDisposable
+    {
+        public ValueTask DisposeAsync() => Context.DisposeAsync();
+    }
+
+    private async Task<PendingDecision> Decide(PoseProposalId id, Action<PoseProposal> decide)
+    {
+        var context = database.CreateDbContext();
+        var aggregates = new TrackedAggregates();
+        var repository = new EfPoseProposalRepository(context, aggregates);
+        var proposal = (await repository.GetById(id, Ct))!;
+        decide(proposal);
+        repository.Update(proposal);
+        return new PendingDecision(context, UnitOfWorks.For(context, aggregates));
+    }
+
+    private async Task<PoseProposalId> SaveAPendingProposal()
+    {
+        var proposal = EfPoseProposalRepositoryTests.APendingProposal("Throne");
+        await using var context = database.CreateDbContext();
+        var aggregates = new TrackedAggregates();
+        new EfPoseProposalRepository(context, aggregates).Add(proposal);
+        (await UnitOfWorks.For(context, aggregates).SaveChanges(Ct)).IsSuccess.ShouldBeTrue();
+        return proposal.Id;
+    }
+
+    [Fact]
+    public async Task SaveChanges_Should_ReturnProposalAlreadyDecided_When_AnotherDecisionWasSavedSinceLoading()
+    {
+        var id = await SaveAPendingProposal();
+        await using var acceptance = await Decide(id, p => p.Accept(AValidator(), DecidedAt));
+        await using var rejection = await Decide(id, p => p.Reject(AValidator(), RejectionReason.Create("Doublon").Value!, DecidedAt));
+        (await acceptance.UnitOfWork.SaveChanges(Ct)).IsSuccess.ShouldBeTrue();
+
+        var saved = await rejection.UnitOfWork.SaveChanges(Ct);
+
+        saved.Error.ShouldBe(ContributionErrors.ProposalAlreadyDecided);
+    }
+
+    [Fact]
+    public async Task SaveChanges_Should_ClearTheChangeTracker_When_AConcurrencyConflictIsDetected()
+    {
+        var id = await SaveAPendingProposal();
+        await using var acceptance = await Decide(id, p => p.Accept(AValidator(), DecidedAt));
+        await using var rejection = await Decide(id, p => p.Reject(AValidator(), RejectionReason.Create("Doublon").Value!, DecidedAt));
+        await acceptance.UnitOfWork.SaveChanges(Ct);
+
+        await rejection.UnitOfWork.SaveChanges(Ct);
+
+        rejection.Context.ChangeTracker.Entries().ShouldBeEmpty(); // nothing of the refused work may be saved later in the scope
     }
 }

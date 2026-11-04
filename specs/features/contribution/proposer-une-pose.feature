@@ -251,7 +251,7 @@ Fonctionnalité: Proposer une pose
         | Throne                | débutant        | découverte       |
         | Whale                 | débutant        | intermédiaire    |
         | Star                  | intermédiaire   | intermédiaire    |
-        | Hand-to-Hand (L-base) | intermédiaire   | avancé           |
+        | Hand-to-Hand (L-base) | avancé          | avancé           |
         | Standing Hand-to-Hand | avancé          | avancé           |
 
     @api
@@ -277,18 +277,21 @@ Fonctionnalité: Proposer une pose
     Contexte:
       Soit Alice est utilisateur
 
-    # Whale « peut commencer, ne peut pas terminer » : convention d'enseignement, discutable.
+    # Révision du 2026-11-04 (expert acroyoga) : Folded Leaf peut aussi commencer un flow, Whale peut aussi en terminer
+    # un selon les écoles ; ces exemples contestés sont remplacés (Q18) par Free Bird (termine seulement : on y arrive
+    # depuis Bird) et Candlestick (commence seulement : exemple, pas une référence, certaines écoles enseignent une
+    # sortie en déroulé).
     @api
     Plan du Scénario: La pose "<nom>" est proposée avec ses indicateurs de début et de fin de flow
       Quand Alice propose la pose "<nom>" qui <commencer> commencer un flow et <terminer> terminer un flow
       Alors la pose proposée "<nom>" <commencer> commencer un flow et <terminer> terminer un flow
 
       Exemples:
-        | nom         | commencer   | terminer    |
-        | Bird        | peut        | peut        |
-        | Folded Leaf | ne peut pas | peut        |
-        | Whale       | peut        | ne peut pas |
-        | Bow         | ne peut pas | ne peut pas |
+        | nom                   | commencer   | terminer    |
+        | Bird                  | peut        | peut        |
+        | Candlestick           | peut        | ne peut pas |
+        | Free Bird             | ne peut pas | peut        |
+        | Hand-to-Hand (L-base) | ne peut pas | ne peut pas |
 
     @api
     Plan du Scénario: Une pose qui ne précise pas si elle peut <indicateur> un flow est irrecevable

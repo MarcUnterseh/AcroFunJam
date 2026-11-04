@@ -1,19 +1,14 @@
-using System.Net.Http.Json;
 using AcroFunJam.Application.Common;
 using AcroFunJam.Application.Contribution;
 using AcroFunJam.Application.Contribution.ProposePose;
-using AcroFunJam.Application.Identity.AssignRole;
 using AcroFunJam.Domain.Common;
 using AcroFunJam.Domain.Contribution;
 using AcroFunJam.Domain.Identity;
-using AcroFunJam.Infrastructure.ContextIntegration;
 using AcroFunJam.Infrastructure.Persistence;
 using AcroFunJam.Infrastructure.Persistence.Catalog;
 using AcroFunJam.Infrastructure.Persistence.Contribution;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace AcroFunJam.Api.Tests.Contribution;
 
@@ -26,22 +21,7 @@ public sealed class ProposePoseTransactionTests(ApiWithDatabase api) : IClassFix
 {
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    private async Task<ContributorId> AnAccount(Role role)
-    {
-        var email = $"someone-{Guid.NewGuid():N}@example.org";
-        using var client = api.CreateClient();
-        (await client.PostAsJsonAsync(new Uri("/identity/register", UriKind.Relative), new { email, password = "une phrase de passe" }, Ct))
-            .EnsureSuccessStatusCode();
-        using var scope = api.Services.CreateScope();
-        if (role != Role.User)
-        {
-            (await scope.ServiceProvider.GetRequiredService<ICommandHandler<AssignRole, bool>>()
-                .Handle(new AssignRole(EmailAddress.Create(email).Value!, role, new AccountId(Guid.Empty)), Ct)).IsSuccess.ShouldBeTrue();
-        }
-
-        var context = scope.ServiceProvider.GetRequiredService<AcroFunJamDbContext>();
-        return new ContributorId((await context.Users.SingleAsync(u => u.Email == email, Ct)).Id);
-    }
+    private async Task<ContributorId> AnAccount(Role role) => new(await api.AnAccount(role));
 
     private static ProposedPose APose(string name) => ProposedPose.Create(name, "beginner", "discovery", true, true).Value!;
 
@@ -82,28 +62,11 @@ public sealed class ProposePoseTransactionTests(ApiWithDatabase api) : IClassFix
         }
     }
 
-    /// <summary>Publishes for real, then fails: a failure after the publication within the same transaction.</summary>
-    private sealed class FailingAfterPublication(CatalogPublisher publisher) : ICatalogPublisher
-    {
-        public static readonly Error Injected = new("test.injected", "Échec injecté après la publication.");
-
-        public async Task<Result<bool>> PublishPose(PoseProposalId source, ProposedPose pose, CancellationToken ct)
-        {
-            (await publisher.PublishPose(source, pose, ct)).IsSuccess.ShouldBeTrue();
-            return Injected;
-        }
-    }
-
     [Fact]
     public async Task Handle_Should_LeaveTheCatalogEmpty_When_TheDirectPublicationFailsAfterPublishing()
     {
         var bruno = await AnAccount(Role.Validator);
-        await using var failing = api.WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
-        {
-            services.AddScoped<CatalogPublisher>();
-            services.RemoveAll<ICatalogPublisher>();
-            services.AddScoped<ICatalogPublisher, FailingAfterPublication>();
-        }));
+        await using var failing = FailingAfterPublication.In(api);
         var name = $"Star {Guid.NewGuid():N}"[..20];
 
         var result = await Propose(failing.Services, bruno, APose(name));

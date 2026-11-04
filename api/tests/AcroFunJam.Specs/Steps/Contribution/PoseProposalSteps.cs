@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using AcroFunJam.Specs.Support;
 using AcroFunJam.Specs.Support.Catalog;
 using AcroFunJam.Specs.Support.Contribution;
 using AcroFunJam.Specs.Support.Identity;
@@ -9,7 +10,7 @@ using Reqnroll;
 namespace AcroFunJam.Specs.Steps.Contribution;
 
 [Binding]
-public sealed class PoseProposalSteps(People people, Deployment deployment)
+public sealed class PoseProposalSteps(People people, Deployment deployment, ScenarioProposals proposals, ScenarioClock clock)
 {
     private static readonly Uri PoseProposals = new("/contribution/pose-proposals", UriKind.Relative);
 
@@ -68,6 +69,41 @@ public sealed class PoseProposalSteps(People people, Deployment deployment)
     [When(@"^(\w+) propose la pose ""([^""]*)"" qui (peut|ne peut pas) commencer un flow et (peut|ne peut pas) terminer un flow$")]
     public async Task WhenSomeoneProposesAPoseWithFlowBoundaries(string name, string pose, string canStart, string canEnd) =>
         _lastResponse = await Propose(name, AValidProposal(pose) with { CanStartFlow = canStart == "peut", CanEndFlow = canEnd == "peut" });
+
+    [Given(@"^(\w+) a proposé la pose ""([^""]*)"" qui (peut|ne peut pas) commencer un flow et (peut|ne peut pas) terminer un flow$")]
+    public async Task GivenSomeoneHasProposedAPoseWithFlowBoundaries(string name, string pose, string canStart, string canEnd)
+    {
+        await WhenSomeoneProposesAPoseWithFlowBoundaries(name, pose, canStart, canEnd);
+        _lastResponse!.StatusCode.ShouldBe(HttpStatusCode.Created, await _lastResponse.Content.ReadAsStringAsync());
+    }
+
+    [Given(@"^(\w+) a proposé le (\d{4}-\d{2}-\d{2}) la pose ""([^""]*)"" de difficulté base ""([^""]*)"" et de difficulté flyer ""([^""]*)"", qui (peut|ne peut pas) commencer un flow et (peut|ne peut pas) terminer un flow$")]
+    public async Task GivenSomeoneHasProposedAPoseOn(
+        string name, string day, string pose, string baseDifficulty, string flyerDifficulty, string canStart, string canEnd)
+    {
+        clock.SetUtcNow(ScenarioClock.Parse(day));
+        _lastResponse = await Propose(name, new ProposalRequest(
+            pose, DifficultyLabels.ToCode(baseDifficulty), DifficultyLabels.ToCode(flyerDifficulty), canStart == "peut", canEnd == "peut"), signInAgain: true);
+        _lastResponse.StatusCode.ShouldBe(HttpStatusCode.Created, await _lastResponse.Content.ReadAsStringAsync());
+    }
+
+    /// <summary>Each contributor not met yet in the scenario is a user with the default address.</summary>
+    [Given("les propositions suivantes sont en attente de validation :")]
+    public async Task GivenTheProposalsArePending(DataTable pending)
+    {
+        foreach (var row in pending.Rows)
+        {
+            var name = row["contributeur"];
+            if (!people.IsKnown(name)) (await people.Register(name, People.DefaultEmail(name))).EnsureSuccessStatusCode();
+
+            clock.SetUtcNow(ScenarioClock.Parse(row["soumise le"]));
+            _lastResponse = await Propose(name, AValidProposal(row["pose"]), signInAgain: true);
+            (await Received()).Status.ShouldBe("pending");
+        }
+    }
+
+    [Given("aucune proposition n'est en attente de validation")]
+    public static async Task GivenNoProposalIsPending() => (await PoseProposalsInDatabase.CountPending()).ShouldBe(0);
 
     [When(@"^(\w+) propose la pose ""([^""]*)"" sans préciser si elle peut (commencer|terminer) un flow$")]
     public async Task WhenSomeoneProposesAPoseWithoutAFlowBoundary(string name, string pose, string boundary) =>
@@ -156,8 +192,20 @@ public sealed class PoseProposalSteps(People people, Deployment deployment)
 
     // --- HTTP ---------------------------------------------------------------------------------
 
-    private async Task<HttpResponseMessage> Propose(string name, ProposalRequest proposal) =>
-        await (await people.SignedInClient(name)).PostAsJsonAsync(PoseProposals, proposal);
+    /// <summary>Proposes and remembers the id of a received proposal, for the decision steps.</summary>
+    private async Task<HttpResponseMessage> Propose(string name, ProposalRequest proposal, bool signInAgain = false)
+    {
+        var client = signInAgain ? await people.SignedInClientAgain(name) : await people.SignedInClient(name);
+        var response = await client.PostAsJsonAsync(PoseProposals, proposal);
+        if (response.StatusCode == HttpStatusCode.Created && proposal.Name is not null)
+        {
+            // Read as a string: the steps that follow read the same response again.
+            var received = JsonSerializer.Deserialize<ProposalResponse>(await response.Content.ReadAsStringAsync(), JsonSerializerOptions.Web)!;
+            proposals.Received(name, proposal.Name, received.Id);
+        }
+
+        return response;
+    }
 
     private async Task<ProposalResponse> Received()
     {

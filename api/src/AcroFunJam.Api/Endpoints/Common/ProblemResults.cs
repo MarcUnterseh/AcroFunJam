@@ -25,8 +25,16 @@ public static class ProblemResults
         ["contribution.pose-name-already-in-catalog"] = StatusCodes.Status409Conflict,
         ["contribution.pose-name-already-pending"] = StatusCodes.Status409Conflict,
         ["catalog.pose-name-taken"] = StatusCodes.Status409Conflict,
+        // Deciding on a proposal (ADR 0022).
+        ["contribution.proposal-not-found"] = StatusCodes.Status404NotFound,
+        ["contribution.proposal-already-decided"] = StatusCodes.Status409Conflict,
+        ["contribution.rejection-reason-required"] = StatusCodes.Status400BadRequest,
+        ["contribution.rejection-reason-too-long"] = StatusCodes.Status400BadRequest,
+        // A role revoked between the authorization policy and the use case.
+        ["contribution.validator-required"] = StatusCodes.Status403Forbidden,
         // The account was deleted after signing in: the site handles it as an expired session (ADR 0018).
         ["contribution.unknown-contributor"] = StatusCodes.Status401Unauthorized,
+        ["contribution.unknown-validator"] = StatusCodes.Status401Unauthorized,
         ["identity.account-deleted"] = StatusCodes.Status401Unauthorized,
     };
 

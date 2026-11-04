@@ -3,6 +3,7 @@ using AcroFunJam.Application.Catalog.ListPublishedPoses;
 using AcroFunJam.Application.Common;
 using AcroFunJam.Application.Contribution;
 using AcroFunJam.Application.Identity;
+using AcroFunJam.Application.Identity.GetAccountEmails;
 using AcroFunJam.Infrastructure.ContextIntegration;
 using AcroFunJam.Infrastructure.Persistence;
 using AcroFunJam.Infrastructure.Persistence.Catalog;
@@ -34,13 +35,18 @@ public static class DependencyInjection
 
         // Identity
         services.AddScoped<IAccountRepository, EfAccountRepository>();
+        services.AddScoped<IAccountEmailsReader, EfAccountEmailsReader>();
 
         // Contribution
         services.AddSingleton(ContributionUniqueConstraints.PendingPoseNameKey);
+        services.AddSingleton(ContributionConcurrencyConflicts.PoseProposalDecided);
         services.AddScoped<IPoseProposalRepository, EfPoseProposalRepository>();
+        services.AddScoped<IPendingPoseProposalsReader, EfPendingPoseProposalsReader>();
 
         // Anti-corruption layers between contexts (ADR 0016)
         services.AddScoped<IContributors, IdentityContributors>();
+        services.AddScoped<IValidators, IdentityValidators>();
+        services.AddScoped<IContributorEmails, IdentityContributorEmails>();
         services.AddScoped<ICatalogPublisher, CatalogPublisher>();
         services.AddScoped<ICatalogPoseNames, CatalogPoseNames>();
         services.AddScoped<IPoseNameReservation, PgPoseNameReservation>(); // names of both contexts (ADR 0017)

@@ -24,7 +24,9 @@ public sealed class PoseProposalRecord
 
     public DateTimeOffset SubmittedAt { get; set; }
 
-    public Guid? AcceptedBy { get; set; }
+    public Guid? DecidedBy { get; set; }
 
-    public DateTimeOffset? AcceptedAt { get; set; }
+    public DateTimeOffset? DecidedAt { get; set; }
+
+    public string? RejectionReason { get; set; }
 }

@@ -72,7 +72,8 @@ Fonctionnalité: Consulter les poses du catalogue
   # expose désormais les deux indicateurs ; le site les présente en Oui / Non explicites.
   Règle: Chaque pose indique si elle peut commencer un flow et si elle peut terminer un flow
 
-    # Whale « peut commencer, ne peut pas terminer » : convention d'enseignement, discutable.
+    # Révision du 2026-11-04 (expert acroyoga) : Folded Leaf et Whale, contestés, sont remplacés par Free Bird (termine
+    # seulement) et Candlestick (commence seulement : exemple, pas une référence).
     # Mêmes exemples pour les deux cibles : livrés côté @api (story 3, étape A) et côté @web (étape B, refonte du catalogue).
     Plan du Scénario: La pose "<nom>" est présentée avec ses indicateurs de début et de fin de flow
       Soit la pose publiée "<nom>" qui <commencer> commencer un flow et <terminer> terminer un flow
@@ -83,16 +84,16 @@ Fonctionnalité: Consulter les poses du catalogue
       Exemples: API
         | nom         | commencer   | terminer    |
         | Bird        | peut        | peut        |
-        | Folded Leaf | ne peut pas | peut        |
-        | Whale       | peut        | ne peut pas |
+        | Free Bird   | ne peut pas | peut        |
+        | Candlestick | peut        | ne peut pas |
         | Bow         | ne peut pas | ne peut pas |
 
       @web
       Exemples: Site
         | nom         | commencer   | terminer    |
         | Bird        | peut        | peut        |
-        | Folded Leaf | ne peut pas | peut        |
-        | Whale       | peut        | ne peut pas |
+        | Free Bird   | ne peut pas | peut        |
+        | Candlestick | peut        | ne peut pas |
         | Bow         | ne peut pas | ne peut pas |
 
   Règle: Un catalogue sans pose publiée donne une liste vide, signalée au visiteur

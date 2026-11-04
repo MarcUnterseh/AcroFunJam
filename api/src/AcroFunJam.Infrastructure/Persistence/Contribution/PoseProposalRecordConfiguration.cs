@@ -1,3 +1,4 @@
+using AcroFunJam.Domain.Contribution;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -19,9 +20,15 @@ public sealed class PoseProposalRecordConfiguration : IEntityTypeConfiguration<P
         {
             table.HasCheckConstraint("ck_pose_proposals_base_difficulty", "base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
             table.HasCheckConstraint("ck_pose_proposals_flyer_difficulty", "flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
-            table.HasCheckConstraint("ck_pose_proposals_status", "status IN ('pending', 'accepted')");
+            table.HasCheckConstraint("ck_pose_proposals_status", "status IN ('pending', 'accepted', 'rejected')");
             table.HasCheckConstraint("ck_pose_proposals_name_length", "char_length(name) <= 60");
             table.HasCheckConstraint("ck_pose_proposals_name_key", "name_key <> ''");
+            // A decision is recorded as a whole (ADR 0022): by whom and when, and why when rejected.
+            table.HasCheckConstraint(
+                "ck_pose_proposals_decision", "(status = 'pending') = (decided_by IS NULL) AND (status = 'pending') = (decided_at IS NULL)");
+            table.HasCheckConstraint("ck_pose_proposals_rejection_reason", "(status = 'rejected') = (rejection_reason IS NOT NULL)");
+            table.HasCheckConstraint(
+                "ck_pose_proposals_rejection_reason_length", $"char_length(rejection_reason) <= {RejectionReason.MaxLength}");
         });
         builder.HasKey(p => p.Id);
         builder.Property(p => p.Id).HasColumnName("id");
@@ -32,12 +39,15 @@ public sealed class PoseProposalRecordConfiguration : IEntityTypeConfiguration<P
         builder.Property(p => p.FlyerDifficulty).HasColumnName("flyer_difficulty").IsRequired();
         builder.Property(p => p.CanStartFlow).HasColumnName("can_start_flow");
         builder.Property(p => p.CanEndFlow).HasColumnName("can_end_flow");
-        builder.Property(p => p.Status).HasColumnName("status").IsRequired();
+        // A decision is saved only if the proposal is still pending in storage (ADR 0022).
+        builder.Property(p => p.Status).HasColumnName("status").IsRequired().IsConcurrencyToken();
         builder.Property(p => p.SubmittedAt).HasColumnName("submitted_at");
-        builder.Property(p => p.AcceptedBy).HasColumnName("accepted_by");
-        builder.Property(p => p.AcceptedAt).HasColumnName("accepted_at");
+        builder.Property(p => p.DecidedBy).HasColumnName("decided_by");
+        builder.Property(p => p.DecidedAt).HasColumnName("decided_at");
+        builder.Property(p => p.RejectionReason).HasColumnName("rejection_reason");
 
         builder.HasIndex(p => p.NameKey).HasDatabaseName(PendingNameKeyIndex).IsUnique().HasFilter("status = 'pending'");
+        builder.HasIndex(p => p.SubmittedAt).HasDatabaseName("ix_pose_proposals_pending_submitted_at").HasFilter("status = 'pending'"); // validation queue
         builder.HasIndex(p => p.ContributorId).HasDatabaseName("ix_pose_proposals_contributor_id"); // "mes propositions"
     }
 }

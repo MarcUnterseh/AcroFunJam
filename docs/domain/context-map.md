@@ -1,6 +1,6 @@
 # Carte des contextes
 
-Version initiale du 2026-11-02, avant la première user story. Les contextes seront créés au fil des stories avec `/new-bounded-context`. Décisions de découverte : `decouverte.md`. Mise à jour du 2026-11-03 (story 3 « Proposer une pose ») : création de Contribution, noyau partagé avec le Catalogue, publication directe.
+Version initiale du 2026-11-02, avant la première user story. Les contextes seront créés au fil des stories avec `/new-bounded-context`. Décisions de découverte : `decouverte.md`. Mise à jour du 2026-11-03 (story 3 « Proposer une pose ») : création de Contribution, noyau partagé avec le Catalogue, publication directe. Mise à jour du 2026-11-04 (story 4 « Valider une proposition ») : acceptation et refus, concurrence des décisions, adresse e-mail du contributeur lue à Identité (ADR 0022).
 
 Déploiement : **monolithe modulaire**. Une seule API et une seule base de données, un module par contexte (dossiers ou namespaces dans chaque couche, schémas de base séparés). Aucun contexte ne référence les types internes d'un autre.
 
@@ -29,7 +29,7 @@ flowchart LR
   RE -- "Open Host Service<br/>« éléments maîtrisés par un pratiquant »" --> FG
   ID -- "Conformist<br/>PractitionerId" --> RE
   CA -. "événements d'intégration<br/>PosePublished, TransitionPublished…<br/>(projection future si besoin)" .-> FG
-  ID -- "Conformist<br/>UserId + rôles (claims)" --> CO
+  ID -- "Conformist (langage d'Identité)<br/>via ports + ACL de Contribution<br/>UserId, capacité courante,<br/>adresse e-mail (lecture)" --> CO
   ID -- "Conformist<br/>rôle validateur" --> CA
   CO --> PS
   CA --> PS
@@ -45,14 +45,18 @@ Lecture : la flèche va de l'amont (upstream) vers l'aval (downstream), sauf la 
 - Le Catalogue ne connaît pas les propositions. Il reçoit seulement la référence de la proposition d'origine (`SourceProposalId`) pour la traçabilité.
 - **Publication directe (story 3)** : le cas d'usage `ProposePose` d'un validateur ou d'un administrateur crée une `PoseProposal` acceptée aussitôt, puis appelle `ICatalogPublisher.PublishPose` **dans la même transaction** (même `DbContext`, deux schémas). Si le Catalogue refuse, rien n'est enregistré. C'est une exception assumée à « une commande, un agrégat », pour la même raison que l'acceptation.
 - **Unicité du nom à travers les deux contextes** : la clé de comparaison (`PoseNameKey`, noyau partagé) est stockée dans `catalog.poses` (index unique) et dans `contribution.pose_proposals` (index unique partiel sur les propositions en attente). Contribution interroge le Catalogue par un port `ICatalogPoseNames` (ACL, qui appelle la query `IsPoseNamePublished` du Catalogue) avant de soumettre ; un verrou transactionnel par clé (`pg_advisory_xact_lock`) sérialise les propositions concurrentes d'un même nom. Le Catalogue revérifie à la publication.
-- Les adaptateurs qui relient deux contextes (`ICatalogPublisher`, `ICatalogPoseNames`, `IContributors`) vivent dans un espace de noms d'intégration de l'Infrastructure (`AcroFunJam.Infrastructure.ContextIntegration`), hors de tout espace de noms de contexte : c'est la seule couche qui voit les deux côtés.
+- **Acceptation par un validateur (story 4, ADR 0022)** : `AcceptPoseProposal` emprunte le même port `ICatalogPublisher.PublishPose` que la publication directe, dans la réservation du nom retenu (`IPoseNameReservation`). La décision est **revendiquée avant la publication** : la proposition est enregistrée par une mise à jour conditionnelle sur son statut (`WHERE status = 'pending'`, jeton de concurrence EF), puis la pose est publiée dans la même transaction. Deux décisions simultanées : une seule passe, l'autre reçoit `contribution.proposal-already-decided`. Si le Catalogue refuse (nom publié entre-temps), la transaction est annulée et la proposition reste en attente.
+- Les adaptateurs qui relient deux contextes (`ICatalogPublisher`, `ICatalogPoseNames`, `IContributors`, `IValidators`, `IContributorEmails`) vivent dans un espace de noms d'intégration de l'Infrastructure (`AcroFunJam.Infrastructure.ContextIntegration`), hors de tout espace de noms de contexte : c'est la seule couche qui voit les deux côtés.
 
 ### Catalogue ⇄ Contribution : Shared Kernel (story 3)
 - Le contenu d'une pose (`PoseName`, `PoseNameKey`, `DifficultyLevel`, `Difficulty`, `FlowBoundaries` et leurs erreurs `pose.*`) vit dans `AcroFunJam.Domain.SharedKernel`, côté front dans `core/src/domain/shared-kernel`. Raison : l'unicité du nom s'apprécie à travers les deux contextes avec **la même** clé, et une pose proposée doit être publiable telle quelle. Une duplication dériverait précisément sur l'invariant commun.
 - Le noyau reste minimal, sans agrégat ni dépendance vers un contexte. Le Catalogue en est le propriétaire (core) ; une seule équipe, donc un coût de coordination nul.
 
-### Identité → Contribution : Conformist, via un port
+### Identité → Contribution : Conformist côté langage d'Identité, via des ports et des adaptateurs anti-corruption
+- Contribution se conforme au langage d'Identité (identifiant du compte, capacités) sans le négocier, mais ne le consomme qu'à travers **ses propres ports** (`IContributors`, `IValidators`, `IContributorEmails`, Contribution.Application). Les adaptateurs anti-corruption qui les implémentent (`IdentityContributors`, `IdentityValidators`, `IdentityContributorEmails`, `AcroFunJam.Infrastructure.ContextIntegration`) appellent les queries d'Identité et traduisent leurs réponses dans le langage de Contribution. Le même vocabulaire figure dans les commentaires du code.
 - Contribution ne lit jamais le rôle dans les claims. Le port `IContributors` (Contribution.Application) renvoie un `Contributor` (`ContributorId`, `IsValidator`), lu au moment de la proposition. L'adaptateur interroge le rôle **courant** du compte (même source que les policies) et traduit la capacité `ValidateProposals` en `IsValidator`. La règle « la proposition d'un validateur est publiée directement » reste dans l'agrégat `PoseProposal`.
+- **Story 4** : le port `IValidators` renvoie de même un `Validator` (`ValidatorId`, `CanDecide`) lu au moment de la décision ; « seul un validateur décide » est vérifié par l'agrégat, la policy `CanValidate` restant la première barrière (403).
+- **Adresse e-mail du contributeur** (file de validation) : port de lecture `IContributorEmails.Of(ContributorId[])` (Contribution.Application), adaptateur `IdentityContributorEmails` qui appelle la query `GetAccountEmails` d'Identité **en une seule requête** pour toute la file. Contribution ne stocke jamais l'adresse et ne joint pas le schéma `identity` en SQL. Un compte supprimé n'a pas d'adresse (question Q11 ouverte).
 
 ### Langage publié du Catalogue (à partir de la story 1)
 - `GET /catalog/poses` renvoie toujours `200 { "poses": [ { "id", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow" } ] }`. Les deux booléens obligatoires sont ajoutés par la story « Proposer une pose » (refonte de la liste, 2026-11-03), sans casser le contrat : les difficultés restent à plat. Le nombre de poses se déduit de la liste (pas de champ `count` tant qu'il n'y a pas de pagination). Si le catalogue est vide, la réponse est `poses: []` (jamais 204 ni 404).
@@ -62,6 +66,13 @@ Lecture : la flèche va de l'amont (upstream) vers l'aval (downstream), sauf la 
 
 ### Langage publié de Contribution (story 3)
 - `POST /contribution/pose-proposals` (capacité `CanPropose`) : corps `{ "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow" }`, réponse `201 { "id", "status": "pending" | "accepted", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow" }`. Un contenu irrecevable donne 400 et un nom déjà pris 409, en ProblemDetails avec le code stable dans `title`. Un visiteur reçoit 401. Un compte supprimé depuis la connexion reçoit aussi 401 : `identity.account-deleted` si la policy le détecte, `contribution.unknown-contributor` si le cas d'usage le détecte (ADR 0018).
+
+### Langage publié de Contribution (story 4, ADR 0022)
+- `GET /contribution/validation-queue` (policy `CanValidate`) : `200 { "proposals": [ { "id", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "contributor": { "email": string | null, "isYou": bool }, "submittedAt" } ] }`, dans l'ordre de la file (la plus ancienne d'abord). File vide : `proposals: []`.
+- `GET /contribution/validation-queue/count` (policy `CanValidate`) : `200 { "count" }`.
+- `POST /contribution/pose-proposals/{id}/acceptance` (policy `CanValidate`) : corps vide ou `{}` pour une acceptation telle quelle ; étape B : `{ "name"?, "baseDifficulty"?, "flyerDifficulty"?, "canStartFlow"?, "canEndFlow"?, "message"? }`, un champ absent ou `null` gardant la valeur proposée. Réponse `200 { "id", "status": "accepted", "adjusted", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow" }` (valeurs **retenues**).
+- `POST /contribution/pose-proposals/{id}/rejection` (policy `CanValidate`) : corps `{ "reason" }`, réponse `200 { "id", "status": "rejected" }`.
+- Erreurs : 404 `contribution.proposal-not-found` ; 409 `contribution.proposal-already-decided`, `contribution.pose-name-already-in-catalog`, `contribution.pose-name-already-pending` ; 400 `contribution.rejection-reason-required`, `contribution.rejection-reason-too-long`, `contribution.adjustment-note-too-long`, `pose.*` ; 422 `contribution.adjustment-note-without-adjustment` ; 403 `identity.capability-required` (policy) ou `contribution.validator-required` (rôle retiré entre la policy et le cas d'usage) ; 401 visiteur, `identity.account-deleted` ou `contribution.unknown-validator`.
 
 ### Catalogue → Génération de flow : Open Host Service + Published Language
 - La génération possède **son propre modèle minimal** du graphe (`FlowGraph` : nœuds avec `CanStartFlow` / `CanEndFlow` et une difficulté, arêtes orientées avec une difficulté et des étiquettes), sans nom, description ni photo.

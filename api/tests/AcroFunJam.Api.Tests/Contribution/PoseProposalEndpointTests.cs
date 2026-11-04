@@ -14,18 +14,10 @@ namespace AcroFunJam.Api.Tests.Contribution;
 [Trait("Category", "Integration")]
 public sealed class PoseProposalEndpointTests(ApiWithDatabase api) : IClassFixture<ApiWithDatabase>
 {
-    private const string Password = "une phrase de passe";
     private static readonly Uri PoseProposals = new("/contribution/pose-proposals", UriKind.Relative);
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    private async Task<(HttpClient Browser, string Email)> SignedInUser()
-    {
-        var email = $"alice-{Guid.NewGuid():N}@example.org";
-        var browser = api.CreateBrowserClient();
-        (await browser.PostAsJsonAsync(new Uri("/identity/register", UriKind.Relative), new { email, password = Password }, Ct)).EnsureSuccessStatusCode();
-        (await browser.PostAsJsonAsync(new Uri("/identity/login?useCookies=true", UriKind.Relative), new { email, password = Password }, Ct)).EnsureSuccessStatusCode();
-        return (browser, email);
-    }
+    private Task<(HttpClient Browser, string Email)> SignedInUser() => api.SignedIn(Role.User);
 
     /// <summary>A unique, valid pose name (the database is shared by the tests of this class).</summary>
     private static string AFreeName() => $"Throne {Guid.NewGuid():N}"[..20];
@@ -59,12 +51,7 @@ public sealed class PoseProposalEndpointTests(ApiWithDatabase api) : IClassFixtu
     {
         var (browser, email) = await SignedInUser();
         using var _ = browser;
-        using (var scope = api.Services.CreateScope())
-        {
-            var assignRole = scope.ServiceProvider.GetRequiredService<ICommandHandler<AssignRole, bool>>();
-            (await assignRole.Handle(new AssignRole(EmailAddress.Create(email).Value!, Role.Validator, new AccountId(Guid.Empty)), Ct))
-                .IsSuccess.ShouldBeTrue();
-        }
+        await api.Assign(email, Role.Validator);
 
         var response = await browser.PostAsJsonAsync(PoseProposals, AProposal(AFreeName()), Ct);
 

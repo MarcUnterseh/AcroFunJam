@@ -40,6 +40,20 @@ public sealed class RoleSteps(People people, RoleSetter roles, Deployment deploy
     [Given(@"^(\w+) est connectée?$")]
     public Task GivenSomeoneIsSignedIn(string name) => people.SignedInClient(name);
 
+    [Given(@"^(\w+) est (" + Roles + "), connectée?$")]
+    public async Task GivenSomeoneHasTheRoleAndIsSignedIn(string name, string role)
+    {
+        await GivenSomeoneHasTheRole(name, role);
+        await people.SignedInClient(name);
+    }
+
+    /// <summary>The role is given to an existing account (e.g. after it proposed a pose as a user).</summary>
+    [Given(@"^(\w+) est devenue? (" + Roles + ")$")]
+    public Task GivenSomeoneHasBecome(string name, string role) => roles.SetRole(people[name].Email, RoleLabels.RoleCode(role));
+
+    [Given(@"^le compte (?:d'|de )(\w+) a été supprimé$")]
+    public Task GivenTheAccountWasDeleted(string name) => AccountsInDatabase.Delete(people[name].Email);
+
     [Given(@"^AcroFunJam est déployé avec l'adresse ""([^""]+)"" désignée comme premier administrateur$")]
     [When(@"^AcroFunJam est déployé avec l'adresse ""([^""]+)"" désignée comme premier administrateur$")]
     public void WhenDeployedWithAnInitialAdministrator(string email) => deployment.DeployWithInitialAdministrator(email);

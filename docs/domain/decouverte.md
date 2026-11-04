@@ -136,10 +136,9 @@ AcroFunJam est un catalogue collaboratif de poses et de transitions d'acroyoga. 
   - les alias et les autres noms.
 - Exemples corrigés par l’expert acroyoga :
   - Throne, Star et Bird peuvent commencer et terminer un flow ;
-  - Folded Leaf peut seulement terminer ;
-  - Whale peut seulement commencer (convention d’enseignement) ;
+  - ~~Folded Leaf peut seulement terminer~~ ; ~~Whale peut seulement commencer (convention d’enseignement)~~ : **révisé le 2026-11-04**, Folded Leaf peut aussi commencer, Whale peut aussi terminer selon les écoles. Ces exemples sont retirés des scénarios ; remplacés par Free Bird (termine seulement) et Candlestick (commence seulement, exemple discutable et non une référence), dans `proposer-une-pose.feature` et `consulter-les-poses.feature` (story 4, Q18) ;
   - Bow ne peut ni l’un ni l’autre ;
-  - Hand-to-Hand (L-base) est intermédiaire en base, avancé en flyer.
+  - Hand-to-Hand (L-base) ne peut ni l’un ni l’autre ; ~~intermédiaire en base, avancé en flyer~~ : **révisé le 2026-11-04**, avancé / avancé.
 
 #### Livraison de la story 3 (2026-11-03)
 - **Trois étapes**, commitées séparément :
@@ -166,11 +165,143 @@ AcroFunJam est un catalogue collaboratif de poses et de transitions d'acroyoga. 
   - autres noms (alias) ;
   - limite de taille du corps des requêtes, non testable avec TestServer.
 
+### Story 4 « Valider une proposition » (en cours)
+Carte d'example mapping du 2026-11-04, **révisée le même jour** avec les décisions du porteur du produit et les retours de l'expert acroyoga et de l'ux-expert. Scénarios (tous `@wip`) : `specs/features/contribution/valider-une-proposition.feature`.
+
+**Story** : en tant que validateur ou administrateur, je consulte les propositions de pose en attente de validation, puis j'accepte chacune, au besoin après l'avoir ajustée (elle est publiée dans le catalogue), ou je la refuse, afin que seules des poses vérifiées entrent dans le catalogue.
+
+**Décisions du porteur du produit (2026-11-04)**
+- **Ajustements avant acceptation** :
+  - le validateur peut corriger le nom (orthographe, casse), les deux difficultés et les deux indicateurs de flow avant d'accepter ;
+  - la pose publiée porte les valeurs retenues ; la proposition garde les valeurs proposées **et** les valeurs retenues, et elle est marquée « acceptée avec ajustements » (le contributeur le verra dans « Suivre mes propositions ») ;
+  - accepter sans rien changer reste possible ;
+  - les règles de contenu de la story 3 s'appliquent aux valeurs retenues : nom normalisé, 60 caractères au plus, clé non vide, difficultés de l'échelle, indicateurs obligatoires ;
+  - un nom corrigé reste unique face au catalogue **et** aux autres propositions en attente, mais pas face à la proposition elle-même (corriger « throne » en « Throne » est permis) ;
+  - le refus reste réservé au fond : doublon ou alias, position non tenable, hors champ, contenu inapproprié ;
+  - (Q15) valeurs proposées et retenues comparées après normalisation : une correction identique, ou qui ne diffère que par des espaces superflus, n'est pas un ajustement ; une correction de casse en est un ;
+  - (Q14) un **message facultatif** peut accompagner une acceptation **avec ajustements**, et seulement elle : 500 caractères au plus, espaces superflus retirés, un message fait seulement d'espaces vaut absence de message. Il est enregistré dès la story 4 ; un message joint à une acceptation sans ajustement rend l'acceptation impossible ;
+  - (Q17) règle d'interface : pas de confirmation pour une acceptation telle quelle ; un récapitulatif « proposé → retenu » (avec le message facultatif) avant d'envoyer une acceptation avec ajustements.
+- **Rôle retiré pendant la consultation** (Q16) : l'API refuse la décision comme pour un utilisateur (403, distinct du 401 d'une session expirée ou d'un compte supprimé). Le site affiche « Tu ne peux plus accepter ni refuser de proposition : ton rôle a changé. », avec un lien vers le catalogue.
+- **Événement de refus** : `PoseProposalRejected`, aligné sur `PoseProposalAccepted`.
+- **Motif de refus** : texte libre obligatoire, 500 caractères au plus, espaces superflus retirés, sans catégories.
+- **« Mes propositions »** devient la story 5 « Suivre mes propositions », livrée dans la même mise en production.
+- **Contributeur** : il est présenté aux validateurs et aux administrateurs par son adresse e-mail. Pour sa propre proposition, le site dit « toi ».
+- **Recommandations retenues** :
+  - la file présente la proposition la plus ancienne d'abord ;
+  - le catalogue ne crédite pas publiquement le contributeur ;
+  - une décision est irréversible, et toute seconde décision est impossible (« déjà traitée ») ;
+  - pas d'amendement après un refus : le contributeur fait une nouvelle proposition ;
+  - un validateur peut décider d'une proposition qu'il a faite avant d'être promu ;
+  - le contributeur ne voit pas quel validateur a décidé.
+- **Expert acroyoga** :
+  - Folded Leaf peut aussi commencer un flow ; Whale peut aussi terminer selon les écoles ;
+  - les exemples nets sont donc Bird, Throne et Star (commencer et terminer) et Hand-to-Hand (L-base), avancé / avancé (ni l'un ni l'autre) ;
+  - exemple de doublon incontesté : « Front Bird », refusée avec le motif « Doublon de Bird, déjà au catalogue. » ;
+  - en acroyoga, « valider une figure » veut dire la réussir : à l'écran, on dit « Propositions à valider ».
+- **UX** :
+  - entrée par le lien « Propositions à valider » de l'en-tête, réservé aux validateurs et aux administrateurs, avec le nombre de propositions en attente (masqué à 0) ;
+  - une proposition traitée est remplacée sur place par un compte rendu jusqu'au prochain chargement ;
+  - « déjà traitée » ne dit pas « par un autre validateur » ;
+  - le motif saisi est conservé si AcroFunJam est injoignable ou si la session expire ;
+  - la longueur maximale du motif est vérifiée par un test unitaire côté site.
+
+**Existant** (story 3) : l'agrégat `PoseProposal` (statuts `Pending` et `Accepted`), la publication directe (acceptation par le contributeur lui-même, dans la même transaction que `PublishPose`), la proposition d'origine (`SourceProposalId`) gardée par la pose publiée, l'index unique partiel sur le nom des propositions en attente, la capacité `CanValidate` (policy) et l'index sur le contributeur, prévu pour « Mes propositions ».
+
+**Règles et exemples**
+- **R1. Seul un validateur ou un administrateur consulte la file de validation.**
+  - Bruno (validateur) et Paul (administrateur) voient la proposition « Throne » d'Alice.
+  - Alice (utilisatrice) : consultation refusée.
+  - Un visiteur : il faut être connecté.
+  - Bruno, dont le compte a été supprimé depuis sa connexion : refus traité comme une session expirée (décision de la story 3).
+- **R2. Seul un validateur ou un administrateur accepte ou refuse une proposition.**
+  - Alice tente d'accepter, puis de refuser, la proposition « Throne » de Chloé : décision refusée, et la proposition reste dans la file.
+  - Un visiteur : il faut être connecté. Un compte supprimé : comme en R1.
+  - Bruno, à qui Paul a retiré le rôle validateur pendant qu'il était connecté : décision refusée comme pour un utilisateur (403), pas comme une session expirée (401).
+- **R3. La file présente chaque proposition en attente avec la pose proposée, l'adresse e-mail de son contributeur et sa date de soumission.**
+  - « Hand-to-Hand (L-base) », avancé / avancé, ne peut ni commencer ni terminer, alice@example.org, soumise le 2026-11-03.
+  - Ni les propositions acceptées (y compris les publications directes de Bruno) ni les refusées n'y figurent.
+  - File vide : message « aucune proposition n'est en attente de validation ».
+- **R4. La file présente d'abord la proposition la plus ancienne** ; à date égale, l'ordre du catalogue sur le nom départage.
+  - Star (1er novembre), Bird (2 novembre), Throne (3 novembre).
+- **R5. Un validateur ou un administrateur connaît le nombre de propositions en attente** (pour l'en-tête du site).
+  - Trois propositions, dont une acceptée : 2. Un utilisateur ne peut pas consulter ce nombre.
+- **R6. Accepter sans ajustement publie la pose telle que proposée** (nom tel que saisi, difficultés, indicateurs).
+  - « Throne » acceptée apparaît à côté de « Bird » pour un visiteur.
+  - Bird (commencer et terminer) et Hand-to-Hand (L-base) (ni l'un ni l'autre) gardent leurs indicateurs.
+  - « Hand-to-Hand (L-base) » est publiée avec cette orthographe exacte, avancé / avancé.
+- **R7. Une proposition acceptée garde la trace de son contributeur, du validateur et de la date**, puis quitte la file.
+  - La proposition « Throne » d'Alice est acceptée sans ajustement par Bruno le 2026-11-05. La pose publiée garde la référence de sa proposition d'origine.
+- **R8. Une acceptation avec ajustements publie la pose avec les valeurs retenues.**
+  - « Throne » proposée débutant / intermédiaire, corrigée en difficulté flyer « découverte » : publiée débutant / découverte.
+  - « Hand-to-Hand (L-base) » proposée comme pouvant terminer un flow, corrigée en « ne peut pas terminer un flow » : publiée comme ne pouvant ni commencer ni terminer. C'est un enjeu de sécurité : « peut terminer » signifie que le flyer redescend au sol sans danger.
+  - « throne » corrigée en « Throne » : publiée « Throne ». Même clé de comparaison que la proposition elle-même, donc pas de conflit.
+- **R9. La proposition acceptée avec ajustements garde les valeurs proposées et les valeurs retenues**, et elle est marquée « acceptée avec ajustements ».
+  - Difficulté flyer proposée « intermédiaire », retenue « découverte ».
+- **R9 bis. Seule une valeur retenue différente de la valeur proposée est un ajustement** (comparaison après normalisation).
+  - Difficulté flyer « découverte » corrigée en « découverte » : acceptée sans ajustement.
+  - Nom « Throne » corrigé en « Throne » entouré d'espaces : acceptée sans ajustement.
+  - Nom « throne » corrigé en « Throne » : acceptée avec ajustements.
+- **R9 ter. Un message facultatif peut accompagner une acceptation avec ajustements, et seulement elle.**
+  - « Le flyer ne redescend pas sans danger depuis cette pose. », avec l'indicateur de Hand-to-Hand (L-base) corrigé : message conservé.
+  - Espaces superflus retirés ; un message fait seulement d'espaces vaut absence de message.
+  - 500 caractères : acceptée. 501 : acceptation impossible, la proposition reste en attente.
+  - « Belle proposition. » sur une acceptation sans ajustement : acceptation impossible.
+- **R10. Les valeurs retenues respectent les règles de contenu d'une pose.** Sinon, l'acceptation est impossible et la proposition reste en attente.
+  - Nom corrigé vide ou « --- » : obligatoire. Nom de 61 caractères : trop long. Difficulté « expert » : n'existe pas.
+- **R11. Un nom corrigé ne peut pas être celui d'une pose du catalogue ni d'une autre proposition en attente.** L'acceptation est alors impossible et la proposition reste en attente.
+  - « Thron » corrigée en « Throne » alors que « Throne » est publiée : une pose de ce nom existe déjà dans le catalogue.
+  - « Starr » d'Alice corrigée en « Star » alors que « Star » de Chloé est en attente : déjà en attente de validation.
+- **R12. Une proposition dont le nom est pris entre-temps dans le catalogue ne peut pas être acceptée.** Le catalogue revérifie l'unicité ; rien n'est publié et la proposition reste en attente.
+  - « Throne » d'Alice est en attente, puis « throne » est publiée hors proposition (amorçage de données, et demain une modification de pose) : l'acceptation est impossible.
+- **R13. Refuser ne publie rien et garde le motif.** La proposition quitte la file.
+  - « Front Bird » refusée avec le motif « Doublon de Bird, déjà au catalogue. » : le catalogue ne présente que « Bird ».
+- **R14. Le motif de refus est obligatoire et compte au plus 500 caractères**, espaces superflus retirés.
+  - Sans motif, ou fait seulement d'espaces : refus impossible.
+  - « Doublon   de Bird. » entouré d'espaces est enregistré « Doublon de Bird. ».
+  - 500 caractères : accepté. 501 : refus impossible.
+  - Quand le refus est impossible, la proposition reste en attente.
+- **R15. Le nom d'une proposition refusée peut de nouveau être proposé** (pas d'amendement).
+  - Après le refus de « Throne » d'Alice, Chloé propose « Throne » : sa proposition est en attente de validation.
+- **R16. Une proposition déjà traitée ne peut plus être ni acceptée ni refusée** : la décision est impossible, car la proposition a déjà été traitée.
+  - Les quatre combinaisons sont couvertes (déjà acceptée ou refusée, puis tentative d'accepter ou de refuser), y compris Bruno qui accepte deux fois.
+  - Bruno et Paul acceptent au même moment : la pose n'est publiée qu'une fois.
+  - Une proposition inconnue : introuvable.
+- **R17. Un validateur peut décider d'une proposition qu'il a faite avant d'être promu.**
+  - Alice propose « Throne » en tant qu'utilisatrice, devient validateur, puis accepte sa propre proposition.
+- **R18. Sur le site** :
+  - **accès** : l'en-tête invite les validateurs et les administrateurs à consulter les « Propositions à valider », avec le nombre (2, puis 1 après une décision ; aucun nombre à 0). Un visiteur qui ouvre directement la page doit se connecter, puis il y arrive ; un utilisateur est ramené au catalogue ;
+  - **présentation** : le contributeur est présenté par son adresse e-mail, « toi » pour sa propre proposition ;
+  - **décision** : le site rend compte de chaque décision, y compris avec ajustements, sans plus proposer de décider de la proposition traitée ; elle disparaît à la consultation suivante ;
+  - **erreurs** : le site signale un motif manquant ou un nom corrigé vide avant l'envoi, et relaie « déjà traitée » et « Une pose de ce nom existe déjà dans le catalogue. » ;
+  - **incidents** : le motif saisi est conservé si AcroFunJam est injoignable ou si la session expire, puis retrouvé après la reconnexion ;
+  - **rôle retiré** pendant la consultation : « Tu ne peux plus accepter ni refuser de proposition : ton rôle a changé. », avec un lien vers le catalogue (côté API : Bruno, rétrogradé utilisateur, voit sa décision refusée comme un utilisateur) ;
+  - **interface** (sans scénario dédié) : pas de confirmation pour une acceptation telle quelle ; un récapitulatif « proposé → retenu », avec le message facultatif, avant d'envoyer une acceptation avec ajustements.
+- **R19. Ce que voit le contributeur** : sa pose publiée apparaît dans le catalogue. Le statut, les ajustements et les messages sont présentés dans « Suivre mes propositions » (story 5).
+
+**Pour la story 5 « Suivre mes propositions »** (décisions du 2026-11-04) : le contributeur voit le **détail des ajustements champ par champ** (valeur proposée → valeur retenue), le message facultatif qui les accompagne, et le motif d'un refus. Il ne voit pas quel validateur a décidé.
+
+**Questions encore ouvertes (recommandation de l'analyse entre parenthèses)**
+- **Q11** Que deviennent les propositions en attente d'un compte supprimé ? (Elles restent dans la file, contributeur présenté comme « compte supprimé ». À trancher avec la story de suppression de compte.)
+- **Q18 (tranchée le 2026-11-04, expert acroyoga)** « Termine seulement » : **Free Bird** (débutant / débutant), on y arrive depuis Bird et on en sort comme de Bird. « Commence seulement » : aucune pose incontestée en L-basing ; **Candlestick** (débutant / intermédiaire) est retenue comme exemple, signalé comme tel dans les scénarios. Appliqué à `proposer-une-pose.feature` et `consulter-les-poses.feature`.
+
+Tranchées le 2026-11-04 : Q13 (détail des ajustements, story 5), Q14 (message facultatif réservé aux acceptations avec ajustements), Q15 (comparaison après normalisation), Q16 (message dédié et lien vers le catalogue), Q17 (récapitulatif seulement pour une acceptation avec ajustements).
+
+**Livraison prévue, en trois étapes commitées séparément**
+- **A, API** : file de validation, nombre de propositions en attente, acceptation telle quelle, droits, refus, une seule décision, contributeur promu.
+- **B, API** : ajustements (valeurs retenues, règles de contenu, unicité du nom corrigé, comparaison après normalisation) et message facultatif.
+- **C, site** : tous les scénarios @web.
+
+**Termes ajoutés ou révisés dans le glossaire** :
+- ajoutés : file de validation, nombre de propositions à valider, motif de refus, proposition traitée, ajustement, pose retenue, acceptée avec ajustements, message d'ajustement, Propositions à valider (libellé), alias / nom d'usage (non modélisé) ;
+- révisés : statut `Rejected` (code `rejected`), accepter, refuser (événement `PoseProposalRejected`).
+
 ### Découpage des stories suivantes (décidé le 2026-11-02)
 1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.
 2. **Proposer une pose** (Contribution) : reprend les règles de contenu de `specs/features/catalogue/publier-une-pose.feature` (brouillon) ; publication directe pour un validateur ou un administrateur.
-3. **Valider une proposition** (Contribution → Catalogue) : accepter (publication) ou refuser.
+3. **Valider une proposition** (Contribution → Catalogue) : accepter (publication), au besoin avec ajustements, ou refuser.
 4. **Proposer une modification** d’une pose publiée.
+
+Révision du 2026-11-04 : la story 5 **« Suivre mes propositions »** (Contribution) est livrée dans la **même mise en production** que « Valider une proposition ». Le contributeur y voit le statut de chacune de ses propositions (en attente, acceptée, acceptée avec ajustements, refusée), les ajustements et le motif de refus. Scénarios à écrire.
 
 ### Vocabulaire écarté
 - « figure », « posture » : remplacés par **pose**, ou **élément** quand il s'agit d'une pose ou d'une transition ;

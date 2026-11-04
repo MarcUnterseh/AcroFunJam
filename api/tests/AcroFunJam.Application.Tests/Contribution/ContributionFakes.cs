@@ -64,7 +64,17 @@ internal sealed class FakeCatalogPoseNames(params string[] publishedNames) : Res
 /// <summary>In-memory fake of <see cref="IPoseProposalRepository"/>.</summary>
 internal sealed class FakePoseProposalRepository(params string[] pendingNames) : ReservationAwareFake, IPoseProposalRepository
 {
+    /// <summary>The proposals already stored, found by <see cref="GetById"/>.</summary>
+    public IReadOnlyList<PoseProposal> Stored { get; init; } = [];
+
     public List<PoseProposal> Added { get; } = [];
+
+    public List<PoseProposal> Updated { get; } = [];
+
+    public Task<PoseProposal?> GetById(PoseProposalId id, CancellationToken ct) =>
+        Task.FromResult(Stored.SingleOrDefault(p => p.Id == id));
+
+    public void Update(PoseProposal proposal) => Updated.Add(proposal);
 
     public List<bool> AddsInReservation { get; } = [];
 
@@ -93,4 +103,33 @@ internal sealed class FakeCatalogPublisher(Error? refusal = null) : ReservationA
         Published.Add((source, pose));
         return Task.FromResult(Result<bool>.Success(true));
     }
+}
+
+/// <summary>In-memory fake of <see cref="IPendingPoseProposalsReader"/>: the pending proposals, in no particular order.</summary>
+internal sealed class FakePendingPoseProposalsReader(params PoseProposal[] pending) : IPendingPoseProposalsReader
+{
+    public Task<IReadOnlyList<PoseProposal>> ListPending(CancellationToken ct) =>
+        Task.FromResult<IReadOnlyList<PoseProposal>>(pending);
+
+    public Task<int> CountPending(CancellationToken ct) => Task.FromResult(pending.Length);
+}
+
+/// <summary>In-memory fake of <see cref="IContributorEmails"/>: the addresses of the existing accounts, and the calls received.</summary>
+internal sealed class FakeContributorEmails(params (ContributorId Contributor, string Email)[] emails) : IContributorEmails
+{
+    public List<IReadOnlyCollection<ContributorId>> Calls { get; } = [];
+
+    public Task<IReadOnlyDictionary<ContributorId, string>> Of(IReadOnlyCollection<ContributorId> contributors, CancellationToken ct)
+    {
+        Calls.Add(contributors);
+        return Task.FromResult<IReadOnlyDictionary<ContributorId, string>>(
+            emails.Where(e => contributors.Contains(e.Contributor)).ToDictionary(e => e.Contributor, e => e.Email));
+    }
+}
+
+/// <summary>In-memory fake of <see cref="IValidators"/>.</summary>
+internal sealed class FakeValidators(params Validator[] validators) : IValidators
+{
+    public Task<Validator?> Find(ValidatorId id, CancellationToken ct) =>
+        Task.FromResult(validators.SingleOrDefault(v => v.Id == id));
 }

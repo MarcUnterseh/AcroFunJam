@@ -7,10 +7,14 @@ namespace AcroFunJam.Infrastructure.Persistence;
 
 /// <summary>
 /// EF Core adapter of <see cref="IUnitOfWork"/>: saves the context, then clears the events of the saved aggregates.
-/// The violation of a declared unique constraint is returned as its business error; any other one is a bug.
+/// The violation of a declared unique constraint, or a declared concurrency conflict, is returned as its business
+/// error (ADR 0017, ADR 0022); any other one is a bug.
 /// </summary>
 public sealed class EfUnitOfWork(
-    AcroFunJamDbContext context, TrackedAggregates aggregates, IEnumerable<UniqueConstraintError> uniqueConstraints) : IUnitOfWork
+    AcroFunJamDbContext context,
+    TrackedAggregates aggregates,
+    IEnumerable<UniqueConstraintError> uniqueConstraints,
+    IEnumerable<ConcurrencyConflictError> concurrencyConflicts) : IUnitOfWork
 {
     public async Task<Result<bool>> SaveChanges(CancellationToken ct)
     {
@@ -29,6 +33,14 @@ public sealed class EfUnitOfWork(
     }
 
     private Error? DeclaredError(DbUpdateException exception) =>
+        exception is DbUpdateConcurrencyException conflict ? DeclaredConflict(conflict) : DeclaredViolation(exception);
+
+    private Error? DeclaredConflict(DbUpdateConcurrencyException conflict) =>
+        conflict.Entries
+            .Select(entry => concurrencyConflicts.FirstOrDefault(c => c.RecordType == entry.Metadata.ClrType)?.Error)
+            .FirstOrDefault(error => error is not null);
+
+    private Error? DeclaredViolation(DbUpdateException exception) =>
         exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } violation
             ? uniqueConstraints.FirstOrDefault(c => c.ConstraintName == violation.ConstraintName)?.Error
             : null;

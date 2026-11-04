@@ -90,14 +90,6 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateTimeOffset?>("AcceptedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("accepted_at");
-
-                    b.Property<Guid?>("AcceptedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("accepted_by");
-
                     b.Property<string>("BaseDifficulty")
                         .IsRequired()
                         .HasColumnType("text")
@@ -115,6 +107,14 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("contributor_id");
 
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("decided_at");
+
+                    b.Property<Guid?>("DecidedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("decided_by");
+
                     b.Property<string>("FlyerDifficulty")
                         .IsRequired()
                         .HasColumnType("text")
@@ -130,7 +130,12 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name_key");
 
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("text")
+                        .HasColumnName("rejection_reason");
+
                     b.Property<string>("Status")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("status");
@@ -149,9 +154,15 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_pose_proposals_pending_name_key")
                         .HasFilter("status = 'pending'");
 
+                    b.HasIndex("SubmittedAt")
+                        .HasDatabaseName("ix_pose_proposals_pending_submitted_at")
+                        .HasFilter("status = 'pending'");
+
                     b.ToTable("pose_proposals", "contribution", t =>
                         {
                             t.HasCheckConstraint("ck_pose_proposals_base_difficulty", "base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_pose_proposals_decision", "(status = 'pending') = (decided_by IS NULL) AND (status = 'pending') = (decided_at IS NULL)");
 
                             t.HasCheckConstraint("ck_pose_proposals_flyer_difficulty", "flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
 
@@ -159,7 +170,11 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_pose_proposals_name_length", "char_length(name) <= 60");
 
-                            t.HasCheckConstraint("ck_pose_proposals_status", "status IN ('pending', 'accepted')");
+                            t.HasCheckConstraint("ck_pose_proposals_rejection_reason", "(status = 'rejected') = (rejection_reason IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_pose_proposals_rejection_reason_length", "char_length(rejection_reason) <= 500");
+
+                            t.HasCheckConstraint("ck_pose_proposals_status", "status IN ('pending', 'accepted', 'rejected')");
                         });
                 });
 

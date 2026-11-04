@@ -8,5 +8,14 @@ public interface IPoseProposalRepository
 {
     void Add(PoseProposal proposal);
 
+    /// <returns>The proposal, or <c>null</c> when it does not exist.</returns>
+    Task<PoseProposal?> GetById(PoseProposalId id, CancellationToken ct);
+
+    /// <summary>
+    /// Records the decision taken on a loaded proposal. Saved only if the proposal is still pending in storage;
+    /// otherwise <see cref="Common.IUnitOfWork.SaveChanges"/> fails with <c>contribution.proposal-already-decided</c> (ADR 0022).
+    /// </summary>
+    void Update(PoseProposal proposal);
+
     Task<bool> ExistsPendingWithNameKey(PoseNameKey key, CancellationToken ct);
 }

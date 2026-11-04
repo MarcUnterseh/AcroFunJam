@@ -82,6 +82,6 @@ public sealed class EfPoseRepositoryTests(PostgreSqlFixture database) : IClassFi
         var aggregates = new TrackedAggregates();
         new EfPoseRepository(context, aggregates).Add(APublishedPose("high bird"));
         // Without the declared translation, the unique index itself refuses the pose.
-        await Should.ThrowAsync<DbUpdateException>(() => new EfUnitOfWork(context, aggregates, []).SaveChanges(Ct));
+        await Should.ThrowAsync<DbUpdateException>(() => new EfUnitOfWork(context, aggregates, [], []).SaveChanges(Ct));
     }
 }

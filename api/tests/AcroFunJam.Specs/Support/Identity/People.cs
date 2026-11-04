@@ -12,6 +12,8 @@ public sealed class People(Deployment deployment) : IDisposable
 
     public Person this[string name] => _people[name];
 
+    public bool IsKnown(string name) => _people.ContainsKey(name);
+
     /// <summary>"chloe@example.org" for Chloé: the identity library only accepts ASCII user names.</summary>
     public static string DefaultEmail(string name) => $"{WithoutAccents(name).ToLowerInvariant()}@example.org";
 
@@ -51,6 +53,16 @@ public sealed class People(Deployment deployment) : IDisposable
         }
 
         return _people[name].Client;
+    }
+
+    /// <summary>
+    /// The client of a person signed in again now: after the scenario clock moved, the access token of an earlier
+    /// sign-in may have expired (or not be issued yet).
+    /// </summary>
+    public Task<HttpClient> SignedInClientAgain(string name)
+    {
+        _people[name].Client.DefaultRequestHeaders.Authorization = null;
+        return SignedInClient(name);
     }
 
     public void Dispose()

@@ -3,7 +3,12 @@ using System.Text.Json.Serialization;
 using AcroFunJam.Api.Authorization;
 using AcroFunJam.Api.Endpoints.Common;
 using AcroFunJam.Application.Common;
+using AcroFunJam.Application.Contribution;
+using AcroFunJam.Application.Contribution.AcceptPoseProposal;
+using AcroFunJam.Application.Contribution.CountPendingPoseProposals;
+using AcroFunJam.Application.Contribution.GetPendingPoseProposals;
 using AcroFunJam.Application.Contribution.ProposePose;
+using AcroFunJam.Application.Contribution.RejectPoseProposal;
 using AcroFunJam.Domain.Contribution;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -22,6 +27,35 @@ public static class ContributionEndpoints
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status409Conflict);
+
+        contribution.MapGet("/validation-queue", GetValidationQueue)
+            .WithName("GetValidationQueue")
+            .RequireAuthorization(Capabilities.CanValidate)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
+        contribution.MapGet("/validation-queue/count", CountPendingProposals)
+            .WithName("CountPendingPoseProposals")
+            .RequireAuthorization(Capabilities.CanValidate)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
+        contribution.MapPost("/pose-proposals/{id:guid}/acceptance", AcceptPoseProposal)
+            .WithName("AcceptPoseProposal")
+            .RequireAuthorization(Capabilities.CanValidate)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
+
+        contribution.MapPost("/pose-proposals/{id:guid}/rejection", RejectPoseProposal)
+            .WithName("RejectPoseProposal")
+            .RequireAuthorization(Capabilities.CanValidate)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         return app;
@@ -47,13 +81,85 @@ public static class ContributionEndpoints
         return TypedResults.Created((string?)null, ToResponse(result.Value!));
     }
 
-    private static ContributorId ContributorOf(ClaimsPrincipal principal) =>
-        new(Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!));
+    private static async Task<Results<Ok<ValidationQueueResponse>, ProblemHttpResult>> GetValidationQueue(
+        ClaimsPrincipal validator,
+        IQueryHandler<GetPendingPoseProposals, IReadOnlyList<PendingPoseProposalDto>> handler,
+        CancellationToken ct)
+    {
+        var result = await handler.Handle(new GetPendingPoseProposals(ValidatorOf(validator)), ct);
+        if (result.IsFailure) return result.Error!.ToProblem();
+        return TypedResults.Ok(new ValidationQueueResponse([.. result.Value!.Select(ToResponse)]));
+    }
+
+    private static async Task<Results<Ok<PendingCountResponse>, ProblemHttpResult>> CountPendingProposals(
+        IQueryHandler<CountPendingPoseProposals, int> handler,
+        CancellationToken ct)
+    {
+        var result = await handler.Handle(new CountPendingPoseProposals(), ct);
+        if (result.IsFailure) return result.Error!.ToProblem();
+        return TypedResults.Ok(new PendingCountResponse(result.Value));
+    }
+
+    /// <summary>Step A: accepted as proposed, hence without adjustment (ADR 0022).</summary>
+    private static async Task<Results<Ok<AcceptedPoseProposalResponse>, ProblemHttpResult>> AcceptPoseProposal(
+        Guid id,
+        ClaimsPrincipal validator,
+        ICommandHandler<AcceptPoseProposal, DecidedPoseProposalDto> handler,
+        CancellationToken ct)
+    {
+        var result = await handler.Handle(new AcceptPoseProposal(new PoseProposalId(id), ValidatorOf(validator)), ct);
+        if (result.IsFailure) return result.Error!.ToProblem();
+
+        var accepted = result.Value!;
+        return TypedResults.Ok(new AcceptedPoseProposalResponse(
+            accepted.Id.Value,
+            ProposalStatusCodes.From(accepted.Status),
+            Adjusted: false,
+            accepted.Pose.Name.Value,
+            DifficultyCodes.From(accepted.Pose.Difficulty.Base),
+            DifficultyCodes.From(accepted.Pose.Difficulty.Flyer),
+            accepted.Pose.Flow.CanStartFlow,
+            accepted.Pose.Flow.CanEndFlow));
+    }
+
+    private static async Task<Results<Ok<RejectedPoseProposalResponse>, ProblemHttpResult>> RejectPoseProposal(
+        Guid id,
+        RejectPoseProposalRequest request,
+        ClaimsPrincipal validator,
+        ICommandHandler<RejectPoseProposal, DecidedPoseProposalDto> handler,
+        CancellationToken ct)
+    {
+        var reason = RejectionReason.Create(request.Reason);
+        if (reason.IsFailure) return reason.Error!.ToProblem();
+
+        var result = await handler.Handle(new RejectPoseProposal(new PoseProposalId(id), ValidatorOf(validator), reason.Value!), ct);
+        if (result.IsFailure) return result.Error!.ToProblem();
+        return TypedResults.Ok(new RejectedPoseProposalResponse(result.Value!.Id.Value, ProposalStatusCodes.From(result.Value.Status)));
+    }
+
+    private static ValidatorId ValidatorOf(ClaimsPrincipal principal) => new(AccountIdOf(principal));
+
+    private static PendingPoseProposalResponse ToResponse(PendingPoseProposalDto proposal) =>
+        new(
+            proposal.Id.Value,
+            proposal.ProposedPose.Name.Value,
+            DifficultyCodes.From(proposal.ProposedPose.Difficulty.Base),
+            DifficultyCodes.From(proposal.ProposedPose.Difficulty.Flyer),
+            proposal.ProposedPose.Flow.CanStartFlow,
+            proposal.ProposedPose.Flow.CanEndFlow,
+            new ProposalContributorResponse(proposal.ContributorEmail, proposal.IsYou),
+            proposal.SubmittedAt);
+
+    private static ContributorId ContributorOf(ClaimsPrincipal principal) => new(AccountIdOf(principal));
+
+    /// <summary>Contributor and validator identifiers carry the value of the account identifier (ADR 0022).</summary>
+    private static Guid AccountIdOf(ClaimsPrincipal principal) =>
+        Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     private static PoseProposalResponse ToResponse(PoseProposalDto proposal) =>
         new(
             proposal.Id.Value,
-            proposal.Status == ProposalStatus.Accepted ? ProposalStatusCode.Accepted : ProposalStatusCode.Pending,
+            ProposalStatusCodes.From(proposal.Status),
             proposal.Pose.Name.Value,
             DifficultyCodes.From(proposal.Pose.Difficulty.Base),
             DifficultyCodes.From(proposal.Pose.Difficulty.Flyer),
@@ -77,10 +183,62 @@ public sealed record PoseProposalResponse(
     bool CanStartFlow,
     bool CanEndFlow);
 
-/// <summary>Status of a received proposal: pending validation, or accepted, hence published directly.</summary>
+/// <summary>The validation queue: pending proposals, the oldest first (ADR 0007: lists are wrapped).</summary>
+public sealed record ValidationQueueResponse(IReadOnlyList<PendingPoseProposalResponse> Proposals);
+
+/// <summary>A proposal pending validation: the proposed pose, its contributor and when it was submitted.</summary>
+public sealed record PendingPoseProposalResponse(
+    Guid Id,
+    string Name,
+    DifficultyCode BaseDifficulty,
+    DifficultyCode FlyerDifficulty,
+    bool CanStartFlow,
+    bool CanEndFlow,
+    ProposalContributorResponse Contributor,
+    DateTimeOffset SubmittedAt);
+
+/// <summary>An accepted proposal: the pose published in the catalog, and whether the validator adjusted it.</summary>
+public sealed record AcceptedPoseProposalResponse(
+    Guid Id,
+    ProposalStatusCode Status,
+    bool Adjusted,
+    string Name,
+    DifficultyCode BaseDifficulty,
+    DifficultyCode FlyerDifficulty,
+    bool CanStartFlow,
+    bool CanEndFlow);
+
+/// <summary>
+/// The rejection of a proposal. Deliberately permissive: a missing reason is refused with a business code
+/// (<c>contribution.rejection-reason-required</c>) rather than by the JSON deserialiser (ADR 0018).
+/// </summary>
+public sealed record RejectPoseProposalRequest(string? Reason);
+
+/// <summary>A rejected proposal: nothing is published.</summary>
+public sealed record RejectedPoseProposalResponse(Guid Id, ProposalStatusCode Status);
+
+/// <summary>How many proposals are pending validation.</summary>
+public sealed record PendingCountResponse(int Count);
+
+/// <summary>The contributor of a proposal: their address (null if the account no longer exists), and whether it is the requester.</summary>
+public sealed record ProposalContributorResponse(string? Email, bool IsYou);
+
+/// <summary>Status of a proposal: pending validation, accepted (hence published) or rejected (ADR 0022).</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<ProposalStatusCode>))]
 public enum ProposalStatusCode
 {
     [JsonStringEnumMemberName("pending")] Pending,
     [JsonStringEnumMemberName("accepted")] Accepted,
+    [JsonStringEnumMemberName("rejected")] Rejected,
+}
+
+public static class ProposalStatusCodes
+{
+    public static ProposalStatusCode From(ProposalStatus status) => status switch
+    {
+        ProposalStatus.Pending => ProposalStatusCode.Pending,
+        ProposalStatus.Accepted => ProposalStatusCode.Accepted,
+        ProposalStatus.Rejected => ProposalStatusCode.Rejected,
+        _ => throw new ArgumentOutOfRangeException(nameof(status), status, "Unknown proposal status."),
+    };
 }

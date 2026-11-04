@@ -86,7 +86,28 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
         schemas.GetProperty("PoseProposalResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
             .ShouldBe(["id", "status", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow"], ignoreOrder: true);
         schemas.GetProperty("ProposalStatusCode").GetProperty("enum").EnumerateArray().Select(v => v.GetString())
-            .ShouldBe(["pending", "accepted"], ignoreOrder: true);
+            .ShouldBe(["pending", "accepted", "rejected"], ignoreOrder: true);
+    }
+
+    [Theory]
+    [InlineData("/contribution/validation-queue", "get", new[] { "200", "401", "403" })]
+    [InlineData("/contribution/validation-queue/count", "get", new[] { "200", "401", "403" })]
+    [InlineData("/contribution/pose-proposals/{id}/acceptance", "post", new[] { "200", "401", "403", "404", "409" })]
+    [InlineData("/contribution/pose-proposals/{id}/rejection", "post", new[] { "200", "400", "401", "403", "404", "409" })]
+    public async Task OpenApiDocument_Should_DescribeTheDecisionOperations_When_TheValidationQueueIsExposed(
+        string path, string method, string[] statuses)
+    {
+        using var client = api.CreateClient();
+
+        var document = await client.GetFromJsonAsync<JsonElement>(new Uri("/openapi/v1.json", UriKind.Relative), Ct);
+        var operation = document.GetProperty("paths").GetProperty(path).GetProperty(method);
+
+        HasBearerRequirement(operation).ShouldBeTrue();
+        var responses = operation.GetProperty("responses");
+        foreach (var status in statuses)
+        {
+            responses.TryGetProperty(status, out _).ShouldBeTrue($"response {status} is documented");
+        }
     }
 
     private static bool HasBearerRequirement(JsonElement operation) =>

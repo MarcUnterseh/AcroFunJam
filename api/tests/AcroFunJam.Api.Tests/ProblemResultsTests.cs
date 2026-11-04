@@ -37,6 +37,26 @@ public sealed class ProblemResultsTests
         problem.ProblemDetails.Detail.ShouldBe(error.Message);
     }
 
+    public static TheoryData<Error, int> StatusByDecisionError() => new()
+    {
+        { ContributionErrors.ProposalNotFound, StatusCodes.Status404NotFound },
+        { ContributionErrors.ProposalAlreadyDecided, StatusCodes.Status409Conflict },
+        { ContributionErrors.RejectionReasonRequired, StatusCodes.Status400BadRequest },
+        { ContributionErrors.RejectionReasonTooLong, StatusCodes.Status400BadRequest },
+        { ContributionErrors.UnknownValidator, StatusCodes.Status401Unauthorized },
+        { ContributionErrors.ValidatorRequired, StatusCodes.Status403Forbidden },
+    };
+
+    [Theory]
+    [MemberData(nameof(StatusByDecisionError))]
+    public void ToProblem_Should_AnswerTheDecisionStatuses_When_TheErrorIsADecisionError(Error error, int status)
+    {
+        var problem = error.ToProblem();
+
+        problem.StatusCode.ShouldBe(status);
+        problem.ProblemDetails.Title.ShouldBe(error.Code);
+    }
+
     [Fact]
     public void DifficultyCode_Should_SerializeAsTheDomainCode_When_ExposingEachLevel()
     {
@@ -45,4 +65,11 @@ public sealed class ProblemResultsTests
             System.Text.Json.JsonSerializer.Serialize(DifficultyCodes.From(level)).ShouldBe($"\"{level.ToCode()}\"");
         }
     }
+
+    [Theory]
+    [InlineData(ProposalStatus.Pending, "\"pending\"")]
+    [InlineData(ProposalStatus.Accepted, "\"accepted\"")]
+    [InlineData(ProposalStatus.Rejected, "\"rejected\"")]
+    public void ProposalStatusCode_Should_SerializeAsTheStatusCode_When_ExposingEachStatus(ProposalStatus status, string json) =>
+        System.Text.Json.JsonSerializer.Serialize(AcroFunJam.Api.Endpoints.Contribution.ProposalStatusCodes.From(status)).ShouldBe(json);
 }
