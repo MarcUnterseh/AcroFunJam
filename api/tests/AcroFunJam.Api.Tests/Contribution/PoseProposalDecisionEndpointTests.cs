@@ -97,4 +97,79 @@ public sealed class PoseProposalDecisionEndpointTests(ApiWithDatabase api) : ICl
         body.GetProperty("id").GetGuid().ShouldBe(id);
         body.GetProperty("status").GetString().ShouldBe("rejected");
     }
+
+    [Fact]
+    public async Task Accept_Should_Answer400NameRequired_When_TheAdjustedNameIsEmpty()
+    {
+        var (bruno, _) = await api.SignedIn(Role.Validator);
+        using var _ = bruno;
+        var (id, _) = await APendingProposal(bruno);
+
+        var response = await bruno.PostAsJsonAsync(Acceptance(id), new { name = "" }, Ct);
+
+        await response.ShouldBeAProblem(HttpStatusCode.BadRequest, "pose.name-required");
+    }
+
+    [Fact]
+    public async Task Accept_Should_KeepTheProposedValue_When_AFieldIsNullOrAbsent()
+    {
+        var (bruno, _) = await api.SignedIn(Role.Validator);
+        using var _ = bruno;
+        var (id, name) = await APendingProposal(bruno);
+
+        // name null, the other values absent: each one is the proposed value.
+        var response = await bruno.PostAsJsonAsync(Acceptance(id), new { name = (string?)null, message = (string?)null }, Ct);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, await response.Content.ReadAsStringAsync(Ct));
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(Ct);
+        body.GetProperty("adjusted").GetBoolean().ShouldBeFalse();
+        body.GetProperty("name").GetString().ShouldBe(name);
+        body.GetProperty("flyerDifficulty").GetString().ShouldBe("discovery");
+    }
+
+    [Fact]
+    public async Task Accept_Should_Answer422_When_AMessageAccompaniesAnAcceptanceWithoutAdjustment()
+    {
+        var (bruno, _) = await api.SignedIn(Role.Validator);
+        using var _ = bruno;
+        var (id, _) = await APendingProposal(bruno);
+
+        var response = await bruno.PostAsJsonAsync(Acceptance(id), new { message = "Belle proposition." }, Ct);
+
+        await response.ShouldBeAProblem(HttpStatusCode.UnprocessableEntity, "contribution.adjustment-note-without-adjustment");
+    }
+
+    [Fact]
+    public async Task Accept_Should_Answer400AdjustmentNoteTooLong_When_TheMessageHas501Characters()
+    {
+        var (bruno, _) = await api.SignedIn(Role.Validator);
+        using var _ = bruno;
+        var (id, _) = await APendingProposal(bruno);
+
+        var response = await bruno.PostAsJsonAsync(Acceptance(id), new { canEndFlow = true, message = new string('x', 501) }, Ct);
+
+        await response.ShouldBeAProblem(HttpStatusCode.BadRequest, "contribution.adjustment-note-too-long");
+    }
+
+    [Fact]
+    public async Task Accept_Should_Answer200AdjustedWithTheRetainedValues_When_AValidatorAdjustsTheFlyerDifficulty()
+    {
+        var (bruno, _) = await api.SignedIn(Role.Validator);
+        using var _ = bruno;
+        var (id, name) = await APendingProposal(bruno);
+
+        var response = await bruno.PostAsJsonAsync(
+            Acceptance(id), new { flyerDifficulty = "intermediate", message = "Le flyer travaille plus que prévu." }, Ct);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, await response.Content.ReadAsStringAsync(Ct));
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(Ct);
+        body.GetProperty("id").GetGuid().ShouldBe(id);
+        body.GetProperty("status").GetString().ShouldBe("accepted");
+        body.GetProperty("adjusted").GetBoolean().ShouldBeTrue();
+        body.GetProperty("name").GetString().ShouldBe(name);
+        body.GetProperty("baseDifficulty").GetString().ShouldBe("beginner");
+        body.GetProperty("flyerDifficulty").GetString().ShouldBe("intermediate");
+        body.GetProperty("canStartFlow").GetBoolean().ShouldBeTrue();
+        body.GetProperty("canEndFlow").GetBoolean().ShouldBeFalse();
+    }
 }

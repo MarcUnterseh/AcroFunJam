@@ -149,7 +149,7 @@ public sealed class EfPoseProposalRepositoryTests(PostgreSqlFixture database) : 
         await Save(proposal);
         var bruno = AValidator();
 
-        await Decide(proposal.Id, p => p.Accept(bruno, DecidedAt));
+        await Decide(proposal.Id, p => p.Accept(bruno, p.Pose.Retain(PoseAdjustments.None), null, NameAvailability.Available, DecidedAt));
 
         var stored = await Stored(proposal.Id);
         stored.ShouldSatisfyAllConditions(
@@ -199,5 +199,76 @@ public sealed class EfPoseProposalRepositoryTests(PostgreSqlFixture database) : 
 
         await using var context = database.CreateDbContext();
         (await new EfPoseProposalRepository(context, new TrackedAggregates()).ExistsPendingWithNameKey(Key("Throne"), Ct)).ShouldBeFalse();
+    }
+
+    private static void AcceptWithAdjustments(PoseProposal proposal, Validator by, string note) =>
+        proposal.Accept(
+            by,
+            proposal.Pose.Retain(PoseAdjustments.Create("THRONE", "beginner", flyerDifficulty: null, canStartFlow: true, canEndFlow: false).Value!),
+            AdjustmentNote.Create(note).Value,
+            NameAvailability.Available,
+            DecidedAt).IsSuccess.ShouldBeTrue();
+
+    [Fact]
+    public async Task Update_Should_StoreTheRetainedPoseAndTheNote_When_AcceptedWithAdjustments()
+    {
+        var proposal = APendingProposal("Throne"); // intermediate / advanced, cannot start, can end
+        await Save(proposal);
+
+        await Decide(proposal.Id, p => AcceptWithAdjustments(p, AValidator(), "Descente dangereuse."));
+
+        var stored = await Stored(proposal.Id);
+        stored.ShouldSatisfyAllConditions(
+            () => stored.Status.ShouldBe("accepted"),
+            () => stored.Name.ShouldBe("Throne"),
+            () => stored.BaseDifficulty.ShouldBe("intermediate"),
+            () => stored.RetainedName.ShouldBe("THRONE"),
+            () => stored.RetainedBaseDifficulty.ShouldBe("beginner"),
+            () => stored.RetainedFlyerDifficulty.ShouldBe("advanced"),
+            () => stored.RetainedCanStartFlow.ShouldBe(true),
+            () => stored.RetainedCanEndFlow.ShouldBe(false),
+            () => stored.AdjustmentNote.ShouldBe("Descente dangereuse."));
+    }
+
+    [Fact]
+    public async Task GetById_Should_RehydrateTheRetainedPoseAndTheNote_When_TheProposalWasAcceptedWithAdjustments()
+    {
+        var proposal = APendingProposal("Throne");
+        await Save(proposal);
+        var bruno = AValidator();
+        PoseProposal? decided = null;
+        await Decide(proposal.Id, p =>
+        {
+            AcceptWithAdjustments(p, bruno, "Descente dangereuse.");
+            decided = p;
+        });
+
+        var loaded = await Load(proposal.Id);
+
+        var acceptance = loaded.ShouldNotBeNull().Decision.ShouldBeOfType<Acceptance>();
+        acceptance.ShouldBe(decided.ShouldNotBeNull().Decision);
+        acceptance.HasAdjustments.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task ExistsOtherPendingWithNameKey_Should_IgnoreTheProposalItself_When_ItIsTheOnlyPendingOneWithTheKey()
+    {
+        var throne = APendingProposal("throne");
+        await Save(throne);
+
+        await using var context = database.CreateDbContext();
+        var proposals = new EfPoseProposalRepository(context, new TrackedAggregates());
+        (await proposals.ExistsOtherPendingWithNameKey(Key("Throne"), except: throne.Id, Ct)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task ExistsOtherPendingWithNameKey_Should_BeTrue_When_AnotherPendingProposalHasTheKey()
+    {
+        var starr = APendingProposal("Starr");
+        await Save(starr, APendingProposal("Star"));
+
+        await using var context = database.CreateDbContext();
+        var proposals = new EfPoseProposalRepository(context, new TrackedAggregates());
+        (await proposals.ExistsOtherPendingWithNameKey(Key("STAR"), except: starr.Id, Ct)).ShouldBeTrue();
     }
 }

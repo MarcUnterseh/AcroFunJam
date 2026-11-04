@@ -18,4 +18,7 @@ public interface IPoseProposalRepository
     void Update(PoseProposal proposal);
 
     Task<bool> ExistsPendingWithNameKey(PoseNameKey key, CancellationToken ct);
+
+    /// <summary>Whether a pending proposal other than <paramref name="except"/> has this name key (an adjusted name, ADR 0022).</summary>
+    Task<bool> ExistsOtherPendingWithNameKey(PoseNameKey key, PoseProposalId except, CancellationToken ct);
 }

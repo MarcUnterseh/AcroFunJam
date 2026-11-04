@@ -23,10 +23,11 @@ public sealed class CatalogPublisherTests
         }
     }
 
-    private static readonly ProposedPose Throne = ProposedPose.Create("Throne", "beginner", "discovery", true, false).Value!;
+    private static readonly RetainedPose Throne =
+        ProposedPose.Create("Throne", "beginner", "discovery", true, false).Value!.Retain(PoseAdjustments.None);
 
     [Fact]
-    public async Task PublishPose_Should_PublishTheProposedPoseWithItsSource_When_TheCatalogAccepts()
+    public async Task PublishPose_Should_PublishTheRetainedPoseWithItsSource_When_TheCatalogAccepts()
     {
         var catalog = new FakePublishPose();
         var source = new PoseProposalId(Guid.NewGuid());

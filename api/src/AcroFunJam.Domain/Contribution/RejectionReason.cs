@@ -16,11 +16,9 @@ public sealed record RejectionReason
 
     public static Result<RejectionReason> Create(string? raw)
     {
-        // Without superfluous spaces: leading, trailing or consecutive (a line break counts as a space).
-        var reason = string.Join(' ', (raw ?? string.Empty).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        var reason = ValidatorText.Normalize(raw);
         if (reason.Length == 0) return ContributionErrors.RejectionReasonRequired;
-        // Counted in code points, as PostgreSQL char_length and the site do (ADR 0017).
-        if (reason.EnumerateRunes().Count() > MaxLength) return ContributionErrors.RejectionReasonTooLong;
+        if (ValidatorText.IsLongerThan(reason, MaxLength)) return ContributionErrors.RejectionReasonTooLong;
         return Result<RejectionReason>.Success(new RejectionReason(reason));
     }
 }

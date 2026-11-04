@@ -72,6 +72,9 @@ public sealed class EfUnitOfWorkTests(PostgreSqlFixture database) : IClassFixtur
 
     private static Validator AValidator() => new(new ValidatorId(Guid.NewGuid()), CanDecide: true);
 
+    private static void AcceptAsProposed(PoseProposal proposal) =>
+        proposal.Accept(AValidator(), proposal.Pose.Retain(PoseAdjustments.None), null, NameAvailability.Available, DecidedAt);
+
     /// <summary>A decision use case in progress: its own context, with the proposal loaded and decided, not saved yet.</summary>
     private sealed record PendingDecision(AcroFunJamDbContext Context, EfUnitOfWork UnitOfWork) : IAsyncDisposable
     {
@@ -103,7 +106,7 @@ public sealed class EfUnitOfWorkTests(PostgreSqlFixture database) : IClassFixtur
     public async Task SaveChanges_Should_ReturnProposalAlreadyDecided_When_AnotherDecisionWasSavedSinceLoading()
     {
         var id = await SaveAPendingProposal();
-        await using var acceptance = await Decide(id, p => p.Accept(AValidator(), DecidedAt));
+        await using var acceptance = await Decide(id, AcceptAsProposed);
         await using var rejection = await Decide(id, p => p.Reject(AValidator(), RejectionReason.Create("Doublon").Value!, DecidedAt));
         (await acceptance.UnitOfWork.SaveChanges(Ct)).IsSuccess.ShouldBeTrue();
 
@@ -116,7 +119,7 @@ public sealed class EfUnitOfWorkTests(PostgreSqlFixture database) : IClassFixtur
     public async Task SaveChanges_Should_ClearTheChangeTracker_When_AConcurrencyConflictIsDetected()
     {
         var id = await SaveAPendingProposal();
-        await using var acceptance = await Decide(id, p => p.Accept(AValidator(), DecidedAt));
+        await using var acceptance = await Decide(id, AcceptAsProposed);
         await using var rejection = await Decide(id, p => p.Reject(AValidator(), RejectionReason.Create("Doublon").Value!, DecidedAt));
         await acceptance.UnitOfWork.SaveChanges(Ct);
 

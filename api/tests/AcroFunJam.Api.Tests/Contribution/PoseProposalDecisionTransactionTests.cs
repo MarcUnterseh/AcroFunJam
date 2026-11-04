@@ -44,7 +44,26 @@ public sealed class PoseProposalDecisionTransactionTests(ApiWithDatabase api) : 
         {
             using var scope = services.CreateScope();
             var handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<AcceptPoseProposal, DecidedPoseProposalDto>>();
-            return await handler.Handle(new AcceptPoseProposal(proposal, new ValidatorId(validator)), Ct);
+            return await handler.Handle(new AcceptPoseProposal(proposal, new ValidatorId(validator), PoseAdjustments.None, Note: null), Ct);
+        }, Ct);
+
+    private static Task<Result<DecidedPoseProposalDto>> AcceptAdjustingTheName(
+        IServiceProvider services, PoseProposalId proposal, Guid validator, string adjustedName) =>
+        Task.Run(async () =>
+        {
+            using var scope = services.CreateScope();
+            var handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<AcceptPoseProposal, DecidedPoseProposalDto>>();
+            var adjustments = PoseAdjustments.Create(adjustedName, null, null, null, null).Value!;
+            return await handler.Handle(new AcceptPoseProposal(proposal, new ValidatorId(validator), adjustments, Note: null), Ct);
+        }, Ct);
+
+    private static Task<Result<PoseProposalDto>> Propose(IServiceProvider services, Guid contributor, string name) =>
+        Task.Run(async () =>
+        {
+            using var scope = services.CreateScope();
+            var propose = scope.ServiceProvider.GetRequiredService<ICommandHandler<ProposePose, PoseProposalDto>>();
+            return await propose.Handle(
+                new ProposePose(new ContributorId(contributor), ProposedPose.Create(name, "beginner", "discovery", true, true).Value!), Ct);
         }, Ct);
 
     private static Task<Result<DecidedPoseProposalDto>> Reject(IServiceProvider services, PoseProposalId proposal, Guid validator) =>
@@ -140,5 +159,34 @@ public sealed class PoseProposalDecisionTransactionTests(ApiWithDatabase api) : 
 
         result.Error.ShouldBe(FailingAfterPublication.Injected);
         (await Stored(proposal, name)).ShouldBe((0, "pending"));
+    }
+
+    [Fact]
+    public async Task Handle_Should_LetOnlyOneThrough_When_AProposalNameIsAdjustedToANameProposedConcurrently()
+    {
+        var alice = await AnAccount(Role.User);
+        var chloe = await AnAccount(Role.User);
+        var bruno = await AnAccount(Role.Validator);
+
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            var (proposal, _) = await APendingProposal(alice);
+            var adjustedName = $"Star {Guid.NewGuid():N}"[..24];
+
+            var acceptance = AcceptAdjustingTheName(api.Services, proposal, bruno, adjustedName);
+            var proposition = Propose(api.Services, chloe, adjustedName);
+            await Task.WhenAll(acceptance, proposition);
+            var (accepted, proposed) = (await acceptance, await proposition);
+
+            // Both write the adjusted name, under its reservation (ADR 0017): the second one finds it taken.
+            (accepted.IsSuccess ^ proposed.IsSuccess).ShouldBeTrue();
+            if (accepted.IsSuccess) proposed.Error.ShouldBe(ContributionErrors.PoseNameAlreadyInCatalog);
+            else accepted.Error.ShouldBe(ContributionErrors.PoseNameAlreadyPending);
+            using var scope = api.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AcroFunJamDbContext>();
+            var published = await context.Set<PoseRecord>().CountAsync(p => p.Name == adjustedName, Ct);
+            var pending = await context.Set<PoseProposalRecord>().CountAsync(p => p.Name == adjustedName && p.Status == "pending", Ct);
+            (published + pending).ShouldBe(1);
+        }
     }
 }

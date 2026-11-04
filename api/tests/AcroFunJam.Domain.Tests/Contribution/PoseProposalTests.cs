@@ -1,3 +1,4 @@
+using AcroFunJam.Domain.Common;
 using AcroFunJam.Domain.Contribution;
 
 namespace AcroFunJam.Domain.Tests.Contribution;
@@ -13,7 +14,19 @@ public sealed class PoseProposalTests
     private static readonly Validator Claire = new(new ValidatorId(Guid.NewGuid()), CanDecide: true);
     private static readonly RejectionReason Duplicate = RejectionReason.Create("Doublon de Bird, déjà au catalogue.").Value!;
 
-    private static PoseProposal APendingProposal() => PoseProposal.Rehydrate(AnId, Alice.Id, AProposedPose.Named("Throne"), Now);
+    private static readonly ProposedPose Throne = AProposedPose.Named("Throne");
+
+    private static PoseProposal APendingProposal() => PoseProposal.Rehydrate(AnId, Alice.Id, Throne, Now);
+
+    /// <summary>Accepts the proposal as proposed: the retained pose is the proposed pose, without note.</summary>
+    private static Result<Acceptance> AcceptAsProposed(PoseProposal proposal, Validator by, DateTimeOffset now) =>
+        proposal.Accept(by, proposal.Pose.Retain(PoseAdjustments.None), note: null, NameAvailability.Available, now);
+
+    private static Acceptance AnAcceptanceAsProposed(ValidatorId by, DateTimeOffset at) =>
+        Acceptance.Of(Throne, Throne.Retain(PoseAdjustments.None), note: null, by, at).Value!;
+
+    private static PoseAdjustments Adjusting(string? name = null, string? flyerDifficulty = null, bool? canEndFlow = null) =>
+        PoseAdjustments.Create(name, baseDifficulty: null, flyerDifficulty, canStartFlow: null, canEndFlow).Value!;
 
     private static PoseProposal ADirectPublication() =>
         PoseProposal.Submit(
@@ -33,7 +46,6 @@ public sealed class PoseProposalTests
         pending.Contributor.ShouldBe(Alice.Id);
         pending.Pose.ShouldBe(throne);
         pending.Status.ShouldBe(ProposalStatus.Pending);
-        pending.IsAccepted.ShouldBeFalse();
         pending.SubmittedAt.ShouldBe(Now);
         pending.Decision.ShouldBeNull();
         pending.DomainEvents.ShouldHaveSingleItem().ShouldBe(new PoseProposed(AnId, Alice.Id, throne.Name, Now));
@@ -107,13 +119,13 @@ public sealed class PoseProposalTests
     {
         var proposal = APendingProposal();
 
-        var acceptance = proposal.Accept(Claire, Later);
+        var acceptance = AcceptAsProposed(proposal, Claire, Later);
 
         proposal.ShouldSatisfyAllConditions(
             () => acceptance.IsSuccess.ShouldBeTrue(),
-            () => proposal.Decision.ShouldBe<ProposalDecision?>(new Acceptance(Claire.Id, Later)),
+            () => proposal.Decision.ShouldBe<ProposalDecision?>(AnAcceptanceAsProposed(Claire.Id, Later)),
             () => proposal.Status.ShouldBe(ProposalStatus.Accepted),
-            () => proposal.DomainEvents.ShouldHaveSingleItem().ShouldBe(new PoseProposalAccepted(AnId, Claire.Id, Later)));
+            () => proposal.DomainEvents.ShouldHaveSingleItem().ShouldBe(new PoseProposalAccepted(AnId, Claire.Id, WithAdjustments: false, Later)));
     }
 
     [Fact]
@@ -122,9 +134,9 @@ public sealed class PoseProposalTests
         var proposal = APendingProposal();
         var alicePromoted = new Validator(new ValidatorId(Alice.Id.Value), CanDecide: true);
 
-        var acceptance = proposal.Accept(alicePromoted, Later);
+        var acceptance = AcceptAsProposed(proposal, alicePromoted, Later);
 
-        acceptance.Value.ShouldBe(new Acceptance(alicePromoted.Id, Later));
+        acceptance.Value.ShouldBe(AnAcceptanceAsProposed(alicePromoted.Id, Later));
     }
 
     [Fact]
@@ -133,7 +145,7 @@ public sealed class PoseProposalTests
         var proposal = APendingProposal();
         var formerValidator = Claire with { CanDecide = false };
 
-        var acceptance = proposal.Accept(formerValidator, Later);
+        var acceptance = AcceptAsProposed(proposal, formerValidator, Later);
 
         proposal.ShouldSatisfyAllConditions(
             () => acceptance.Error.ShouldBe(ContributionErrors.ValidatorRequired),
@@ -147,11 +159,11 @@ public sealed class PoseProposalTests
     public void Accept_Should_FailWithProposalAlreadyDecided_When_TheProposalIsAlreadyAccepted(bool directPublication)
     {
         var proposal = directPublication ? ADirectPublication() : APendingProposal();
-        if (!directPublication) proposal.Accept(Claire, Now);
+        if (!directPublication) AcceptAsProposed(proposal, Claire, Now);
         var decision = proposal.Decision;
         proposal.ClearDomainEvents();
 
-        var acceptance = proposal.Accept(Claire, Later);
+        var acceptance = AcceptAsProposed(proposal, Claire, Later);
 
         proposal.ShouldSatisfyAllConditions(
             () => acceptance.Error.ShouldBe(ContributionErrors.ProposalAlreadyDecided),
@@ -167,7 +179,7 @@ public sealed class PoseProposalTests
         var rejection = proposal.Decision;
         proposal.ClearDomainEvents();
 
-        var acceptance = proposal.Accept(Claire, Later);
+        var acceptance = AcceptAsProposed(proposal, Claire, Later);
 
         proposal.ShouldSatisfyAllConditions(
             () => acceptance.Error.ShouldBe(ContributionErrors.ProposalAlreadyDecided),
@@ -209,7 +221,7 @@ public sealed class PoseProposalTests
     public void Reject_Should_FailWithProposalAlreadyDecided_When_TheProposalIsAlreadyDecided(ProposalStatus decided)
     {
         var proposal = APendingProposal();
-        if (decided == ProposalStatus.Accepted) proposal.Accept(Claire, Now);
+        if (decided == ProposalStatus.Accepted) AcceptAsProposed(proposal, Claire, Now);
         else proposal.Reject(Claire, Duplicate, Now);
         var decision = proposal.Decision;
         proposal.ClearDomainEvents();
@@ -232,12 +244,11 @@ public sealed class PoseProposalTests
         var accepted = PoseProposal.Submit(AnId, bruno, throne, NameAvailability.Available, Now).Value!;
 
         accepted.Status.ShouldBe(ProposalStatus.Accepted);
-        accepted.IsAccepted.ShouldBeTrue();
-        accepted.Decision.ShouldBe<ProposalDecision?>(new Acceptance(brunoAsValidator, Now));
+        accepted.Decision.ShouldBe<ProposalDecision?>(AnAcceptanceAsProposed(brunoAsValidator, Now));
         accepted.DomainEvents.ShouldBe(
         [
             new PoseProposed(AnId, bruno.Id, throne.Name, Now),
-            new PoseProposalAccepted(AnId, brunoAsValidator, Now),
+            new PoseProposalAccepted(AnId, brunoAsValidator, WithAdjustments: false, Now),
         ]);
     }
 
@@ -255,5 +266,102 @@ public sealed class PoseProposalTests
         var proposal = APendingProposal();
 
         proposal.WasSubmittedBy(Claire.Id).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Accept_Should_KeepTheProposedAndRetainedPoses_When_AcceptedWithAdjustments()
+    {
+        var proposal = APendingProposal();
+        var retained = Throne.Retain(Adjusting(flyerDifficulty: "intermediate"));
+
+        var acceptance = proposal.Accept(Claire, retained, note: null, NameAvailability.Available, Later);
+
+        var accepted = acceptance.Value.ShouldNotBeNull();
+        proposal.ShouldSatisfyAllConditions(
+            () => proposal.Pose.ShouldBe(Throne),
+            () => accepted.Retained.ShouldBe(retained),
+            () => accepted.HasAdjustments.ShouldBeTrue(),
+            () => accepted.Note.ShouldBeNull(),
+            () => proposal.Decision.ShouldBe(accepted),
+            () => proposal.DomainEvents.ShouldHaveSingleItem().ShouldBe(new PoseProposalAccepted(AnId, Claire.Id, WithAdjustments: true, Later)));
+    }
+
+    [Fact]
+    public void Accept_Should_BeWithoutAdjustment_When_TheRetainedPoseEqualsTheProposedPose()
+    {
+        var proposal = APendingProposal();
+        var retained = Throne.Retain(Adjusting(name: "  Throne  ", flyerDifficulty: "discovery"));
+
+        var acceptance = proposal.Accept(Claire, retained, note: null, NameAvailability.Available, Later);
+
+        acceptance.Value.ShouldNotBeNull().HasAdjustments.ShouldBeFalse();
+        proposal.DomainEvents.ShouldHaveSingleItem().ShouldBe(new PoseProposalAccepted(AnId, Claire.Id, WithAdjustments: false, Later));
+    }
+
+    [Fact]
+    public void Accept_Should_KeepTheNote_When_AcceptedWithAdjustmentsAndAMessage()
+    {
+        var proposal = APendingProposal();
+        var note = AdjustmentNote.Create("Le flyer ne redescend pas sans danger depuis cette pose.").Value;
+
+        var acceptance = proposal.Accept(Claire, Throne.Retain(Adjusting(canEndFlow: false)), note, NameAvailability.Available, Later);
+
+        acceptance.Value.ShouldNotBeNull().Note.ShouldBe(note);
+    }
+
+    [Fact]
+    public void Accept_Should_FailWithAdjustmentNoteWithoutAdjustment_When_AMessageAccompaniesAnAcceptanceWithoutAdjustment()
+    {
+        var proposal = APendingProposal();
+        var note = AdjustmentNote.Create("Belle proposition.").Value;
+
+        var acceptance = proposal.Accept(Claire, Throne.Retain(PoseAdjustments.None), note, NameAvailability.Available, Later);
+
+        proposal.ShouldSatisfyAllConditions(
+            () => acceptance.Error.ShouldBe(ContributionErrors.AdjustmentNoteWithoutAdjustment),
+            () => proposal.Decision.ShouldBeNull(),
+            () => proposal.DomainEvents.ShouldBeEmpty());
+    }
+
+    [Fact]
+    public void Accept_Should_FailWithPoseNameAlreadyInCatalog_When_TheRetainedNameIsPublished()
+    {
+        var proposal = PoseProposal.Rehydrate(AnId, Alice.Id, AProposedPose.Named("Thron"), Now);
+
+        var acceptance = proposal.Accept(
+            Claire, proposal.Pose.Retain(Adjusting(name: "Throne")), note: null, NameAvailability.TakenByPublishedPose, Later);
+
+        proposal.ShouldSatisfyAllConditions(
+            () => acceptance.Error.ShouldBe(ContributionErrors.PoseNameAlreadyInCatalog),
+            () => proposal.Decision.ShouldBeNull(),
+            () => proposal.DomainEvents.ShouldBeEmpty());
+    }
+
+    [Fact]
+    public void Accept_Should_FailWithPoseNameAlreadyPending_When_AnotherPendingProposalHasTheRetainedName()
+    {
+        var proposal = PoseProposal.Rehydrate(AnId, Alice.Id, AProposedPose.Named("Starr"), Now);
+
+        var acceptance = proposal.Accept(
+            Claire, proposal.Pose.Retain(Adjusting(name: "Star")), note: null, NameAvailability.TakenByPendingProposal, Later);
+
+        proposal.ShouldSatisfyAllConditions(
+            () => acceptance.Error.ShouldBe(ContributionErrors.PoseNameAlreadyPending),
+            () => proposal.Decision.ShouldBeNull(),
+            () => proposal.DomainEvents.ShouldBeEmpty());
+    }
+
+    [Fact]
+    public void Submit_Should_RetainTheProposedPose_When_PublishedDirectly()
+    {
+        var bruno = new Contributor(new ContributorId(Guid.NewGuid()), IsValidator: true);
+
+        var published = PoseProposal.Submit(AnId, bruno, Throne, NameAvailability.Available, Now).Value!;
+
+        var acceptance = published.Decision.ShouldBeOfType<Acceptance>();
+        acceptance.ShouldSatisfyAllConditions(
+            () => acceptance.Retained.ShouldBe(new RetainedPose(Throne.Name, Throne.Difficulty, Throne.Flow)),
+            () => acceptance.HasAdjustments.ShouldBeFalse(),
+            () => acceptance.Note.ShouldBeNull());
     }
 }

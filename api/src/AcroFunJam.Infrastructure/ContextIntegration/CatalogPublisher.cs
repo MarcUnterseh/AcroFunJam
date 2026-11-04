@@ -14,7 +14,7 @@ namespace AcroFunJam.Infrastructure.ContextIntegration;
 /// </summary>
 public sealed class CatalogPublisher(ICommandHandler<PublishPose, PoseId> publishPose) : ICatalogPublisher
 {
-    public async Task<Result<bool>> PublishPose(PoseProposalId source, ProposedPose pose, CancellationToken ct)
+    public async Task<Result<bool>> PublishPose(PoseProposalId source, RetainedPose pose, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(pose);
         var published = await publishPose.Handle(

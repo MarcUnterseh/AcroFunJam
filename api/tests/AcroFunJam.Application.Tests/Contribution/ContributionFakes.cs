@@ -71,8 +71,14 @@ internal sealed class FakePoseProposalRepository(params string[] pendingNames) :
 
     public List<PoseProposal> Updated { get; } = [];
 
-    public Task<PoseProposal?> GetById(PoseProposalId id, CancellationToken ct) =>
-        Task.FromResult(Stored.SingleOrDefault(p => p.Id == id));
+    /// <summary>For each read by <see cref="GetById"/>, whether it happened inside the name reservation.</summary>
+    public List<bool> ReadsInReservation { get; } = [];
+
+    public Task<PoseProposal?> GetById(PoseProposalId id, CancellationToken ct)
+    {
+        ReadsInReservation.Add(Reservation?.IsHeld == true);
+        return Task.FromResult(Stored.SingleOrDefault(p => p.Id == id));
+    }
 
     public void Update(PoseProposal proposal) => Updated.Add(proposal);
 
@@ -87,16 +93,27 @@ internal sealed class FakePoseProposalRepository(params string[] pendingNames) :
     public Task<bool> ExistsPendingWithNameKey(PoseNameKey key, CancellationToken ct)
     {
         Called();
-        return Task.FromResult(pendingNames.Any(n => PoseName.Create(n).Value!.Key == key));
+        return Task.FromResult(PendingKeys(except: null).Contains(key));
     }
+
+    public Task<bool> ExistsOtherPendingWithNameKey(PoseNameKey key, PoseProposalId except, CancellationToken ct)
+    {
+        Called();
+        return Task.FromResult(PendingKeys(except).Contains(key));
+    }
+
+    /// <summary>The keys of the pending names given, and of the stored proposals still pending (but the excepted one).</summary>
+    private IEnumerable<PoseNameKey> PendingKeys(PoseProposalId? except) =>
+        pendingNames.Select(n => PoseName.Create(n).Value!.Key)
+            .Concat(Stored.Where(p => p.Status == ProposalStatus.Pending && p.Id != except).Select(p => p.Pose.Name.Key));
 }
 
 /// <summary>Fake of <see cref="ICatalogPublisher"/>: records the publications, or refuses them with an error.</summary>
 internal sealed class FakeCatalogPublisher(Error? refusal = null) : ReservationAwareFake, ICatalogPublisher
 {
-    public List<(PoseProposalId Source, ProposedPose Pose)> Published { get; } = [];
+    public List<(PoseProposalId Source, RetainedPose Pose)> Published { get; } = [];
 
-    public Task<Result<bool>> PublishPose(PoseProposalId source, ProposedPose pose, CancellationToken ct)
+    public Task<Result<bool>> PublishPose(PoseProposalId source, RetainedPose pose, CancellationToken ct)
     {
         Called();
         if (refusal is not null) return Task.FromResult<Result<bool>>(refusal);

@@ -29,4 +29,16 @@ public sealed class PoseProposalRecord
     public DateTimeOffset? DecidedAt { get; set; }
 
     public string? RejectionReason { get; set; }
+
+    public string? RetainedName { get; set; }
+
+    public string? RetainedBaseDifficulty { get; set; }
+
+    public string? RetainedFlyerDifficulty { get; set; }
+
+    public bool? RetainedCanStartFlow { get; set; }
+
+    public bool? RetainedCanEndFlow { get; set; }
+
+    public string? AdjustmentNote { get; set; }
 }

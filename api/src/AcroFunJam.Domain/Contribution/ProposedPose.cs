@@ -31,4 +31,14 @@ public sealed record ProposedPose
 
         return Result<ProposedPose>.Success(new ProposedPose(poseName.Value!, difficulty.Value!, flow.Value!));
     }
+
+    /// <summary>The pose to publish: each adjusted value replaces the proposed one, the others are kept (ADR 0022).</summary>
+    public RetainedPose Retain(PoseAdjustments adjustments)
+    {
+        ArgumentNullException.ThrowIfNull(adjustments);
+        return new RetainedPose(
+            adjustments.Name ?? Name,
+            Difficulty.Create(adjustments.BaseDifficulty ?? Difficulty.Base, adjustments.FlyerDifficulty ?? Difficulty.Flyer).Value!,
+            FlowBoundaries.Create(adjustments.CanStartFlow ?? Flow.CanStartFlow, adjustments.CanEndFlow ?? Flow.CanEndFlow).Value!);
+    }
 }

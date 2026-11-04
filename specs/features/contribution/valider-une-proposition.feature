@@ -8,7 +8,8 @@ Fonctionnalité: Valider une proposition
 
   # Story 4, contexte Contribution → Catalogue, cibles @api et @web. Carte d'example mapping et décisions du porteur
   # du produit (2026-11-04) : decouverte.md, « Story 4 Valider une proposition ». Étape A (consulter, accepter
-  # telle quelle, refuser) implémentée côté @api ; restent @wip : les ajustements (étape B) et les scénarios @web.
+  # telle quelle, refuser) et étape B (ajustements, message d'ajustement) implémentées côté @api ; restent @wip les
+  # scénarios @web et les décisions simultanées (vérifiées par un test d'intégration).
   # Personnages, comme dans proposer-une-pose.feature : Alice et Chloé sont utilisatrices, Bruno est validateur,
   # Paul administrateur. Adresses : alice@example.org, chloe@example.org, bruno@example.org.
   # Exemples d'indicateurs relus par l'expert acroyoga : Bird, Throne et Star peuvent commencer et terminer un flow ;
@@ -258,7 +259,7 @@ Fonctionnalité: Valider une proposition
       Soit Alice est utilisateur
       Et Bruno est validateur
 
-    @api @wip
+    @api
     Scénario: Le validateur corrige la difficulté flyer avant d'accepter
       Soit Alice a proposé la pose "Throne" de difficulté base "débutant" et de difficulté flyer "intermédiaire"
       Et Bruno a accepté la proposition de la pose "Throne" par Alice en corrigeant la difficulté flyer en "découverte"
@@ -266,7 +267,7 @@ Fonctionnalité: Valider une proposition
       Alors la pose "Throne" est présentée avec la difficulté base "débutant" et la difficulté flyer "découverte"
 
     # Enjeu de sécurité : « peut terminer » signifie que le flyer redescend au sol directement et sans danger.
-    @api @wip
+    @api
     Scénario: Le validateur corrige l'indicateur « peut terminer un flow » avant d'accepter
       Soit Alice a proposé la pose "Hand-to-Hand (L-base)" qui ne peut pas commencer un flow et peut terminer un flow
       Et Bruno a accepté la proposition de la pose "Hand-to-Hand (L-base)" par Alice en corrigeant l'indicateur en « ne peut pas terminer un flow »
@@ -274,7 +275,7 @@ Fonctionnalité: Valider une proposition
       Alors la pose "Hand-to-Hand (L-base)" est présentée comme une pose qui ne peut pas commencer un flow et ne peut pas terminer un flow
 
     # Le nom corrigé a la même clé de comparaison que la proposition elle-même : ce n'est pas un conflit.
-    @api @wip
+    @api
     Scénario: Le validateur corrige la casse du nom avant d'accepter
       Soit Alice a proposé la pose "throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Et Bruno a accepté la proposition de la pose "throne" par Alice en corrigeant le nom en "Throne"
@@ -290,7 +291,7 @@ Fonctionnalité: Valider une proposition
       Et Bruno est validateur
       Et Alice a proposé la pose "Throne" de difficulté base "débutant" et de difficulté flyer "intermédiaire"
 
-    @api @wip
+    @api
     Scénario: La proposition acceptée avec ajustements garde la valeur proposée et la valeur retenue
       Quand Bruno accepte la proposition de la pose "Throne" par Alice en corrigeant la difficulté flyer en "découverte"
       Alors la proposition de la pose "Throne" par Alice est acceptée avec ajustements par Bruno
@@ -303,20 +304,20 @@ Fonctionnalité: Valider une proposition
       Soit Alice est utilisateur
       Et Bruno est validateur
 
-    @api @wip
+    @api
     Scénario: Une correction identique à la valeur proposée n'est pas un ajustement
       Soit Alice a proposé la pose "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Quand Bruno accepte la proposition de la pose "Throne" par Alice en corrigeant la difficulté flyer en "découverte"
       Alors la proposition de la pose "Throne" par Alice est acceptée sans ajustement par Bruno
 
     # Les espaces superflus sont supprimés par la normalisation du nom : « Throne » entouré d'espaces reste « Throne ».
-    @api @wip
+    @api
     Scénario: Un nom corrigé qui ne diffère que par des espaces superflus n'est pas un ajustement
       Soit Alice a proposé la pose "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Quand Bruno accepte la proposition de la pose "Throne" par Alice en corrigeant le nom en "  Throne  "
       Alors la proposition de la pose "Throne" par Alice est acceptée sans ajustement par Bruno
 
-    @api @wip
+    @api
     Scénario: Une correction de la casse du nom est un ajustement
       Soit Alice a proposé la pose "throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Quand Bruno accepte la proposition de la pose "throne" par Alice en corrigeant le nom en "Throne"
@@ -332,37 +333,37 @@ Fonctionnalité: Valider une proposition
       Et Bruno est validateur
       Et Alice a proposé la pose "Hand-to-Hand (L-base)" qui ne peut pas commencer un flow et peut terminer un flow
 
-    @api @wip
+    @api
     Scénario: Le message qui accompagne les ajustements est conservé
       Quand Bruno accepte la proposition de la pose "Hand-to-Hand (L-base)" par Alice en corrigeant l'indicateur en « ne peut pas terminer un flow », avec le message « Le flyer ne redescend pas sans danger depuis cette pose. »
       Alors la proposition de la pose "Hand-to-Hand (L-base)" par Alice est acceptée avec ajustements et le message « Le flyer ne redescend pas sans danger depuis cette pose. »
 
-    @api @wip
+    @api
     Scénario: Les espaces superflus du message sont supprimés
       Quand Bruno accepte la proposition de la pose "Hand-to-Hand (L-base)" par Alice en corrigeant l'indicateur en « ne peut pas terminer un flow », avec le message «   Descente   dangereuse.  »
       Alors la proposition de la pose "Hand-to-Hand (L-base)" par Alice est acceptée avec ajustements et le message « Descente dangereuse. »
 
-    @api @wip
+    @api
     Scénario: Un message fait seulement d'espaces vaut absence de message
       Quand Bruno accepte la proposition de la pose "Hand-to-Hand (L-base)" par Alice en corrigeant l'indicateur en « ne peut pas terminer un flow », avec le message «    »
       Alors la proposition de la pose "Hand-to-Hand (L-base)" par Alice est acceptée avec ajustements, sans message
 
-    @api @wip
+    @api
     Scénario: Un message de la longueur maximale est accepté
       Quand Bruno accepte la proposition de la pose "Hand-to-Hand (L-base)" par Alice en corrigeant l'indicateur en « ne peut pas terminer un flow », avec un message de 500 caractères
       Alors la proposition de la pose "Hand-to-Hand (L-base)" par Alice est acceptée avec ajustements
 
-    @api @wip
+    @api
     Scénario: Une acceptation avec un message plus long que la longueur maximale est impossible
       Quand Bruno accepte la proposition de la pose "Hand-to-Hand (L-base)" par Alice en corrigeant l'indicateur en « ne peut pas terminer un flow », avec un message de 501 caractères
       Alors l'acceptation est impossible car le message est trop long
 
-    @api @wip
+    @api
     Scénario: Une acceptation sans ajustement accompagnée d'un message est impossible
       Quand Bruno accepte la proposition de la pose "Hand-to-Hand (L-base)" par Alice sans ajustement, avec le message « Belle proposition. »
       Alors l'acceptation est impossible car un message n'accompagne qu'une acceptation avec ajustements
 
-    @api @wip
+    @api
     Scénario: Une proposition dont l'acceptation avec message est impossible reste en attente de validation
       Soit Bruno a tenté d'accepter la proposition de la pose "Hand-to-Hand (L-base)" par Alice en corrigeant l'indicateur en « ne peut pas terminer un flow », avec un message de 501 caractères
       Quand Bruno consulte la file de validation
@@ -377,7 +378,7 @@ Fonctionnalité: Valider une proposition
       Et Alice a proposé la pose "Thron" de difficulté base "débutant" et de difficulté flyer "découverte"
 
     # Les cellules d'un tableau Gherkin sont rognées : « --- » est un nom dont la clé de comparaison est vide.
-    @api @wip
+    @api
     Plan du Scénario: Une acceptation avec un nom corrigé <cas> est impossible
       Quand Bruno accepte la proposition de la pose "Thron" par Alice en corrigeant le nom en <nom corrigé>
       Alors l'acceptation est impossible car <motif>
@@ -388,12 +389,12 @@ Fonctionnalité: Valider une proposition
         | fait uniquement de ponctuation     | "---"                       | le nom de la pose est obligatoire |
         | plus long que la longueur maximale | un nom de 61 caractères     | le nom de la pose est trop long   |
 
-    @api @wip
+    @api
     Scénario: Une acceptation avec une difficulté corrigée hors de l'échelle est impossible
       Quand Bruno accepte la proposition de la pose "Thron" par Alice en corrigeant la difficulté base en "expert"
       Alors l'acceptation est impossible car le niveau de difficulté "expert" n'existe pas
 
-    @api @wip
+    @api
     Scénario: Une proposition dont les valeurs retenues sont invalides reste en attente de validation
       Soit Bruno a tenté d'accepter la proposition de la pose "Thron" par Alice en corrigeant le nom en ""
       Quand Bruno consulte la file de validation
@@ -407,21 +408,21 @@ Fonctionnalité: Valider une proposition
       Et Chloé est utilisateur
       Et Bruno est validateur
 
-    @api @wip
+    @api
     Scénario: Une acceptation avec un nom corrigé déjà pris dans le catalogue est impossible
       Soit la pose publiée "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Et Alice a proposé la pose "Thron" de difficulté base "débutant" et de difficulté flyer "découverte"
       Quand Bruno accepte la proposition de la pose "Thron" par Alice en corrigeant le nom en "Throne"
       Alors l'acceptation est impossible car une pose de ce nom existe déjà dans le catalogue
 
-    @api @wip
+    @api
     Scénario: Une acceptation avec un nom corrigé déjà pris par une autre proposition en attente est impossible
       Soit Chloé a proposé la pose "Star" de difficulté base "intermédiaire" et de difficulté flyer "intermédiaire"
       Et Alice a proposé la pose "Starr" de difficulté base "intermédiaire" et de difficulté flyer "intermédiaire"
       Quand Bruno accepte la proposition de la pose "Starr" par Alice en corrigeant le nom en "Star"
       Alors l'acceptation est impossible car une pose de ce nom est déjà en attente de validation
 
-    @api @wip
+    @api
     Scénario: Une proposition dont le nom corrigé est déjà pris reste en attente de validation
       Soit la pose publiée "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Et Alice a proposé la pose "Thron" de difficulté base "débutant" et de difficulté flyer "découverte"

@@ -31,4 +31,10 @@ public static class ContributionErrors
 
     public static readonly Error RejectionReasonTooLong =
         new("contribution.rejection-reason-too-long", $"Le motif de refus ne doit pas dépasser {RejectionReason.MaxLength} caractères.");
+
+    public static readonly Error AdjustmentNoteTooLong =
+        new("contribution.adjustment-note-too-long", $"Le message d'ajustement ne doit pas dépasser {AdjustmentNote.MaxLength} caractères.");
+
+    public static readonly Error AdjustmentNoteWithoutAdjustment =
+        new("contribution.adjustment-note-without-adjustment", "Un message n'accompagne qu'une acceptation avec ajustements.");
 }

@@ -1,4 +1,5 @@
 using AcroFunJam.Domain.Contribution;
+using AcroFunJam.Domain.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -29,6 +30,27 @@ public sealed class PoseProposalRecordConfiguration : IEntityTypeConfiguration<P
             table.HasCheckConstraint("ck_pose_proposals_rejection_reason", "(status = 'rejected') = (rejection_reason IS NOT NULL)");
             table.HasCheckConstraint(
                 "ck_pose_proposals_rejection_reason_length", $"char_length(rejection_reason) <= {RejectionReason.MaxLength}");
+            // An acceptance records its retained pose as a whole, and only an acceptance has one, or an adjustment note.
+            table.HasCheckConstraint(
+                "ck_pose_proposals_retained_pose",
+                "(status = 'accepted') = (retained_name IS NOT NULL) AND (status = 'accepted') = (retained_base_difficulty IS NOT NULL)"
+                + " AND (status = 'accepted') = (retained_flyer_difficulty IS NOT NULL)"
+                + " AND (status = 'accepted') = (retained_can_start_flow IS NOT NULL)"
+                + " AND (status = 'accepted') = (retained_can_end_flow IS NOT NULL)");
+            table.HasCheckConstraint(
+                "ck_pose_proposals_retained_base_difficulty", "retained_base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+            table.HasCheckConstraint(
+                "ck_pose_proposals_retained_flyer_difficulty", "retained_flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+            table.HasCheckConstraint("ck_pose_proposals_retained_name_length", $"char_length(retained_name) <= {PoseName.MaxLength}");
+            table.HasCheckConstraint("ck_pose_proposals_adjustment_note", "adjustment_note IS NULL OR status = 'accepted'");
+            table.HasCheckConstraint(
+                "ck_pose_proposals_adjustment_note_length", $"char_length(adjustment_note) <= {AdjustmentNote.MaxLength}");
+            // A note only accompanies an acceptance with adjustments: a retained pose different from the proposed pose.
+            table.HasCheckConstraint(
+                "ck_pose_proposals_adjustment_note_with_adjustments",
+                "adjustment_note IS NULL"
+                + " OR (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow)"
+                + " IS DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow)");
         });
         builder.HasKey(p => p.Id);
         builder.Property(p => p.Id).HasColumnName("id");
@@ -45,6 +67,13 @@ public sealed class PoseProposalRecordConfiguration : IEntityTypeConfiguration<P
         builder.Property(p => p.DecidedBy).HasColumnName("decided_by");
         builder.Property(p => p.DecidedAt).HasColumnName("decided_at");
         builder.Property(p => p.RejectionReason).HasColumnName("rejection_reason");
+        // The retained pose, published at the acceptance, kept beside the proposed pose (ADR 0022).
+        builder.Property(p => p.RetainedName).HasColumnName("retained_name");
+        builder.Property(p => p.RetainedBaseDifficulty).HasColumnName("retained_base_difficulty");
+        builder.Property(p => p.RetainedFlyerDifficulty).HasColumnName("retained_flyer_difficulty");
+        builder.Property(p => p.RetainedCanStartFlow).HasColumnName("retained_can_start_flow");
+        builder.Property(p => p.RetainedCanEndFlow).HasColumnName("retained_can_end_flow");
+        builder.Property(p => p.AdjustmentNote).HasColumnName("adjustment_note");
 
         builder.HasIndex(p => p.NameKey).HasDatabaseName(PendingNameKeyIndex).IsUnique().HasFilter("status = 'pending'");
         builder.HasIndex(p => p.SubmittedAt).HasDatabaseName("ix_pose_proposals_pending_submitted_at").HasFilter("status = 'pending'"); // validation queue

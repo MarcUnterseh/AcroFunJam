@@ -15,7 +15,7 @@ internal sealed class FailingAfterPublication(CatalogPublisher publisher) : ICat
 {
     public static readonly Error Injected = new("test.injected", "Échec injecté après la publication.");
 
-    public async Task<Result<bool>> PublishPose(PoseProposalId source, ProposedPose pose, CancellationToken ct)
+    public async Task<Result<bool>> PublishPose(PoseProposalId source, RetainedPose pose, CancellationToken ct)
     {
         (await publisher.PublishPose(source, pose, ct)).IsSuccess.ShouldBeTrue();
         return Injected;

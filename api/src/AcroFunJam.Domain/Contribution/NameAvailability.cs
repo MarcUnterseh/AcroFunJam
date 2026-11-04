@@ -1,6 +1,9 @@
 namespace AcroFunJam.Domain.Contribution;
 
-/// <summary>Whether the name of a proposed pose is free, given by the caller to <see cref="PoseProposal.Submit"/>.</summary>
+/// <summary>
+/// Whether the name of a proposed (or retained) pose is free, given by the caller to <see cref="PoseProposal.Submit"/> and
+/// <see cref="PoseProposal.Accept"/>.
+/// </summary>
 public enum NameAvailability
 {
     Available,

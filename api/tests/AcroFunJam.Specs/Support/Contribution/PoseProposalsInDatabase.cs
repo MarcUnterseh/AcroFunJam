@@ -62,6 +62,34 @@ public static class PoseProposalsInDatabase
         return decision;
     }
 
+    /// <summary>
+    /// The proposed pose, the retained pose (none unless accepted) and the adjustment note of a proposal, as stored
+    /// (story 4, step B). "Suivre mes propositions" (story 5) does not exist yet (ADR 0020).
+    /// </summary>
+    public static async Task<RecordedPoses> PosesOf(Guid proposal)
+    {
+        await using var connection = new NpgsqlConnection(IntegrationDatabase.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = new NpgsqlCommand(
+            """
+            select name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow,
+                   retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow,
+                   adjustment_note
+            from contribution.pose_proposals
+            where id = @id
+            """,
+            connection);
+        command.Parameters.AddWithValue("id", proposal);
+
+        await using var reader = await command.ExecuteReaderAsync();
+        (await reader.ReadAsync()).ShouldBeTrue($"Aucune proposition {proposal}.");
+        var proposed = new StoredPose(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetBoolean(3), reader.GetBoolean(4));
+        var retained = reader.IsDBNull(5)
+            ? null
+            : new StoredPose(reader.GetString(5), reader.GetString(6), reader.GetString(7), reader.GetBoolean(8), reader.GetBoolean(9));
+        return new RecordedPoses(proposed, retained, reader.IsDBNull(10) ? null : reader.GetString(10));
+    }
+
     /// <summary>Number of proposals pending validation, all contributors together.</summary>
     public static async Task<long> CountPending()
     {
@@ -74,3 +102,13 @@ public static class PoseProposalsInDatabase
 
 /// <summary>A proposal as stored: status, validator who decided (address), decision date, rejection reason.</summary>
 public sealed record RecordedDecision(string Status, string? DecidedBy, DateTimeOffset? DecidedAt, string? RejectionReason);
+
+/// <summary>A pose as stored: name, difficulty codes and flow indicators.</summary>
+public sealed record StoredPose(string Name, string BaseDifficulty, string FlyerDifficulty, bool CanStartFlow, bool CanEndFlow);
+
+/// <summary>The proposed pose, the retained pose (none unless accepted) and the adjustment note of a proposal.</summary>
+public sealed record RecordedPoses(StoredPose Proposed, StoredPose? Retained, string? AdjustmentNote)
+{
+    /// <summary>Accepted with adjustments: the retained pose differs from the proposed pose.</summary>
+    public bool IsAdjusted => Retained is not null && Retained != Proposed;
+}

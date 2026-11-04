@@ -92,7 +92,7 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
     [Theory]
     [InlineData("/contribution/validation-queue", "get", new[] { "200", "401", "403" })]
     [InlineData("/contribution/validation-queue/count", "get", new[] { "200", "401", "403" })]
-    [InlineData("/contribution/pose-proposals/{id}/acceptance", "post", new[] { "200", "401", "403", "404", "409" })]
+    [InlineData("/contribution/pose-proposals/{id}/acceptance", "post", new[] { "200", "400", "401", "403", "404", "409", "422" })]
     [InlineData("/contribution/pose-proposals/{id}/rejection", "post", new[] { "200", "400", "401", "403", "404", "409" })]
     public async Task OpenApiDocument_Should_DescribeTheDecisionOperations_When_TheValidationQueueIsExposed(
         string path, string method, string[] statuses)
@@ -108,6 +108,26 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
         {
             responses.TryGetProperty(status, out _).ShouldBeTrue($"response {status} is documented");
         }
+    }
+
+    [Fact]
+    public async Task OpenApiDocument_Should_DescribeAnOptionalBodyOfAdjustments_When_AcceptingAProposal()
+    {
+        using var client = api.CreateClient();
+
+        var document = await client.GetFromJsonAsync<JsonElement>(new Uri("/openapi/v1.json", UriKind.Relative), Ct);
+        var body = document.GetProperty("paths").GetProperty("/contribution/pose-proposals/{id}/acceptance").GetProperty("post")
+            .GetProperty("requestBody");
+        var schemas = document.GetProperty("components").GetProperty("schemas");
+
+        // Without body, or with every field absent, the proposal is accepted as proposed (ADR 0022).
+        (body.TryGetProperty("required", out var required) && required.GetBoolean()).ShouldBeFalse();
+        var adjustments = schemas.GetProperty("AcceptPoseProposalRequest");
+        adjustments.GetProperty("properties").EnumerateObject().Select(p => p.Name)
+            .ShouldBe(["name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "message"], ignoreOrder: true);
+        adjustments.TryGetProperty("required", out _).ShouldBeFalse("every field may be absent");
+        schemas.GetProperty("AcceptedPoseProposalResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
+            .ShouldBe(["id", "status", "adjusted", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow"], ignoreOrder: true);
     }
 
     private static bool HasBearerRequirement(JsonElement operation) =>

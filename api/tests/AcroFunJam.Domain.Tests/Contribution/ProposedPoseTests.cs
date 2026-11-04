@@ -44,4 +44,18 @@ public sealed class ProposedPoseTests
     {
         ProposedPose.Create("Throne", "beginner", flyerDifficulty, true, true).Error!.Code.ShouldBe(code);
     }
+
+    [Fact]
+    public void Retain_Should_ReplaceOnlyTheAdjustedValues_When_AdjustmentsAreGiven()
+    {
+        var throne = ProposedPose.Create("Throne", "beginner", "intermediate", canStartFlow: true, canEndFlow: true).Value!;
+        var adjustments = PoseAdjustments.Create(name: null, baseDifficulty: null, "discovery", canStartFlow: null, canEndFlow: false).Value!;
+
+        RetainedPose retained = throne.Retain(adjustments);
+
+        retained.ShouldSatisfyAllConditions(
+            () => retained.Name.ShouldBe(throne.Name),
+            () => retained.Difficulty.ShouldBe(Difficulty.Create(DifficultyLevel.Beginner, DifficultyLevel.Discovery).Value),
+            () => retained.Flow.ShouldBe(FlowBoundaries.Create(canStartFlow: true, canEndFlow: false).Value));
+    }
 }

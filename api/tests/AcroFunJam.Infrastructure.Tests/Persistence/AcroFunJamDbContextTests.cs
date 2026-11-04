@@ -86,4 +86,93 @@ public sealed class AcroFunJamDbContextTests(PostgreSqlFixture database) : IClas
 
         refusal.SqlState.ShouldBe(PostgresErrorCodes.CheckViolation);
     }
+
+    /// <summary>Inserts a decided proposal named Throne with the given retained pose and note, bypassing the application; returns its id.</summary>
+    private async Task<Guid> InsertDecidedProposal(
+        string status, string? retainedName, string? retainedBaseDifficulty = "beginner", string? adjustmentNote = null)
+    {
+        await using var context = database.CreateDbContext();
+        await context.Database.MigrateAsync(TestContext.Current.CancellationToken);
+        var rejectionReason = status == "rejected" ? "Doublon de Chair" : null;
+        bool? retainedFlow = retainedName is null ? null : true;
+        var id = Guid.NewGuid();
+        await context.Database.ExecuteSqlAsync(
+            $"""
+            INSERT INTO contribution.pose_proposals
+                (id, contributor_id, name, name_key, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow, status, submitted_at,
+                 decided_by, decided_at, rejection_reason,
+                 retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow, adjustment_note)
+            VALUES ({id}, {Guid.NewGuid()}, 'Throne', 'throne', 'beginner', 'beginner', true, true, {status}, {DateTimeOffset.UtcNow},
+                    {Guid.NewGuid()}, {DateTimeOffset.UtcNow}, {rejectionReason},
+                    {retainedName}, {(retainedName is null ? null : retainedBaseDifficulty)}, {(retainedName is null ? null : "beginner")},
+                    {retainedFlow}, {retainedFlow}, {adjustmentNote})
+            """,
+            TestContext.Current.CancellationToken);
+        return id;
+    }
+
+    [Fact]
+    public async Task Database_Should_StoreAnAcceptedProposal_When_ItHasItsRetainedPoseAndANote()
+    {
+        var id = await InsertDecidedProposal("accepted", "THRONE", adjustmentNote: "Casse ajustée.");
+
+        await using var context = database.CreateDbContext();
+        var stored = await context.Database.SqlQuery<StoredAcceptance>(
+                $"""SELECT retained_name AS "RetainedName", adjustment_note AS "AdjustmentNote" FROM contribution.pose_proposals WHERE id = {id}""")
+            .SingleAsync(TestContext.Current.CancellationToken);
+        stored.ShouldBe(new StoredAcceptance("THRONE", "Casse ajustée."));
+    }
+
+    private sealed record StoredAcceptance(string? RetainedName, string? AdjustmentNote);
+
+    [Fact]
+    public async Task Database_Should_RefuseAnAcceptedProposal_When_ItHasNoRetainedPose()
+    {
+        var refusal = await Should.ThrowAsync<PostgresException>(() => InsertDecidedProposal("accepted", retainedName: null));
+
+        refusal.SqlState.ShouldBe(PostgresErrorCodes.CheckViolation);
+    }
+
+    [Fact]
+    public async Task Database_Should_RefuseARejectedProposal_When_ItHasARetainedPose()
+    {
+        var refusal = await Should.ThrowAsync<PostgresException>(() => InsertDecidedProposal("rejected", "Throne"));
+
+        refusal.SqlState.ShouldBe(PostgresErrorCodes.CheckViolation);
+    }
+
+    [Fact]
+    public async Task Database_Should_RefuseAnAdjustmentNote_When_TheProposalIsNotAccepted()
+    {
+        var refusal = await Should.ThrowAsync<PostgresException>(() => InsertDecidedProposal("rejected", retainedName: null, adjustmentNote: "Note"));
+
+        refusal.SqlState.ShouldBe(PostgresErrorCodes.CheckViolation);
+    }
+
+    [Fact]
+    public async Task Database_Should_RefuseAnAdjustmentNote_When_TheRetainedPoseIsTheProposedPose()
+    {
+        // A note only accompanies an acceptance with adjustments (ADR 0022): here the retained pose is Throne as proposed.
+        var refusal = await Should.ThrowAsync<PostgresException>(() => InsertDecidedProposal("accepted", "Throne", adjustmentNote: "Belle proposition."));
+
+        refusal.SqlState.ShouldBe(PostgresErrorCodes.CheckViolation);
+    }
+
+    [Fact]
+    public async Task Database_Should_RefuseAnAdjustmentNote_When_ItHasMoreThan500Characters()
+    {
+        var refusal = await Should.ThrowAsync<PostgresException>(
+            () => InsertDecidedProposal("accepted", "THRONE", adjustmentNote: new string('é', 501)));
+
+        refusal.SqlState.ShouldBe(PostgresErrorCodes.CheckViolation);
+    }
+
+    [Fact]
+    public async Task Database_Should_RefuseARetainedPose_When_ItsDifficultyIsOffTheScaleOrItsNameTooLong()
+    {
+        (await Should.ThrowAsync<PostgresException>(() => InsertDecidedProposal("accepted", "Throne", retainedBaseDifficulty: "expert")))
+            .SqlState.ShouldBe(PostgresErrorCodes.CheckViolation);
+        (await Should.ThrowAsync<PostgresException>(() => InsertDecidedProposal("accepted", new string('x', 61))))
+            .SqlState.ShouldBe(PostgresErrorCodes.CheckViolation);
+    }
 }

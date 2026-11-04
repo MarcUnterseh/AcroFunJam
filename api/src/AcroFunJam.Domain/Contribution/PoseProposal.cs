@@ -28,8 +28,6 @@ public sealed class PoseProposal : AggregateRoot<PoseProposalId>
         _ => throw new UnreachableException($"Unknown decision: {Decision.GetType().Name}."),
     };
 
-    public bool IsAccepted => Status == ProposalStatus.Accepted;
-
     private PoseProposal(PoseProposalId id, ContributorId contributor, ProposedPose pose, DateTimeOffset submittedAt) : base(id)
     {
         Contributor = contributor;
@@ -43,13 +41,13 @@ public sealed class PoseProposal : AggregateRoot<PoseProposalId>
         ArgumentNullException.ThrowIfNull(contributor);
         ArgumentNullException.ThrowIfNull(pose);
         // The name is checked for everyone, validators included.
-        if (availability == NameAvailability.TakenByPublishedPose) return ContributionErrors.PoseNameAlreadyInCatalog;
-        if (availability == NameAvailability.TakenByPendingProposal) return ContributionErrors.PoseNameAlreadyPending;
+        if (NameRefusal(availability) is { } taken) return taken;
 
         var proposal = new PoseProposal(id, contributor.Id, pose, now);
         proposal.Raise(new PoseProposed(id, contributor.Id, pose.Name, now));
         // Direct publication: a validator's (or administrator's) proposal is accepted at once, by themselves.
-        if (contributor.IsValidator) proposal.RecordAcceptance(contributor.Id.AsValidator(), now);
+        if (contributor.IsValidator)
+            proposal.Record(Acceptance.Of(pose, pose.Retain(PoseAdjustments.None), note: null, contributor.Id.AsValidator(), now).Value!);
         return Result<PoseProposal>.Success(proposal);
     }
 
@@ -61,11 +59,22 @@ public sealed class PoseProposal : AggregateRoot<PoseProposalId>
     /// <summary>Whether this validator is the person who submitted the proposal (« toi » in the validation queue).</summary>
     public bool WasSubmittedBy(ValidatorId validator) => Contributor.AsValidator() == validator;
 
-    /// <summary>A validator accepts the proposal, so that its pose is published.</summary>
-    public Result<Acceptance> Accept(Validator by, DateTimeOffset now)
+    /// <summary>
+    /// A validator accepts the proposal, so that its retained pose is published: the proposed pose, or the pose with the
+    /// validator's adjustments, then possibly explained by a note (ADR 0022). The availability is that of the retained name.
+    /// </summary>
+    public Result<Acceptance> Accept(Validator by, RetainedPose retained, AdjustmentNote? note, NameAvailability availability, DateTimeOffset now)
     {
+        ArgumentNullException.ThrowIfNull(retained);
         if (CannotBeDecidedBy(by) is { } refusal) return refusal;
-        return Result<Acceptance>.Success(RecordAcceptance(by.Id, now));
+        // The acceptance protects its own coherence (a note only with adjustments), checked before the name.
+        var acceptance = Acceptance.Of(Pose, retained, note, by.Id, now);
+        if (acceptance.IsFailure) return acceptance;
+        // The retained name is unique against the catalog and the other pending proposals, not against this one: the
+        // caller leaves it out of the availability.
+        if (NameRefusal(availability) is { } taken) return taken;
+
+        return Result<Acceptance>.Success(Record(acceptance.Value!));
     }
 
     /// <summary>A validator rejects the proposal, with a reason for its contributor: nothing is published.</summary>
@@ -88,11 +97,17 @@ public sealed class PoseProposal : AggregateRoot<PoseProposalId>
         return Decision is null ? null : ContributionErrors.ProposalAlreadyDecided;
     }
 
-    private Acceptance RecordAcceptance(ValidatorId by, DateTimeOffset now)
+    private static Error? NameRefusal(NameAvailability availability) => availability switch
     {
-        var acceptance = new Acceptance(by, now);
+        NameAvailability.TakenByPublishedPose => ContributionErrors.PoseNameAlreadyInCatalog,
+        NameAvailability.TakenByPendingProposal => ContributionErrors.PoseNameAlreadyPending,
+        _ => null,
+    };
+
+    private Acceptance Record(Acceptance acceptance)
+    {
         Decision = acceptance;
-        Raise(new PoseProposalAccepted(Id, by, now));
+        Raise(new PoseProposalAccepted(Id, acceptance.By, acceptance.HasAdjustments, acceptance.At));
         return acceptance;
     }
 

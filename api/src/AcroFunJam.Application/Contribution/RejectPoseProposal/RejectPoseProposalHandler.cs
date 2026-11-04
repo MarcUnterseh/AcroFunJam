@@ -26,6 +26,6 @@ internal sealed class RejectPoseProposalHandler(
         proposals.Update(proposal);
         var saved = await unitOfWork.SaveChanges(ct);
         if (saved.IsFailure) return saved.Error!;
-        return Result<DecidedPoseProposalDto>.Success(new DecidedPoseProposalDto(proposal.Id, proposal.Status, proposal.Pose));
+        return Result<DecidedPoseProposalDto>.Success(new DecidedPoseProposalDto(proposal.Id, proposal.Status, Retained: null, Adjusted: false));
     }
 }

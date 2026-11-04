@@ -30,6 +30,8 @@ public static class ProblemResults
         ["contribution.proposal-already-decided"] = StatusCodes.Status409Conflict,
         ["contribution.rejection-reason-required"] = StatusCodes.Status400BadRequest,
         ["contribution.rejection-reason-too-long"] = StatusCodes.Status400BadRequest,
+        ["contribution.adjustment-note-too-long"] = StatusCodes.Status400BadRequest,
+        // A note without adjustment (contribution.adjustment-note-without-adjustment) is a refused business rule: 422.
         // A role revoked between the authorization policy and the use case.
         ["contribution.validator-required"] = StatusCodes.Status403Forbidden,
         // The account was deleted after signing in: the site handles it as an expired session (ADR 0018).

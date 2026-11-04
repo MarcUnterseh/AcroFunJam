@@ -90,6 +90,10 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("AdjustmentNote")
+                        .HasColumnType("text")
+                        .HasColumnName("adjustment_note");
+
                     b.Property<string>("BaseDifficulty")
                         .IsRequired()
                         .HasColumnType("text")
@@ -134,6 +138,26 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("rejection_reason");
 
+                    b.Property<string>("RetainedBaseDifficulty")
+                        .HasColumnType("text")
+                        .HasColumnName("retained_base_difficulty");
+
+                    b.Property<bool?>("RetainedCanEndFlow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("retained_can_end_flow");
+
+                    b.Property<bool?>("RetainedCanStartFlow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("retained_can_start_flow");
+
+                    b.Property<string>("RetainedFlyerDifficulty")
+                        .HasColumnType("text")
+                        .HasColumnName("retained_flyer_difficulty");
+
+                    b.Property<string>("RetainedName")
+                        .HasColumnType("text")
+                        .HasColumnName("retained_name");
+
                     b.Property<string>("Status")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -160,6 +184,12 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
 
                     b.ToTable("pose_proposals", "contribution", t =>
                         {
+                            t.HasCheckConstraint("ck_pose_proposals_adjustment_note", "adjustment_note IS NULL OR status = 'accepted'");
+
+                            t.HasCheckConstraint("ck_pose_proposals_adjustment_note_length", "char_length(adjustment_note) <= 500");
+
+                            t.HasCheckConstraint("ck_pose_proposals_adjustment_note_with_adjustments", "adjustment_note IS NULL OR (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow) IS DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow)");
+
                             t.HasCheckConstraint("ck_pose_proposals_base_difficulty", "base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
 
                             t.HasCheckConstraint("ck_pose_proposals_decision", "(status = 'pending') = (decided_by IS NULL) AND (status = 'pending') = (decided_at IS NULL)");
@@ -173,6 +203,14 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_pose_proposals_rejection_reason", "(status = 'rejected') = (rejection_reason IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_pose_proposals_rejection_reason_length", "char_length(rejection_reason) <= 500");
+
+                            t.HasCheckConstraint("ck_pose_proposals_retained_base_difficulty", "retained_base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_pose_proposals_retained_flyer_difficulty", "retained_flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_pose_proposals_retained_name_length", "char_length(retained_name) <= 60");
+
+                            t.HasCheckConstraint("ck_pose_proposals_retained_pose", "(status = 'accepted') = (retained_name IS NOT NULL) AND (status = 'accepted') = (retained_base_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_flyer_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_can_start_flow IS NOT NULL) AND (status = 'accepted') = (retained_can_end_flow IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_pose_proposals_status", "status IN ('pending', 'accepted', 'rejected')");
                         });

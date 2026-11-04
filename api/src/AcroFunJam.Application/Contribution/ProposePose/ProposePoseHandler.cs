@@ -33,10 +33,11 @@ internal sealed class ProposePoseHandler(
             if (submitted.IsFailure) return submitted.Error!;
 
             var proposal = submitted.Value!;
-            if (proposal.IsAccepted)
+            if (proposal.Decision is Acceptance acceptance)
             {
-                // Direct publication, in the same transaction (ADR 0016): if the Catalog refuses, nothing is saved.
-                var publication = await catalogPublisher.PublishPose(proposal.Id, proposal.Pose, transactionCt);
+                // Direct publication, in the same transaction (ADR 0016): if the Catalog refuses, nothing is saved. Same path
+                // as an acceptance by a validator: the retained pose is the proposed pose (ADR 0022).
+                var publication = await catalogPublisher.PublishPose(proposal.Id, acceptance.Retained, transactionCt);
                 if (publication.IsFailure) return publication.Error!;
             }
 

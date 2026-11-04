@@ -18,8 +18,17 @@ public sealed class EfPoseProposalRepository(AcroFunJamDbContext context, Tracke
     public Task<bool> ExistsPendingWithNameKey(PoseNameKey key, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(key);
-        return context.Set<PoseProposalRecord>().AnyAsync(p => p.NameKey == key.Value && p.Status == PoseProposalRecords.PendingStatus, ct);
+        return PendingWithNameKey(key).AnyAsync(ct);
     }
+
+    public Task<bool> ExistsOtherPendingWithNameKey(PoseNameKey key, PoseProposalId except, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        return PendingWithNameKey(key).AnyAsync(p => p.Id != except.Value, ct);
+    }
+
+    private IQueryable<PoseProposalRecord> PendingWithNameKey(PoseNameKey key) =>
+        context.Set<PoseProposalRecord>().Where(p => p.NameKey == key.Value && p.Status == PoseProposalRecords.PendingStatus);
 
     public async Task<PoseProposal?> GetById(PoseProposalId id, CancellationToken ct)
     {
@@ -37,6 +46,12 @@ public sealed class EfPoseProposalRepository(AcroFunJamDbContext context, Tracke
         entry.Property(p => p.DecidedBy).IsModified = true;
         entry.Property(p => p.DecidedAt).IsModified = true;
         entry.Property(p => p.RejectionReason).IsModified = true;
+        entry.Property(p => p.RetainedName).IsModified = true;
+        entry.Property(p => p.RetainedBaseDifficulty).IsModified = true;
+        entry.Property(p => p.RetainedFlyerDifficulty).IsModified = true;
+        entry.Property(p => p.RetainedCanStartFlow).IsModified = true;
+        entry.Property(p => p.RetainedCanEndFlow).IsModified = true;
+        entry.Property(p => p.AdjustmentNote).IsModified = true;
         aggregates.Track(proposal);
     }
 }

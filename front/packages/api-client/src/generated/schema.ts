@@ -612,6 +612,14 @@ export interface components {
             canStartFlow: boolean;
             canEndFlow: boolean;
         };
+        AcceptPoseProposalRequest: {
+            name?: null | string;
+            baseDifficulty?: null | string;
+            flyerDifficulty?: null | string;
+            canStartFlow?: null | boolean;
+            canEndFlow?: null | boolean;
+            message?: null | string;
+        };
         AccessTokenResponse: {
             tokenType?: null | string;
             accessToken: string;
@@ -971,7 +979,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": null | components["schemas"]["AcceptPoseProposalRequest"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -980,6 +992,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AcceptedPoseProposalResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
             /** @description Unauthorized */
@@ -1011,6 +1032,15 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

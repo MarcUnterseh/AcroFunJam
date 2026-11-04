@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using AcroFunJam.Specs.Support;
 using AcroFunJam.Specs.Support.Catalog;
 using AcroFunJam.Specs.Support.Contribution;
@@ -19,6 +21,9 @@ public sealed class ValidationSteps(People people, Deployment deployment, Scenar
     private const string Proposal = @"la proposition de la pose ""([^""]*)"" par (\w+)";
     private const string Reason = @"« ?(.*?) ?»";
     private const string Day = @"(\d{4}-\d{2}-\d{2})";
+
+    /// <summary>« la difficulté flyer en "découverte" », « le nom en "Throne" », « l'indicateur en « … » » (no comma).</summary>
+    private const string Adjustment = "([^,]+)";
 
     private static readonly Uri ValidationQueue = new("/contribution/validation-queue", UriKind.Relative);
     private static readonly Uri PendingCount = new("/contribution/validation-queue/count", UriKind.Relative);
@@ -104,6 +109,23 @@ public sealed class ValidationSteps(People people, Deployment deployment, Scenar
     public async Task WhenSomeoneAccepts(string name, string pose, string contributor) =>
         _decision = await Accept(await people.SignedInClient(name), proposals.IdOf(pose, contributor));
 
+    [When("^(\\w+) accepte " + Proposal + " en corrigeant " + Adjustment + "$")]
+    public async Task WhenSomeoneAcceptsWithAnAdjustment(string name, string pose, string contributor, string adjustment) =>
+        _decision = await Accept(await people.SignedInClient(name), proposals.IdOf(pose, contributor), Adjusting(adjustment));
+
+    [When("^(\\w+) accepte " + Proposal + " en corrigeant " + Adjustment + ", avec le message " + Reason + "$")]
+    public async Task WhenSomeoneAcceptsWithAnAdjustmentAndANote(string name, string pose, string contributor, string adjustment, string note) =>
+        _decision = await Accept(
+            await people.SignedInClient(name), proposals.IdOf(pose, contributor), Adjusting(adjustment) with { Message = note });
+
+    [When("^(\\w+) accepte " + Proposal + " en corrigeant " + Adjustment + @", avec un message de (\d+) caractères$")]
+    public Task WhenSomeoneAcceptsWithAnAdjustmentAndANoteOfLength(string name, string pose, string contributor, string adjustment, int length) =>
+        WhenSomeoneAcceptsWithAnAdjustmentAndANote(name, pose, contributor, adjustment, ANoteOfLength(length));
+
+    [When("^(\\w+) accepte " + Proposal + " sans ajustement, avec le message " + Reason + "$")]
+    public async Task WhenSomeoneAcceptsWithoutAdjustmentWithANote(string name, string pose, string contributor, string note) =>
+        _decision = await Accept(await people.SignedInClient(name), proposals.IdOf(pose, contributor), new AcceptanceRequest { Message = note });
+
     [When("^(\\w+) accepte le " + Day + " " + Proposal + "$")]
     public async Task WhenSomeoneAcceptsOn(string name, string day, string pose, string contributor)
     {
@@ -127,6 +149,30 @@ public sealed class ValidationSteps(People people, Deployment deployment, Scenar
     {
         await WhenSomeoneAccepts(name, pose, contributor);
         _decision!.StatusCode.ShouldBe(HttpStatusCode.OK, await _decision.Content.ReadAsStringAsync());
+    }
+
+    [Given("^(\\w+) a accepté " + Proposal + " en corrigeant " + Adjustment + "$")]
+    public async Task GivenSomeoneHasAcceptedWithAnAdjustment(string name, string pose, string contributor, string adjustment)
+    {
+        await WhenSomeoneAcceptsWithAnAdjustment(name, pose, contributor, adjustment);
+        _decision!.StatusCode.ShouldBe(HttpStatusCode.OK, await _decision.Content.ReadAsStringAsync());
+    }
+
+    /// <summary>An attempt that the API refused (4xx), not a proposal it could not find.</summary>
+    [Given("^(\\w+) a tenté d'accepter " + Proposal + " en corrigeant " + Adjustment + "$")]
+    public async Task GivenSomeoneHasTriedToAcceptWithAnAdjustment(string name, string pose, string contributor, string adjustment)
+    {
+        await WhenSomeoneAcceptsWithAnAdjustment(name, pose, contributor, adjustment);
+        await ShouldBeARefusedAttempt(_decision!);
+    }
+
+    /// <summary>An attempt that the API refused (4xx), not a proposal it could not find.</summary>
+    [Given("^(\\w+) a tenté d'accepter " + Proposal + " en corrigeant " + Adjustment + @", avec un message de (\d+) caractères$")]
+    public async Task GivenSomeoneHasTriedToAcceptWithAnAdjustmentAndANoteOfLength(
+        string name, string pose, string contributor, string adjustment, int length)
+    {
+        await WhenSomeoneAcceptsWithAnAdjustmentAndANoteOfLength(name, pose, contributor, adjustment, length);
+        await ShouldBeARefusedAttempt(_decision!);
     }
 
     /// <summary>An attempt that the API refused (4xx), not a proposal it could not find.</summary>
@@ -176,6 +222,51 @@ public sealed class ValidationSteps(People people, Deployment deployment, Scenar
         var decision = await PoseProposalsInDatabase.DecisionOn(people[contributor].Email, pose);
         decision.Status.ShouldBe("accepted");
         decision.DecidedBy.ShouldBe(people[validator].Email);
+        // The retained pose is the proposed pose, without note.
+        var poses = await PoseProposalsInDatabase.PosesOf(accepted.Id);
+        poses.Retained.ShouldBe(poses.Proposed);
+        poses.AdjustmentNote.ShouldBeNull();
+    }
+
+    [Then("^" + Proposal + @" est acceptée avec ajustements par (\w+)$")]
+    public async Task ThenTheProposalIsAcceptedWithAdjustmentsBy(string pose, string contributor, string validator)
+    {
+        await ThenTheProposalIsAcceptedWithAdjustments(pose, contributor);
+        var decision = await PoseProposalsInDatabase.DecisionOn(people[contributor].Email, pose);
+        decision.Status.ShouldBe("accepted");
+        decision.DecidedBy.ShouldBe(people[validator].Email);
+    }
+
+    [Then("^" + Proposal + " est acceptée avec ajustements$")]
+    public async Task ThenTheProposalIsAcceptedWithAdjustments(string pose, string contributor)
+    {
+        var accepted = await Accepted();
+        accepted.Id.ShouldBe(proposals.IdOf(pose, contributor));
+        accepted.Adjusted.ShouldBe(true);
+        (await PoseProposalsInDatabase.PosesOf(accepted.Id)).IsAdjusted.ShouldBeTrue();
+    }
+
+    [Then("^" + Proposal + " est acceptée avec ajustements et le message " + Reason + "$")]
+    public async Task ThenTheProposalIsAcceptedWithAdjustmentsAndTheNote(string pose, string contributor, string note)
+    {
+        await ThenTheProposalIsAcceptedWithAdjustments(pose, contributor);
+        (await PoseProposalsInDatabase.PosesOf(proposals.IdOf(pose, contributor))).AdjustmentNote.ShouldBe(note);
+    }
+
+    [Then("^" + Proposal + " est acceptée avec ajustements, sans message$")]
+    public async Task ThenTheProposalIsAcceptedWithAdjustmentsWithoutNote(string pose, string contributor)
+    {
+        await ThenTheProposalIsAcceptedWithAdjustments(pose, contributor);
+        (await PoseProposalsInDatabase.PosesOf(proposals.IdOf(pose, contributor))).AdjustmentNote.ShouldBeNull();
+    }
+
+    [Then(@"^la proposition garde la difficulté (base|flyer) proposée ""([^""]*)"" et la difficulté (?:base|flyer) retenue ""([^""]*)""$")]
+    public async Task ThenTheProposalKeepsTheProposedAndRetainedDifficulty(string role, string proposed, string retained)
+    {
+        var poses = await PoseProposalsInDatabase.PosesOf((await Accepted()).Id);
+        var stored = poses.Retained.ShouldNotBeNull();
+        (role == "base" ? poses.Proposed.BaseDifficulty : poses.Proposed.FlyerDifficulty).ShouldBe(DifficultyLabels.ToCode(proposed));
+        (role == "base" ? stored.BaseDifficulty : stored.FlyerDifficulty).ShouldBe(DifficultyLabels.ToCode(retained));
     }
 
     [Then("^" + Proposal + @" est acceptée sans ajustement par (\w+) le " + Day + "$")]
@@ -249,6 +340,15 @@ public sealed class ValidationSteps(People people, Deployment deployment, Scenar
         "le motif de refus est obligatoire" => (HttpStatusCode.BadRequest, "contribution.rejection-reason-required"),
         "le motif de refus est trop long" => (HttpStatusCode.BadRequest, "contribution.rejection-reason-too-long"),
         "une pose de ce nom existe déjà dans le catalogue" => (HttpStatusCode.Conflict, "contribution.pose-name-already-in-catalog"),
+        "une pose de ce nom est déjà en attente de validation" => (HttpStatusCode.Conflict, "contribution.pose-name-already-pending"),
+        // Adjustments (step B): the retained values follow the content rules of a pose (story 3).
+        "le nom de la pose est obligatoire" => (HttpStatusCode.BadRequest, "pose.name-required"),
+        "le nom de la pose est trop long" => (HttpStatusCode.BadRequest, "pose.name-too-long"),
+        "le message est trop long" => (HttpStatusCode.BadRequest, "contribution.adjustment-note-too-long"),
+        "un message n'accompagne qu'une acceptation avec ajustements" =>
+            (HttpStatusCode.UnprocessableEntity, "contribution.adjustment-note-without-adjustment"),
+        _ when reason.StartsWith("le niveau de difficulté \"", StringComparison.Ordinal) =>
+            (HttpStatusCode.BadRequest, "pose.unknown-difficulty-level"),
         _ => throw new ArgumentOutOfRangeException(nameof(reason), reason, "Motif d'impossibilité inconnu."),
     };
 
@@ -277,9 +377,38 @@ public sealed class ValidationSteps(People people, Deployment deployment, Scenar
 
     // --- HTTP ---------------------------------------------------------------------------------
 
-    private static Task<HttpResponseMessage> Accept(HttpClient client, Guid proposal) =>
-        // Body {} : acceptance as proposed (adjustments are step B).
-        client.PostAsJsonAsync(new Uri($"/contribution/pose-proposals/{proposal}/acceptance", UriKind.Relative), new { });
+    /// <summary>Without adjustment, every value is absent: each one is the proposed value.</summary>
+    private static Task<HttpResponseMessage> Accept(HttpClient client, Guid proposal, AcceptanceRequest? acceptance = null) =>
+        client.PostAsJsonAsync(
+            new Uri($"/contribution/pose-proposals/{proposal}/acceptance", UriKind.Relative), acceptance ?? new AcceptanceRequest());
+
+    /// <summary>
+    /// « la difficulté flyer en "découverte" », « le nom en "Throne" », « le nom en un nom de 61 caractères »,
+    /// « l'indicateur en « ne peut pas terminer un flow » »: only the adjusted value is sent, the others are absent.
+    /// </summary>
+    private static AcceptanceRequest Adjusting(string adjustment)
+    {
+        if (Regex.Match(adjustment, @"^la difficulté (base|flyer) en ""([^""]*)""$") is { Success: true } difficulty)
+        {
+            var code = DifficultyLabels.ToCodeOrAsIs(difficulty.Groups[2].Value);
+            return difficulty.Groups[1].Value == "base" ? new AcceptanceRequest { BaseDifficulty = code } : new AcceptanceRequest { FlyerDifficulty = code };
+        }
+
+        if (Regex.Match(adjustment, @"^le nom en ""([^""]*)""$") is { Success: true } name) return new AcceptanceRequest { Name = name.Groups[1].Value };
+        if (Regex.Match(adjustment, @"^le nom en un nom de (\d+) caractères$") is { Success: true } longName)
+        {
+            var length = int.Parse(longName.Groups[1].Value, CultureInfo.InvariantCulture);
+            return new AcceptanceRequest { Name = "Pose " + new string('x', length - "Pose ".Length) };
+        }
+
+        if (Regex.Match(adjustment, "^l'indicateur en « (peut|ne peut pas) (commencer|terminer) un flow »$") is { Success: true } flow)
+        {
+            var can = flow.Groups[1].Value == "peut";
+            return flow.Groups[2].Value == "commencer" ? new AcceptanceRequest { CanStartFlow = can } : new AcceptanceRequest { CanEndFlow = can };
+        }
+
+        throw new ArgumentOutOfRangeException(nameof(adjustment), adjustment, "Ajustement inconnu.");
+    }
 
     private static Task<HttpResponseMessage> Reject(HttpClient client, Guid proposal, RejectionRequest rejection) =>
         client.PostAsJsonAsync(new Uri($"/contribution/pose-proposals/{proposal}/rejection", UriKind.Relative), rejection);
@@ -307,6 +436,9 @@ public sealed class ValidationSteps(People people, Deployment deployment, Scenar
     /// <summary>A reason of exactly this length, without superfluous spaces.</summary>
     private static string AReasonOfLength(int length) => "Doublon " + new string('x', length - "Doublon ".Length);
 
+    /// <summary>An adjustment note of exactly this length, without superfluous spaces.</summary>
+    private static string ANoteOfLength(int length) => "Corrigé " + new string('x', length - "Corrigé ".Length);
+
     // Black-box view of the HTTP contract (deliberately not the Api types). Nullable members so that a missing
     // field fails the comparison instead of reading as a default value.
     private sealed record QueueResponse(IReadOnlyList<QueuedProposalResponse> Proposals);
@@ -326,6 +458,22 @@ public sealed class ValidationSteps(People people, Deployment deployment, Scenar
     private sealed record CountResponse(int Count);
 
     private sealed record RejectionRequest(string? Reason);
+
+    /// <summary>The acceptance: each adjusted value, the others absent (null), and the optional adjustment note.</summary>
+    private sealed record AcceptanceRequest
+    {
+        public string? Name { get; init; }
+
+        public string? BaseDifficulty { get; init; }
+
+        public string? FlyerDifficulty { get; init; }
+
+        public bool? CanStartFlow { get; init; }
+
+        public bool? CanEndFlow { get; init; }
+
+        public string? Message { get; init; }
+    }
 
     private sealed record AcceptedResponse(
         Guid Id, string Status, bool? Adjusted, string Name, string BaseDifficulty, string FlyerDifficulty, bool? CanStartFlow, bool? CanEndFlow);

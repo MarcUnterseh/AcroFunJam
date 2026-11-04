@@ -46,7 +46,7 @@ public sealed class RejectPoseProposalHandlerTests
     {
         var result = await Handler().Handle(new RejectPoseProposal(_throne.Id, Bruno.Id, Duplicate), Ct);
 
-        result.Value.ShouldBe(new DecidedPoseProposalDto(_throne.Id, ProposalStatus.Rejected, _throne.Pose));
+        result.Value.ShouldBe(new DecidedPoseProposalDto(_throne.Id, ProposalStatus.Rejected, Retained: null, Adjusted: false));
         _proposals.Updated.ShouldHaveSingleItem().Decision.ShouldBe(new Rejection(Bruno.Id, Now, Duplicate));
         _unitOfWork.Saves.ShouldBe(1);
     }
@@ -66,7 +66,7 @@ public sealed class RejectPoseProposalHandlerTests
     public async Task Handle_Should_FailWithoutSaving_When_TheProposalIsAlreadyDecided()
     {
         var star = APendingProposal.Named("Star").Build();
-        star.Accept(Bruno, Now.AddHours(-1));
+        star.Accept(Bruno, star.Pose.Retain(PoseAdjustments.None), null, NameAvailability.Available, Now.AddHours(-1));
         var handler = new RejectPoseProposalHandler(
             _validators, new FakePoseProposalRepository { Stored = [star] }, _unitOfWork, new FixedTimeProvider(Now));
 

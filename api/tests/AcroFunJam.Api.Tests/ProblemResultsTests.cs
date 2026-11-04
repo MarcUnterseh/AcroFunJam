@@ -45,6 +45,8 @@ public sealed class ProblemResultsTests
         { ContributionErrors.RejectionReasonTooLong, StatusCodes.Status400BadRequest },
         { ContributionErrors.UnknownValidator, StatusCodes.Status401Unauthorized },
         { ContributionErrors.ValidatorRequired, StatusCodes.Status403Forbidden },
+        { ContributionErrors.AdjustmentNoteTooLong, StatusCodes.Status400BadRequest },
+        { ContributionErrors.AdjustmentNoteWithoutAdjustment, StatusCodes.Status422UnprocessableEntity },
     };
 
     [Theory]

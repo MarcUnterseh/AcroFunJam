@@ -44,10 +44,12 @@ public static class ContributionEndpoints
         contribution.MapPost("/pose-proposals/{id:guid}/acceptance", AcceptPoseProposal)
             .WithName("AcceptPoseProposal")
             .RequireAuthorization(Capabilities.CanValidate)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         contribution.MapPost("/pose-proposals/{id:guid}/rejection", RejectPoseProposal)
             .WithName("RejectPoseProposal")
@@ -100,26 +102,38 @@ public static class ContributionEndpoints
         return TypedResults.Ok(new PendingCountResponse(result.Value));
     }
 
-    /// <summary>Step A: accepted as proposed, hence without adjustment (ADR 0022).</summary>
+    /// <summary>
+    /// The endpoint only builds the adjustments and the note (an absent body, or an absent or null field, keeps the proposed
+    /// value): whether the retained pose differs from the proposed pose is decided by the PoseProposal aggregate (ADR 0022).
+    /// </summary>
     private static async Task<Results<Ok<AcceptedPoseProposalResponse>, ProblemHttpResult>> AcceptPoseProposal(
         Guid id,
+        AcceptPoseProposalRequest? request,
         ClaimsPrincipal validator,
         ICommandHandler<AcceptPoseProposal, DecidedPoseProposalDto> handler,
         CancellationToken ct)
     {
-        var result = await handler.Handle(new AcceptPoseProposal(new PoseProposalId(id), ValidatorOf(validator)), ct);
+        var adjustments = PoseAdjustments.Create(
+            request?.Name, request?.BaseDifficulty, request?.FlyerDifficulty, request?.CanStartFlow, request?.CanEndFlow);
+        if (adjustments.IsFailure) return adjustments.Error!.ToProblem();
+        var note = AdjustmentNote.Create(request?.Message);
+        if (note.IsFailure) return note.Error!.ToProblem();
+
+        var result = await handler.Handle(
+            new AcceptPoseProposal(new PoseProposalId(id), ValidatorOf(validator), adjustments.Value!, note.Value), ct);
         if (result.IsFailure) return result.Error!.ToProblem();
 
         var accepted = result.Value!;
+        var retained = accepted.Retained!;
         return TypedResults.Ok(new AcceptedPoseProposalResponse(
             accepted.Id.Value,
             ProposalStatusCodes.From(accepted.Status),
-            Adjusted: false,
-            accepted.Pose.Name.Value,
-            DifficultyCodes.From(accepted.Pose.Difficulty.Base),
-            DifficultyCodes.From(accepted.Pose.Difficulty.Flyer),
-            accepted.Pose.Flow.CanStartFlow,
-            accepted.Pose.Flow.CanEndFlow));
+            accepted.Adjusted,
+            retained.Name.Value,
+            DifficultyCodes.From(retained.Difficulty.Base),
+            DifficultyCodes.From(retained.Difficulty.Flyer),
+            retained.Flow.CanStartFlow,
+            retained.Flow.CanEndFlow));
     }
 
     private static async Task<Results<Ok<RejectedPoseProposalResponse>, ProblemHttpResult>> RejectPoseProposal(
@@ -197,7 +211,29 @@ public sealed record PendingPoseProposalResponse(
     ProposalContributorResponse Contributor,
     DateTimeOffset SubmittedAt);
 
-/// <summary>An accepted proposal: the pose published in the catalog, and whether the validator adjusted it.</summary>
+/// <summary>
+/// The acceptance of a proposal, with the values the validator adjusts (story 4, step B): each field optional, absent or
+/// null keeps the proposed value; "" is a name, refused as empty. Deliberately permissive, like
+/// <see cref="ProposePoseRequest"/>: a value off the rules is refused with a business code (<c>pose.*</c>, ADR 0018).
+/// <see cref="Message"/> is the optional adjustment note, for the contributor. Properties rather than constructor parameters,
+/// so that the OpenAPI document marks every field as optional.
+/// </summary>
+public sealed record AcceptPoseProposalRequest
+{
+    public string? Name { get; init; }
+
+    public string? BaseDifficulty { get; init; }
+
+    public string? FlyerDifficulty { get; init; }
+
+    public bool? CanStartFlow { get; init; }
+
+    public bool? CanEndFlow { get; init; }
+
+    public string? Message { get; init; }
+}
+
+/// <summary>An accepted proposal: the retained pose, published in the catalog, and whether the validator adjusted it.</summary>
 public sealed record AcceptedPoseProposalResponse(
     Guid Id,
     ProposalStatusCode Status,

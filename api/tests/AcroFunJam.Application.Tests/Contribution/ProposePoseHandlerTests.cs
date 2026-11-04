@@ -46,8 +46,8 @@ public sealed class ProposePoseHandlerTests
         result.Value!.Status.ShouldBe(ProposalStatus.Accepted);
         var published = _publisher.Published.ShouldHaveSingleItem();
         published.Source.ShouldBe(result.Value.Id);
-        published.Pose.ShouldBe(Throne);
-        _proposals.Added.ShouldHaveSingleItem().IsAccepted.ShouldBeTrue();
+        published.Pose.ShouldBe(Throne.Retain(PoseAdjustments.None)); // a direct publication retains the proposed pose
+        _proposals.Added.ShouldHaveSingleItem().Status.ShouldBe(ProposalStatus.Accepted);
         _unitOfWork.Saves.ShouldBe(1);
     }
 
