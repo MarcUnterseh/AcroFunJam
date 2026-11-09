@@ -20,6 +20,10 @@
 
 La variante lien garde une zone cliquable ≥ 44 × 44 px (padding vertical), même si son texte est en ligne.
 
+### Choix de poids égal (story 4)
+
+Quand une rangée présente des **décisions de même rang** entre lesquelles l'interface ne doit pas orienter (« Accepter et publier », « Ajuster avant de publier », « Refuser » dans `carte-proposition.md`), tous les boutons prennent la variante **secondaire**, sans icône, à la même hauteur ; écart `spacing.md` ; empilés pleine largeur sous `breakpoints.md`, en ligne (largeur du contenu, `flex-wrap`) au-delà. Le primaire réapparaît dans le petit formulaire ouvert par l'une d'elles (« Confirmer le refus », « Vérifier les ajustements », « Publier avec ces ajustements »). Une page peut donc compter plusieurs primaires, **un par carte ouverte**, jamais deux dans le même formulaire.
+
 ## États
 
 | État | Primaire | Secondaire | Lien |
@@ -38,7 +42,7 @@ Le focus s'ajoute au survol s'ils coïncident ; jamais de `outline: none` sans r
 Pendant l'envoi d'un formulaire :
 - le libellé devient une action en cours : « Connexion… », « Création du compte… », « Déconnexion… » ; la largeur du bouton ne change pas (pleine largeur en formulaire) ;
 - `aria-disabled="true"` (pas `disabled`, pour garder le focus sur le bouton) ; les clics supplémentaires sont ignorés (comportement : `ux-expert` / développeurs) ;
-- apparence : couleurs de repos inchangées, opacité du libellé inchangée, curseur `progress` ; une icône d'attente statique (trois points) à gauche du libellé ; si elle tourne, la rotation est supprimée sous `prefers-reduced-motion`.
+- apparence : couleurs de repos inchangées, opacité du libellé inchangée, curseur `progress` ; pas d'icône d'attente : le libellé de l'action en cours suffit.
 
 On évite l'état désactivé sur les boutons d'envoi : un bouton grisé n'explique pas pourquoi on ne peut pas envoyer. Les erreurs s'affichent à l'envoi.
 

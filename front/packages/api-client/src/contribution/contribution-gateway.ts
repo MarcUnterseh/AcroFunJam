@@ -3,7 +3,6 @@ import {
   ok,
   type ContributionGateway,
   type ProposalFailure,
-  type ProposalFieldError,
   type ProposalOutcome,
   type Result,
   type ValidPoseProposal,
@@ -12,16 +11,6 @@ import type { ApiClient } from '../client';
 import type { components } from '../generated/schema';
 
 type ProposePoseRequest = components['schemas']['ProposePoseRequest'];
-
-/** Content codes of a 400 (ADR 0018) and the field of the form they concern. */
-const fieldsByCode: Readonly<Record<string, ProposalFieldError['field']>> = {
-  'pose.name-required': 'name',
-  'pose.name-too-long': 'name',
-  'pose.base-difficulty-required': 'baseDifficulty',
-  'pose.flyer-difficulty-required': 'flyerDifficulty',
-  'pose.can-start-flow-required': 'canStartFlow',
-  'pose.can-end-flow-required': 'canEndFlow',
-};
 
 const nameRefusals: Readonly<Record<string, ProposalFailure>> = {
   'contribution.pose-name-already-in-catalog': { kind: 'name-already-in-catalog' },
@@ -46,12 +35,10 @@ const toFailure = (status: number, problem: unknown): ProposalFailure => {
   // (« Ton compte ne permet pas de proposer de pose. », ADR 0019).
   if (status === 401 || status === 403) return { kind: 'unauthenticated' };
   if (status >= 500) return { kind: 'unreachable' };
-  const code = codeOf(problem);
-  const refusal = status === 409 ? nameRefusals[code] : undefined;
+  const refusal = status === 409 ? nameRefusals[codeOf(problem)] : undefined;
   if (refusal) return refusal;
-  const field = status === 400 ? fieldsByCode[code] : undefined;
-  if (field) return { kind: 'invalid-content', errors: [{ field, code } as ProposalFieldError] };
-  // A refusal the site does not know: the API is newer than the site, which must be reloaded.
+  // The content rules (400 pose.*) are checked by the site before sending: refused anyway, the site is outdated,
+  // as for a refusal it does not know; the input is kept and reloading brings the new rules (ADR 0019).
   return { kind: 'outdated' };
 };
 

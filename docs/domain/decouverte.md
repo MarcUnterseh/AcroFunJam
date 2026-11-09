@@ -165,7 +165,7 @@ AcroFunJam est un catalogue collaboratif de poses et de transitions d'acroyoga. 
   - autres noms (alias) ;
   - limite de taille du corps des requêtes, non testable avec TestServer.
 
-### Story 4 « Valider une proposition » (en cours)
+### Story 4 « Valider une proposition » (validé le 2026-11-04)
 Carte d'example mapping du 2026-11-04, **révisée le même jour** avec les décisions du porteur du produit et les retours de l'expert acroyoga et de l'ux-expert. Scénarios (tous `@wip`) : `specs/features/contribution/valider-une-proposition.feature`.
 
 **Story** : en tant que validateur ou administrateur, je consulte les propositions de pose en attente de validation, puis j'accepte chacune, au besoin après l'avoir ajustée (elle est publiée dans le catalogue), ou je la refuse, afin que seules des poses vérifiées entrent dans le catalogue.
@@ -294,6 +294,23 @@ Tranchées le 2026-11-04 : Q13 (détail des ajustements, story 5), Q14 (message 
 **Termes ajoutés ou révisés dans le glossaire** :
 - ajoutés : file de validation, nombre de propositions à valider, motif de refus, proposition traitée, ajustement, pose retenue, acceptée avec ajustements, message d'ajustement, Propositions à valider (libellé), alias / nom d'usage (non modélisé) ;
 - révisés : statut `Rejected` (code `rejected`), accepter, refuser (événement `PoseProposalRejected`).
+
+#### Livraison de la story 4 (2026-11-09)
+- **Trois étapes**, commitées séparément : A (API, d87da5d), B (API, ajustements, c307b42), C (site).
+- Tous les scénarios @api et @web sont livrés. Un seul reste `@wip` : « Quand deux validateurs décident au même moment », couvert par les tests d'intégration `PoseProposalDecisionTransactionTests`.
+- **Décisions prises en route**, sur recommandation des revues :
+  - la décision est revendiquée (mise à jour conditionnelle sur le statut) avant la publication, et la proposition est relue dans la réservation du nom : le perdant de deux acceptations simultanées reçoit « déjà traitée » (ADR 0022) ;
+  - la règle « un message n'accompagne qu'une acceptation avec ajustements » est portée par l'acceptation elle-même et par une contrainte en base ;
+  - côté site, le refus par l'API d'une règle de contenu que le site vérifie déjà (400/422) signifie « site à mettre à jour », pour la story 3 comme pour la story 4 (ADR 0019, révision du 2026-11-06) ;
+  - la ligne « N propositions en attente » baisse après chaque décision et devient « Toutes les propositions de la liste sont traitées. » ; une saisie conservée pour une proposition traitée entre-temps est signalée ;
+  - « Cette proposition n'est plus en attente de validation. » pour une proposition introuvable, traitée comme déjà traitée.
+- **Reportés** :
+  - story 5 « Suivre mes propositions » (même mise en production) ;
+  - Q11, propositions d'un compte supprimé ;
+  - contrôle manuel à 320 px avec un texte agrandi à 200 % : le formulaire d'ajustement déborde (au-delà de WCAG 1.4.10, le test automatique à 320 px passe) ;
+  - test direct du hook `useProposalDecision` (couvert par les tests de la carte) ;
+  - vérifier la sécurité d'un indicateur avant publication relève d'une charte de validation, à rédiger avec l'expert acroyoga ;
+  - écran mobile (Expo).
 
 ### Découpage des stories suivantes (décidé le 2026-11-02)
 1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.

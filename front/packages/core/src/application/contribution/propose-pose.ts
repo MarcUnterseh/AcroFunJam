@@ -37,8 +37,6 @@ export const proposePose = async (
 
   const failure = answer.error;
   switch (failure.kind) {
-    case 'invalid-content':
-      return fail({ kind: 'invalid-input', errors: failure.errors });
     case 'unauthenticated':
       keepProposalInput(store, input, owner);
       return fail({ kind: 'session-expired' });

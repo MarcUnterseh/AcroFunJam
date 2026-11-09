@@ -8,6 +8,16 @@ export class SiteHeader {
     return this.page.getByRole('navigation', { name: 'Compte' });
   }
 
+  /** Navigation « Contribution » (story 4), validators and administrators only. */
+  get contribution() {
+    return this.page.getByRole('navigation', { name: 'Contribution' });
+  }
+
+  /** Link « Propositions à valider »; its accessible name ends with the count, « (3 en attente) ». */
+  get validationLink() {
+    return this.contribution.getByRole('link', { name: /^Propositions à valider/ });
+  }
+
   async openSignIn(): Promise<void> {
     await this.account.getByRole('link', { name: 'Se connecter' }).click();
   }

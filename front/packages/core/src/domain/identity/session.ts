@@ -1,3 +1,4 @@
+import { validateProposalsCapability } from '../shared-kernel/validation-capability';
 import type { Capability } from './capability';
 
 /**
@@ -35,6 +36,13 @@ export const signedOut = (): Session => ({ status: 'visitor' });
 /** The person is signed in and the role allows proposing (capability "propose", ADR 0019). */
 export const canPropose = (session: Session): boolean =>
   session.status === 'signedIn' && session.capabilities.includes('propose');
+
+/**
+ * The person is signed in and the role allows validating proposals (capability "validate-proposals", ADR 0019):
+ * header link « Propositions à valider » and access to the validation queue (story 4).
+ */
+export const canValidateProposals = (session: Session): boolean =>
+  session.status === 'signedIn' && session.capabilities.includes(validateProposalsCapability);
 
 export const noticeDismissed = (session: Session): Session =>
   session.status === 'visitor' ? { status: 'visitor' } : session;

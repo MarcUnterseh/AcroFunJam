@@ -20,12 +20,27 @@ Ton mot de passe doit contenir au moins 10 caractères.           <- aide (facul
 | Champ | `size.md` (16 px, évite le zoom iOS), `regular` | texte `text`, fond `background` | hauteur `sizes.control`, padding horizontal `spacing.md`, rayon `radius.md`, bordure `borderWidth` `border` |
 | Aide | `size.sm` | `textMuted` | `spacing.xs` sous le champ |
 | Erreur | `size.sm`, `weight.semibold` | `danger` | `spacing.xs` sous l'aide (ou le champ) ; icône erreur `sizes.icon` à gauche, écart `spacing.xs`, alignée sur la première ligne |
-| Compteur (facultatif, story 3) | `size.sm`, chiffres à chasse fixe (`tabular-nums`) ; au-delà de la limite `semibold` + icône erreur | `textMuted` ; au-delà de la limite `danger` | `spacing.xs` sous l'aide, aligné à droite ; affiché seulement près de la limite (nom de pose : à partir de 50 / 60) |
+| Compteur (facultatif, story 3) | `size.sm`, chiffres à chasse fixe (`tabular-nums`) ; au-delà de la limite `semibold` + icône erreur | `textMuted` ; au-delà de la limite `danger` | `spacing.xs` sous l'aide, aligné à droite ; affiché seulement près de la limite (nom de pose : à partir de 50 / 60 ; motif de refus et message d'ajustement : à partir de 450 / 500, story 4) |
 
 - Champs successifs séparés de `spacing.md` (bloc libellé → erreur) ; `spacing.lg` dans un formulaire qui contient des groupes de tuiles (`ecrans/3-proposer-une-pose.md`).
 - Ordre sous le champ : aide, compteur, erreur.
 - Pas de texte indicatif (*placeholder*) en guise de libellé ; s'il y en a un, il est en `textMuted`.
 - Aucun astérisque : tous les champs des stories 2b et 3 sont obligatoires ; l'introduction du formulaire le dit (« Tous les champs sont obligatoires. », story 3).
+- Champ **facultatif** (story 4, « Message pour le contributeur ») : le mot « (facultatif) » fait partie du libellé, même graisse ; pas d'autre marque visuelle.
+
+## Variante zone de texte (story 4)
+
+`textarea` pour un texte libre de plusieurs phrases : motif de refus, message d'ajustement (500 caractères).
+
+| Élément | Rendu |
+|---|---|
+| Hauteur | `rows="4"` : 4 lignes de `size.md` × `lineHeight.normal` + padding ; hauteur minimale jamais sous `sizes.control` |
+| Padding | `spacing.sm` vertical, `spacing.md` horizontal |
+| Redimensionnement | vertical seulement (`resize: vertical`) ; pas d'agrandissement automatique (pas de saut de mise en page à la frappe) |
+| Retour à la ligne | `overflow-wrap: anywhere` |
+| Bordures, états, erreur, compteur | identiques au champ texte (tableau ci-dessus et « États ») |
+
+Le compteur apparaît à **450** caractères, sous l'aide, sans décaler l'aide ; au-delà de 500 : `danger`, `semibold`, icône erreur.
 
 ## Liaisons accessibles (rappel, comportement porté par le code)
 

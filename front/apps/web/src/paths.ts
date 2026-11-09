@@ -4,6 +4,9 @@ export const catalogPath = '/';
 /** Form « Proposer une pose » (story 3), for a signed-in person only. */
 export const proposePosePath = '/proposer-une-pose';
 
+/** Page « Propositions à valider » (story 4), for validators and administrators only. */
+export const validationPath = '/propositions-a-valider';
+
 export const signInPagePath = '/connexion';
 export const registrationPagePath = '/inscription';
 

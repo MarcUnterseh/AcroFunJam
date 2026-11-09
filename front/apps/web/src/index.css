@@ -78,11 +78,16 @@ main {
   border-bottom: var(--afj-size-border-width) solid var(--afj-color-divider);
 }
 
-/* Mobile: two stable rows (brand, then account) whatever the state, so that the page never jumps. */
+/*
+ * Mobile: two stable rows (brand and contribution link, then account) whatever the state, so that the page never
+ * jumps. Wrapping rather than a grid: when the text grows (zoom, larger text), the contribution link goes under
+ * the brand instead of covering it.
+ */
 .site-header__inner {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  row-gap: var(--afj-spacing-xs);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--afj-spacing-xs) var(--afj-spacing-md);
   max-width: var(--afj-size-content-max-width);
   margin-inline: auto;
   padding: var(--afj-spacing-sm) var(--afj-spacing-md);
@@ -92,14 +97,22 @@ main {
   display: inline-flex;
   align-items: center;
   min-height: var(--afj-size-touch-target);
-  justify-self: start;
   font-size: var(--afj-font-size-lg);
   font-weight: var(--afj-font-weight-bold);
   color: var(--afj-color-text);
   text-decoration: none;
 }
 
+.site-header__contribution {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-inline-start: auto;
+}
+
+/* Mobile: the account takes the whole second row; the contribution link sits right of the brand. */
 .site-header__account {
+  flex-basis: 100%;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -770,9 +783,318 @@ main {
   width: 100%;
 }
 
+/* --- Header navigation « Contribution » (docs/design/composants/en-tete.md, story 4) ------------ */
+
+/* Link styled as the secondary buttons of the header; the long label is visually hidden under 64em. */
+.validation-link {
+  gap: var(--afj-spacing-sm);
+}
+
+.validation-link__long {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Counter badge (docs/design/composants/pastille-compteur.md): neutral, the number carries the information. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--afj-size-badge);
+  min-block-size: var(--afj-size-badge);
+  padding: 0 var(--afj-spacing-xs);
+  border-radius: var(--afj-radius-pill);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--afj-color-badge-contrast);
+  background: var(--afj-color-badge);
+}
+
+/* --- Page « Propositions à valider » (docs/design/ecrans/4-valider-une-proposition.md) -------- */
+
+/* One column aligned left: the content of a card is formWideMaxWidth wide (four tiles on a line). */
+.validation-page {
+  max-width: calc(
+    var(--afj-size-form-wide-max-width) + 2 * var(--afj-spacing-lg) + 2 * var(--afj-size-border-width)
+  );
+}
+
+.validation-page h1 {
+  margin-bottom: var(--afj-spacing-sm);
+}
+
+.validation-page__status,
+.validation-page__introduction,
+.validation-page__count {
+  margin: 0 0 var(--afj-spacing-sm);
+  color: var(--afj-color-text-muted);
+}
+
+.validation-page__count {
+  margin-bottom: var(--afj-spacing-lg);
+}
+
+.validation-page > .form-alert,
+.validation-page > .catalog-empty {
+  margin-top: var(--afj-spacing-lg);
+}
+
+.validation-empty__title {
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.catalog-empty .validation-empty__text {
+  margin-top: calc(var(--afj-spacing-xs) - var(--afj-spacing-sm));
+  color: var(--afj-color-text-muted);
+}
+
+.validation-queue {
+  display: grid;
+  gap: var(--afj-spacing-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Proposal card (docs/design/composants/carte-proposition.md). */
+.proposal-card {
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
+}
+
+.proposal-card__name {
+  margin: 0 0 var(--afj-spacing-xs);
+  font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-bold);
+  line-height: var(--afj-line-height-tight);
+  overflow-wrap: anywhere;
+}
+
+.proposal-card__contributor {
+  margin: 0 0 var(--afj-spacing-md);
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.proposal-card__contributor strong {
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text);
+}
+
+.proposal-card__decision {
+  /* A gap rather than margins: no extra space under the alert when it is the last element. */
+  display: grid;
+  gap: var(--afj-spacing-md);
+  margin-top: var(--afj-spacing-md);
+  padding-top: var(--afj-spacing-md);
+  border-top: var(--afj-size-border-width) solid var(--afj-color-divider);
+}
+
+/* Decisions of equal weight: stacked, full width, on mobile. */
+.proposal-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--afj-spacing-md);
+}
+
+.proposal-card__actions .button {
+  width: 100%;
+  min-height: var(--afj-size-control);
+}
+
+.proposal-card__zone {
+  display: grid;
+  gap: var(--afj-spacing-lg);
+}
+
+.proposal-card__zone-title {
+  margin: 0;
+  font-size: var(--afj-font-size-md);
+  font-weight: var(--afj-font-weight-bold);
+  line-height: var(--afj-line-height-tight);
+}
+
+.proposal-card__zone-title:focus-visible {
+  border-radius: var(--afj-radius-sm);
+}
+
+/* The introduction is attached to the title of the zone. */
+.proposal-card__zone-introduction {
+  margin: calc(var(--afj-spacing-xs) - var(--afj-spacing-lg)) 0 0;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+/* Help of a group of tiles (« Proposée : Débutant »), between the legend and the error. */
+.tile-group__help {
+  margin: 0 0 var(--afj-spacing-sm);
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+/* Text area variant of the field (champ.md). */
+.field textarea {
+  min-height: var(--afj-size-control);
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+  font: inherit;
+  color: var(--afj-color-text);
+  background: var(--afj-color-background);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md);
+  resize: vertical;
+  overflow-wrap: anywhere;
+}
+
+.field textarea[aria-invalid='true'] {
+  padding: calc(var(--afj-spacing-sm) - var(--afj-size-border-width))
+    calc(var(--afj-spacing-md) - var(--afj-size-border-width));
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-danger);
+}
+
+/* Summary « proposé → retenu » (docs/design/composants/recapitulatif-ajustements.md). */
+.adjustment-summary__key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--afj-spacing-xs);
+  margin: calc(var(--afj-spacing-xs) - var(--afj-spacing-lg)) 0
+    calc(var(--afj-spacing-sm) - var(--afj-spacing-lg));
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+.adjustment-summary__list {
+  margin: 0;
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-background);
+  border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
+}
+
+.adjustment + .adjustment {
+  margin-top: var(--afj-spacing-sm);
+  padding-top: var(--afj-spacing-sm);
+  border-top: var(--afj-size-border-width) solid var(--afj-color-divider);
+}
+
+.adjustment dt {
+  margin-bottom: var(--afj-spacing-xs);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.adjustment dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--afj-spacing-sm);
+  margin: 0;
+}
+
+.adjustment__proposed {
+  color: var(--afj-color-text-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: var(--afj-size-border-width);
+  overflow-wrap: anywhere;
+}
+
+/* The arrow never ends a line alone: it goes with the retained value. */
+.adjustment__change {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--afj-spacing-sm);
+  min-width: 0;
+}
+
+.adjustment__change .icon,
+.adjustment-summary__key .icon {
+  align-self: center;
+  color: var(--afj-color-text-muted);
+}
+
+.adjustment__retained {
+  font-weight: var(--afj-font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.adjustment-summary__rest {
+  margin: calc(var(--afj-spacing-sm) - var(--afj-spacing-lg)) 0 0;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+/* Report of a decision (docs/design/composants/compte-rendu-decision.md), in place of the card. */
+.decision-report {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--afj-spacing-sm);
+  padding: var(--afj-spacing-md);
+  padding-inline-start: var(--afj-spacing-lg);
+  background: var(--afj-color-success-surface);
+  border-left: var(--afj-size-accent-bar) solid var(--afj-color-success);
+  border-radius: var(--afj-radius-md);
+}
+
+.decision-report .icon {
+  color: var(--afj-color-success);
+}
+
+.decision-report--rejected {
+  background: var(--afj-color-info-surface);
+  border-left-color: var(--afj-color-info);
+}
+
+.decision-report--rejected .icon {
+  color: var(--afj-color-info);
+}
+
+.decision-report__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.decision-report__title {
+  margin: 0;
+  font-size: var(--afj-font-size-md);
+  font-weight: var(--afj-font-weight-bold);
+  line-height: var(--afj-line-height-tight);
+  overflow-wrap: anywhere;
+}
+
+.decision-report__title:focus-visible {
+  border-radius: var(--afj-radius-sm);
+}
+
+.decision-report__text {
+  margin: var(--afj-spacing-xs) 0 0;
+}
+
+.decision-report__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--afj-size-touch-target);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text);
+}
+
 /* --- High contrast mode ------------------------------------------------------------------- */
 
 @media (forced-colors: active) {
+  .badge {
+    border: var(--afj-size-border-width) solid transparent;
+  }
+
   .link-button {
     border: var(--afj-size-border-width) solid transparent;
   }
@@ -816,7 +1138,9 @@ main {
     background: var(--afj-color-surface-hover);
   }
 
-  .field input:hover {
+  /* A field in error keeps its danger border under the pointer. */
+  .field input:not([aria-invalid='true']):hover,
+  .field textarea:not([aria-invalid='true']):hover {
     border-color: var(--afj-color-text);
   }
 
@@ -846,6 +1170,15 @@ main {
   background: var(--afj-color-divider);
 }
 
+/* --- Narrow screens ------------------------------------------------------------------------ */
+
+/* The labels of the card buttons (« Accepter et publier », « Modifier les ajustements »…) wrap rather than overflow. */
+@media (width < 40em) {
+  .proposal-card .button {
+    white-space: normal;
+  }
+}
+
 /* --- Wide screens -------------------------------------------------------------------------- */
 
 @media (width >= 40em) {
@@ -854,6 +1187,32 @@ main {
     align-items: center;
     justify-content: space-between;
     padding-inline: var(--afj-spacing-lg);
+  }
+
+  .site-header__contribution {
+    margin-inline-start: var(--afj-spacing-lg);
+  }
+
+  .site-header__account {
+    flex-basis: auto;
+    margin-inline-start: auto;
+  }
+
+  .validation-queue {
+    gap: var(--afj-spacing-lg);
+  }
+
+  .proposal-card {
+    padding: var(--afj-spacing-lg);
+  }
+
+  .proposal-card__actions {
+    flex-flow: row wrap;
+  }
+
+  .proposal-card__actions .button {
+    width: auto;
+    white-space: nowrap;
   }
 
   .page-header {
@@ -914,6 +1273,18 @@ main {
 
 /* 64em = breakpoints.lg (1024) / 16. */
 @media (width >= 64em) {
+  .validation-link__long {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .validation-link__short {
+    display: none;
+  }
+
   .pose-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

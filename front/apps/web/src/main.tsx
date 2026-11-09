@@ -3,6 +3,7 @@ import {
   createAuthGateway,
   createCatalogGateway,
   createContributionGateway,
+  createValidationGateway,
 } from '@acrofunjam/api-client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
@@ -11,7 +12,9 @@ import { createBrowserRouter, RouterProvider } from 'react-router';
 import 'virtual:tokens.css';
 import { CatalogGatewayProvider } from './catalog/CatalogGatewayContext';
 import { ContributionProvider } from './contribution/ContributionContext';
+import { createSessionDecisionInputStore } from './contribution/session-decision-input-store';
 import { createSessionProposalInputStore } from './contribution/session-proposal-input-store';
+import { ValidationProvider } from './contribution/ValidationContext';
 import { IdentityProvider } from './identity/IdentityContext';
 import { createLocalSessionMemory } from './identity/local-session-memory';
 import { routes } from './routes';
@@ -24,6 +27,8 @@ const queryClient = new QueryClient();
 const router = createBrowserRouter(routes());
 // The input of « Proposer une pose » kept in the tab (ADR 0019), forgotten on sign-out (shared device).
 const proposalInputStore = createSessionProposalInputStore(sessionStorage);
+// The input of the decisions on proposals (story 4), kept and forgotten the same way.
+const decisionInputStore = createSessionDecisionInputStore(sessionStorage);
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing #root element');
@@ -33,13 +38,15 @@ createRoot(root).render(
     <QueryClientProvider client={queryClient}>
       <CatalogGatewayProvider gateway={createCatalogGateway(apiClient)}>
         <ContributionProvider gateway={createContributionGateway(apiClient)} store={proposalInputStore}>
-          <IdentityProvider
-            gateway={createAuthGateway(apiClient)}
-            memory={createLocalSessionMemory(localStorage, window)}
-            forgetOnSignOut={[proposalInputStore]}
-          >
-            <RouterProvider router={router} />
-          </IdentityProvider>
+          <ValidationProvider gateway={createValidationGateway(apiClient)} store={decisionInputStore}>
+            <IdentityProvider
+              gateway={createAuthGateway(apiClient)}
+              memory={createLocalSessionMemory(localStorage, window)}
+              forgetOnSignOut={[proposalInputStore, decisionInputStore]}
+            >
+              <RouterProvider router={router} />
+            </IdentityProvider>
+          </ValidationProvider>
         </ContributionProvider>
       </CatalogGatewayProvider>
     </QueryClientProvider>

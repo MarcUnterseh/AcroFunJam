@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { ValidationNav } from '../contribution/ValidationNav';
 import { Link, NavLink, useLocation } from 'react-router';
 import { returnPathFrom } from '../identity/return-path';
 import { useSession } from '../identity/SessionContext';
@@ -36,6 +37,7 @@ export function SiteHeader() {
         <Link to="/" className="site-header__brand">
           AcroFunJam
         </Link>
+        <ValidationNav />
         <nav
           aria-label="Compte"
           className="site-header__account"

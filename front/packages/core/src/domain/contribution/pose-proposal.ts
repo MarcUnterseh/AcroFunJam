@@ -1,6 +1,7 @@
 import { fail, ok, type Result } from '../common/result';
 import type { DifficultyLevel } from '../shared-kernel/difficulty-level';
 import { checkPoseName, type PoseName, type PoseNameError } from '../shared-kernel/pose-name';
+import { validateProposalsCapability } from '../shared-kernel/validation-capability';
 
 /** What the person answered in the form « Proposer une pose »; null: not answered yet (no default value). */
 export type PoseProposalInput = {
@@ -75,4 +76,4 @@ export const validatePoseProposal = (
  * Capability codes rather than the Identity type: the bounded contexts do not import each other.
  */
 export const publishesDirectly = (capabilities: readonly string[]): boolean =>
-  capabilities.includes('validate-proposals');
+  capabilities.includes(validateProposalsCapability);

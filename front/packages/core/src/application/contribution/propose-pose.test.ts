@@ -94,14 +94,6 @@ describe('proposePose', () => {
     },
   );
 
-  it('should report the field errors of the API when the API finds the content invalid', async () => {
-    const { gateway, store } = setUp();
-    const errors = [{ field: 'name', code: 'pose.name-too-long' }] as const;
-    gateway.answer = fail({ kind: 'invalid-content', errors });
-
-    expect(await proposePose(gateway, store, throne, alice)).toEqual(fail({ kind: 'invalid-input', errors }));
-  });
-
   it('should report an expired session and keep the input, with its owner, when the API no longer knows the person', async () => {
     const { gateway, store } = setUp();
     gateway.answer = fail({ kind: 'unauthenticated' });

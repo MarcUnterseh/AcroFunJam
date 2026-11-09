@@ -1,19 +1,10 @@
 import { canPropose, proposalLabels } from '@acrofunjam/core';
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router';
 import { useSession } from '../identity/SessionContext';
+import { useBusyMain } from '../layout/useBusyMain';
 import { catalogPath, proposePosePath, signInPath } from '../paths';
 import { ProposalForm } from './ProposalForm';
-
-/** While the session is checked, main is busy: only the title is shown, never the form (not even briefly). */
-function useBusyMain(busy: boolean) {
-  useLayoutEffect(() => {
-    const main = document.querySelector('main');
-    if (!busy || !main) return;
-    main.setAttribute('aria-busy', 'true');
-    return () => main.removeAttribute('aria-busy');
-  }, [busy]);
-}
 
 /**
  * Page « Proposer une pose » (docs/design/ecrans/3-proposer-une-pose.md), for a signed-in person who may propose

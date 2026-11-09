@@ -1,6 +1,6 @@
 # Panneau de succès
 
-Remplace un formulaire envoyé avec succès : il dit ce que devient l'envoi, puis propose la suite. Usage en story 3 : après « Proposer la pose ».
+Remplace un formulaire envoyé avec succès : il dit ce que devient l'envoi, puis propose la suite. Usage en story 3 : après « Proposer la pose ». Version compacte pour une décision dans une liste : `compte-rendu-decision.md` (story 4).
 
 ## Structure
 

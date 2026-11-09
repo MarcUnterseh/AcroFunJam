@@ -1,19 +1,14 @@
 import {
   checkPoseName,
-  difficultyLevelName,
-  difficultyScale,
   emptyPoseProposalInput,
   keepProposalInput,
-  nameCounterLabel,
   poseNameLength,
-  poseNamePolicy,
   proposalFieldErrorLabel,
   proposalLabels,
   proposalRefusalLabel,
   proposePose,
   publishesDirectly,
   restoreProposalInput,
-  type DifficultyLevel,
   type PoseProposalInput,
   type ProposalField,
   type ProposalFieldError,
@@ -30,39 +25,14 @@ import { Icon } from '../layout/Icon';
 import { proposePosePath, signInPath } from '../paths';
 import { useContribution } from './ContributionContext';
 import { ProposalSuccess } from './ProposalSuccess';
-import { TileRadioGroup, type TileOption } from './TileRadioGroup';
-
-const levels: readonly TileOption<DifficultyLevel>[] = difficultyScale.map((level) => ({
-  value: level,
-  label: difficultyLevelName(level),
-}));
-
-type Answer = 'yes' | 'no';
-const answers: readonly TileOption<Answer>[] = [
-  { value: 'yes', label: proposalLabels.yes },
-  { value: 'no', label: proposalLabels.no },
-];
-const answerOf = (value: boolean | null): Answer | null => (value === null ? null : value ? 'yes' : 'no');
+import { nameCounter, NameCounter } from './NameCounter';
+import { useCounterAnnouncement } from './useCounterAnnouncement';
+import { answerOf, answers, levels } from './pose-choices';
+import { TileRadioGroup } from './TileRadioGroup';
 
 type NameRefusal = 'name-already-in-catalog' | 'name-already-pending';
 /** Global failures, shown in an alert at the top of the form; the input is kept for each of them. */
 type Alert = 'unreachable' | 'outdated' | 'session-expired';
-
-/** How the counter reads: it is announced when it appears, when the limit is passed, and when back under it. */
-const counterStage = (length: number) =>
-  length > poseNamePolicy.maxLength ? 'over' : nameCounterLabel(length) ? 'near' : 'far';
-
-function NameCounter({ length }: { readonly length: number }) {
-  const label = nameCounterLabel(length);
-  if (!label) return null;
-  const over = length > poseNamePolicy.maxLength;
-  return (
-    <p className={`field__counter${over ? ' field__counter--over' : ''}`}>
-      {over && <Icon name="error" />}
-      {label}
-    </p>
-  );
-}
 
 /**
  * Form « Proposer une pose » (docs/design/ecrans/3-proposer-une-pose.md): checked before sending with the rules
@@ -82,6 +52,7 @@ export function ProposalForm({
   const { session, sessionExpired: expireSession } = useSession();
   const queryClient = useQueryClient();
   const announce = useAnnounce();
+  const announceNameCounter = useCounterAnnouncement(nameCounter);
   const [input, setInput] = useState<PoseProposalInput>(emptyPoseProposalInput);
   const [errors, setErrors] = useState<readonly ProposalFieldError[]>([]);
   const [nameRefusal, setNameRefusal] = useState<NameRefusal | null>(null);
@@ -147,9 +118,7 @@ export function ProposalForm({
           error.field !== 'name' ? [error] : name.ok ? [] : [{ field: 'name', code: name.error }],
         ),
       );
-      const before = counterStage(poseNameLength(input.name));
-      const after = counterStage(poseNameLength(next.name));
-      if (after !== before && after !== 'far') announce(nameCounterLabel(poseNameLength(next.name)) ?? '');
+      announceNameCounter(poseNameLength(input.name), poseNameLength(next.name));
     } else setErrors((current) => current.filter((error) => error.field !== field));
   };
 

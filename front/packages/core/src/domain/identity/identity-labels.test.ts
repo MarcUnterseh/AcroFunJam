@@ -6,7 +6,10 @@ describe('identity labels', () => {
     ['identity.email-required', 'Saisis ton adresse e-mail.'],
     ['identity.email-invalid', 'Saisis une adresse e-mail au format nom@exemple.org.'],
     ['identity.password-required', 'Saisis ton mot de passe.'],
-    ['identity.password-too-short', 'Ton mot de passe est trop court : il doit contenir au moins 10 caractères.'],
+    [
+      'identity.password-too-short',
+      'Ton mot de passe est trop court : il doit contenir au moins 10 caractères.',
+    ],
     ['invalid-credentials', 'Adresse e-mail ou mot de passe incorrect. Vérifie-les et réessaie.'],
     ['email-already-used', 'Cette adresse e-mail sert déjà à un compte.'],
     ['locked-out', 'Trop de tentatives de connexion. Réessaie dans quelques minutes.'],

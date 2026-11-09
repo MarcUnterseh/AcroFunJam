@@ -27,37 +27,52 @@ function FlowBoundary({ possible }: { readonly possible: boolean }) {
   );
 }
 
+type PoseCharacteristics = Pick<
+  PoseSummary,
+  'baseDifficulty' | 'flyerDifficulty' | 'canStartFlow' | 'canEndFlow'
+>;
+
+/**
+ * The characteristics of a pose, as the catalog presents them (docs/design/composants/carte-pose.md); also in
+ * the card of a proposal to validate (carte-proposition.md), which shows the pose as it will be published.
+ */
+export function PoseDetails({ pose }: { readonly pose: PoseCharacteristics }) {
+  return (
+    <dl className="pose-card__details">
+      <div className="pose-card__row">
+        <dt>{catalogLabels.base}</dt>
+        <dd>
+          <Difficulty level={pose.baseDifficulty} />
+        </dd>
+      </div>
+      <div className="pose-card__row">
+        <dt>{catalogLabels.flyer}</dt>
+        <dd>
+          <Difficulty level={pose.flyerDifficulty} />
+        </dd>
+      </div>
+      <div className="pose-card__row pose-card__row--first-boundary">
+        <dt>{catalogLabels.canStartFlow}</dt>
+        <dd>
+          <FlowBoundary possible={pose.canStartFlow} />
+        </dd>
+      </div>
+      <div className="pose-card__row">
+        <dt>{catalogLabels.canEndFlow}</dt>
+        <dd>
+          <FlowBoundary possible={pose.canEndFlow} />
+        </dd>
+      </div>
+    </dl>
+  );
+}
+
 /** Pose card (docs/design/composants/carte-pose.md): not interactive yet, no detail page. */
 function PoseCard({ pose }: { readonly pose: PoseSummary }) {
   return (
     <li className="pose-card">
       <h2 className="pose-card__name">{pose.name}</h2>
-      <dl className="pose-card__details">
-        <div className="pose-card__row">
-          <dt>{catalogLabels.base}</dt>
-          <dd>
-            <Difficulty level={pose.baseDifficulty} />
-          </dd>
-        </div>
-        <div className="pose-card__row">
-          <dt>{catalogLabels.flyer}</dt>
-          <dd>
-            <Difficulty level={pose.flyerDifficulty} />
-          </dd>
-        </div>
-        <div className="pose-card__row pose-card__row--first-boundary">
-          <dt>{catalogLabels.canStartFlow}</dt>
-          <dd>
-            <FlowBoundary possible={pose.canStartFlow} />
-          </dd>
-        </div>
-        <div className="pose-card__row">
-          <dt>{catalogLabels.canEndFlow}</dt>
-          <dd>
-            <FlowBoundary possible={pose.canEndFlow} />
-          </dd>
-        </div>
-      </dl>
+      <PoseDetails pose={pose} />
     </li>
   );
 }

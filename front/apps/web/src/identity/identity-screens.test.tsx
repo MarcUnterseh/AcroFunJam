@@ -1,5 +1,5 @@
 import { fail } from '@acrofunjam/core';
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { CurrentLocation, FakeAuthGateway, FakeSessionMemory, renderSite } from '../test/site-harness';
@@ -8,6 +8,13 @@ const account = () => screen.getByRole('navigation', { name: 'Compte' });
 
 /** Texts of the status regions: the site announcer, and the catalog while it loads. */
 const announcements = () => screen.getAllByRole('status').map((status) => status.textContent);
+
+/** Lets the pending renders and their effects run (React Query notifies on the next tick). */
+const settled = () =>
+  act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
 
 describe('site header', () => {
   it('should offer to sign in or register, coming back to the current page, when the person is a visitor', async () => {
@@ -234,8 +241,10 @@ describe('expired session', () => {
     async (path) => {
       renderSite(path, { memory: new FakeSessionMemory(true) });
 
-      // Wait until the session is read (visitor whose session expired).
+      // Wait until the session is read (visitor whose session expired), then let the effects of that render
+      // run: the banner would announce the expiry one render after showing it.
       await within(account()).findByRole('link', { name: 'Se connecter' });
+      await settled();
       expect(screen.queryByRole('region', { name: 'Session expirée' })).not.toBeInTheDocument();
       expect(announcements()).not.toContain('Ta session a expiré. Tu peux te reconnecter.');
     },

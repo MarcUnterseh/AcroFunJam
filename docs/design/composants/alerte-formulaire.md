@@ -1,6 +1,6 @@
 # Zone d'alerte de formulaire
 
-Bloc en haut du formulaire, sous le `h1` (et l'introduction), qui explique pourquoi un envoi **n'a pas abouti pour une raison globale**, sans lien avec un champ précis : adresse ou mot de passe incorrect, compte verrouillé, adresse déjà utilisée, AcroFunJam injoignable (2b) ; injoignable et session expirée pendant une proposition (story 3). Réutilisée hors formulaire pour l'échec de chargement du catalogue.
+Bloc en haut du formulaire, sous le `h1` (et l'introduction), qui explique pourquoi un envoi **n'a pas abouti pour une raison globale**, sans lien avec un champ précis : adresse ou mot de passe incorrect, compte verrouillé, adresse déjà utilisée, AcroFunJam injoignable (2b) ; injoignable et session expirée pendant une proposition (story 3). Réutilisée hors formulaire pour l'échec de chargement du catalogue. Story 4 : échec de chargement des propositions à valider (en page) et refus d'une décision **dans la carte de proposition** concernée (`carte-proposition.md`, « Alertes dans la carte » : injoignable, session expirée, nom déjà pris, déjà traitée, rôle retiré), avec une marge basse `spacing.md` au lieu de `spacing.lg`.
 
 **Pas de résumé des erreurs de saisie** (décision de la 2b, mise en œuvre) : un champ vide ou invalide n'apparaît pas ici. Son message est affiché sous le champ (ou sous la `legend` d'un groupe de tuiles) et le focus est placé sur le premier élément en erreur. Les formulaires d'AcroFunJam ont deux à cinq questions : la liste en tête doublerait les messages sans aider à les retrouver.
 

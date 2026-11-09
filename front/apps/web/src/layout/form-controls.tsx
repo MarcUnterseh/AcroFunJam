@@ -1,4 +1,11 @@
-import { forwardRef, useId, useState, type InputHTMLAttributes, type ReactNode } from 'react';
+import {
+  forwardRef,
+  useId,
+  useState,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type TextareaHTMLAttributes,
+} from 'react';
 import { Icon } from './Icon';
 
 type FieldProps = {
@@ -40,6 +47,52 @@ export const Field = forwardRef<
       {counter}
       {error && (
         <p id={`${inputId}-erreur`} className="field__error">
+          <Icon name="error" />
+          <span>{error}</span>
+        </p>
+      )}
+    </div>
+  );
+});
+
+type TextAreaFieldProps = {
+  readonly label: string;
+  readonly help?: string | undefined;
+  readonly error?: string | undefined;
+  readonly counter?: ReactNode;
+} & Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'aria-invalid' | 'aria-describedby'>;
+
+/**
+ * Text area variant of the field (docs/design/composants/champ.md, « Variante zone de texte »): 4 lines, same
+ * label, help, counter and error as a field, linked the same way.
+ */
+export const TextAreaField = forwardRef<HTMLTextAreaElement, TextAreaFieldProps>(function TextAreaField(
+  { label, help, error, counter, id, ...textarea },
+  ref,
+) {
+  const generated = useId();
+  const fieldId = id ?? generated;
+  const describedBy =
+    [help && `${fieldId}-aide`, error && `${fieldId}-erreur`].filter(Boolean).join(' ') || undefined;
+  return (
+    <div className="field">
+      <label htmlFor={fieldId}>{label}</label>
+      <textarea
+        ref={ref}
+        id={fieldId}
+        rows={4}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy}
+        {...textarea}
+      />
+      {help && (
+        <p id={`${fieldId}-aide`} className="field__help">
+          {help}
+        </p>
+      )}
+      {counter}
+      {error && (
+        <p id={`${fieldId}-erreur`} className="field__error">
           <Icon name="error" />
           <span>{error}</span>
         </p>

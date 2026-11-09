@@ -69,19 +69,18 @@ describe('createContributionGateway', () => {
     expect(await gateway.proposePose(throne)).toEqual(fail({ kind }));
   });
 
+  // The site checks these rules before sending: refused anyway, the site is outdated (ADR 0019).
   it.each([
-    ['pose.name-required', 'name'],
-    ['pose.name-too-long', 'name'],
-    ['pose.base-difficulty-required', 'baseDifficulty'],
-    ['pose.flyer-difficulty-required', 'flyerDifficulty'],
-    ['pose.can-start-flow-required', 'canStartFlow'],
-    ['pose.can-end-flow-required', 'canEndFlow'],
-  ])('should report the field in error when the API answers 400 %s', async (code, field) => {
+    'pose.name-required',
+    'pose.name-too-long',
+    'pose.base-difficulty-required',
+    'pose.flyer-difficulty-required',
+    'pose.can-start-flow-required',
+    'pose.can-end-flow-required',
+  ])('should report an outdated site when the API answers 400 %s', async (code) => {
     const gateway = createContributionGateway(apiAnswering(400, problem(400, code)));
 
-    expect(await gateway.proposePose(throne)).toEqual(
-      fail({ kind: 'invalid-content', errors: [{ field, code }] }),
-    );
+    expect(await gateway.proposePose(throne)).toEqual(fail({ kind: 'outdated' }));
   });
 
   it.each([

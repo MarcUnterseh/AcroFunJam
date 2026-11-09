@@ -2,6 +2,8 @@
 
 Présentation d'une pose publiée dans la grille du catalogue. Remplace le tableau de la story 1. La carte n'est **pas interactive** en story 3 (pas encore de page de détail).
 
+Story 4 : la carte de proposition (`carte-proposition.md`) reprend son conteneur, son `h2` et sa `dl` **sans les modifier**, pour que le validateur voie la pose telle qu'elle sera publiée. Toute évolution de la `dl` ici s'applique aussi là.
+
 ## Structure
 
 ```

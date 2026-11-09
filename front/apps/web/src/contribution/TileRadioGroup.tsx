@@ -13,6 +13,8 @@ type TileRadioGroupProps<T extends string> = {
   readonly error?: string | undefined;
   /** Id of a help shared with other groups (the help of the flow questions). */
   readonly helpId?: string | undefined;
+  /** Help of this group, between the legend and the error (« Proposée : Débutant », story 4). */
+  readonly help?: string | undefined;
   /** Receives the first radio, to give it the focus when the group is the first one in error. */
   readonly firstRadioRef?: Ref<HTMLInputElement> | undefined;
   readonly layout: 'levels' | 'yes-no';
@@ -31,14 +33,21 @@ export function TileRadioGroup<T extends string>({
   onChange,
   error,
   helpId,
+  help,
   firstRadioRef,
   layout,
 }: TileRadioGroupProps<T>) {
   const errorId = useId();
-  const describedBy = [helpId, error && errorId].filter(Boolean).join(' ') || undefined;
+  const ownHelpId = useId();
+  const describedBy = [helpId, help && ownHelpId, error && errorId].filter(Boolean).join(' ') || undefined;
   return (
     <fieldset className={`tile-group${error ? ' tile-group--invalid' : ''}`} aria-describedby={describedBy}>
       <legend>{legend}</legend>
+      {help && (
+        <p id={ownHelpId} className="tile-group__help">
+          {help}
+        </p>
+      )}
       {error && (
         <p id={errorId} className="field__error tile-group__error">
           <Icon name="error" />

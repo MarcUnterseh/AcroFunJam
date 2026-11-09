@@ -1,6 +1,6 @@
 # Groupe de tuiles radio
 
-Choix unique parmi peu d'options, toutes visibles : « Difficulté base », « Difficulté flyer » (4 niveaux), « Peut-on commencer un flow sur cette pose ? », « Peut-on terminer un flow sur cette pose ? » (Oui / Non). **Radios natifs** dans un `fieldset`, présentés en tuiles ; aucune option présélectionnée.
+Choix unique parmi peu d'options, toutes visibles : « Difficulté base », « Difficulté flyer » (4 niveaux), « Peut-on commencer un flow sur cette pose ? », « Peut-on terminer un flow sur cette pose ? » (Oui / Non). **Radios natifs** dans un `fieldset`, présentés en tuiles ; aucune option présélectionnée dans « Proposer une pose ». Story 4 : les mêmes groupes, **préremplis** avec les valeurs proposées, dans la zone d'ajustement de la carte de proposition (`carte-proposition.md`).
 
 ## Structure
 
@@ -19,7 +19,8 @@ Balisage : `fieldset` > `legend` + erreur (`p`) + conteneur des tuiles ; chaque 
 |---|---|
 | `fieldset` | bordure, marge et padding remis à zéro ; `min-inline-size: 0` (sinon il refuse de rétrécir) |
 | `legend` | comme un libellé de champ : `size.md`, `weight.semibold`, `text` ; padding nul ; marge basse `spacing.sm` |
-| Erreur | comme `champ.md` : `size.sm`, `weight.semibold`, `danger`, icône erreur `sizes.icon` ; **entre la legend et les tuiles**, marge basse `spacing.sm` |
+| Aide (facultative, story 4) | `size.sm`, `regular`, `textMuted` ; **entre la legend et l'erreur** (donc avant les tuiles), marge basse `spacing.sm` ; reliée au `fieldset` par `aria-describedby`. Usage : rappel « Proposée : Débutant » / « Proposé : Oui » dans la zone d'ajustement (`carte-proposition.md`) |
+| Erreur | comme `champ.md` : `size.sm`, `weight.semibold`, `danger`, icône erreur `sizes.icon` ; **entre la legend (ou l'aide) et les tuiles**, marge basse `spacing.sm` |
 | Conteneur des tuiles | grille, écart `spacing.sm` dans les deux sens ; requête de conteneur (`container-type: inline-size`) pour le nombre de colonnes (ci-dessous) |
 | Tuile (`label`) | `display: flex`, `align-items: center`, écart `spacing.sm` ; hauteur minimale `sizes.control` (48) ; largeur minimale `sizes.tileMinWidth` ; padding horizontal `spacing.sm`, vertical `spacing.xs` ; fond `background` ; bordure `borderWidth` `border` ; rayon `radius.md` ; curseur `pointer` |
 | Radio | natif, `sizes.icon` × `sizes.icon` (20), `accent-color: selected` ; marge nulle ; jamais masqué (il porte l'état coché en plus de la bordure) |

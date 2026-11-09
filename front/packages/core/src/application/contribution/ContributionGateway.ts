@@ -1,5 +1,5 @@
 import type { Result } from '../../domain/common/result';
-import type { ProposalFieldError, ValidPoseProposal } from '../../domain/contribution/pose-proposal';
+import type { ValidPoseProposal } from '../../domain/contribution/pose-proposal';
 
 /** What became of a received proposal, as stated by the API (never guessed from the role): ADR 0019. */
 export type ProposalOutcome = {
@@ -13,11 +13,13 @@ export type ProposalOutcome = {
 export type ProposalFailure =
   | { readonly kind: 'name-already-in-catalog' }
   | { readonly kind: 'name-already-pending' }
-  | { readonly kind: 'invalid-content'; readonly errors: readonly ProposalFieldError[] }
   /** Visitor, expired session or deleted account (ADR 0018): the site handles it as an expired session. */
   | { readonly kind: 'unauthenticated' }
   | { readonly kind: 'unreachable' }
-  /** A refusal the site does not know (unknown code): the site must be reloaded to be up to date. */
+  /**
+   * A refusal the site does not know (unknown code), or of a content rule the site checks before sending (400): the
+   * site must be reloaded to be up to date (ADR 0019).
+   */
   | { readonly kind: 'outdated' };
 
 /** Port: the Contribution API (implemented by @acrofunjam/api-client). */

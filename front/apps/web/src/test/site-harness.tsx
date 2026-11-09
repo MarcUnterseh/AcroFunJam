@@ -1,6 +1,16 @@
 import {
   fail,
   ok,
+  type Acceptance,
+  type AcceptanceOutcome,
+  type AccessFailure,
+  type DecisionFailure,
+  type DecisionInputStore,
+  type KeptDecisionInputs,
+  type PendingProposal,
+  type PoseName,
+  type RejectionReason,
+  type ValidationGateway,
   type AuthFailure,
   type AuthGateway,
   type Capability,
@@ -20,6 +30,7 @@ import type { ReactNode } from 'react';
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router';
 import { CatalogGatewayProvider } from '../catalog/CatalogGatewayContext';
 import { ContributionProvider } from '../contribution/ContributionContext';
+import { ValidationProvider } from '../contribution/ValidationContext';
 import { IdentityProvider } from '../identity/IdentityContext';
 import { routes } from '../routes';
 
@@ -54,6 +65,94 @@ export class MemoryProposalInputStore implements ProposalInputStore {
   }
   load = () => this.kept;
   save = (kept: KeptProposalInput) => {
+    this.kept = kept;
+  };
+  clear = () => {
+    this.kept = null;
+  };
+}
+
+/** A proposal pending validation, made by Alice on 3 November 2026 unless stated otherwise. */
+export const aPendingProposal = (overrides: Partial<PendingProposal> = {}): PendingProposal => ({
+  id: 'proposal-throne',
+  pose: {
+    name: 'Throne' as PoseName,
+    baseDifficulty: 'beginner',
+    flyerDifficulty: 'discovery',
+    canStartFlow: true,
+    canEndFlow: true,
+  },
+  contributor: { email: 'alice@example.org', isYou: false },
+  submittedAt: new Date('2026-11-03T09:00:00Z'),
+  ...overrides,
+});
+
+type Held<T> = T | 'held';
+type DecisionAnswer<T> = Result<T, DecisionFailure>;
+
+/** Takes the next answer (the last one is repeated); an answer can be held back until released. */
+class Answers<T> {
+  private readonly answers: Array<Held<T>>;
+  private readonly held: Array<(answer: T) => void> = [];
+  constructor(answers: Array<Held<T>>) {
+    this.answers = answers;
+  }
+  set(...answers: Array<Held<T>>) {
+    this.answers.splice(0, this.answers.length, ...answers);
+  }
+  next(): Promise<T> {
+    const next = this.answers.length > 1 ? this.answers.shift()! : this.answers[0]!;
+    if (next !== 'held') return Promise.resolve(next);
+    return new Promise<T>((resolve) => this.held.push(resolve));
+  }
+  release(answer: T) {
+    this.held.shift()!(answer);
+  }
+}
+
+/** The validation API of Contribution: the queue, its count, and the decisions, recorded as sent. */
+export class FakeValidationGateway implements ValidationGateway {
+  readonly queue = new Answers<Result<readonly PendingProposal[], AccessFailure>>([ok([])]);
+  readonly count = new Answers<Result<number, AccessFailure>>([ok(0)]);
+  readonly acceptance = new Answers<DecisionAnswer<AcceptanceOutcome>>([
+    ok({ name: 'Throne', adjusted: false }),
+  ]);
+  readonly rejection = new Answers<DecisionAnswer<void>>([ok(undefined)]);
+  countRequests = 0;
+  readonly accepted: Array<{ id: string; acceptance: Acceptance }> = [];
+  readonly rejected: Array<{ id: string; reason: RejectionReason }> = [];
+
+  constructor(...proposals: PendingProposal[]) {
+    this.queue.set(ok(proposals));
+    this.count.set(ok(proposals.length));
+  }
+
+  queueRequests = 0;
+  getValidationQueue = () => {
+    this.queueRequests += 1;
+    return this.queue.next();
+  };
+  countPendingProposals = () => {
+    this.countRequests += 1;
+    return this.count.next();
+  };
+  acceptProposal = (id: string, acceptance: Acceptance) => {
+    this.accepted.push({ id, acceptance });
+    return this.acceptance.next();
+  };
+  rejectProposal = (id: string, reason: RejectionReason) => {
+    this.rejected.push({ id, reason });
+    return this.rejection.next();
+  };
+}
+
+export class MemoryDecisionInputStore implements DecisionInputStore {
+  kept: KeptDecisionInputs | null;
+  constructor(kept: KeptDecisionInputs | null = null) {
+    this.kept = kept;
+  }
+  load = () => this.kept;
+  save = (kept: KeptDecisionInputs) => {
     this.kept = kept;
   };
   clear = () => {
@@ -123,6 +222,8 @@ export const renderSite = (
     catalog = { listPublishedPoses: async () => ok([]) },
     contribution = new FakeContributionGateway(),
     store = new MemoryProposalInputStore(),
+    validation = new FakeValidationGateway(),
+    decisionStore = new MemoryDecisionInputStore(),
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
   }: {
     gateway?: FakeAuthGateway;
@@ -130,6 +231,8 @@ export const renderSite = (
     catalog?: CatalogGateway;
     contribution?: FakeContributionGateway;
     store?: MemoryProposalInputStore;
+    validation?: FakeValidationGateway;
+    decisionStore?: MemoryDecisionInputStore;
     queryClient?: QueryClient;
   } = {},
   extra?: ReactNode,
@@ -139,12 +242,14 @@ export const renderSite = (
     <QueryClientProvider client={queryClient}>
       <CatalogGatewayProvider gateway={catalog}>
         <ContributionProvider gateway={contribution} store={store}>
-          <IdentityProvider gateway={gateway} memory={memory} forgetOnSignOut={[store]}>
-            <RouterProvider router={router} />
-          </IdentityProvider>
+          <ValidationProvider gateway={validation} store={decisionStore}>
+            <IdentityProvider gateway={gateway} memory={memory} forgetOnSignOut={[store, decisionStore]}>
+              <RouterProvider router={router} />
+            </IdentityProvider>
+          </ValidationProvider>
         </ContributionProvider>
       </CatalogGatewayProvider>
     </QueryClientProvider>,
   );
-  return { ...view, gateway, memory, router, contribution, store, queryClient };
+  return { ...view, gateway, memory, router, contribution, store, validation, decisionStore, queryClient };
 };

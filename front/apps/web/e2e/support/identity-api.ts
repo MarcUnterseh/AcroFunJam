@@ -40,6 +40,13 @@ export class IdentityApi {
     this.accounts.set(email.toLowerCase(), { email, password, role });
   }
 
+  /** An administrator changes the role; it takes effect at the next request, the session stays (ADR 0008). */
+  setRole(email: string, role: Role): void {
+    const account = this.accounts.get(email.toLowerCase());
+    if (!account) throw new Error(`Compte inconnu : ${email}`);
+    account.role = role;
+  }
+
   get isUnreachable(): boolean {
     return this.unreachable;
   }

@@ -221,9 +221,17 @@ Then(
   },
 );
 
+// Same sentence after a proposal published directly (story 3) and after an acceptance (story 4).
 Then(
   /^le site indique à (\w+) que la pose "([^"]+)" est publiée dans le catalogue$/,
-  async ({ proposalForm, page }, _who: string, name: string) => {
+  async ({ proposalForm, validationPage, page }, _who: string, name: string) => {
+    if (validationPage.isOpen()) {
+      await expect(validationPage.report(name)).toHaveText(
+        `La pose « ${name} » est publiée dans le catalogue.`,
+      );
+      await expect(validationPage.report(name)).toBeFocused();
+      return;
+    }
     await expect(proposalForm.successTitle).toHaveText(`La pose « ${name} » est publiée.`);
     await expect(
       page.getByText('Elle apparaît maintenant dans le catalogue.', { exact: true }),
@@ -241,9 +249,13 @@ Then('le formulaire de proposition est vide', async ({ proposalForm }) => {
 
 Then(
   /^le site indique que (le nom de la pose est obligatoire|la difficulté base est obligatoire|la difficulté flyer est obligatoire|il faut préciser si la pose peut commencer un flow|il faut préciser si la pose peut terminer un flow|le nom de la pose ne doit pas dépasser 60 caractères)$/,
-  async ({ proposalForm, contributionApi }, reason: string) => {
-    await expect(proposalForm.form.getByText(lookup(messages, reason))).toBeVisible();
-    expect(contributionApi.received).toEqual([]); // checked before sending
+  async ({ page, proposalForm, validationPage, contributionApi, validationApi }, reason: string) => {
+    // In the form « Proposer une pose » (story 3), or in the adjustment zone of a proposal card (story 4).
+    const scope = validationPage.isOpen() ? page.getByRole('main') : proposalForm.form;
+    await expect(scope.getByText(lookup(messages, reason))).toBeVisible();
+    // Checked before sending.
+    expect(contributionApi.received).toEqual([]);
+    expect(validationApi.decisions).toEqual([]);
   },
 );
 

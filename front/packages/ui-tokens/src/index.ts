@@ -48,11 +48,19 @@ export const colors = {
   selected: '#9A3412',
   /** Background of a checked choice. text on it: 14.2:1. */
   selectedSurface: '#FFF4E6',
+  /**
+   * Counter badge (number of proposals to validate in the header). Neutral on purpose: a count is not an alarm.
+   * badgeContrast on it: 11.5:1; the badge shape on surface / surfaceHover / divider: 10.9:1 / 10.4:1 / 8.8:1.
+   */
+  badge: '#343A40',
+  /** Text of a counter badge. */
+  badgeContrast: '#FFFFFF',
 } as const;
 
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48 } as const;
 
-export const radius = { sm: 4, md: 8, lg: 16 } as const;
+/** `pill`: fully rounded ends (counter badge), whatever the height. */
+export const radius = { sm: 4, md: 8, lg: 16, pill: 9999 } as const;
 
 export const typography = {
   /** React Native: platform font. */
@@ -94,6 +102,8 @@ export const sizes = {
   iconLarge: 32,
   /** Diameter of a dot of the decorative difficulty scale. */
   scaleDot: 8,
+  /** Minimum height and width of a counter badge (a one-digit badge is a circle). */
+  badge: 24,
 } as const;
 
 /** Minimum viewport widths (web media queries, mobile tablets). */

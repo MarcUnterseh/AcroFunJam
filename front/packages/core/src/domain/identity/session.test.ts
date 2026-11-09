@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { canPropose, initialSession, noticeDismissed, sessionLoaded, signedIn, signedOut } from './session';
+import {
+  canPropose,
+  canValidateProposals,
+  initialSession,
+  noticeDismissed,
+  sessionLoaded,
+  signedIn,
+  signedOut,
+} from './session';
 
 describe('session', () => {
   it('should start by checking the session when the site opens', () => {
@@ -53,4 +61,21 @@ describe('canPropose', () => {
       expect(canPropose(session)).toBe(false);
     },
   );
+});
+
+describe('canValidateProposals', () => {
+  it.each([
+    [['propose', 'validate-proposals'], true],
+    [['propose'], false],
+  ] as const)(
+    'should tell whether the signed-in person may validate proposals when the capabilities are %j',
+    (capabilities, expected) => {
+      expect(canValidateProposals(signedIn('bruno@example.org', capabilities))).toBe(expected);
+    },
+  );
+
+  it('should be false when nobody is signed in', () => {
+    expect(canValidateProposals(signedOut())).toBe(false);
+    expect(canValidateProposals(initialSession)).toBe(false);
+  });
 });

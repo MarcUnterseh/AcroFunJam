@@ -37,6 +37,16 @@ Une couleur d'accent (primaire), des neutres, et trois couleurs de retour (dange
 | `disabledSurface` | `#E9ECEF` | fond d'un contrôle désactivé |
 | `selected` | `#9A3412` brun terre cuite | bordure 2 px et radio d'un **choix coché** (tuile radio), story 3 |
 | `selectedSurface` | `#FFF4E6` | fond d'un choix coché, story 3 |
+| `badge` | `#343A40` gris anthracite | fond de la pastille de compteur (en-tête), story 4 |
+| `badgeContrast` | `#FFFFFF` | chiffres de la pastille, story 4 |
+
+### Ajouts de la story 4 (proposition du 2026-11-04)
+
+- `badge` / `badgeContrast` : la pastille du nombre de propositions à valider est **neutre et sombre**. Ni terre cuite (réservé à l'action principale), ni rouge (des propositions en attente ne sont pas une urgence, et l'`ux-expert` veut éviter toute pression à accepter). Le chiffre porte l'information ; le contraste sombre / clair suffit à attirer l'œil.
+- `radius.pill` (9999) : extrémités entièrement arrondies, pour une pastille qui s'allonge de « 3 » à « 99+ ».
+- `sizes.badge` (24) : hauteur et largeur minimales de la pastille ; un chiffre seul tient dans un disque.
+- Pas de nouvelle couleur pour le récapitulatif « proposé → retenu » : barré + flèche + graisse, avec `textMuted` / `text` (`composants/recapitulatif-ajustements.md`).
+- Refus d'une proposition : jamais `danger` (ni bouton rouge, ni compte rendu rouge) ; le compte rendu d'un refus est en variante **information**.
 
 ### Ajouts de la story 3 (proposition du 2026-11-03)
 
@@ -89,6 +99,10 @@ Composants et éléments graphiques (seuil 3:1) :
 | `border` (tuile au repos, point vide de l'échelle, bouton « Réessayer ») | `background` / `surface` / `dangerSurface` | 3,3:1 / 3,2:1 / 3,1:1 |
 | `success` (icône du panneau de succès) | `successSurface` | 5,7:1 |
 | `text` (point plein de l'échelle) | `surface` | 14,6:1 |
+| `badge` (forme de la pastille) | `surface` / `surfaceHover` / `divider` (états du lien de l'en-tête) | 10,9:1 / 10,4:1 / 8,8:1 |
+| `textMuted` (flèche et barré du récapitulatif) | `background` | 6,1:1 |
+
+Texte, story 4 : `badgeContrast` sur `badge` **11,5:1** ; valeur proposée barrée `textMuted` sur `background` 6,1:1 ; valeur retenue `text` sur `background` 15,4:1.
 
 `divider` (1,3:1 sur blanc) est réservé aux séparateurs décoratifs ; il ne délimite jamais un contrôle.
 
@@ -125,18 +139,18 @@ Rien en dessous de 14 px. Les champs restent à 16 px (évite le zoom automatiqu
 ## Espacements, rayons, tailles
 
 - **Espacements** (`spacing.*`, base 4) : `xs` 4, `sm` 8, `md` 16, `lg` 24, `xl` 32, `xxl` 48 (ajout). Règle : `xs` entre une icône et son texte, `sm` entre un libellé et son champ, `md` entre les champs et entre éléments d'un même groupe, `lg` entre blocs et pour les marges de page en mobile, `xl`/`xxl` pour l'air autour du contenu en grand écran.
-- **Rayons** (`radius.*`) : `sm` 4 (anneau de focus des liens, petites étiquettes), `md` 8 (champs, boutons, alertes, bandeaux), `lg` 16 (carte de formulaire en grand écran). Les formes arrondies mais nettes évoquent la souplesse sans infantiliser.
-- **Tailles** (`sizes.*`, ajout) : cible tactile minimale `touchTarget` 44 ; hauteur de champ et de bouton `control` 48 ; bordures `borderWidth` 1 / `borderWidthStrong` 2 ; barre d'accent `accentBar` 4 ; icônes `icon` 20 ; colonnes `formMaxWidth` 400 et `contentMaxWidth` 1040. Story 3 : colonne `formWideMaxWidth` 640 (formulaire à tuiles), largeur mini d'une tuile `tileMinWidth` 152, icône de panneau `iconLarge` 32, point de l'échelle de difficulté `scaleDot` 8.
+- **Rayons** (`radius.*`) : `sm` 4 (anneau de focus des liens, petites étiquettes), `md` 8 (champs, boutons, alertes, bandeaux), `lg` 16 (carte de formulaire en grand écran), `pill` (pastille de compteur, story 4). Les formes arrondies mais nettes évoquent la souplesse sans infantiliser.
+- **Tailles** (`sizes.*`, ajout) : cible tactile minimale `touchTarget` 44 ; hauteur de champ et de bouton `control` 48 ; bordures `borderWidth` 1 / `borderWidthStrong` 2 ; barre d'accent `accentBar` 4 ; icônes `icon` 20 ; colonnes `formMaxWidth` 400 et `contentMaxWidth` 1040. Story 3 : colonne `formWideMaxWidth` 640 (formulaire à tuiles), largeur mini d'une tuile `tileMinWidth` 152, icône de panneau `iconLarge` 32, point de l'échelle de difficulté `scaleDot` 8. Story 4 : pastille de compteur `badge` 24 ; `formWideMaxWidth` sert aussi de largeur de contenu des cartes de proposition.
 - **Grille du catalogue** : 1 colonne, puis 2 à partir de `breakpoints.md`, 3 à partir de `breakpoints.lg` ; écarts `spacing.md` (mobile) et `spacing.lg`. Le nombre de colonnes n'est pas un token (structure, pas une valeur visuelle).
 - **Points de rupture** (`breakpoints.*`, ajout) : `md` 640, `lg` 1024. Mobile d'abord : styles de base pour < 640 px.
 
 ## Icônes
 
-Mises en œuvre en 2b : erreur (cercle + point d'exclamation), information (cercle + « i ») ; le bouton du mot de passe est en texte seul (pas d'œil). Story 3 : **coche** et **tiret** (valeurs Oui / Non des cartes, `sizes.icon`), **plus** (lien « Proposer une pose »), **succès** (cercle + coche, `sizes.iconLarge`). SVG en ligne dessinés dans le dépôt (trait 2 px sur une grille de 20, `currentColor`, `aria-hidden="true"` car toujours accompagnés d'un texte), **sans bibliothèque d'icônes** (une bibliothèque demanderait un ADR).
+Mises en œuvre en 2b : erreur (cercle + point d'exclamation), information (cercle + « i ») ; le bouton du mot de passe est en texte seul (pas d'œil). Story 3 : **coche** et **tiret** (valeurs Oui / Non des cartes, `sizes.icon`), **plus** (lien « Proposer une pose »), **succès** (cercle + coche, `sizes.iconLarge`). Story 4 : **flèche vers la droite** (récapitulatif « proposé → retenu »), succès en `sizes.icon` (compte rendu de décision) ; aucune icône sur les boutons de décision (poids égal). SVG en ligne dessinés dans le dépôt (trait 2 px sur une grille de 20, `currentColor`, `aria-hidden="true"` car toujours accompagnés d'un texte), **sans bibliothèque d'icônes** (une bibliothèque demanderait un ADR).
 
 ## Mouvement
 
-Pas d'animation dans les stories 2b et 3 (ni apparition du panneau de succès, ni coche animée). Les transitions de couleur au survol, si on en met, durent au plus 150 ms et sont supprimées sous `prefers-reduced-motion: reduce`. Aucun indicateur qui clignote ou tourne en boucle sans respecter ce réglage.
+Pas d'animation dans les stories 2b, 3 et 4 (ni apparition du panneau de succès, ni coche animée, ni dépliement animé des zones de décision, ni changement animé de la pastille). Les transitions de couleur au survol, si on en met, durent au plus 150 ms et sont supprimées sous `prefers-reduced-motion: reduce`. Aucun indicateur qui clignote ou tourne en boucle sans respecter ce réglage.
 
 ## Traduction des tokens côté web (ADR 0012, implémentée)
 

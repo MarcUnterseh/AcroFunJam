@@ -8,8 +8,8 @@ Fonctionnalité: Valider une proposition
 
   # Story 4, contexte Contribution → Catalogue, cibles @api et @web. Carte d'example mapping et décisions du porteur
   # du produit (2026-11-04) : decouverte.md, « Story 4 Valider une proposition ». Étape A (consulter, accepter
-  # telle quelle, refuser) et étape B (ajustements, message d'ajustement) implémentées côté @api ; restent @wip les
-  # scénarios @web et les décisions simultanées (vérifiées par un test d'intégration).
+  # telle quelle, refuser) et étape B (ajustements, message d'ajustement) implémentées côté @api, étape C côté
+  # @web ; restent @wip les décisions simultanées (vérifiées par un test d'intégration).
   # Personnages, comme dans proposer-une-pose.feature : Alice et Chloé sont utilisatrices, Bruno est validateur,
   # Paul administrateur. Adresses : alice@example.org, chloe@example.org, bruno@example.org.
   # Exemples d'indicateurs relus par l'expert acroyoga : Bird, Throne et Star peuvent commencer et terminer un flow ;
@@ -607,7 +607,7 @@ Fonctionnalité: Valider une proposition
 
   Règle: Seul un validateur ou un administrateur est invité par l'en-tête à consulter les propositions à valider
 
-    @web @wip
+    @web
     Plan du Scénario: L'en-tête invite un <rôle> à consulter les propositions à valider
       Soit Bruno est <rôle>, connecté sur le site
       Quand Bruno consulte les poses du catalogue
@@ -618,7 +618,7 @@ Fonctionnalité: Valider une proposition
         | validateur     |
         | administrateur |
 
-    @web @wip
+    @web
     Scénario: L'en-tête n'invite pas un utilisateur à consulter les propositions à valider
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
       Quand Alice consulte les poses du catalogue
@@ -626,7 +626,7 @@ Fonctionnalité: Valider une proposition
 
   Règle: L'en-tête annonce le nombre de propositions en attente de validation, sauf s'il n'y en a aucune
 
-    @web @wip
+    @web
     Scénario: L'en-tête annonce le nombre de propositions en attente de validation
       Soit Alice est utilisateur
       Et Alice a proposé la pose "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
@@ -635,7 +635,7 @@ Fonctionnalité: Valider une proposition
       Quand Bruno consulte les poses du catalogue
       Alors l'en-tête annonce 2 propositions à valider
 
-    @web @wip
+    @web
     Scénario: Le nombre annoncé par l'en-tête baisse après une décision
       Soit Alice est utilisateur
       Et Alice a proposé la pose "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
@@ -644,7 +644,7 @@ Fonctionnalité: Valider une proposition
       Quand Bruno accepte sur le site la proposition de la pose "Throne" par Alice
       Alors l'en-tête annonce 1 proposition à valider
 
-    @web @wip
+    @web
     Scénario: L'en-tête n'annonce aucun nombre quand aucune proposition n'est en attente
       Soit aucune proposition n'est en attente de validation
       Et Bruno est validateur, connecté sur le site
@@ -653,12 +653,12 @@ Fonctionnalité: Valider une proposition
 
   Règle: Seul un validateur ou un administrateur accède à la page « Propositions à valider »
 
-    @web @wip
+    @web
     Scénario: Un visiteur qui accède directement à la page « Propositions à valider » est invité à se connecter
       Quand un visiteur accède directement à la page « Propositions à valider »
       Alors le site invite le visiteur à se connecter, sans lui présenter la file de validation
 
-    @web @wip
+    @web
     Scénario: Après la connexion, le validateur arrive sur la file de validation
       Soit Bruno est validateur avec l'adresse "bruno@example.org" et le mot de passe "Throne-Bird-2026"
       Et Bruno a accédé directement à la page « Propositions à valider » en tant que visiteur
@@ -666,7 +666,7 @@ Fonctionnalité: Valider une proposition
       Alors le site présente la file de validation à Bruno
 
     # Même comportement que pour « Proposer une pose » : une personne sans la capacité est ramenée au catalogue.
-    @web @wip
+    @web
     Scénario: Un utilisateur qui accède directement à la page « Propositions à valider » est ramené au catalogue
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
       Quand Alice accède directement à la page « Propositions à valider »
@@ -674,7 +674,7 @@ Fonctionnalité: Valider une proposition
 
   Règle: Sur le site, le validateur voit les propositions en attente de validation et leur contributeur
 
-    @web @wip
+    @web
     Scénario: Le validateur voit sur le site le contenu d'une proposition et l'adresse de son contributeur
       Soit Alice est utilisateur avec l'adresse "alice@example.org"
       Et Alice a proposé la pose "Hand-to-Hand (L-base)" qui ne peut pas commencer un flow et ne peut pas terminer un flow
@@ -683,14 +683,14 @@ Fonctionnalité: Valider une proposition
       Alors le site présente la proposition de la pose "Hand-to-Hand (L-base)" par "alice@example.org", qui ne peut pas commencer un flow et ne peut pas terminer un flow
 
     # Décision du 2026-11-04 : « toi » pour sa propre proposition.
-    @web @wip
+    @web
     Scénario: Le site présente au validateur sa propre proposition comme la sienne
       Soit Alice a proposé la pose "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Et Alice est devenue validateur, connectée sur le site
       Quand Alice consulte la file de validation sur le site
       Alors le site présente la proposition de la pose "Throne" comme proposée par toi
 
-    @web @wip
+    @web
     Scénario: Le site signale une file de validation vide
       Soit aucune proposition n'est en attente de validation
       Et Bruno est validateur, connecté sur le site
@@ -705,28 +705,28 @@ Fonctionnalité: Valider une proposition
       Et Alice a proposé la pose "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Et Bruno est validateur, connecté sur le site
 
-    @web @wip
+    @web
     Scénario: Le validateur qui accepte une proposition est informé que la pose est publiée
       Quand Bruno accepte sur le site la proposition de la pose "Throne" par Alice
       Alors le site indique à Bruno que la pose "Throne" est publiée dans le catalogue
 
-    @web @wip
+    @web
     Scénario: Le validateur qui refuse une proposition est informé du refus
       Quand Bruno refuse sur le site la proposition de la pose "Throne" par Alice avec le motif « Ce n'est pas une pose tenable. »
       Alors le site indique à Bruno que la proposition de la pose "Throne" est refusée
 
-    @web @wip
+    @web
     Scénario: Le site ne propose plus de décider d'une proposition traitée
       Quand Bruno accepte sur le site la proposition de la pose "Throne" par Alice
       Alors le site ne propose plus à Bruno d'accepter ni de refuser la proposition de la pose "Throne"
 
-    @web @wip
+    @web
     Scénario: Une proposition traitée n'est plus présentée à la consultation suivante
       Soit Bruno a accepté sur le site la proposition de la pose "Throne" par Alice
       Quand Bruno consulte de nouveau la file de validation sur le site
       Alors le site indique qu'aucune proposition n'est en attente de validation
 
-    @web @wip
+    @web
     Scénario: Le site signale un refus sans motif avant de l'envoyer
       Quand Bruno refuse sur le site la proposition de la pose "Throne" par Alice sans motif
       Alors le site indique que le motif de refus est obligatoire
@@ -740,19 +740,19 @@ Fonctionnalité: Valider une proposition
       Soit Alice est utilisateur
       Et Bruno est validateur, connecté sur le site
 
-    @web @wip
+    @web
     Scénario: Le validateur qui accepte une proposition avec ajustements est informé que la pose est publiée avec ses ajustements
       Soit Alice a proposé la pose "Throne" de difficulté base "débutant" et de difficulté flyer "intermédiaire"
       Quand Bruno accepte sur le site la proposition de la pose "Throne" par Alice en corrigeant la difficulté flyer en "découverte", avec le message « Throne se découvre dès la première séance côté flyer. »
       Alors le site indique à Bruno que la pose "Throne" est publiée dans le catalogue avec ses ajustements
 
-    @web @wip
+    @web
     Scénario: Le site signale un nom corrigé vide avant d'envoyer l'acceptation
       Soit Alice a proposé la pose "Thron" de difficulté base "débutant" et de difficulté flyer "découverte"
       Quand Bruno accepte sur le site la proposition de la pose "Thron" par Alice en corrigeant le nom en ""
       Alors le site indique que le nom de la pose est obligatoire
 
-    @web @wip
+    @web
     Scénario: Le site signale qu'un nom corrigé est déjà pris dans le catalogue
       Soit la pose publiée "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Et Alice a proposé la pose "Thron" de difficulté base "débutant" et de difficulté flyer "découverte"
@@ -769,7 +769,7 @@ Fonctionnalité: Valider une proposition
 
     # Le message ne dit pas « par un autre validateur » : la première décision peut être celle de Bruno lui-même,
     # envoyée avant une perte de réseau.
-    @web @wip
+    @web
     Scénario: Le site signale une proposition déjà traitée
       Soit Bruno consulte la file de validation sur le site
       Et Paul a accepté entre-temps la proposition de la pose "Throne" par Alice
@@ -777,7 +777,7 @@ Fonctionnalité: Valider une proposition
       Alors le site indique à Bruno que la proposition a déjà été traitée
 
     # Décision du 2026-11-04 : distinct d'une session expirée ; la personne reste connectée.
-    @web @wip
+    @web
     Scénario: Le site signale au validateur dont le rôle a été retiré qu'il ne peut plus décider
       Soit Bruno consulte la file de validation sur le site
       Et le rôle validateur a été retiré à Bruno entre-temps
@@ -785,7 +785,7 @@ Fonctionnalité: Valider une proposition
       Alors le site indique « Tu ne peux plus accepter ni refuser de proposition : ton rôle a changé. »
       Et le site propose à Bruno de revenir au catalogue
 
-    @web @wip
+    @web
     Scénario: Le site signale qu'une pose de ce nom a été publiée entre-temps
       Soit la pose publiée "throne" de difficulté base "intermédiaire" et de difficulté flyer "débutant"
       Quand Bruno accepte sur le site la proposition de la pose "Throne" par Alice
@@ -799,20 +799,20 @@ Fonctionnalité: Valider une proposition
       Et Alice a proposé la pose "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Et Bruno est validateur, connecté sur le site
 
-    @web @wip
+    @web
     Scénario: Le site signale qu'AcroFunJam est injoignable et conserve le motif de refus saisi
       Soit AcroFunJam est momentanément injoignable
       Quand Bruno refuse sur le site la proposition de la pose "Throne" par Alice avec le motif « Ce n'est pas une pose tenable. »
       Alors le site indique que la décision n'a pas pu aboutir et que Bruno peut réessayer
       Et le motif « Ce n'est pas une pose tenable. » saisi par Bruno est conservé
 
-    @web @wip
+    @web
     Scénario: Le site signale une session expirée pendant un refus
       Soit la session de Bruno a expiré
       Quand Bruno refuse sur le site la proposition de la pose "Throne" par Alice avec le motif « Ce n'est pas une pose tenable. »
       Alors le site informe Bruno que sa session a expiré et qu'il peut se connecter de nouveau
 
-    @web @wip
+    @web
     Scénario: Après s'être reconnecté, le validateur retrouve le motif de refus qu'il avait saisi
       Soit la session de Bruno a expiré
       Et Bruno a tenté de refuser sur le site la proposition de la pose "Throne" par Alice avec le motif « Ce n'est pas une pose tenable. »

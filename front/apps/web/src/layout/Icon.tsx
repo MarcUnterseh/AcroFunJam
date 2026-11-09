@@ -1,4 +1,4 @@
-type IconName = 'error' | 'info' | 'check' | 'dash' | 'plus' | 'success';
+type IconName = 'error' | 'info' | 'check' | 'dash' | 'plus' | 'success' | 'arrow';
 
 const line = { stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' } as const;
 
@@ -29,6 +29,13 @@ const shapes: Record<IconName, React.ReactNode> = {
         strokeWidth="1.5"
         strokeLinejoin="round"
       />
+    </>
+  ),
+  // Right arrow of the summary « proposé → retenu » (recapitulatif-ajustements.md).
+  arrow: (
+    <>
+      <line x1="3" y1="10" x2="16" y2="10" {...line} />
+      <polyline points="11,5 16,10 11,15" fill="none" {...line} strokeLinejoin="round" />
     </>
   ),
   dash: <line x1="5" y1="10" x2="15" y2="10" {...line} />,
