@@ -114,6 +114,30 @@ public sealed class PoseProposalTests
             () => rejected.DomainEvents.ShouldBeEmpty());
     }
 
+    /// <summary>
+    /// A direct publication is decided by the contributor, at the instant of the submission, and retains the proposed pose
+    /// (ADR 0023): read back otherwise, the stored data is corrupt, reported as a bug.
+    /// </summary>
+    [Theory]
+    [InlineData("decider")]
+    [InlineData("instant")]
+    [InlineData("pose")]
+    [InlineData("retained pose")]
+    public void Rehydrate_Should_ReportABug_When_TheDirectPublicationIsIncoherent(string differing)
+    {
+        var published = differing switch
+        {
+            "decider" => Acceptance.DirectPublication(Throne, new ContributorId(Guid.NewGuid()), Now),
+            "instant" => Acceptance.DirectPublication(Throne, Alice.Id, Later),
+            "pose" => Acceptance.DirectPublication(AProposedPose.Named("Bird"), Alice.Id, Now),
+            _ => Acceptance.Restore(Throne, Throne.Retain(Adjusting(name: "Bird")), note: null, Alice.Id.AsValidator(), Now, isDirectPublication: true).Value!,
+        };
+
+        var bug = Should.Throw<InvalidOperationException>(() => PoseProposal.Rehydrate(AnId, Alice.Id, Throne, Now, published));
+
+        bug.Message.ShouldContain("direct publication");
+    }
+
     [Fact]
     public void Accept_Should_BeAcceptedByTheValidatorAndRaisePoseProposalAccepted_When_TheProposalIsPending()
     {
@@ -244,7 +268,7 @@ public sealed class PoseProposalTests
         var accepted = PoseProposal.Submit(AnId, bruno, throne, NameAvailability.Available, Now).Value!;
 
         accepted.Status.ShouldBe(ProposalStatus.Accepted);
-        accepted.Decision.ShouldBe<ProposalDecision?>(AnAcceptanceAsProposed(brunoAsValidator, Now));
+        accepted.Decision.ShouldBe<ProposalDecision?>(Acceptance.DirectPublication(throne, bruno.Id, Now));
         accepted.DomainEvents.ShouldBe(
         [
             new PoseProposed(AnId, bruno.Id, throne.Name, Now),
@@ -363,5 +387,25 @@ public sealed class PoseProposalTests
             () => acceptance.Retained.ShouldBe(new RetainedPose(Throne.Name, Throne.Difficulty, Throne.Flow)),
             () => acceptance.HasAdjustments.ShouldBeFalse(),
             () => acceptance.Note.ShouldBeNull());
+    }
+
+    [Fact]
+    public void Submit_Should_RecordADirectPublication_When_TheContributorIsAValidator()
+    {
+        var published = ADirectPublication();
+
+        published.Decision.ShouldBeOfType<Acceptance>().IsDirectPublication.ShouldBeTrue();
+    }
+
+    /// <summary>Story 4, R17: an acceptance, even by the contributor at the very instant of the submission (frozen clock).</summary>
+    [Fact]
+    public void Accept_Should_NotRecordADirectPublication_When_TheContributorPromotedSinceAcceptsAtTheSameInstant()
+    {
+        var proposal = APendingProposal();
+        var alicePromoted = new Validator(Alice.Id.AsValidator(), CanDecide: true);
+
+        var acceptance = AcceptAsProposed(proposal, alicePromoted, proposal.SubmittedAt);
+
+        acceptance.Value.ShouldNotBeNull().IsDirectPublication.ShouldBeFalse();
     }
 }

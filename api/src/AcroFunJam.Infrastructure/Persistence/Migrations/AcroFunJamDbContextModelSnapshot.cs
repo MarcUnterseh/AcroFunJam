@@ -134,6 +134,12 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name_key");
 
+                    b.Property<bool>("PublishedDirectly")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("published_directly");
+
                     b.Property<string>("RejectionReason")
                         .HasColumnType("text")
                         .HasColumnName("rejection_reason");
@@ -199,6 +205,8 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_pose_proposals_name_key", "name_key <> ''");
 
                             t.HasCheckConstraint("ck_pose_proposals_name_length", "char_length(name) <= 60");
+
+                            t.HasCheckConstraint("ck_pose_proposals_published_directly", "NOT published_directly OR (status = 'accepted' AND decided_by = contributor_id AND decided_at = submitted_at AND adjustment_note IS NULL AND (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow) IS NOT DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow))");
 
                             t.HasCheckConstraint("ck_pose_proposals_rejection_reason", "(status = 'rejected') = (rejection_reason IS NOT NULL)");
 

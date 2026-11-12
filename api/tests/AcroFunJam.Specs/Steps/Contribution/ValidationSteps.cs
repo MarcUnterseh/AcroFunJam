@@ -13,10 +13,11 @@ namespace AcroFunJam.Specs.Steps.Contribution;
 
 /// <summary>
 /// The validation queue and the decisions on a proposal (story 4, ADR 0022), through the HTTP contract described in
-/// docs/domain/context-map.md. A decision is observed in the database until "Suivre mes propositions" exists (ADR 0020).
+/// docs/domain/context-map.md. A decision is observed in the database: who decided is never exposed to the contributor (ADR 0020, ADR 0023).
 /// </summary>
 [Binding]
-public sealed class ValidationSteps(People people, Deployment deployment, ScenarioProposals proposals, ScenarioClock clock)
+public sealed class ValidationSteps(
+    People people, Deployment deployment, ScenarioProposals proposals, ScenarioClock clock, Consultation consultation)
 {
     private const string Proposal = @"la proposition de la pose ""([^""]*)"" par (\w+)";
     private const string Reason = @"« ?(.*?) ?»";
@@ -28,25 +29,24 @@ public sealed class ValidationSteps(People people, Deployment deployment, Scenar
     private static readonly Uri ValidationQueue = new("/contribution/validation-queue", UriKind.Relative);
     private static readonly Uri PendingCount = new("/contribution/validation-queue/count", UriKind.Relative);
 
-    private HttpResponseMessage? _consultation;
     private HttpResponseMessage? _decision;
 
     // --- Consulting the queue -----------------------------------------------------------------
 
     [When(@"^(\w+) consulte la file de validation$")]
     public async Task WhenSomeoneConsultsTheQueue(string name) =>
-        _consultation = await (await people.SignedInClient(name)).GetAsync(ValidationQueue);
+        consultation.Response = await (await people.SignedInClient(name)).GetAsync(ValidationQueue);
 
     [When("un visiteur consulte la file de validation")]
     public async Task WhenAVisitorConsultsTheQueue()
     {
         using var visitor = deployment.Current.CreateClient();
-        _consultation = await visitor.GetAsync(ValidationQueue);
+        consultation.Response = await visitor.GetAsync(ValidationQueue);
     }
 
     [When(@"^(\w+) consulte le nombre de propositions en attente de validation$")]
     public async Task WhenSomeoneConsultsThePendingCount(string name) =>
-        _consultation = await (await people.SignedInClient(name)).GetAsync(PendingCount);
+        consultation.Response = await (await people.SignedInClient(name)).GetAsync(PendingCount);
 
     [Then("^la file de validation présente " + Proposal + "$")]
     public async Task ThenTheQueuePresentsTheProposal(string pose, string contributor) =>
@@ -95,13 +95,13 @@ public sealed class ValidationSteps(People people, Deployment deployment, Scenar
     [Then(@"^(\d+) propositions? (?:sont|est) en attente de validation$")]
     public async Task ThenTheNumberOfPendingProposalsIs(int count)
     {
-        var response = _consultation.ShouldNotBeNull();
+        var response = consultation.Response.ShouldNotBeNull();
         response.StatusCode.ShouldBe(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
         (await Body<CountResponse>(response)).ShouldNotBeNull().Count.ShouldBe(count);
     }
 
     [Then(@"^la consultation est refusée car (.+)$")]
-    public Task ThenTheConsultationIsRefused(string reason) => ShouldBeRefused(_consultation, reason);
+    public Task ThenTheConsultationIsRefused(string reason) => ShouldBeRefused(consultation.Response, reason);
 
     // --- Deciding -----------------------------------------------------------------------------
 
@@ -130,7 +130,7 @@ public sealed class ValidationSteps(People people, Deployment deployment, Scenar
     public async Task WhenSomeoneAcceptsOn(string name, string day, string pose, string contributor)
     {
         clock.SetUtcNow(ScenarioClock.Parse(day));
-        _decision = await Accept(await people.SignedInClientAgain(name), proposals.IdOf(pose, contributor));
+        _decision = await Accept(await people.SignedInClient(name), proposals.IdOf(pose, contributor));
     }
 
     [When("^un visiteur accepte " + Proposal + "$")]
@@ -155,6 +155,20 @@ public sealed class ValidationSteps(People people, Deployment deployment, Scenar
     public async Task GivenSomeoneHasAcceptedWithAnAdjustment(string name, string pose, string contributor, string adjustment)
     {
         await WhenSomeoneAcceptsWithAnAdjustment(name, pose, contributor, adjustment);
+        _decision!.StatusCode.ShouldBe(HttpStatusCode.OK, await _decision.Content.ReadAsStringAsync());
+    }
+
+    [Given("^(\\w+) a accepté " + Proposal + " en corrigeant " + Adjustment + ", avec le message " + Reason + "$")]
+    public async Task GivenSomeoneHasAcceptedWithAnAdjustmentAndANote(string name, string pose, string contributor, string adjustment, string note)
+    {
+        await WhenSomeoneAcceptsWithAnAdjustmentAndANote(name, pose, contributor, adjustment, note);
+        _decision!.StatusCode.ShouldBe(HttpStatusCode.OK, await _decision.Content.ReadAsStringAsync());
+    }
+
+    [Given("^(\\w+) a accepté le " + Day + " " + Proposal + "$")]
+    public async Task GivenSomeoneHasAcceptedOn(string name, string day, string pose, string contributor)
+    {
+        await WhenSomeoneAcceptsOn(name, day, pose, contributor);
         _decision!.StatusCode.ShouldBe(HttpStatusCode.OK, await _decision.Content.ReadAsStringAsync());
     }
 
@@ -388,6 +402,10 @@ public sealed class ValidationSteps(People people, Deployment deployment, Scenar
     /// </summary>
     private static AcceptanceRequest Adjusting(string adjustment)
     {
+        // « le nom en "Throne" et la difficulté flyer en "découverte" »: several adjustments in one acceptance.
+        var several = Regex.Split(adjustment, " et (?=le |la |l')");
+        if (several.Length > 1) return several.Select(Adjusting).Aggregate(Combined);
+
         if (Regex.Match(adjustment, @"^la difficulté (base|flyer) en ""([^""]*)""$") is { Success: true } difficulty)
         {
             var code = DifficultyLabels.ToCodeOrAsIs(difficulty.Groups[2].Value);
@@ -410,12 +428,22 @@ public sealed class ValidationSteps(People people, Deployment deployment, Scenar
         throw new ArgumentOutOfRangeException(nameof(adjustment), adjustment, "Ajustement inconnu.");
     }
 
+    private static AcceptanceRequest Combined(AcceptanceRequest left, AcceptanceRequest right) => new()
+    {
+        Name = left.Name ?? right.Name,
+        BaseDifficulty = left.BaseDifficulty ?? right.BaseDifficulty,
+        FlyerDifficulty = left.FlyerDifficulty ?? right.FlyerDifficulty,
+        CanStartFlow = left.CanStartFlow ?? right.CanStartFlow,
+        CanEndFlow = left.CanEndFlow ?? right.CanEndFlow,
+        Message = left.Message ?? right.Message,
+    };
+
     private static Task<HttpResponseMessage> Reject(HttpClient client, Guid proposal, RejectionRequest rejection) =>
         client.PostAsJsonAsync(new Uri($"/contribution/pose-proposals/{proposal}/rejection", UriKind.Relative), rejection);
 
     private async Task<QueueResponse> Queue()
     {
-        var response = _consultation.ShouldNotBeNull();
+        var response = consultation.Response.ShouldNotBeNull();
         response.StatusCode.ShouldBe(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
         return (await Body<QueueResponse>(response)).ShouldNotBeNull();
     }

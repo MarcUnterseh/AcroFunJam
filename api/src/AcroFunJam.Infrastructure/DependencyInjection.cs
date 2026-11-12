@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddSingleton(ContributionConcurrencyConflicts.PoseProposalDecided);
         services.AddScoped<IPoseProposalRepository, EfPoseProposalRepository>();
         services.AddScoped<IPendingPoseProposalsReader, EfPendingPoseProposalsReader>();
+        services.AddScoped<IMyPoseProposalsReader, EfMyPoseProposalsReader>();
 
         // Anti-corruption layers between contexts (ADR 0016)
         services.AddScoped<IContributors, IdentityContributors>();

@@ -51,6 +51,13 @@ public sealed class PoseProposalRecordConfiguration : IEntityTypeConfiguration<P
                 "adjustment_note IS NULL"
                 + " OR (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow)"
                 + " IS DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow)");
+            // A direct publication retains the proposed pose as is, without note, decided by its contributor when submitted (ADR 0023).
+            table.HasCheckConstraint(
+                "ck_pose_proposals_published_directly",
+                "NOT published_directly OR (status = 'accepted' AND decided_by = contributor_id AND decided_at = submitted_at"
+                + " AND adjustment_note IS NULL"
+                + " AND (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow)"
+                + " IS NOT DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow))");
         });
         builder.HasKey(p => p.Id);
         builder.Property(p => p.Id).HasColumnName("id");
@@ -74,6 +81,7 @@ public sealed class PoseProposalRecordConfiguration : IEntityTypeConfiguration<P
         builder.Property(p => p.RetainedCanStartFlow).HasColumnName("retained_can_start_flow");
         builder.Property(p => p.RetainedCanEndFlow).HasColumnName("retained_can_end_flow");
         builder.Property(p => p.AdjustmentNote).HasColumnName("adjustment_note");
+        builder.Property(p => p.PublishedDirectly).HasColumnName("published_directly").HasDefaultValue(false);
 
         builder.HasIndex(p => p.NameKey).HasDatabaseName(PendingNameKeyIndex).IsUnique().HasFilter("status = 'pending'");
         builder.HasIndex(p => p.SubmittedAt).HasDatabaseName("ix_pose_proposals_pending_submitted_at").HasFilter("status = 'pending'"); // validation queue

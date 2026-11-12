@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using AcroFunJam.Infrastructure.Persistence.Contribution;
 using Npgsql;
 
 namespace AcroFunJam.Infrastructure.Tests.Persistence;
@@ -174,5 +175,93 @@ public sealed class AcroFunJamDbContextTests(PostgreSqlFixture database) : IClas
             .SqlState.ShouldBe(PostgresErrorCodes.CheckViolation);
         (await Should.ThrowAsync<PostgresException>(() => InsertDecidedProposal("accepted", new string('x', 61))))
             .SqlState.ShouldBe(PostgresErrorCodes.CheckViolation);
+    }
+
+    /// <summary>
+    /// A direct publication is accepted, decided by its contributor at the instant of the submission, retains the proposed pose as
+    /// is and carries no note (ADR 0023): each branch broken on an otherwise coherent row. A rejection has no retained pose and a
+    /// note comes only with adjustments, so those two cases also break the retained pose branch.
+    /// </summary>
+    [Theory]
+    [InlineData("status")]
+    [InlineData("decided_by")]
+    [InlineData("decided_at")]
+    [InlineData("adjustment_note")]
+    [InlineData("retained_name")]
+    [InlineData("retained_flyer_difficulty")]
+    [InlineData("retained_can_end_flow")]
+    public async Task SaveChanges_Should_BeRefusedByTheDatabase_When_PublishedDirectlyIncoherently(string broken)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var context = database.CreateDbContext();
+        await context.Database.MigrateAsync(ct);
+        var bruno = Guid.NewGuid();
+        var at = new DateTimeOffset(2026, 11, 9, 10, 0, 0, TimeSpan.Zero);
+        var published = new PoseProposalRecord
+        {
+            Id = Guid.NewGuid(),
+            ContributorId = bruno,
+            Name = "Throne",
+            NameKey = "throne " + Guid.NewGuid(),
+            BaseDifficulty = "beginner",
+            FlyerDifficulty = "discovery",
+            CanStartFlow = true,
+            CanEndFlow = true,
+            Status = "accepted",
+            SubmittedAt = at,
+            DecidedBy = bruno,
+            DecidedAt = at,
+            RetainedName = "Throne",
+            RetainedBaseDifficulty = "beginner",
+            RetainedFlyerDifficulty = "discovery",
+            RetainedCanStartFlow = true,
+            RetainedCanEndFlow = true,
+            PublishedDirectly = true,
+        };
+        Break(published, broken);
+        context.Add(published);
+
+        var refusal = await Should.ThrowAsync<DbUpdateException>(() => context.SaveChangesAsync(ct));
+
+        var violation = refusal.InnerException.ShouldBeOfType<PostgresException>();
+        violation.SqlState.ShouldBe(PostgresErrorCodes.CheckViolation);
+        violation.ConstraintName.ShouldBe("ck_pose_proposals_published_directly");
+    }
+
+    private static void Break(PoseProposalRecord published, string broken)
+    {
+        switch (broken)
+        {
+            case "status":
+                published.Status = "rejected";
+                published.RejectionReason = "Doublon.";
+                published.RetainedName = null;
+                published.RetainedBaseDifficulty = null;
+                published.RetainedFlyerDifficulty = null;
+                published.RetainedCanStartFlow = null;
+                published.RetainedCanEndFlow = null;
+                break;
+            case "decided_by":
+                published.DecidedBy = Guid.NewGuid();
+                break;
+            case "decided_at":
+                published.DecidedAt = published.SubmittedAt.AddMinutes(5);
+                break;
+            case "adjustment_note":
+                published.RetainedName = "THRONE";
+                published.AdjustmentNote = "Casse ajustée.";
+                break;
+            case "retained_name":
+                published.RetainedName = "THRONE";
+                break;
+            case "retained_flyer_difficulty":
+                published.RetainedFlyerDifficulty = "intermediate";
+                break;
+            case "retained_can_end_flow":
+                published.RetainedCanEndFlow = false;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(broken), broken, "Unknown branch.");
+        }
     }
 }

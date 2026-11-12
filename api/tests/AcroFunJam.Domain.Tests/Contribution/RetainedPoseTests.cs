@@ -1,4 +1,5 @@
 using AcroFunJam.Domain.Contribution;
+using AcroFunJam.Domain.SharedKernel;
 
 namespace AcroFunJam.Domain.Tests.Contribution;
 
@@ -39,6 +40,73 @@ public sealed class RetainedPoseTests
     {
         RetainedPose.Create("Throne", "expert", "discovery", canStartFlow: true, canEndFlow: true)
             .Error.ShouldBe(ProposedPose.Create("Throne", "expert", "discovery", canStartFlow: true, canEndFlow: true).Error);
+    }
+
+    [Fact]
+    public void AdjustmentsFrom_Should_ReturnNoAdjustment_When_RetainedPoseEqualsProposedPose()
+    {
+        var retained = Throne.Retain(PoseAdjustments.None);
+
+        IReadOnlyList<PoseFieldAdjustment> adjustments = retained.AdjustmentsFrom(Throne);
+
+        adjustments.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void AdjustmentsFrom_Should_ReturnTheFlyerDifficultyWithBothValues_When_OnlyTheFlyerDifficultyWasAdjusted()
+    {
+        var retained = Retaining(flyerDifficulty: "intermediate");
+
+        var adjustments = retained.AdjustmentsFrom(Throne);
+
+        adjustments.ShouldBe(
+            [new FlyerDifficultyAdjustment(DifficultyLevel.Discovery, DifficultyLevel.Intermediate)]);
+    }
+
+    [Fact]
+    public void AdjustmentsFrom_Should_ReturnTheCanEndFlowIndicatorWithBothValues_When_ItWasAdjusted()
+    {
+        var retained = Throne.Retain(PoseAdjustments.Create(null, null, null, canStartFlow: null, canEndFlow: false).Value!);
+
+        var adjustments = retained.AdjustmentsFrom(Throne);
+
+        adjustments.ShouldBe([new CanEndFlowAdjustment(Proposed: true, Retained: false)]);
+    }
+
+    [Fact]
+    public void AdjustmentsFrom_Should_ReturnTheName_When_OnlyItsCaseChanged()
+    {
+        var retained = Retaining(name: "throne");
+
+        var adjustments = retained.AdjustmentsFrom(Throne);
+
+        adjustments.ShouldBe([new NameAdjustment(Throne.Name, retained.Name)]);
+    }
+
+    [Fact]
+    public void AdjustmentsFrom_Should_ReturnNoAdjustment_When_TheNameDiffersOnlyBySuperfluousSpaces()
+    {
+        var retained = Retaining(name: "  Throne  ");
+
+        retained.AdjustmentsFrom(Throne).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void AdjustmentsFrom_Should_ListAdjustmentsInTheOrderOfTheForm_When_SeveralFieldsWereAdjusted()
+    {
+        var retained = Throne.Retain(
+            PoseAdjustments.Create("Throne Bird", "advanced", "intermediate", canStartFlow: false, canEndFlow: false).Value!);
+
+        var adjustments = retained.AdjustmentsFrom(Throne);
+
+        adjustments.ShouldBe(
+        [
+            new NameAdjustment(Throne.Name, retained.Name),
+            new BaseDifficultyAdjustment(DifficultyLevel.Beginner, DifficultyLevel.Advanced),
+            new FlyerDifficultyAdjustment(DifficultyLevel.Discovery, DifficultyLevel.Intermediate),
+            new CanStartFlowAdjustment(Proposed: true, Retained: false),
+            new CanEndFlowAdjustment(Proposed: true, Retained: false),
+        ]);
     }
 
     [Fact]

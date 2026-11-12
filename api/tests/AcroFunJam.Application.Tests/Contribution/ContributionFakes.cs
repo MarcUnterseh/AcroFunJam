@@ -131,6 +131,21 @@ internal sealed class FakePendingPoseProposalsReader(params PoseProposal[] pendi
     public Task<int> CountPending(CancellationToken ct) => Task.FromResult(pending.Length);
 }
 
+/// <summary>
+/// In-memory fake of <see cref="IMyPoseProposalsReader"/>: the proposals of every contributor, in no particular order, and the
+/// contributors asked for.
+/// </summary>
+internal sealed class FakeMyPoseProposalsReader(params PoseProposal[] proposals) : IMyPoseProposalsReader
+{
+    public List<ContributorId> Calls { get; } = [];
+
+    public Task<IReadOnlyList<PoseProposal>> ListSubmittedBy(ContributorId contributor, CancellationToken ct)
+    {
+        Calls.Add(contributor);
+        return Task.FromResult<IReadOnlyList<PoseProposal>>([.. proposals.Where(p => p.Contributor == contributor)]);
+    }
+}
+
 /// <summary>In-memory fake of <see cref="IContributorEmails"/>: the addresses of the existing accounts, and the calls received.</summary>
 internal sealed class FakeContributorEmails(params (ContributorId Contributor, string Email)[] emails) : IContributorEmails
 {

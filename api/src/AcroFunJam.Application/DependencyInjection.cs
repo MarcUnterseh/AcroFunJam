@@ -6,6 +6,7 @@ using AcroFunJam.Application.Common;
 using AcroFunJam.Application.Contribution;
 using AcroFunJam.Application.Contribution.AcceptPoseProposal;
 using AcroFunJam.Application.Contribution.CountPendingPoseProposals;
+using AcroFunJam.Application.Contribution.GetMyPoseProposals;
 using AcroFunJam.Application.Contribution.GetPendingPoseProposals;
 using AcroFunJam.Application.Contribution.ProposePose;
 using AcroFunJam.Application.Contribution.RejectPoseProposal;
@@ -14,6 +15,7 @@ using AcroFunJam.Application.Identity.BootstrapInitialAdministrator;
 using AcroFunJam.Application.Identity.GetAccountEmails;
 using AcroFunJam.Application.Identity.GetMyAccount;
 using AcroFunJam.Application.Identity.RevokeRole;
+using AcroFunJam.Domain.Contribution;
 using AcroFunJam.Domain.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -37,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<IQueryHandler<CountPendingPoseProposals, int>, CountPendingPoseProposalsHandler>();
         services.AddScoped<ICommandHandler<AcceptPoseProposal, DecidedPoseProposalDto>, AcceptPoseProposalHandler>();
         services.AddScoped<ICommandHandler<RejectPoseProposal, DecidedPoseProposalDto>, RejectPoseProposalHandler>();
+        services.AddScoped<IQueryHandler<GetMyPoseProposals, IReadOnlyList<MyPoseProposal>>, GetMyPoseProposalsHandler>();
         return services;
     }
 }

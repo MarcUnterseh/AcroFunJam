@@ -4,8 +4,8 @@ using Npgsql;
 namespace AcroFunJam.Specs.Support.Contribution;
 
 /// <summary>
-/// Test reading of contribution.pose_proposals: "mes propositions" (story 5) does not exist yet, so the state of a
-/// proposal and its decision are observed in the database (ADR 0020).
+/// Test reading of contribution.pose_proposals: the state of a proposal and its decision as stored (ADR 0020), including
+/// what « Mes propositions » (story 5) deliberately does not expose, such as the validator who decided (ADR 0023).
 /// </summary>
 public static class PoseProposalsInDatabase
 {
@@ -33,7 +33,7 @@ public static class PoseProposalsInDatabase
 
     /// <summary>
     /// The decision recorded on the proposal of a pose by the account using this address: who decided (address of
-    /// the validator), when, and the rejection reason. "Suivre mes propositions" (story 5) does not exist yet (ADR 0020).
+    /// the validator), when, and the rejection reason (ADR 0020).
     /// </summary>
     public static async Task<RecordedDecision> DecisionOn(string contributorEmail, string poseName)
     {
@@ -64,7 +64,7 @@ public static class PoseProposalsInDatabase
 
     /// <summary>
     /// The proposed pose, the retained pose (none unless accepted) and the adjustment note of a proposal, as stored
-    /// (story 4, step B). "Suivre mes propositions" (story 5) does not exist yet (ADR 0020).
+    /// (story 4, step B, ADR 0020).
     /// </summary>
     public static async Task<RecordedPoses> PosesOf(Guid proposal)
     {
@@ -90,6 +90,26 @@ public static class PoseProposalsInDatabase
         return new RecordedPoses(proposed, retained, reader.IsDBNull(10) ? null : reader.GetString(10));
     }
 
+    /// <summary>The validator who decided on a proposal: their account identifier and address.</summary>
+    public static async Task<Decider> DeciderOf(Guid proposal)
+    {
+        await using var connection = new NpgsqlConnection(IntegrationDatabase.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = new NpgsqlCommand(
+            """
+            select v."Id", v."Email"
+            from contribution.pose_proposals p
+            join identity.users v on v."Id" = p.decided_by
+            where p.id = @id
+            """,
+            connection);
+        command.Parameters.AddWithValue("id", proposal);
+
+        await using var reader = await command.ExecuteReaderAsync();
+        (await reader.ReadAsync()).ShouldBeTrue($"Aucune décision sur la proposition {proposal}.");
+        return new Decider(reader.GetGuid(0), reader.GetString(1));
+    }
+
     /// <summary>Number of proposals pending validation, all contributors together.</summary>
     public static async Task<long> CountPending()
     {
@@ -112,3 +132,6 @@ public sealed record RecordedPoses(StoredPose Proposed, StoredPose? Retained, st
     /// <summary>Accepted with adjustments: the retained pose differs from the proposed pose.</summary>
     public bool IsAdjusted => Retained is not null && Retained != Proposed;
 }
+
+/// <summary>The validator who decided on a proposal: account identifier and address.</summary>
+public sealed record Decider(Guid Id, string Email);

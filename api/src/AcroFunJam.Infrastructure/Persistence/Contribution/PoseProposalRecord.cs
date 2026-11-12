@@ -41,4 +41,7 @@ public sealed class PoseProposalRecord
     public bool? RetainedCanEndFlow { get; set; }
 
     public string? AdjustmentNote { get; set; }
+
+    /// <summary>The acceptance is a direct publication (ADR 0023): recorded when it happens, never deduced.</summary>
+    public bool PublishedDirectly { get; set; }
 }

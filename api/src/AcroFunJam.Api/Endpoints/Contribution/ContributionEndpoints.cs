@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 using AcroFunJam.Api.Authorization;
@@ -6,10 +7,12 @@ using AcroFunJam.Application.Common;
 using AcroFunJam.Application.Contribution;
 using AcroFunJam.Application.Contribution.AcceptPoseProposal;
 using AcroFunJam.Application.Contribution.CountPendingPoseProposals;
+using AcroFunJam.Application.Contribution.GetMyPoseProposals;
 using AcroFunJam.Application.Contribution.GetPendingPoseProposals;
 using AcroFunJam.Application.Contribution.ProposePose;
 using AcroFunJam.Application.Contribution.RejectPoseProposal;
 using AcroFunJam.Domain.Contribution;
+using AcroFunJam.Domain.SharedKernel;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AcroFunJam.Api.Endpoints.Contribution;
@@ -60,8 +63,57 @@ public static class ContributionEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
+        contribution.MapGet("/my-pose-proposals", GetMyPoseProposals)
+            .WithName("GetMyPoseProposals")
+            .RequireAuthorization(Capabilities.CanPropose)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
         return app;
     }
+
+    /// <summary>The endpoint only translates: what the contributor sees is decided by the domain (MyPoseProposal, ADR 0023).</summary>
+    private static async Task<Results<Ok<MyPoseProposalsResponse>, ProblemHttpResult>> GetMyPoseProposals(
+        ClaimsPrincipal contributor,
+        IQueryHandler<GetMyPoseProposals, IReadOnlyList<MyPoseProposal>> handler,
+        CancellationToken ct)
+    {
+        var result = await handler.Handle(new GetMyPoseProposals(ContributorOf(contributor)), ct);
+        if (result.IsFailure) return result.Error!.ToProblem();
+        return TypedResults.Ok(new MyPoseProposalsResponse([.. result.Value!.Select(ToResponse)]));
+    }
+
+    private static MyPoseProposalResponse ToResponse(MyPoseProposal proposal) =>
+        new(
+            proposal.Id.Value,
+            MyProposalStatusCodes.From(proposal.Status),
+            proposal.Name.Value,
+            DifficultyCodes.From(proposal.Difficulty.Base),
+            DifficultyCodes.From(proposal.Difficulty.Flyer),
+            proposal.Flow.CanStartFlow,
+            proposal.Flow.CanEndFlow,
+            proposal.SubmittedAt,
+            proposal.DecidedAt,
+            ToResponse(proposal.Adjustments),
+            proposal.Note?.Value,
+            proposal.Reason?.Value);
+
+    /// <summary>Each adjusted field in its member, with both values; null when nothing was adjusted.</summary>
+    private static PoseAdjustmentsResponse? ToResponse(IReadOnlyList<PoseFieldAdjustment> adjustments) =>
+        adjustments.Count == 0 ? null : adjustments.Aggregate(new PoseAdjustmentsResponse(null, null, null, null, null), Adjusted);
+
+    private static PoseAdjustmentsResponse Adjusted(PoseAdjustmentsResponse response, PoseFieldAdjustment adjustment) => adjustment switch
+    {
+        NameAdjustment name => response with { Name = new(name.Proposed.Value, name.Retained.Value) },
+        BaseDifficultyAdjustment difficulty => response with { BaseDifficulty = ToResponse(difficulty.Proposed, difficulty.Retained) },
+        FlyerDifficultyAdjustment difficulty => response with { FlyerDifficulty = ToResponse(difficulty.Proposed, difficulty.Retained) },
+        CanStartFlowAdjustment flow => response with { CanStartFlow = new(flow.Proposed, flow.Retained) },
+        CanEndFlowAdjustment flow => response with { CanEndFlow = new(flow.Proposed, flow.Retained) },
+        _ => throw new UnreachableException($"Unknown adjustment: {adjustment.GetType().Name}."),
+    };
+
+    private static DifficultyAdjustmentResponse ToResponse(DifficultyLevel proposed, DifficultyLevel retained) =>
+        new(DifficultyCodes.From(proposed), DifficultyCodes.From(retained));
 
     /// <summary>
     /// The endpoint only builds the proposed pose and passes on the contributor: whether the pose is published
@@ -278,3 +330,63 @@ public static class ProposalStatusCodes
         _ => throw new ArgumentOutOfRangeException(nameof(status), status, "Unknown proposal status."),
     };
 }
+
+/// <summary>Status of one of their proposals, for its contributor (story 5, ADR 0023).</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<MyProposalStatusCode>))]
+public enum MyProposalStatusCode
+{
+    [JsonStringEnumMemberName("pending")] Pending,
+    [JsonStringEnumMemberName("accepted")] Accepted,
+    [JsonStringEnumMemberName("accepted-with-adjustments")] AcceptedWithAdjustments,
+    [JsonStringEnumMemberName("rejected")] Rejected,
+    [JsonStringEnumMemberName("published-directly")] PublishedDirectly,
+}
+
+public static class MyProposalStatusCodes
+{
+    public static MyProposalStatusCode From(MyProposalStatus status) => status switch
+    {
+        MyProposalStatus.Pending => MyProposalStatusCode.Pending,
+        MyProposalStatus.Accepted => MyProposalStatusCode.Accepted,
+        MyProposalStatus.AcceptedWithAdjustments => MyProposalStatusCode.AcceptedWithAdjustments,
+        MyProposalStatus.Rejected => MyProposalStatusCode.Rejected,
+        MyProposalStatus.PublishedDirectly => MyProposalStatusCode.PublishedDirectly,
+        _ => throw new ArgumentOutOfRangeException(nameof(status), status, "Unknown status of a proposal for its contributor."),
+    };
+}
+
+/// <summary>« Mes propositions »: the proposals of the requester, the most recently submitted first (ADR 0007: lists are wrapped).</summary>
+public sealed record MyPoseProposalsResponse(IReadOnlyList<MyPoseProposalResponse> Proposals);
+
+/// <summary>
+/// One of their proposals, as its contributor sees it: the presented pose (the retained pose once accepted), its status, when
+/// it was submitted and decided (never for a direct publication), the adjusted fields, the adjustment note or the rejection
+/// reason. Nothing designates the validator who decided (Q12).
+/// </summary>
+public sealed record MyPoseProposalResponse(
+    Guid Id,
+    MyProposalStatusCode Status,
+    string Name,
+    DifficultyCode BaseDifficulty,
+    DifficultyCode FlyerDifficulty,
+    bool CanStartFlow,
+    bool CanEndFlow,
+    DateTimeOffset SubmittedAt,
+    DateTimeOffset? DecidedAt,
+    PoseAdjustmentsResponse? Adjustments,
+    string? Message,
+    string? Reason);
+
+/// <summary>The fields a validator adjusted, each with its proposed and retained values; null when not adjusted.</summary>
+public sealed record PoseAdjustmentsResponse(
+    NameAdjustmentResponse? Name,
+    DifficultyAdjustmentResponse? BaseDifficulty,
+    DifficultyAdjustmentResponse? FlyerDifficulty,
+    FlowAdjustmentResponse? CanStartFlow,
+    FlowAdjustmentResponse? CanEndFlow);
+
+public sealed record NameAdjustmentResponse(string Proposed, string Retained);
+
+public sealed record DifficultyAdjustmentResponse(DifficultyCode Proposed, DifficultyCode Retained);
+
+public sealed record FlowAdjustmentResponse(bool Proposed, bool Retained);

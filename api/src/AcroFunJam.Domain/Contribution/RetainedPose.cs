@@ -26,13 +26,27 @@ public sealed record RetainedPose(PoseName Name, Difficulty Difficulty, FlowBoun
         return Result<RetainedPose>.Success(new RetainedPose(poseName.Value!, difficulty.Value!, flow.Value!));
     }
 
+    /// <summary>Whether the validator adjusted at least one field of the proposed pose (see <see cref="AdjustmentsFrom"/>).</summary>
+    public bool IsAdjustedFrom(ProposedPose proposed) => AdjustmentsFrom(proposed).Count > 0;
+
     /// <summary>
-    /// Whether a value differs from the proposed one, both normalised: an adjusted value identical to the proposed one, or
-    /// differing only by superfluous spaces, is no adjustment; a change of case of the name is one (ordinal comparison).
+    /// The fields whose retained value differs from the proposed one, in the order of the form, each with both values (story 5).
+    /// Both values are normalised: an adjusted value identical to the proposed one, or differing only by superfluous spaces,
+    /// is no adjustment; a change of case of the name is one (ordinal comparison).
     /// </summary>
-    public bool IsAdjustedFrom(ProposedPose proposed)
+    public IReadOnlyList<PoseFieldAdjustment> AdjustmentsFrom(ProposedPose proposed)
     {
         ArgumentNullException.ThrowIfNull(proposed);
-        return Name != proposed.Name || Difficulty != proposed.Difficulty || Flow != proposed.Flow;
+        return
+        [
+            .. Adjustment(proposed.Name, Name, (p, r) => new NameAdjustment(p, r)),
+            .. Adjustment(proposed.Difficulty.Base, Difficulty.Base, (p, r) => new BaseDifficultyAdjustment(p, r)),
+            .. Adjustment(proposed.Difficulty.Flyer, Difficulty.Flyer, (p, r) => new FlyerDifficultyAdjustment(p, r)),
+            .. Adjustment(proposed.Flow.CanStartFlow, Flow.CanStartFlow, (p, r) => new CanStartFlowAdjustment(p, r)),
+            .. Adjustment(proposed.Flow.CanEndFlow, Flow.CanEndFlow, (p, r) => new CanEndFlowAdjustment(p, r)),
+        ];
     }
+
+    private static IEnumerable<PoseFieldAdjustment> Adjustment<T>(T proposed, T retained, Func<T, T, PoseFieldAdjustment> adjusted) =>
+        EqualityComparer<T>.Default.Equals(proposed, retained) ? [] : [adjusted(proposed, retained)];
 }

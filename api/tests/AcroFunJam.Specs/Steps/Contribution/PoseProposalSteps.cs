@@ -83,7 +83,17 @@ public sealed class PoseProposalSteps(People people, Deployment deployment, Scen
     {
         clock.SetUtcNow(ScenarioClock.Parse(day));
         _lastResponse = await Propose(name, new ProposalRequest(
-            pose, DifficultyLabels.ToCode(baseDifficulty), DifficultyLabels.ToCode(flyerDifficulty), canStart == "peut", canEnd == "peut"), signInAgain: true);
+            pose, DifficultyLabels.ToCode(baseDifficulty), DifficultyLabels.ToCode(flyerDifficulty), canStart == "peut", canEnd == "peut"));
+        _lastResponse.StatusCode.ShouldBe(HttpStatusCode.Created, await _lastResponse.Content.ReadAsStringAsync());
+    }
+
+    [Given(@"^(\w+) a proposé le (\d{4}-\d{2}-\d{2}) la pose ""([^""]*)"" de difficulté base ""([^""]*)"" et de difficulté flyer ""([^""]*)""$")]
+    public async Task GivenSomeoneHasProposedAPoseWithDifficultiesOn(string name, string day, string pose, string baseDifficulty, string flyerDifficulty)
+    {
+        clock.SetUtcNow(ScenarioClock.Parse(day));
+        _lastResponse = await Propose(
+            name,
+            AValidProposal(pose) with { BaseDifficulty = DifficultyLabels.ToCode(baseDifficulty), FlyerDifficulty = DifficultyLabels.ToCode(flyerDifficulty) });
         _lastResponse.StatusCode.ShouldBe(HttpStatusCode.Created, await _lastResponse.Content.ReadAsStringAsync());
     }
 
@@ -97,7 +107,7 @@ public sealed class PoseProposalSteps(People people, Deployment deployment, Scen
             if (!people.IsKnown(name)) (await people.Register(name, People.DefaultEmail(name))).EnsureSuccessStatusCode();
 
             clock.SetUtcNow(ScenarioClock.Parse(row["soumise le"]));
-            _lastResponse = await Propose(name, AValidProposal(row["pose"]), signInAgain: true);
+            _lastResponse = await Propose(name, AValidProposal(row["pose"]));
             (await Received()).Status.ShouldBe("pending");
         }
     }
@@ -193,9 +203,9 @@ public sealed class PoseProposalSteps(People people, Deployment deployment, Scen
     // --- HTTP ---------------------------------------------------------------------------------
 
     /// <summary>Proposes and remembers the id of a received proposal, for the decision steps.</summary>
-    private async Task<HttpResponseMessage> Propose(string name, ProposalRequest proposal, bool signInAgain = false)
+    private async Task<HttpResponseMessage> Propose(string name, ProposalRequest proposal)
     {
-        var client = signInAgain ? await people.SignedInClientAgain(name) : await people.SignedInClient(name);
+        var client = await people.SignedInClient(name);
         var response = await client.PostAsJsonAsync(PoseProposals, proposal);
         if (response.StatusCode == HttpStatusCode.Created && proposal.Name is not null)
         {

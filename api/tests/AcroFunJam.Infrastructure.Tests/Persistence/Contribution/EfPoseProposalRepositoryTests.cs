@@ -271,4 +271,74 @@ public sealed class EfPoseProposalRepositoryTests(PostgreSqlFixture database) : 
         var proposals = new EfPoseProposalRepository(context, new TrackedAggregates());
         (await proposals.ExistsOtherPendingWithNameKey(Key("STAR"), except: starr.Id, Ct)).ShouldBeTrue();
     }
+
+    private static Contributor AValidatorProposing() => new(new ContributorId(Guid.NewGuid()), IsValidator: true);
+
+    [Fact]
+    public async Task Add_Should_StorePublishedDirectly_When_TheProposalIsADirectPublication()
+    {
+        var published = APendingProposal("Throne", AValidatorProposing()); // accepted at once (ADR 0023)
+
+        await Save(published);
+
+        var stored = await Stored(published.Id);
+        stored.ShouldSatisfyAllConditions(
+            () => stored.Status.ShouldBe("accepted"),
+            () => stored.PublishedDirectly.ShouldBeTrue());
+    }
+
+    [Fact]
+    public async Task GetById_Should_RestoreADirectPublication_When_StoredAsSuch()
+    {
+        var published = APendingProposal("Throne", AValidatorProposing());
+        await Save(published);
+
+        var loaded = await Load(published.Id);
+
+        loaded.ShouldNotBeNull().Decision.ShouldBe(published.Decision);
+        loaded.Decision.ShouldBeOfType<Acceptance>().IsDirectPublication.ShouldBeTrue();
+    }
+
+    /// <summary>Story 4, R17, with a frozen clock: decided by the contributor at the instant of the submission, yet no direct publication.</summary>
+    [Fact]
+    public async Task GetById_Should_RestoreAnAcceptanceNotDirect_When_TheContributorPromotedSinceAcceptedAtTheSameInstant()
+    {
+        var alice = new Contributor(new ContributorId(Guid.NewGuid()), IsValidator: false);
+        var proposal = APendingProposal("Throne", alice);
+        await Save(proposal);
+        var alicePromoted = new Validator(alice.Id.AsValidator(), CanDecide: true);
+        await Decide(proposal.Id, p => p.Accept(alicePromoted, p.Pose.Retain(PoseAdjustments.None), null, NameAvailability.Available, Now));
+
+        var loaded = await Load(proposal.Id);
+
+        var acceptance = loaded.ShouldNotBeNull().Decision.ShouldBeOfType<Acceptance>();
+        acceptance.ShouldSatisfyAllConditions(
+            () => acceptance.By.ShouldBe(alicePromoted.Id),
+            () => acceptance.At.ShouldBe(loaded.SubmittedAt),
+            () => acceptance.IsDirectPublication.ShouldBeFalse());
+    }
+
+    /// <summary>
+    /// The check constraint forbids such a row (ADR 0023): it is dropped in a transaction rolled back at the end, to check that
+    /// the adapter translates the stored decision as is, for the rehydration to refuse it, instead of rebuilding it from the flag.
+    /// </summary>
+    [Fact]
+    public async Task GetById_Should_ReportABug_When_PublishedDirectlyWithAnotherDecider()
+    {
+        var published = APendingProposal("Throne", AValidatorProposing());
+        await Save(published);
+        await using var context = database.CreateDbContext();
+        await using var transaction = await context.Database.BeginTransactionAsync(Ct);
+        await context.Database.ExecuteSqlRawAsync(
+            "ALTER TABLE contribution.pose_proposals DROP CONSTRAINT ck_pose_proposals_published_directly", Ct);
+        await context.Database.ExecuteSqlAsync(
+            $"UPDATE contribution.pose_proposals SET decided_by = {Guid.NewGuid()} WHERE id = {published.Id.Value}", Ct);
+
+        var bug = await Should.ThrowAsync<InvalidOperationException>(
+            () => new EfPoseProposalRepository(context, new TrackedAggregates()).GetById(published.Id, Ct));
+
+        bug.Message.ShouldSatisfyAllConditions(
+            () => bug.Message.ShouldContain("direct publication"),
+            () => bug.Message.ShouldContain(published.Id.Value.ToString()));
+    }
 }

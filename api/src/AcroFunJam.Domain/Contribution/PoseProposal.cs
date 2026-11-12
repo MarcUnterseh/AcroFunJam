@@ -45,16 +45,26 @@ public sealed class PoseProposal : AggregateRoot<PoseProposalId>
 
         var proposal = new PoseProposal(id, contributor.Id, pose, now);
         proposal.Raise(new PoseProposed(id, contributor.Id, pose.Name, now));
-        // Direct publication: a validator's (or administrator's) proposal is accepted at once, by themselves.
+        // Direct publication: a validator's (or administrator's) proposal is accepted at once, by themselves (ADR 0023).
         if (contributor.IsValidator)
-            proposal.Record(Acceptance.Of(pose, pose.Retain(PoseAdjustments.None), note: null, contributor.Id.AsValidator(), now).Value!);
+            proposal.Record(Acceptance.DirectPublication(pose, contributor.Id, now));
         return Result<PoseProposal>.Success(proposal);
     }
 
-    /// <summary>Restores a proposal loaded from storage, with its decision if any, without raising any event.</summary>
+    /// <summary>
+    /// Restores a proposal loaded from storage, with its decision if any, without raising any event. A direct publication
+    /// must be exactly the one its submission recorded (ADR 0023): otherwise the stored data is corrupt, a bug.
+    /// </summary>
     public static PoseProposal Rehydrate(
-        PoseProposalId id, ContributorId contributor, ProposedPose pose, DateTimeOffset submittedAt, ProposalDecision? decision = null) =>
-        new(id, contributor, pose, submittedAt) { Decision = decision };
+        PoseProposalId id, ContributorId contributor, ProposedPose pose, DateTimeOffset submittedAt, ProposalDecision? decision = null)
+    {
+        ArgumentNullException.ThrowIfNull(pose);
+        if (decision is Acceptance { IsDirectPublication: true } published
+            && published != Acceptance.DirectPublication(pose, contributor, submittedAt))
+            throw new InvalidOperationException($"Incoherent direct publication of the pose proposal {id.Value}.");
+
+        return new PoseProposal(id, contributor, pose, submittedAt) { Decision = decision };
+    }
 
     /// <summary>Whether this validator is the person who submitted the proposal (« toi » in the validation queue).</summary>
     public bool WasSubmittedBy(ValidatorId validator) => Contributor.AsValidator() == validator;

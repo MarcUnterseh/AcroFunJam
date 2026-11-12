@@ -7,7 +7,7 @@ namespace AcroFunJam.Specs.Support;
 /// Not a FakeTimeProvider: a scenario lists submission dates in any order, and FakeTimeProvider cannot go back in time.
 /// It replaces the TimeProvider of the whole API, authentication included: bearer tokens are issued and checked
 /// against this clock, so a token obtained before a change of date may be seen as expired (or not yet valid) after it.
-/// Hence <c>People.SignedInClientAgain</c>, which signs in again after a step has set a date.
+/// Hence <c>People.SignedInClient</c>, which signs in again when the token is not valid at the current instant.
 /// </summary>
 public sealed class ScenarioClock : TimeProvider
 {

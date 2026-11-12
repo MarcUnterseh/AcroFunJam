@@ -312,6 +312,79 @@ Tranchées le 2026-11-04 : Q13 (détail des ajustements, story 5), Q14 (message 
   - vérifier la sécurité d'un indicateur avant publication relève d'une charte de validation, à rédiger avec l'expert acroyoga ;
   - écran mobile (Expo).
 
+### Story 5 « Suivre mes propositions » (livrée)
+Carte d'example mapping du 2026-11-09, **révisée le même jour** avec les décisions du porteur du produit (Q19 à Q27) et l'avis de l'ux-expert. Scénarios : `specs/features/contribution/suivre-mes-propositions.feature`. Les scénarios @api sont livrés (étape A, ADR 0023) ; les scénarios @web sont livrés (étape B, site) : plus aucun `@wip`. Écart retenu à l'implémentation : une session expirée au chargement de « Mes propositions » (ou déjà expirée à l'ouverture de la page) laisse la personne sur la page, qui le signale elle-même par un bloc durable sous le titre (« Ta session a expiré. », « Connecte-toi de nouveau pour retrouver tes propositions. », lien-bouton « Se connecter » qui ramène ici après la connexion), sans le bandeau du site, plutôt qu'une redirection vers « Se connecter », pour que le site l'en informe (scénario « La page signale une session expirée pendant la consultation »).
+
+**Story** : en tant que contributeur connecté, je consulte la liste de mes propositions de pose et le statut de chacune (en attente de validation, acceptée, acceptée avec ajustements, refusée), avec, selon le cas, le détail des ajustements champ par champ (valeur proposée → valeur retenue), le message d'ajustement et le motif de refus, afin de savoir ce que sont devenues les poses que j'ai proposées. Livrée dans la même mise en production que la story 4.
+
+**Déjà décidé** (2026-11-04, story 4) : détail des ajustements champ par champ (Q13) ; message d'ajustement facultatif, réservé aux acceptations avec ajustements (Q14) ; comparaison après normalisation, la casse du nom compte (Q15) ; le contributeur ne voit pas quel validateur a décidé (Q12) ; pas d'amendement après un refus, on fait une nouvelle proposition (Q7).
+
+**Existant** :
+- API : l'agrégat `PoseProposal` porte la pose proposée, le contributeur, la date de soumission et la décision (`Acceptance` avec `RetainedPose`, `HasAdjustments` et `AdjustmentNote` ; `Rejection` avec `RejectionReason`) ; la table `contribution.pose_proposals` garde toutes ces valeurs (colonnes `retained_*`, `adjustment_note`, `rejection_reason`, `decided_at`, `decided_by`) et l'index `ix_pose_proposals_contributor_id`, prévu pour cette story. `decided_by` ne doit pas sortir de l'API pour le contributeur.
+- Site : le message de confirmation de « Proposer une pose » annonce l'attente de validation (« Elle apparaîtra dans le catalogue quand un validateur l'aura acceptée. ») avec « Proposer une autre pose » et « Voir le catalogue » ; la navigation « Contribution » de l'en-tête (`en-tete.md`) a été prévue pour accueillir « Suivre mes propositions », mais elle n'existe aujourd'hui que pour les validateurs et les administrateurs ; le récapitulatif « proposé → retenu » (`recapitulatif-ajustements.md`) est prévu pour être réutilisé.
+
+**Règles et exemples**
+- **R1. Une personne connectée consulte ses propositions, quel que soit son rôle** (toute personne qui a la capacité de proposer).
+  - Alice (utilisatrice), Bruno (validateur), Paul (administrateur) consultent chacun leurs propositions.
+  - Un visiteur : il faut être connecté.
+  - Alice, dont le compte a été supprimé depuis sa connexion : refus traité comme une session expirée (décision de la story 3).
+- **R2. Le contributeur ne voit que ses propres propositions.**
+  - Alice a proposé « Throne », Chloé « Star » : Alice ne voit que « Throne ».
+  - Alice n'a rien proposé, Chloé si : Alice est informée qu'elle n'a encore proposé aucune pose.
+- **R3. Chaque proposition présente sa pose, sa date de soumission et son statut** (décision du 2026-11-09) :
+  - une proposition **acceptée**, avec ou sans ajustements, présente la **pose retenue**, celle du catalogue, nom retenu compris (titre de la carte) ;
+  - une proposition **en attente**, **refusée** ou **publiée directement** présente la **pose proposée** ;
+  - exemples : « Hand-to-Hand (L-base) » en attente, avancé / avancé, ne peut ni commencer ni terminer, soumise le 2026-11-03 ; « throne » débutant / intermédiaire acceptée en « Throne » débutant / découverte : la carte présente « Throne », débutant / découverte ;
+  - statuts : Throne en attente de validation, Star acceptée, Bird acceptée avec ajustements, Front Bird refusée ;
+  - (Q21) une proposition acceptée ou refusée présente sa date de décision, au jour près : Throne soumise le 2026-11-03, acceptée le 2026-11-05.
+- **R4. (Q19) Une pose publiée directement figure parmi les propositions de son contributeur**, avec le statut « publiée directement » et **sans date de décision**.
+  - Bruno (validateur) propose « Throne » : elle figure dans ses propositions, publiée directement.
+  - Question technique tranchée par l'[ADR 0023](../adr/0023-publication-directe-enregistree-et-mes-propositions.md) : la publication directe est un fait enregistré au moment de la soumission (`Acceptance.IsDirectPublication`, colonne `published_directly`), et non déduit des horodatages ; l'acceptation par son contributeur devenu validateur (story 4, R17) reste « acceptée ».
+- **R5. Une proposition acceptée avec ajustements présente le récapitulatif « proposé → retenu » des seuls champs ajustés.**
+  - « throne » débutant / intermédiaire, acceptée en « Throne » débutant / découverte : nom throne → Throne, difficulté flyer intermédiaire → découverte ; la difficulté base n'apparaît pas.
+  - « Hand-to-Hand (L-base) » : peut terminer un flow, peut → ne peut pas.
+  - « Throne » acceptée sans ajustement : aucun ajustement présenté.
+- **R6. Une proposition acceptée avec ajustements présente le message d'ajustement, s'il y en a un.**
+  - « Le flyer ne redescend pas sans danger depuis cette pose. » est présenté.
+  - Ajustements sans message : aucun message présenté.
+- **R7. Une proposition refusée présente le motif de refus.**
+  - « Front Bird » : « Doublon de Bird, déjà au catalogue. »
+- **R8. Rien ne désigne au contributeur le validateur qui a décidé** : ni adresse, ni « toi », pour une acceptée, une acceptée avec ajustements ou une refusée.
+- **R9. (Q20) Les propositions sont présentées de la plus récemment soumise à la plus ancienne** ; à date égale, l'ordre du catalogue sur le nom départage.
+  - Star (1er novembre), Bird (2 novembre), Throne (3 novembre) : Throne, Bird, Star.
+- **R10. Sur le site** :
+  - **accès** (Q23) : **pas d'en-tête dans cette story**. Le catalogue présente un lien « Mes propositions » à côté de « Proposer une pose », à toute personne connectée (utilisatrice ou validateur), jamais à un visiteur. La page reste accessible par son adresse : un visiteur doit se connecter, puis il y arrive ;
+  - **après une proposition** (Q23) : le message de confirmation présente « Voir mes propositions » pour une proposition en attente **et** pour un statut illisible (« received »), mais pas pour une publication directe (« Voir le catalogue » suffit) ; Alice y retrouve « Throne » en attente de validation ;
+  - **statuts affichés** (Q22) : « En attente de validation », « Acceptée », « Acceptée avec ajustements », « Refusée », « Publiée directement ». « Refusée » est présenté en style information, jamais en rouge. Date de décision dans le statut : « Acceptée le 5 novembre 2026 » ; date de soumission : « Proposée le 3 novembre 2026 » ;
+  - **phrases de conséquence** (ux-expert) : en attente, « Elle apparaîtra dans le catalogue une fois acceptée. » ; acceptée ou publiée directement, « Elle est publiée dans le catalogue. » ; acceptée avec ajustements, « Elle est publiée dans le catalogue avec ces ajustements. » ;
+  - **présentation** : récapitulatif « proposé → retenu » (`recapitulatif-ajustements.md`) et « Message d'ajustement » pour une acceptée avec ajustements ; « Motif du refus » pour une refusée ; jamais d'adresse de validateur ni de « toi » ;
+  - **état vide** : « Tu n'as encore proposé aucune pose. », avec l'invitation « Proposer une pose » ;
+  - **statut inconnu** (API plus récente que le site) : la carte affiche « Statut indisponible. Recharge la page. » ;
+  - **incidents** : AcroFunJam injoignable (message maîtrisé, « Réessayer », jamais une liste vide) ; session expirée (signalée par la page elle-même, sans le bandeau du site) ; après une déconnexion, les propositions ne sont plus présentées ;
+  - **vérifiés en tests unitaires, sans scénario** : site à mettre à jour, « Réessayer » qui réussit, absence d'adresse et de « toi » à l'écran, statut inconnu, lien de confirmation pour un statut illisible, style information du refus, format des dates.
+
+**Questions tranchées le 2026-11-09 par le porteur du produit** (après l'avis de l'ux-expert)
+- **Q19** Les publications directes figurent dans la liste, statut « Publiée directement », sans date de décision. La façon de les reconnaître (voir R4) est tranchée par l'ADR 0023.
+- **Q20** La plus récemment soumise d'abord, puis l'ordre du catalogue sur le nom (recommandation retenue).
+- **Q21** « Proposée le 3 novembre 2026 » ; date de décision dans le statut (« Acceptée le 5 novembre 2026 »), au jour près, sans heure.
+- **Q22** Statuts « En attente de validation », « Acceptée », « Acceptée avec ajustements », « Refusée » (pas « Non retenue »), « Publiée directement » ; refus en style information ; phrases de conséquence de l'ux-expert ; libellés « Message d'ajustement » (pas « équipe de validation ») et « Motif du refus ». Une proposition acceptée présente la pose retenue (R3).
+- **Q23** Pas d'entrée dans l'en-tête : lien « Mes propositions » sur le catalogue, à côté de « Proposer une pose » ; « Voir mes propositions » dans la confirmation d'une proposition en attente ou au statut illisible, pas d'une publication directe ; page accessible par son adresse, avec retour après connexion.
+- **Q24** Non : pas de lien vers la pose publiée.
+- **Q25** Non : pas de formulaire prérempli pour reproposer une pose refusée.
+- **Q26** Non : pas de notification d'une décision.
+- **Q27** Non : pas de pagination.
+- Rappel **Q11** : sans effet ici (un compte supprimé ne consulte plus rien).
+
+**Reporté** : refonte de l'en-tête (menu repliable sous 640 px), à concevoir avant la prochaine entrée de navigation.
+
+**Ordre d'implémentation conseillé**
+1. API : R1 (un utilisateur consulte, visiteur, compte supprimé) et R2 (seulement ses propositions, liste vide) ;
+2. API : R3 (pose proposée ou retenue, statuts, dates), R7 (motif), R5 et R6 (ajustements et message), R8 (aucun validateur désigné) ;
+3. API : R9 (ordre), R4 (publication directe) ;
+4. Site : accès (catalogue, accès direct, confirmation), présentation par statut, état vide, incidents.
+
+**Termes ajoutés ou révisés dans le glossaire** : Mes propositions (ajouté puis révisé), Publication directe (statut affiché « Publiée directement »).
+
 ### Découpage des stories suivantes (décidé le 2026-11-02)
 1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.
 2. **Proposer une pose** (Contribution) : reprend les règles de contenu de `specs/features/catalogue/publier-une-pose.feature` (brouillon) ; publication directe pour un validateur ou un administrateur.

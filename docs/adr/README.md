@@ -24,3 +24,4 @@
 | [0020](0020-specs-de-contribution-sur-une-vraie-base.md) | Specs @api de Contribution sur une vraie base (amende 0006 et 0009) | accepté |
 | [0021](0021-couche-presentation-du-front-partage.md) | Couche de présentation partagée du front (`core/src/presentation`, complète 0002) | accepté |
 | [0022](0022-decider-d-une-proposition.md) | Décider d'une proposition : mise à jour conditionnelle sur le statut, publication dans la même transaction, adresse e-mail lue à Identité | accepté |
+| [0023](0023-publication-directe-enregistree-et-mes-propositions.md) | Publication directe enregistrée comme un fait (`published_directly`), modèle de lecture « Mes propositions » | accepté |

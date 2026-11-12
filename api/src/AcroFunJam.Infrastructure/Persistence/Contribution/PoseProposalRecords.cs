@@ -23,8 +23,10 @@ internal static class PoseProposalRecords
         _ => throw Invalid(record, $"status '{record.Status}'"),
     };
 
+    /// <summary>As recorded: the rehydration checks that a direct publication is exactly the one of its submission (ADR 0023).</summary>
     private static Acceptance ToAcceptance(PoseProposalRecord record, ProposedPose proposed) =>
-        Acceptance.Of(proposed, ToRetainedPose(record), ToAdjustmentNote(record), DecidedBy(record), DecidedAt(record)) is
+        Acceptance.Restore(
+                proposed, ToRetainedPose(record), ToAdjustmentNote(record), DecidedBy(record), DecidedAt(record), record.PublishedDirectly) is
             { IsSuccess: true } acceptance
             ? acceptance.Value!
             : throw Invalid(record, "adjustment note");
@@ -95,6 +97,7 @@ internal static class PoseProposalRecords
             RetainedCanStartFlow = acceptance?.Retained.Flow.CanStartFlow,
             RetainedCanEndFlow = acceptance?.Retained.Flow.CanEndFlow,
             AdjustmentNote = acceptance?.Note?.Value,
+            PublishedDirectly = acceptance?.IsDirectPublication ?? false,
         };
     }
 }
