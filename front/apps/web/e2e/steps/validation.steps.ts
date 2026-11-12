@@ -73,14 +73,18 @@ Given(
 Given(
   new RegExp(`^(\\S+) a proposé la pose ${aPose}$`),
   async ({ identityApi, contributionApi }, name: string, pose: string, base: string, flyer: string) => {
-    contributionApi.addPending({
+    const email = emailOf(identityApi, name);
+    const proposal = {
       name: pose,
       baseDifficulty: difficultyCode(base),
       flyerDifficulty: difficultyCode(flyer),
       canStartFlow: true,
       canEndFlow: true,
-      contributorEmail: emailOf(identityApi, name),
-    });
+      contributorEmail: email,
+    };
+    // As the API does: a validator's or an administrator's proposal is published directly (story 5, ADR 0023).
+    if ((identityApi.roleOf(email) ?? 'user') !== 'user') contributionApi.addDirectPublication(proposal);
+    else contributionApi.addPending(proposal);
   },
 );
 

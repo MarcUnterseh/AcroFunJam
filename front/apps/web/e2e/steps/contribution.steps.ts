@@ -60,11 +60,13 @@ const pose = (name: string, base: string, flyer: string): PoseToPropose => ({
 
 // --- People -----------------------------------------------------------------------------------
 
+const roles = { utilisateur: 'user', validateur: 'validator', administrateur: 'administrator' } as const;
+
 Given(
-  /^(\w+) est (validateur|administrateur), connecté sur le site$/,
-  async ({ page, identityApi }, name: string, role: string) => {
+  /^(\w+) est (utilisateur|validateur|administrateur), connectée? sur le site$/,
+  async ({ page, identityApi }, name: string, role: keyof typeof roles) => {
     const email = `${name.toLowerCase()}@example.org`;
-    identityApi.addAccount(email, defaultPassword, role === 'validateur' ? 'validator' : 'administrator');
+    identityApi.addAccount(email, defaultPassword, roles[role]);
     identityApi.people.set(name, { email, password: defaultPassword });
     await signInThroughTheSite(page, email, defaultPassword);
     await expectSignedIn(page, email);

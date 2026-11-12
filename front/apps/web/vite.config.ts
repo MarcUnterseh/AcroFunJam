@@ -18,7 +18,7 @@ const designTokens = (): Plugin => {
 
 export default defineConfig({
   plugins: [react(), designTokens()],
-  // Pre-bundled and warmed up at start: the first pages of the e2e runs do not wait for a re-optimisation.
+  // Pre-bundled and warmed up at start: the first pages do not wait for a re-optimisation (the e2e runs use a build).
   optimizeDeps: {
     include: ['react', 'react-dom/client', 'react-router', '@tanstack/react-query', 'openapi-fetch'],
   },

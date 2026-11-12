@@ -1,8 +1,14 @@
-import { proposalLabels, proposalSuccess, type ProposalOutcome } from '@acrofunjam/core';
+import {
+  invitesToSeeMyProposals,
+  myProposalsLabels,
+  proposalLabels,
+  proposalSuccess,
+  type ProposalOutcome,
+} from '@acrofunjam/core';
 import { useEffect, useId, useRef } from 'react';
 import { Link } from 'react-router';
 import { Icon } from '../layout/Icon';
-import { catalogPath } from '../paths';
+import { catalogPath, myProposalsPath } from '../paths';
 
 /**
  * Success panel (docs/design/composants/panneau-succes.md), in place of the form: what became of the proposal,
@@ -44,6 +50,11 @@ export function ProposalSuccess({
         <button type="button" className="button button--primary" onClick={onProposeAnother}>
           {proposalLabels.proposeAnother}
         </button>
+        {invitesToSeeMyProposals(outcome.status) && (
+          <Link to={myProposalsPath} className="button button--secondary link-button">
+            {myProposalsLabels.seeMyProposals}
+          </Link>
+        )}
         <Link to={catalogPath} className="button button--secondary link-button">
           {proposalLabels.seeCatalog}
         </Link>

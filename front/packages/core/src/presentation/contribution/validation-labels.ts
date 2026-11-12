@@ -3,6 +3,7 @@ import type { PoseAdjustment } from '../../domain/contribution/pose-adjustment';
 import type { ValidPoseProposal } from '../../domain/contribution/pose-proposal';
 import type { RejectionReasonError } from '../../domain/contribution/rejection-reason';
 import { validatorTextPolicy } from '../../domain/contribution/validator-text';
+import { dayLabel } from '../shared-kernel/date-labels';
 import { difficultyLevelName } from '../shared-kernel/difficulty-level-labels';
 import { proposalLabels } from './proposal-labels';
 
@@ -101,13 +102,6 @@ export const pendingCountLabel = (count: number): string => {
     : `${count} propositions en attente, de la plus ancienne à la plus récente`;
 };
 
-const submissionDate = new Intl.DateTimeFormat('fr-FR', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-  timeZone: 'Europe/Paris',
-});
-
 /**
  * Line under the name of a proposal: « Proposée par alice@example.org le 3 novembre 2026 », « toi » for the
  * validator's own proposal (decision of 2026-11-04). In three parts: the contributor is emphasised by the apps.
@@ -119,7 +113,7 @@ export const contributorLine = (
   before: 'Proposée par ',
   // An account deleted since (Q11, still open): no address to show.
   contributor: contributor.isYou ? 'toi' : (contributor.email ?? 'un compte supprimé'),
-  after: ` le ${submissionDate.format(submittedAt)}`,
+  after: ` le ${dayLabel(submittedAt)}`,
 });
 
 /** A decision recorded by the API, as the report that replaces its card presents it. */

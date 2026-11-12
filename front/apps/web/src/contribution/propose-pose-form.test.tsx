@@ -320,6 +320,40 @@ describe('form « Proposer une pose »', () => {
       await waitFor(() => expect(screen.getByLabelText('Adresse courante')).toHaveTextContent(/^\/$/));
     });
 
+    // Story 5 (Q23): where the contributor follows what was just sent.
+    it.each(['pending', 'received'] as const)(
+      'should offer to see my proposals, between proposing another pose and seeing the catalog, when the proposal is %s',
+      async (status) => {
+        const contribution = new FakeContributionGateway(ok({ status, name: 'Throne' }));
+        const { user } = await openForm({ contribution });
+        await fillThrone(user);
+
+        await user.click(submitButton());
+
+        const link = await screen.findByRole('link', { name: 'Voir mes propositions' });
+        expect(link).toHaveAttribute('href', '/mes-propositions');
+        expect(link).toHaveClass('button--secondary');
+        const actions = link.parentElement as HTMLElement;
+        expect([...actions.children].map((action) => action.textContent)).toEqual([
+          'Proposer une autre pose',
+          'Voir mes propositions',
+          'Voir le catalogue',
+        ]);
+      },
+    );
+
+    it('should not offer to see my proposals when the pose is published directly', async () => {
+      const contribution = new FakeContributionGateway(ok({ status: 'published', name: 'Throne' }));
+      const { user } = await openForm({ contribution });
+      await fillThrone(user);
+
+      await user.click(submitButton());
+
+      await screen.findByRole('heading', { level: 2, name: 'La pose « Throne » est publiée.' });
+      expect(screen.getByRole('link', { name: 'Voir le catalogue' })).toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Voir mes propositions' })).not.toBeInTheDocument();
+    });
+
     it.each([
       [
         'name-already-in-catalog',

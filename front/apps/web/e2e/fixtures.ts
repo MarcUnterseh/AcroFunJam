@@ -2,11 +2,13 @@ import type { Page } from '@playwright/test';
 import { test as base, createBdd } from 'playwright-bdd';
 import { CatalogPage } from './pages/catalog-page';
 import { IdentityForm, SiteHeader } from './pages/identity-pages';
+import { MyProposalsPage } from './pages/my-proposals-page';
 import { ProposalForm } from './pages/proposal-form';
 import { ValidationPage } from './pages/validation-page';
 import { CatalogApi } from './support/catalog-api';
 import { ContributionApi } from './support/contribution-api';
 import { IdentityApi } from './support/identity-api';
+import { MyProposalsApi } from './support/my-proposals-api';
 import { ValidationApi } from './support/validation-api';
 
 type Fixtures = {
@@ -14,9 +16,11 @@ type Fixtures = {
   identityApi: IdentityApi;
   contributionApi: ContributionApi;
   validationApi: ValidationApi;
+  myProposalsApi: MyProposalsApi;
   catalogPage: CatalogPage;
   proposalForm: ProposalForm;
   validationPage: ValidationPage;
+  myProposalsPage: MyProposalsPage;
   header: SiteHeader;
   signInForm: IdentityForm;
   registrationForm: IdentityForm;
@@ -59,9 +63,18 @@ export const test = base.extend<Fixtures>({
     },
     { auto: true },
   ],
+  myProposalsApi: [
+    async ({ context, identityApi, contributionApi }, use) => {
+      const api = new MyProposalsApi(context, identityApi, contributionApi);
+      await api.start();
+      await use(api);
+    },
+    { auto: true },
+  ],
   catalogPage: async ({ page }, use) => use(new CatalogPage(page)),
   proposalForm: async ({ page }, use) => use(new ProposalForm(page)),
   validationPage: async ({ page }, use) => use(new ValidationPage(page)),
+  myProposalsPage: async ({ page }, use) => use(new MyProposalsPage(page)),
   header: async ({ page }, use) => use(new SiteHeader(page)),
   signInForm: async ({ page }, use) => use(new IdentityForm(page, 'Se connecter')),
   registrationForm: async ({ page }, use) => use(new IdentityForm(page, "S'inscrire")),

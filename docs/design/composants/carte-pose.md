@@ -4,6 +4,8 @@ Présentation d'une pose publiée dans la grille du catalogue. Remplace le table
 
 Story 4 : la carte de proposition (`carte-proposition.md`) reprend son conteneur, son `h2` et sa `dl` **sans les modifier**, pour que le validateur voie la pose telle qu'elle sera publiée. Toute évolution de la `dl` ici s'applique aussi là.
 
+Story 5 : la carte « ma proposition » (`carte-ma-proposition.md`) reprend aussi la `dl` sans la modifier (pose retenue pour une proposition acceptée, pose proposée sinon). Même règle : une évolution de la `dl` vaut pour les trois cartes.
+
 ## Structure
 
 ```

@@ -1,6 +1,7 @@
-import { fail, ok, type CatalogGateway, type DifficultyLevel, type PoseSummary } from '@acrofunjam/core';
+import { fail, ok, type CatalogGateway, type PoseSummary } from '@acrofunjam/core';
 import type { ApiClient } from '../client';
 import type { components } from '../generated/schema';
+import { isDifficultyCode } from '../shared-kernel/difficulty-codes';
 
 type PoseSummaryResponse = components['schemas']['PoseSummaryResponse'];
 
@@ -10,19 +11,10 @@ const unexpectedResponse = {
   message: 'Le catalogue a renvoyé une réponse inattendue.',
 };
 
-const difficultyLevels: readonly string[] = [
-  'discovery',
-  'beginner',
-  'intermediate',
-  'advanced',
-] satisfies readonly DifficultyLevel[];
-
 // The generated types describe the contract, but the server may evolve before the client is regenerated.
-const isDifficultyLevel = (code: string): code is DifficultyLevel => difficultyLevels.includes(code);
-
 const isKnown = (pose: PoseSummaryResponse): boolean =>
-  isDifficultyLevel(pose.baseDifficulty) &&
-  isDifficultyLevel(pose.flyerDifficulty) &&
+  isDifficultyCode(pose.baseDifficulty) &&
+  isDifficultyCode(pose.flyerDifficulty) &&
   typeof pose.canStartFlow === 'boolean' &&
   typeof pose.canEndFlow === 'boolean';
 

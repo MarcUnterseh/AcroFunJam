@@ -161,7 +161,7 @@ export function ValidationQueue({ owner }: { readonly owner: string }) {
   switch (queue.status) {
     case 'loading':
       return (
-        <p role="status" className="validation-page__status">
+        <p role="status" className="follow-up-page__status">
           {validationLabels.loading}
         </p>
       );
@@ -175,9 +175,9 @@ export function ValidationQueue({ owner }: { readonly owner: string }) {
   if (proposals.length === 0) return <EmptyQueue />;
   return (
     <>
-      <p className="validation-page__introduction">{validationLabels.introduction}</p>
+      <p className="follow-up-page__introduction">{validationLabels.introduction}</p>
       {/* Not a live region: each decision already has its report, which takes the focus. */}
-      <p className="validation-page__count">{pendingCountLabel(proposals.length - Object.keys(decided).length)}</p>
+      <p className="follow-up-page__count">{pendingCountLabel(proposals.length - Object.keys(decided).length)}</p>
       {/* role="list" restores the list semantics that some browsers drop with "list-style: none". */}
       <ul className="validation-queue" role="list">
         {proposals.map((proposal) => (

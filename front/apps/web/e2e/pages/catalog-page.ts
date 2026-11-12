@@ -17,6 +17,10 @@ export class CatalogPage {
     await this.page.goto('/');
   }
 
+  isOpen(): boolean {
+    return this.page.url().startsWith('http') && new URL(this.page.url()).pathname === '/';
+  }
+
   get emptyCatalogMessage() {
     return this.page.getByText('Le catalogue ne contient encore aucune pose.');
   }
@@ -46,6 +50,11 @@ export class CatalogPage {
 
   get proposePoseLinks() {
     return this.page.getByRole('link', { name: 'Proposer une pose' });
+  }
+
+  /** « Mes propositions » (story 5), next to « Proposer une pose ». */
+  get myProposalsLink() {
+    return this.page.getByRole('main').getByRole('link', { name: 'Mes propositions', exact: true });
   }
 
   get loadingFailure() {

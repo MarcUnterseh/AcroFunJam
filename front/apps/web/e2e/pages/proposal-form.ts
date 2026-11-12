@@ -98,6 +98,11 @@ export class ProposalForm {
     await this.page.getByRole('button', { name: 'Proposer une autre pose' }).click();
   }
 
+  /** « Voir mes propositions », after a proposal pending validation (story 5). */
+  get seeMyProposalsLink() {
+    return this.page.getByRole('link', { name: 'Voir mes propositions' });
+  }
+
   async seeCatalog(): Promise<void> {
     await this.page.getByRole('link', { name: 'Voir le catalogue' }).click();
   }

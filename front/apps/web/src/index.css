@@ -362,6 +362,13 @@ main {
   margin: 0;
 }
 
+/* Actions of the page header (lien-bouton.md, story 5): stacked, full width, on mobile. */
+.page-header__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--afj-spacing-sm);
+}
+
 /* --- Link-button (docs/design/composants/lien-bouton.md) ------------------------------------ */
 
 /* Mobile: full width, the label may wrap rather than overflow. */
@@ -816,32 +823,34 @@ main {
   background: var(--afj-color-badge);
 }
 
-/* --- Page « Propositions à valider » (docs/design/ecrans/4-valider-une-proposition.md) -------- */
+/* --- Pages of follow-up: « Propositions à valider » and « Mes propositions » ------------------ */
+
+/* docs/design/ecrans/4-valider-une-proposition.md and 5-mes-propositions.md */
 
 /* One column aligned left: the content of a card is formWideMaxWidth wide (four tiles on a line). */
-.validation-page {
+.follow-up-page {
   max-width: calc(
     var(--afj-size-form-wide-max-width) + 2 * var(--afj-spacing-lg) + 2 * var(--afj-size-border-width)
   );
 }
 
-.validation-page h1 {
+.follow-up-page h1 {
   margin-bottom: var(--afj-spacing-sm);
 }
 
-.validation-page__status,
-.validation-page__introduction,
-.validation-page__count {
+.follow-up-page__status,
+.follow-up-page__introduction,
+.follow-up-page__count {
   margin: 0 0 var(--afj-spacing-sm);
   color: var(--afj-color-text-muted);
 }
 
-.validation-page__count {
+.follow-up-page__count {
   margin-bottom: var(--afj-spacing-lg);
 }
 
-.validation-page > .form-alert,
-.validation-page > .catalog-empty {
+.follow-up-page > .form-alert,
+.follow-up-page > .catalog-empty {
   margin-top: var(--afj-spacing-lg);
 }
 
@@ -1030,6 +1039,90 @@ main {
   margin: calc(var(--afj-spacing-sm) - var(--afj-spacing-lg)) 0 0;
   font-size: var(--afj-font-size-sm);
   color: var(--afj-color-text-muted);
+}
+
+/* --- Page « Mes propositions » (docs/design/ecrans/5-mes-propositions.md) ------------------- */
+
+/* Card of a proposal of the requester (carte-ma-proposition.md): the container of the proposal card. */
+.my-proposal__submitted {
+  margin: 0 0 var(--afj-spacing-md);
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+.my-proposal__decision {
+  display: grid;
+  gap: var(--afj-spacing-md);
+}
+
+/* The pose comes after the decision, under a divider. */
+.my-proposal__pose {
+  margin-top: var(--afj-spacing-md);
+  padding-top: var(--afj-spacing-md);
+  border-top: var(--afj-size-border-width) solid var(--afj-color-divider);
+}
+
+/* Status (statut-proposition.md): no surface nor bar, the icon carries the tone. */
+.my-proposal-status {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--afj-spacing-sm);
+}
+
+.my-proposal-status .icon {
+  color: var(--afj-color-text-muted);
+}
+
+.my-proposal-status--success .icon {
+  color: var(--afj-color-success);
+}
+
+.my-proposal-status--information .icon {
+  color: var(--afj-color-info);
+}
+
+.my-proposal-status__text {
+  margin: 0;
+  font-weight: var(--afj-font-weight-semibold);
+  line-height: var(--afj-line-height-tight);
+  overflow-wrap: anywhere;
+}
+
+.my-proposal-status__consequence {
+  margin: var(--afj-spacing-xs) 0 0;
+  color: var(--afj-color-text-muted);
+}
+
+/* Contributor variant of the summary: no zone around it, its own spacings. */
+.my-proposal__adjustments .proposal-card__zone-title {
+  margin-bottom: var(--afj-spacing-xs);
+}
+
+.my-proposal__adjustments .adjustment-summary__key {
+  margin: 0 0 var(--afj-spacing-sm);
+}
+
+.my-proposal__adjustments .adjustment-summary__rest {
+  margin: var(--afj-spacing-sm) 0 0;
+}
+
+/* Message of adjustment, reason of a rejection: a label, then the text of the validator, unquoted. */
+.my-proposal__validator-text {
+  display: grid;
+  gap: var(--afj-spacing-xs);
+}
+
+.my-proposal__validator-text p {
+  margin: 0;
+}
+
+.my-proposal__validator-text-label {
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.my-proposal__validator-text-content {
+  overflow-wrap: anywhere;
 }
 
 /* Report of a decision (docs/design/composants/compte-rendu-decision.md), in place of the card. */
@@ -1228,6 +1321,12 @@ main {
     white-space: nowrap;
   }
 
+  /* Side by side, the width of their content; under the title, aligned left, when the row lacks room. */
+  .page-header__actions {
+    flex-flow: row wrap;
+    gap: var(--afj-spacing-md);
+  }
+
   .catalog-empty .link-button {
     align-self: flex-start;
   }
@@ -1255,8 +1354,9 @@ main {
     border-radius: var(--afj-radius-lg);
   }
 
+  /* Three actions do not always fit on a line: the last one goes under, aligned left (panneau-succes.md). */
   .proposal-success__actions {
-    flex-direction: row;
+    flex-flow: row wrap;
     gap: var(--afj-spacing-md);
   }
 

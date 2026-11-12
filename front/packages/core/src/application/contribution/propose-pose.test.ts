@@ -13,6 +13,10 @@ class FakeGateway implements ContributionGateway {
     this.sent.push(proposal);
     return this.answer;
   }
+
+  async getMyProposals(): Promise<never> {
+    throw new Error('Not expected in these tests');
+  }
 }
 
 class FakeStore implements ProposalInputStore {

@@ -7,6 +7,9 @@ export const proposePosePath = '/proposer-une-pose';
 /** Page « Propositions à valider » (story 4), for validators and administrators only. */
 export const validationPath = '/propositions-a-valider';
 
+/** Page « Mes propositions » (story 5), for a signed-in person who may propose. */
+export const myProposalsPath = '/mes-propositions';
+
 export const signInPagePath = '/connexion';
 export const registrationPagePath = '/inscription';
 

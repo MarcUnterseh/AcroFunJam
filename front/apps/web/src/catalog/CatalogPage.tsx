@@ -1,10 +1,10 @@
-import { catalogLabels, poseCountLabel, type PoseSummary } from '@acrofunjam/core';
+import { catalogLabels, myProposalsLabels, poseCountLabel, type PoseSummary } from '@acrofunjam/core';
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useAnnounce } from '../layout/Announcer';
 import { focusPageTitle } from '../layout/focus';
 import { Icon } from '../layout/Icon';
-import { proposePosePath } from '../paths';
+import { myProposalsPath, proposePosePath } from '../paths';
 import { DifficultyLegend } from './DifficultyLegend';
 import { PoseList } from './PoseList';
 import { usePublishedPoses } from './usePublishedPoses';
@@ -15,6 +15,15 @@ function ProposePoseLink() {
     <Link to={proposePosePath} className="button button--primary link-button">
       <Icon name="plus" />
       {catalogLabels.proposePose}
+    </Link>
+  );
+}
+
+/** Secondary link-button, without icon: « Proposer une pose » stays the only main action (lien-bouton.md). */
+function MyProposalsLink() {
+  return (
+    <Link to={myProposalsPath} className="button button--secondary link-button">
+      {myProposalsLabels.catalogLink}
     </Link>
   );
 }
@@ -74,7 +83,8 @@ type CatalogPageProps = {
 
 /**
  * Catalog (docs/design/ecrans/3-proposer-une-pose.md): title, then count, legend and cards, or a state.
- * The "Proposer une pose" link only appears once the poses are received, so that it never moves.
+ * The links "Proposer une pose" and "Mes propositions" only appear once the poses are received (or could not
+ * be), so that they never move; « Proposer une pose » is in the empty block when the catalog is empty.
  */
 export function CatalogPage({ canPropose = false }: CatalogPageProps) {
   const { data: poses, error, refetch } = usePublishedPoses();
@@ -107,7 +117,13 @@ export function CatalogPage({ canPropose = false }: CatalogPageProps) {
     <>
       <div className="page-header">
         <h1 tabIndex={-1}>{catalogLabels.title}</h1>
-        {canPropose && poses !== undefined && poses.length > 0 && <ProposePoseLink />}
+        {/* Once the poses are received or could not be: nothing moves while loading (story 5, Q23). */}
+        {canPropose && (poses !== undefined || error || retrying) && (
+          <div className="page-header__actions">
+            {poses !== undefined && poses.length > 0 && <ProposePoseLink />}
+            <MyProposalsLink />
+          </div>
+        )}
       </div>
       {content}
     </>

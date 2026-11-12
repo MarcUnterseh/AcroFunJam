@@ -1,7 +1,14 @@
 import type { BrowserContext, Route } from '@playwright/test';
 import type { components } from '@acrofunjam/api-client/schema';
 import type { CatalogApi, DifficultyCode } from './catalog-api';
-import { keyOf, normalised, type ContributionApi, type PendingProposal } from './contribution-api';
+import {
+  keyOf,
+  normalised,
+  type ContributionApi,
+  type PendingProposal,
+  type PoseValues,
+  type ProposalDecision,
+} from './contribution-api';
 import type { IdentityApi } from './identity-api';
 
 type ValidationQueueResponse = components['schemas']['ValidationQueueResponse'];
@@ -18,6 +25,8 @@ export type SentDecision =
   | { kind: 'rejection'; id: string; body: RejectPoseProposalRequest };
 
 const maxValidatorTextLength = 500;
+/** Every decision is taken on 8 November 2026 (after the submissions, one day apart from 1 November). */
+const decisionDate = new Date(Date.UTC(2026, 10, 8, 10)).toISOString();
 const normalisedText = (text: string | null | undefined) =>
   (text ?? '').split(/\s+/u).filter(Boolean).join(' ');
 
@@ -48,12 +57,26 @@ export class ValidationApi {
     return this.contributionApi.pending;
   }
 
-  /** A decision taken elsewhere meanwhile (another validator, another tab): accepted as proposed. */
-  acceptElsewhere(name: string): void {
+  /**
+   * A decision taken elsewhere (another validator, another tab, before the scenario): accepted, as proposed or
+   * with the adjustments and the message given.
+   */
+  acceptElsewhere(name: string, adjustments: AcceptPoseProposalRequest | null = null): void {
+    const proposal = this.pendingProposal(name);
+    const retained = this.retained(proposal, adjustments);
+    this.decide(proposal, this.acceptance(retained, normalisedText(adjustments?.message) || null));
+    this.catalogApi.publish(retained);
+  }
+
+  /** A rejection decided elsewhere (before the scenario), with its reason. */
+  rejectElsewhere(name: string, reason: string): void {
+    this.decide(this.pendingProposal(name), this.rejection(normalisedText(reason)));
+  }
+
+  private pendingProposal(name: string): PendingProposal {
     const proposal = this.contributionApi.pending.find((pending) => pending.name === name);
     if (!proposal) throw new Error(`Aucune proposition en attente de la pose ${name}`);
-    this.decide(proposal);
-    this.catalogApi.publish(this.retained(proposal, null));
+    return proposal;
   }
 
   async start(): Promise<void> {
@@ -123,7 +146,7 @@ export class ValidationApi {
     if (note !== '' && !adjusted)
       return this.problem(route, 422, 'contribution.adjustment-note-without-adjustment');
 
-    this.decide(proposal);
+    this.decide(proposal, this.acceptance(retained, note || null));
     this.catalogApi.publish(retained);
     const answer: AcceptedPoseProposalResponse = { id, status: 'accepted', adjusted, ...retained };
     return route.fulfill({ json: answer });
@@ -141,18 +164,26 @@ export class ValidationApi {
     const proposal = this.contributionApi.pending.find((pending) => pending.id === id);
     if (!proposal) return this.problem(route, 404, 'contribution.proposal-not-found');
 
-    this.decide(proposal);
+    this.decide(proposal, this.rejection(reason));
     const answer: RejectedPoseProposalResponse = { id, status: 'rejected' };
     return route.fulfill({ json: answer });
   }
 
-  private decide(proposal: PendingProposal): void {
-    this.contributionApi.removePending(proposal.id);
+  private decide(proposal: PendingProposal, decision: ProposalDecision): void {
+    this.contributionApi.decide(proposal.id, decision);
     this.decided.set(proposal.id, proposal);
   }
 
+  private acceptance(retained: PoseValues, message: string | null): ProposalDecision {
+    return { kind: 'accepted', retained, message, decidedAt: decisionDate };
+  }
+
+  private rejection(reason: string): ProposalDecision {
+    return { kind: 'rejected', reason, decidedAt: decisionDate };
+  }
+
   /** The proposed pose with the adjustments of the request: an absent or null value keeps the proposed one. */
-  private retained(proposal: PendingProposal, body: AcceptPoseProposalRequest | null) {
+  private retained(proposal: PendingProposal, body: AcceptPoseProposalRequest | null): PoseValues {
     return {
       name: body?.name != null ? normalised(body.name) : proposal.name,
       baseDifficulty: (body?.baseDifficulty ?? proposal.baseDifficulty) as DifficultyCode,

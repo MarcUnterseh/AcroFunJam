@@ -47,6 +47,11 @@ export class IdentityApi {
     account.role = role;
   }
 
+  /** The role of a known account, or undefined. */
+  roleOf(email: string): Role | undefined {
+    return this.accounts.get(email.toLowerCase())?.role;
+  }
+
   get isUnreachable(): boolean {
     return this.unreachable;
   }
@@ -76,6 +81,11 @@ export class IdentityApi {
   }
 
   private readonly expired = new Map<string, string>();
+
+  /** The scenario expired the session of this person (see expireSessionsOf). */
+  hasExpiredSession(email: string): boolean {
+    return [...this.expired.values()].some((owner) => owner.toLowerCase() === email.toLowerCase());
+  }
 
   /** Sessions expired by the scenario become valid again (see beforeTheIncidents); returns them. */
   restoreExpiredSessions(): Map<string, string> {

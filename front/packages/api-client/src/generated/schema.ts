@@ -132,6 +132,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/contribution/my-pose-proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetMyPoseProposals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/identity/register": {
         parameters: {
             query?: never;
@@ -627,8 +643,16 @@ export interface components {
             expiresIn: number | string;
             refreshToken: string;
         };
+        DifficultyAdjustmentResponse: {
+            proposed: components["schemas"]["DifficultyCode"];
+            retained: components["schemas"]["DifficultyCode"];
+        };
         /** @enum {unknown} */
         DifficultyCode: "discovery" | "beginner" | "intermediate" | "advanced";
+        FlowAdjustmentResponse: {
+            proposed: boolean;
+            retained: boolean;
+        };
         ForgotPasswordRequest: {
             email: string;
         };
@@ -663,6 +687,32 @@ export interface components {
             role: string;
             capabilities: string[];
         };
+        MyPoseProposalResponse: {
+            /** Format: uuid */
+            id: string;
+            status: components["schemas"]["MyProposalStatusCode"];
+            name: string;
+            baseDifficulty: components["schemas"]["DifficultyCode"];
+            flyerDifficulty: components["schemas"]["DifficultyCode"];
+            canStartFlow: boolean;
+            canEndFlow: boolean;
+            /** Format: date-time */
+            submittedAt: string;
+            /** Format: date-time */
+            decidedAt: null | string;
+            adjustments: null | components["schemas"]["PoseAdjustmentsResponse"];
+            message: null | string;
+            reason: null | string;
+        };
+        MyPoseProposalsResponse: {
+            proposals: components["schemas"]["MyPoseProposalResponse"][];
+        };
+        /** @enum {unknown} */
+        MyProposalStatusCode: "pending" | "accepted" | "accepted-with-adjustments" | "rejected" | "published-directly";
+        NameAdjustmentResponse: {
+            proposed: string;
+            retained: string;
+        };
         PendingCountResponse: {
             /** Format: int32 */
             count: number | string;
@@ -678,6 +728,13 @@ export interface components {
             contributor: components["schemas"]["ProposalContributorResponse"];
             /** Format: date-time */
             submittedAt: string;
+        };
+        PoseAdjustmentsResponse: {
+            name: null | components["schemas"]["NameAdjustmentResponse"];
+            baseDifficulty: null | components["schemas"]["DifficultyAdjustmentResponse"];
+            flyerDifficulty: null | components["schemas"]["DifficultyAdjustmentResponse"];
+            canStartFlow: null | components["schemas"]["FlowAdjustmentResponse"];
+            canEndFlow: null | components["schemas"]["FlowAdjustmentResponse"];
         };
         PoseListResponse: {
             poses: components["schemas"]["PoseSummaryResponse"][];
@@ -1112,6 +1169,44 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetMyPoseProposals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyPoseProposalsResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

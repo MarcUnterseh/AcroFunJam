@@ -40,6 +40,11 @@ Une couleur d'accent (primaire), des neutres, et trois couleurs de retour (dange
 | `badge` | `#343A40` gris anthracite | fond de la pastille de compteur (en-tête), story 4 |
 | `badgeContrast` | `#FFFFFF` | chiffres de la pastille, story 4 |
 
+### Story 5 (proposition du 2026-11-09) : aucun nouveau token
+
+- Statut d'une proposition (`composants/statut-proposition.md`) : icône colorée + mot en semi-gras, **sans surface colorée** (un état durable n'est ni une alerte ni un compte rendu). Tons : succès (`success`) pour acceptée, acceptée avec ajustements et publiée directement ; information (`info`) pour refusée, jamais `danger` ; neutre (`textMuted`) pour en attente et statut inconnu. Contrastes des icônes sur `surface` : 5,8:1 pour les trois.
+- `success` sur `surface` : **5,8:1** (nouveau couple vérifié, l'icône était jusqu'ici sur `successSurface` ou `background`).
+
 ### Ajouts de la story 4 (proposition du 2026-11-04)
 
 - `badge` / `badgeContrast` : la pastille du nombre de propositions à valider est **neutre et sombre**. Ni terre cuite (réservé à l'action principale), ni rouge (des propositions en attente ne sont pas une urgence, et l'`ux-expert` veut éviter toute pression à accepter). Le chiffre porte l'information ; le contraste sombre / clair suffit à attirer l'œil.
@@ -98,6 +103,7 @@ Composants et éléments graphiques (seuil 3:1) :
 | `selected` (bordure de tuile cochée, radio) | `background` / `surface` / `selectedSurface` | 7,3:1 / 6,9:1 / 6,7:1 |
 | `border` (tuile au repos, point vide de l'échelle, bouton « Réessayer ») | `background` / `surface` / `dangerSurface` | 3,3:1 / 3,2:1 / 3,1:1 |
 | `success` (icône du panneau de succès) | `successSurface` | 5,7:1 |
+| `success` / `info` / `textMuted` (icône du statut d'une proposition, story 5) | `surface` | 5,8:1 / 5,8:1 / 5,8:1 |
 | `text` (point plein de l'échelle) | `surface` | 14,6:1 |
 | `badge` (forme de la pastille) | `surface` / `surfaceHover` / `divider` (états du lien de l'en-tête) | 10,9:1 / 10,4:1 / 8,8:1 |
 | `textMuted` (flèche et barré du récapitulatif) | `background` | 6,1:1 |
@@ -146,7 +152,7 @@ Rien en dessous de 14 px. Les champs restent à 16 px (évite le zoom automatiqu
 
 ## Icônes
 
-Mises en œuvre en 2b : erreur (cercle + point d'exclamation), information (cercle + « i ») ; le bouton du mot de passe est en texte seul (pas d'œil). Story 3 : **coche** et **tiret** (valeurs Oui / Non des cartes, `sizes.icon`), **plus** (lien « Proposer une pose »), **succès** (cercle + coche, `sizes.iconLarge`). Story 4 : **flèche vers la droite** (récapitulatif « proposé → retenu »), succès en `sizes.icon` (compte rendu de décision) ; aucune icône sur les boutons de décision (poids égal). SVG en ligne dessinés dans le dépôt (trait 2 px sur une grille de 20, `currentColor`, `aria-hidden="true"` car toujours accompagnés d'un texte), **sans bibliothèque d'icônes** (une bibliothèque demanderait un ADR).
+Mises en œuvre en 2b : erreur (cercle + point d'exclamation), information (cercle + « i ») ; le bouton du mot de passe est en texte seul (pas d'œil). Story 3 : **coche** et **tiret** (valeurs Oui / Non des cartes, `sizes.icon`), **plus** (lien « Proposer une pose »), **succès** (cercle + coche, `sizes.iconLarge`). Story 4 : **flèche vers la droite** (récapitulatif « proposé → retenu »), succès en `sizes.icon` (compte rendu de décision) ; aucune icône sur les boutons de décision (poids égal). Story 5 : **horloge** (proposition en attente, `composants/statut-proposition.md`), même cadran que erreur et information ; le lien « Mes propositions » est sans icône. SVG en ligne dessinés dans le dépôt (trait 2 px sur une grille de 20, `currentColor`, `aria-hidden="true"` car toujours accompagnés d'un texte), **sans bibliothèque d'icônes** (une bibliothèque demanderait un ADR).
 
 ## Mouvement
 

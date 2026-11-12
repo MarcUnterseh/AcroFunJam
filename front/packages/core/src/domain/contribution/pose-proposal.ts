@@ -24,14 +24,17 @@ export type PoseContentErrorCode =
 
 export type ProposalFieldError = { readonly field: ProposalField; readonly code: PoseContentErrorCode };
 
-/** A proposal the site may send: every rule it can check is met (the API checks the uniqueness of the name). */
-export type ValidPoseProposal = {
+/** The content of a pose, whether proposed or retained: its name, its two difficulties and its flow indicators. */
+export type PoseContent = {
   readonly name: PoseName;
   readonly baseDifficulty: DifficultyLevel;
   readonly flyerDifficulty: DifficultyLevel;
   readonly canStartFlow: boolean;
   readonly canEndFlow: boolean;
 };
+
+/** A proposal the site may send: every rule it can check is met (the API checks the uniqueness of the name). */
+export type ValidPoseProposal = PoseContent;
 
 export const emptyPoseProposalInput: PoseProposalInput = {
   name: '',

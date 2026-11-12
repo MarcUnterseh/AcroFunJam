@@ -31,7 +31,7 @@ export function ValidationPage() {
   if (session.status === 'signedIn' && !allowed) return <Navigate to={catalogPath} replace />;
 
   return (
-    <section className="validation-page">
+    <section className="follow-up-page">
       <h1 tabIndex={-1}>{validationLabels.title}</h1>
       {owner && <ValidationQueue key={owner} owner={owner} />}
     </section>

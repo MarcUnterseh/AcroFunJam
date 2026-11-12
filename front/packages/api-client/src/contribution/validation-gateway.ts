@@ -4,7 +4,6 @@ import {
   type Acceptance,
   type AccessFailure,
   type DecisionFailure,
-  type DifficultyLevel,
   type PendingProposal,
   type PoseAdjustment,
   type PoseName,
@@ -13,21 +12,15 @@ import {
 } from '@acrofunjam/core';
 import type { ApiClient } from '../client';
 import type { components } from '../generated/schema';
+import { isDifficultyCode } from '../shared-kernel/difficulty-codes';
 
 type PendingPoseProposalResponse = components['schemas']['PendingPoseProposalResponse'];
 type AcceptPoseProposalRequest = components['schemas']['AcceptPoseProposalRequest'];
 
-const difficultyLevels: readonly string[] = [
-  'discovery',
-  'beginner',
-  'intermediate',
-  'advanced',
-] satisfies readonly DifficultyLevel[];
-
 // The generated types describe the contract, but the server may evolve before the client is regenerated.
 const isReadable = (proposal: PendingPoseProposalResponse): boolean =>
-  difficultyLevels.includes(proposal.baseDifficulty) &&
-  difficultyLevels.includes(proposal.flyerDifficulty) &&
+  isDifficultyCode(proposal.baseDifficulty) &&
+  isDifficultyCode(proposal.flyerDifficulty) &&
   typeof proposal.canStartFlow === 'boolean' &&
   typeof proposal.canEndFlow === 'boolean' &&
   !Number.isNaN(Date.parse(proposal.submittedAt));

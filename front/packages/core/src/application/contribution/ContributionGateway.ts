@@ -1,4 +1,5 @@
 import type { Result } from '../../domain/common/result';
+import type { MyProposal } from '../../domain/contribution/my-pose-proposal';
 import type { ValidPoseProposal } from '../../domain/contribution/pose-proposal';
 
 /** What became of a received proposal, as stated by the API (never guessed from the role): ADR 0019. */
@@ -22,7 +23,17 @@ export type ProposalFailure =
    */
   | { readonly kind: 'outdated' };
 
+/** Why the API did not give the proposals of the requester (« Mes propositions », story 5). */
+export type MyProposalsFailure =
+  /** Visitor, expired session or deleted account (401, ADR 0018): the site handles it as an expired session. */
+  | { readonly kind: 'unauthenticated' }
+  | { readonly kind: 'unreachable' }
+  /** An answer the site cannot read (unknown refusal, unreadable pose): it must be reloaded (ADR 0019). */
+  | { readonly kind: 'outdated' };
+
 /** Port: the Contribution API (implemented by @acrofunjam/api-client). */
 export interface ContributionGateway {
   proposePose(proposal: ValidPoseProposal): Promise<Result<ProposalOutcome, ProposalFailure>>;
+  /** The proposals of the requester, the most recently submitted first (the order is guaranteed by the API). */
+  getMyProposals(): Promise<Result<readonly MyProposal[], MyProposalsFailure>>;
 }

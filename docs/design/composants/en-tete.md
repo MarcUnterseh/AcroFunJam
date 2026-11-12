@@ -70,7 +70,7 @@ Bouton « Se déconnecter » à l'état « en cours » (« Déconnexion… »), 
 
 ## Navigation de contribution (story 4)
 
-Une `nav` distincte de « Compte » (nom proposé : **« Contribution »**, qui pourra accueillir « Suivre mes propositions » en story 5). Elle n'existe que pour une personne connectée qui est validateur ou administrateur : **absente** (pas masquée, pas grisée) pour un visiteur, un utilisateur, et tant que la session est en attente.
+Une `nav` distincte de « Compte » (nom proposé : **« Contribution »** ; la story 5 n'y ajoute **pas** « Mes propositions » (décision Q23 du 2026-11-09 : entrée sur le catalogue, refonte de l'en-tête à concevoir avant la prochaine entrée de navigation)). Elle n'existe que pour une personne connectée qui est validateur ou administrateur : **absente** (pas masquée, pas grisée) pour un visiteur, un utilisateur, et tant que la session est en attente.
 
 Contenu en story 4 : un seul lien, « Propositions à valider », vers `/propositions-a-valider`, suivi de la pastille du nombre de propositions en attente (`pastille-compteur.md`).
 

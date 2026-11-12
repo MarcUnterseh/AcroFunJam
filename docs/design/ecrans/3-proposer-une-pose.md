@@ -8,7 +8,7 @@ Gabarit commun (en-tête, bandeau, `main`, annonce de statut) : `2b-se-connecter
 
 ### Ordre du contenu
 
-1. En-tête de page : `h1` « Catalogue des poses » + lien-bouton primaire « Proposer une pose » (**personne connectée seulement** ; absent, et non masqué, pour un visiteur ou tant que la session est en attente) ;
+1. En-tête de page : `h1` « Catalogue des poses » + lien-bouton primaire « Proposer une pose » (**personne connectée seulement** ; absent, et non masqué, pour un visiteur ou tant que la session est en attente). **Story 5** : suivi du lien-bouton secondaire « Mes propositions », dans un groupe d'actions (`../composants/lien-bouton.md`, « Groupe d'actions de l'en-tête de page » ; `5-mes-propositions.md`, « Entrées ») ;
 2. nombre de poses : « 12 poses, par ordre alphabétique » (« 1 pose, … » au singulier) ;
 3. légende de l'échelle puis avertissement de responsabilité (`legende-echelle.md`) ;
 4. grille des cartes (`ul` > `li` > `carte-pose.md`).
@@ -119,7 +119,7 @@ Gabarit commun (en-tête, bandeau, `main`, annonce de statut) : `2b-se-connecter
 ```
 
 - Bloc : fond `surface`, contour `borderWidth` `divider`, rayon `radius.md`, padding `spacing.lg` ; texte aligné à gauche ; lien pleine largeur en mobile, largeur du contenu ensuite.
-- Le lien de l'en-tête de page **n'est pas répété** dans l'état vide : un seul « Proposer une pose » par page (à confirmer par l'`ux-expert`).
+- Le lien de l'en-tête de page **n'est pas répété** dans l'état vide : un seul « Proposer une pose » par page (à confirmer par l'`ux-expert`). Story 5 : « Mes propositions » (secondaire) reste, lui, dans l'en-tête de page du catalogue vide.
 - Ni nombre (« 0 pose »), ni légende, ni avertissement : il n'y a rien à lire avec.
 - Visiteur : seulement la première phrase, dans le même bloc.
 
@@ -279,6 +279,8 @@ Le formulaire (et l'introduction) est remplacé par le panneau de succès (`pann
 ```
 
 En grand écran, le panneau est dans la carte (`successSurface` sur `surface`), padding `spacing.lg` sur les quatre côtés, actions côte à côte sous le panneau. Statut illisible (API plus récente que le site) : titre neutre « Ta proposition est envoyée. », sans texte, mêmes actions.
+
+Story 5 : « Voir mes propositions » (lien-bouton secondaire) s'insère entre « Proposer une autre pose » et « Voir le catalogue » pour une proposition en attente ou au statut illisible, pas pour une publication directe ; les actions passent à la ligne si besoin (`../composants/panneau-succes.md`, « Actions selon le résultat »).
 
 ### Visiteur qui ouvre directement la page
 

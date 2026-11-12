@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  invitesToSeeMyProposals,
   nameCounterLabel,
   proposalFieldErrorLabel,
   proposalLabels,
@@ -66,6 +67,17 @@ describe('proposalSuccess', () => {
       title: 'La pose « Throne » est publiée.',
       text: 'Elle apparaît maintenant dans le catalogue.',
     });
+  });
+});
+
+// Story 5 (Q23): « Voir mes propositions », where the contributor follows what was just sent.
+describe('invitesToSeeMyProposals', () => {
+  it.each([
+    ['pending', true],
+    ['received', true],
+    ['published', false],
+  ] as const)('should invite to see my proposals when the status is "%s": %s', (status, invites) => {
+    expect(invitesToSeeMyProposals(status)).toBe(invites);
   });
 });
 

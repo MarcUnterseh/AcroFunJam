@@ -19,6 +19,21 @@ export type PendingProposal = {
   submittedAt: string;
 };
 
+/** The values of a pose, as the API returns them. */
+export type PoseValues = Pick<
+  PendingProposal,
+  'name' | 'baseDifficulty' | 'flyerDifficulty' | 'canStartFlow' | 'canEndFlow'
+>;
+
+/** What became of a proposal (story 5 reads it from « Mes propositions »); null while pending. */
+export type ProposalDecision =
+  | { kind: 'accepted'; retained: PoseValues; message: string | null; decidedAt: string }
+  | { kind: 'rejected'; reason: string; decidedAt: string }
+  | { kind: 'published-directly' };
+
+/** A proposal as the simulated API keeps it, pending or decided. */
+export type SubmittedProposal = PendingProposal & { decision: ProposalDecision | null };
+
 /** Same normalisation and comparison key as the API (ADR 0017), enough for the scenarios of the site. */
 export const normalised = (name: string) => name.normalize('NFC').split(/\s+/u).filter(Boolean).join(' ');
 export const keyOf = (name: string) =>
@@ -40,6 +55,8 @@ export const keyOf = (name: string) =>
 export class ContributionApi {
   /** Proposals pending validation, the oldest first (shared with the simulated validation API). */
   readonly pending: PendingProposal[] = [];
+  /** Every proposal received, pending, decided or published directly, in the order of submission. */
+  readonly submitted: SubmittedProposal[] = [];
   private unreachable = false;
   /** Proposals received, as sent by the site. */
   readonly received: ProposePoseRequest[] = [];
@@ -60,17 +77,35 @@ export class ContributionApi {
 
   /** A proposal pending validation, made before the scenario (« Alice a proposé la pose … »). */
   addPending(proposal: Omit<PendingProposal, 'id' | 'submittedAt'>): PendingProposal {
-    // One day apart, from 1 November 2026: the queue presents the oldest first.
-    const submittedAt = new Date(Date.UTC(2026, 10, 1 + this.pending.length, 9)).toISOString();
-    const pending = { ...proposal, id: crypto.randomUUID(), submittedAt };
+    const pending = this.submit(proposal, null);
     this.pending.push(pending);
     return pending;
   }
 
-  /** The proposal was decided: it leaves the queue. */
-  removePending(id: string): void {
+  /** A pose proposed by a validator or an administrator: published at once (glossary « Publication directe »). */
+  addDirectPublication(proposal: Omit<PendingProposal, 'id' | 'submittedAt'>): void {
+    this.submit(proposal, { kind: 'published-directly' });
+    const { name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow } = proposal;
+    this.catalogApi.publish({ name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow });
+  }
+
+  private submit(
+    proposal: Omit<PendingProposal, 'id' | 'submittedAt'>,
+    decision: ProposalDecision | null,
+  ): PendingProposal {
+    // One day apart, from 1 November 2026: the queue presents the oldest first.
+    const submittedAt = new Date(Date.UTC(2026, 10, 1 + this.submitted.length, 9)).toISOString();
+    const submitted = { ...proposal, id: crypto.randomUUID(), submittedAt };
+    this.submitted.push({ ...submitted, decision });
+    return submitted;
+  }
+
+  /** The proposal was decided: it leaves the queue, and its contributor will see the decision. */
+  decide(id: string, decision: ProposalDecision): void {
     const index = this.pending.findIndex((proposal) => proposal.id === id);
     if (index >= 0) this.pending.splice(index, 1);
+    const submitted = this.submitted.find((proposal) => proposal.id === id);
+    if (submitted) submitted.decision = decision;
   }
 
   isNamePending(name: string, except?: string): boolean {
@@ -103,23 +138,16 @@ export class ContributionApi {
       canStartFlow: request.canStartFlow ?? false,
       canEndFlow: request.canEndFlow ?? false,
     };
-    if (proposal.status === 'pending')
-      this.addPending({
-        name,
-        baseDifficulty: proposal.baseDifficulty,
-        flyerDifficulty: proposal.flyerDifficulty,
-        canStartFlow: proposal.canStartFlow,
-        canEndFlow: proposal.canEndFlow,
-        contributorEmail: account.email,
-      });
-    else
-      this.catalogApi.publish({
-        name,
-        baseDifficulty: proposal.baseDifficulty,
-        flyerDifficulty: proposal.flyerDifficulty,
-        canStartFlow: proposal.canStartFlow,
-        canEndFlow: proposal.canEndFlow,
-      });
+    const submitted = {
+      name,
+      baseDifficulty: proposal.baseDifficulty,
+      flyerDifficulty: proposal.flyerDifficulty,
+      canStartFlow: proposal.canStartFlow,
+      canEndFlow: proposal.canEndFlow,
+      contributorEmail: account.email,
+    };
+    if (proposal.status === 'pending') this.addPending(submitted);
+    else this.addDirectPublication(submitted);
     return route.fulfill({ status: 201, json: proposal });
   }
 

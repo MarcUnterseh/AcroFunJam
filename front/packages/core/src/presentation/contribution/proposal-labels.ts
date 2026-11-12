@@ -94,3 +94,11 @@ export const proposalSuccess = (outcome: {
       return { title: 'Ta proposition est envoyée.', text: null };
   }
 };
+
+/**
+ * Whether the confirmation offers « Voir mes propositions » (Q23): for a proposal pending validation and for a
+ * status that cannot be read, where the contributor follows what was just sent; not for a pose published
+ * directly (« Voir le catalogue » is enough).
+ */
+export const invitesToSeeMyProposals = (status: 'pending' | 'published' | 'received'): boolean =>
+  status !== 'published';

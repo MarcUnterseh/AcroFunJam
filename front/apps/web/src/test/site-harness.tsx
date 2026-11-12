@@ -17,6 +17,8 @@ import {
   type CatalogGateway,
   type ContributionGateway,
   type KeptProposalInput,
+  type MyProposal,
+  type MyProposalsFailure,
   type ProposalFailure,
   type ProposalInputStore,
   type ProposalOutcome,
@@ -56,6 +58,14 @@ export class FakeContributionGateway implements ContributionGateway {
   release(answer: ProposalAnswer) {
     this.held.shift()!(answer);
   }
+
+  /** The proposals of the requester (story 5), answered in turn (the last answer is repeated). */
+  readonly myProposals = new Answers<Result<readonly MyProposal[], MyProposalsFailure>>([ok([])]);
+  myProposalsRequests = 0;
+  getMyProposals = () => {
+    this.myProposalsRequests += 1;
+    return this.myProposals.next();
+  };
 }
 
 export class MemoryProposalInputStore implements ProposalInputStore {
@@ -84,6 +94,15 @@ export const aPendingProposal = (overrides: Partial<PendingProposal> = {}): Pend
   },
   contributor: { email: 'alice@example.org', isYou: false },
   submittedAt: new Date('2026-11-03T09:00:00Z'),
+  ...overrides,
+});
+
+/** A proposal of the requester (story 5): Throne, proposed on 3 November 2026, pending unless stated otherwise. */
+export const aMyProposal = (overrides: Partial<MyProposal> = {}): MyProposal => ({
+  id: 'proposal-throne',
+  pose: aPendingProposal().pose,
+  submittedAt: new Date('2026-11-03T09:00:00Z'),
+  status: { kind: 'pending' },
   ...overrides,
 });
 
