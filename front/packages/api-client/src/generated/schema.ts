@@ -228,6 +228,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/contribution/transition-proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ProposeTransition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contribution/transition-proposals/{id}/acceptance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AcceptTransitionProposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contribution/transition-proposals/{id}/rejection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RejectTransitionProposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/identity/register": {
         parameters: {
             query?: never;
@@ -708,12 +756,31 @@ export interface components {
             canStartFlow: boolean;
             canEndFlow: boolean;
         };
+        AcceptedTransitionProposalResponse: {
+            /** Format: uuid */
+            id: string;
+            status: components["schemas"]["ProposalStatusCode"];
+            adjusted: boolean;
+            fromPose: components["schemas"]["PoseReferenceResponse"];
+            toPose: components["schemas"]["PoseReferenceResponse"];
+            name: null | string;
+            baseDifficulty: components["schemas"]["DifficultyCode"];
+            flyerDifficulty: components["schemas"]["DifficultyCode"];
+            description: null | string;
+        };
         AcceptPoseProposalRequest: {
             name?: null | string;
             baseDifficulty?: null | string;
             flyerDifficulty?: null | string;
             canStartFlow?: null | boolean;
             canEndFlow?: null | boolean;
+            message?: null | string;
+        };
+        AcceptTransitionProposalRequest: {
+            name?: null | string;
+            baseDifficulty?: null | string;
+            flyerDifficulty?: null | string;
+            description?: null | string;
             message?: null | string;
         };
         AccessTokenResponse: {
@@ -772,6 +839,15 @@ export interface components {
             email: string;
             isEmailConfirmed: boolean;
         };
+        LinkedTransitionResponse: {
+            /** Format: uuid */
+            id: string;
+            otherPose: components["schemas"]["OtherPoseResponse"];
+            name: null | string;
+            baseDifficulty: components["schemas"]["DifficultyCode"];
+            flyerDifficulty: components["schemas"]["DifficultyCode"];
+            description: null | string;
+        };
         LoginRequest: {
             email: string;
             password: string;
@@ -783,7 +859,7 @@ export interface components {
             role: string;
             capabilities: string[];
         };
-        MyProposalResponse: components["schemas"]["MyProposalResponseMyPoseProposalResponse"] | components["schemas"]["MyProposalResponseMyPoseRevisionResponse"];
+        MyProposalResponse: components["schemas"]["MyProposalResponseMyPoseProposalResponse"] | components["schemas"]["MyProposalResponseMyPoseRevisionResponse"] | components["schemas"]["MyProposalResponseMyTransitionProposalResponse"];
         MyProposalResponseMyPoseProposalResponse: {
             /** @enum {string} */
             kind?: "pose-proposal";
@@ -819,6 +895,26 @@ export interface components {
             message: null | string;
             reason: null | string;
         };
+        MyProposalResponseMyTransitionProposalResponse: {
+            /** @enum {string} */
+            kind?: "transition-proposal";
+            /** Format: uuid */
+            id: string;
+            status: components["schemas"]["MyProposalStatusCode"];
+            fromPose: components["schemas"]["PoseReferenceResponse"];
+            toPose: components["schemas"]["PoseReferenceResponse"];
+            name: null | string;
+            baseDifficulty: components["schemas"]["DifficultyCode"];
+            flyerDifficulty: components["schemas"]["DifficultyCode"];
+            description: null | string;
+            /** Format: date-time */
+            submittedAt: string;
+            /** Format: date-time */
+            decidedAt: null | string;
+            adjustments: null | components["schemas"]["TransitionAdjustmentsResponse"];
+            message: null | string;
+            reason: null | string;
+        };
         MyProposalsResponse: {
             proposals: components["schemas"]["MyProposalResponse"][];
         };
@@ -836,11 +932,20 @@ export interface components {
             before: string;
             after: string;
         };
+        OptionalTextAdjustmentResponse: {
+            proposed: null | string;
+            retained: null | string;
+        };
+        OtherPoseResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
         PendingCountResponse: {
             /** Format: int32 */
             count: number | string;
         };
-        PendingProposalResponse: components["schemas"]["PendingProposalResponsePendingPoseProposalResponse"] | components["schemas"]["PendingProposalResponsePendingPoseRevisionResponse"];
+        PendingProposalResponse: components["schemas"]["PendingProposalResponsePendingPoseProposalResponse"] | components["schemas"]["PendingProposalResponsePendingPoseRevisionResponse"] | components["schemas"]["PendingProposalResponsePendingTransitionProposalResponse"];
         PendingProposalResponsePendingPoseProposalResponse: {
             /** @enum {string} */
             kind?: "pose-proposal";
@@ -863,6 +968,21 @@ export interface components {
             pose: components["schemas"]["RevisedPoseResponse"];
             changes: components["schemas"]["RevisionChangesResponse"];
             message: null | string;
+            contributor: components["schemas"]["ProposalContributorResponse"];
+            /** Format: date-time */
+            submittedAt: string;
+        };
+        PendingProposalResponsePendingTransitionProposalResponse: {
+            /** @enum {string} */
+            kind?: "transition-proposal";
+            /** Format: uuid */
+            id: string;
+            fromPose: components["schemas"]["PoseReferenceResponse"];
+            toPose: components["schemas"]["PoseReferenceResponse"];
+            name: null | string;
+            baseDifficulty: components["schemas"]["DifficultyCode"];
+            flyerDifficulty: components["schemas"]["DifficultyCode"];
+            description: null | string;
             contributor: components["schemas"]["ProposalContributorResponse"];
             /** Format: date-time */
             submittedAt: string;
@@ -899,6 +1019,11 @@ export interface components {
             flyerDifficulty: components["schemas"]["DifficultyCode"];
             canStartFlow: boolean;
             canEndFlow: boolean;
+        };
+        PoseReferenceResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
         };
         PoseRevisionProposalResponse: {
             /** Format: uuid */
@@ -954,6 +1079,16 @@ export interface components {
             canEndFlow: null | boolean;
             message: null | string;
         };
+        ProposeTransitionRequest: {
+            /** Format: uuid */
+            fromPoseId: null | string;
+            /** Format: uuid */
+            toPoseId: null | string;
+            name: null | string;
+            baseDifficulty: null | string;
+            flyerDifficulty: null | string;
+            description: null | string;
+        };
         PublishedPoseResponse: {
             /** Format: uuid */
             id: string;
@@ -964,6 +1099,8 @@ export interface components {
             canEndFlow: boolean;
             /** Format: int32 */
             version: number | string;
+            transitionsFrom: components["schemas"]["LinkedTransitionResponse"][];
+            transitionsTo: components["schemas"]["LinkedTransitionResponse"][];
         };
         RefreshRequest: {
             refreshToken: string;
@@ -1007,6 +1144,23 @@ export interface components {
         RoleChangeRequest: {
             email: null | string;
             role: null | string;
+        };
+        TransitionAdjustmentsResponse: {
+            name: null | components["schemas"]["OptionalTextAdjustmentResponse"];
+            baseDifficulty: null | components["schemas"]["DifficultyAdjustmentResponse"];
+            flyerDifficulty: null | components["schemas"]["DifficultyAdjustmentResponse"];
+            description: null | components["schemas"]["OptionalTextAdjustmentResponse"];
+        };
+        TransitionProposalResponse: {
+            /** Format: uuid */
+            id: string;
+            status: components["schemas"]["ProposalStatusCode"];
+            fromPose: components["schemas"]["PoseReferenceResponse"];
+            toPose: components["schemas"]["PoseReferenceResponse"];
+            name: null | string;
+            baseDifficulty: components["schemas"]["DifficultyCode"];
+            flyerDifficulty: components["schemas"]["DifficultyCode"];
+            description: null | string;
         };
         TwoFactorRequest: {
             enable?: null | boolean;
@@ -1657,6 +1811,226 @@ export interface operations {
         };
     };
     RejectPoseRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectPoseProposalRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedPoseProposalResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ProposeTransition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProposeTransitionRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransitionProposalResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    AcceptTransitionProposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": null | components["schemas"]["AcceptTransitionProposalRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcceptedTransitionProposalResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    RejectTransitionProposal: {
         parameters: {
             query?: never;
             header?: never;

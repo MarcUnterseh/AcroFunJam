@@ -34,7 +34,7 @@ describe('a revision in « Mes propositions »', () => {
     expect(await card('Modification de Thron')).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Retrouve les poses et les modifications que tu as proposées, et ce qu'elles sont devenues.",
+        "Les poses, les modifications et les transitions que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
       ),
     ).toBeInTheDocument();
   });

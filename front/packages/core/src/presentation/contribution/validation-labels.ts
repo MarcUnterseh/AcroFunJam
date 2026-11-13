@@ -23,7 +23,7 @@ export const validationLabels = {
   shortTitle: 'À valider',
   signInContext: 'Connecte-toi pour accéder aux propositions à valider.',
   introduction:
-    "Vérifie chaque proposition de pose ou de modification : accepte-la, ajuste-la avant de l'accepter ou refuse-la.",
+    "Vérifie chaque proposition de pose, de modification ou de transition : accepte-la, ajuste-la avant de l'accepter ou refuse-la.",
   loading: 'Chargement des propositions…',
   loadingFailed: 'Impossible de charger les propositions. Vérifie ta connexion Internet, puis réessaie.',
   loadingOutdated: 'Impossible de charger les propositions : le site doit être mis à jour. Recharge la page.',
@@ -69,8 +69,8 @@ export const validationLabels = {
   allDecided: 'Toutes les propositions de la liste sont traitées.',
 } as const;
 
-/** Which kind of proposal a card or a report is about (story 6): a pose proposal or a revision proposal. */
-export type ProposalKind = 'pose-proposal' | 'pose-revision';
+/** Which kind of proposal a card or a report is about: a pose, a revision (story 6) or a transition (story 7). */
+export type ProposalKind = 'pose-proposal' | 'pose-revision' | 'transition-proposal';
 
 /**
  * Card of a revision proposal (docs/design/composants/carte-modification.md): its title « Modification de Throne »
@@ -163,8 +163,8 @@ export const contributorLine = (
   after: ` le ${dayLabel(submittedAt)}`,
 });
 
-/** A decision recorded by the API, as the report that replaces its card presents it. */
-export type RecordedDecision = { readonly proposal: ProposalKind } & (
+/** A decision on a pose or a revision recorded by the API, as the report that replaces its card presents it. */
+export type RecordedDecision = { readonly proposal: 'pose-proposal' | 'pose-revision' } & (
   | { readonly decision: 'accepted'; readonly name: string; readonly adjusted: boolean }
   | { readonly decision: 'rejected'; readonly name: string }
 );
@@ -208,7 +208,12 @@ export type DecisionFailureKind =
   | 'name-already-in-catalog'
   | 'name-already-pending'
   | 'retained-revision-changes-nothing'
-  | 'pose-changed';
+  | 'pose-changed'
+  | 'transition-name-already-in-catalog'
+  | 'transition-name-already-pending'
+  | 'unnamed-transition-already-in-catalog'
+  | 'unnamed-transition-already-pending'
+  | 'transition-pose-not-found';
 
 const nameRefusals = {
   'name-already-in-catalog': 'Une pose de ce nom existe déjà dans le catalogue.',
@@ -216,6 +221,7 @@ const nameRefusals = {
 } as const;
 
 const nameAdvice = "Ajuste le nom avant de publier, ou refuse la proposition si c'est un doublon.";
+const unnamedAdvice = "Donne un nom à celle-ci avant de la publier, ou refuse-la si c'est un doublon.";
 
 const decisionFailures: Readonly<Record<DecisionFailureKind, string>> = {
   unreachable:
@@ -233,6 +239,13 @@ const decisionFailures: Readonly<Record<DecisionFailureKind, string>> = {
     'Avec ces ajustements, la pose ne changerait pas. Modifie tes ajustements, ou refuse la modification.',
   'pose-changed':
     'Cette pose a changé depuis que la modification a été proposée. Recharge la page pour voir ses valeurs actuelles.',
+  // Story 7: the place of a transition between its poses, in this direction, is taken.
+  'transition-name-already-in-catalog': `Une transition de ce nom relie déjà ces poses dans le catalogue. ${nameAdvice}`,
+  'transition-name-already-pending': `Une autre transition de ce nom entre ces poses attend d'être validée. ${nameAdvice}`,
+  'unnamed-transition-already-in-catalog': `Une transition sans nom relie déjà ces poses dans le catalogue. ${unnamedAdvice}`,
+  'unnamed-transition-already-pending': `Une autre transition sans nom entre ces poses attend d'être validée. ${unnamedAdvice}`,
+  'transition-pose-not-found':
+    "Une des poses de cette transition n'est plus dans le catalogue : la transition ne peut pas être publiée. Refuse la proposition.",
 };
 
 /** The same incidents, when the validator had typed something (an open zone): the input is kept (ADR 0019). */

@@ -45,7 +45,7 @@ describe('a revision in the validation queue', () => {
     expect(names).toEqual(['Throne', 'Modification de Throne']);
     expect(
       screen.getByText(
-        "Vérifie chaque proposition de pose ou de modification : accepte-la, ajuste-la avant de l'accepter ou refuse-la.",
+        "Vérifie chaque proposition de pose, de modification ou de transition : accepte-la, ajuste-la avant de l'accepter ou refuse-la.",
       ),
     ).toBeInTheDocument();
   });

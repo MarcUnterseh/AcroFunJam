@@ -11,6 +11,7 @@ import { PoseDetails } from '../catalog/PoseList';
 import { Icon } from '../layout/Icon';
 import { AdjustmentList } from './AdjustmentList';
 import { PoseChangeList } from './PoseChangeList';
+import { TransitionAdjustmentList, TransitionDetails, TransitionTitleText } from './TransitionParts';
 
 const icons = { clock: 'clock', success: 'success', information: 'info' } as const;
 
@@ -64,11 +65,38 @@ function RevisionChanges({ revision }: { readonly revision: MyPoseRevision }) {
   );
 }
 
+/** The title of a proposal of the requester: the pose, « Modification de <nom> », or the transition (story 7). */
+function MyProposalTitle({ proposal }: { readonly proposal: MyProposal }) {
+  switch (proposal.kind) {
+    case 'pose-revision':
+      return (
+        <>
+          {/* The space outside the prefix: the accessible name reads « Modification de Throne ». */}
+          <span className="proposal-card__name-prefix">{myRevisionLabels.titlePrefix.trim()}</span>
+          {` ${proposal.poseName}`}
+        </>
+      );
+    case 'transition-proposal':
+      return (
+        <TransitionTitleText
+          transition={{
+            name: proposal.transition.name,
+            from: proposal.fromPose.name,
+            to: proposal.toPose.name,
+          }}
+        />
+      );
+    default:
+      return proposal.pose.name;
+  }
+}
+
 /**
  * A proposal of the requester (docs/design/composants/carte-ma-proposition.md): which pose, when, what became of
  * it and why, then the pose itself. Read only: no action, no focus, and nothing designates the validator. A
  * revision (carte-ma-modification.md, story 6) is titled « Modification de <nom> » (the name when proposed) and
- * presents what changes in the pose rather than the pose.
+ * presents what changes in the pose rather than the pose. A transition (carte-transition.md, story 7) is titled by
+ * its name and its poses, and presents the transition, retained once accepted, proposed otherwise.
  */
 export function MyProposalCard({ proposal }: { readonly proposal: MyProposal }) {
   const titleId = useId();
@@ -77,16 +105,11 @@ export function MyProposalCard({ proposal }: { readonly proposal: MyProposal }) 
   // Described by its date: two proposals of the same pose (proposed again after a rejection) are told apart.
   return (
     <article className="proposal-card my-proposal" aria-labelledby={titleId} aria-describedby={submittedId}>
-      <h2 id={titleId} className="proposal-card__name">
-        {proposal.kind === 'pose-revision' ? (
-          <>
-            {/* The space outside the prefix: the accessible name reads « Modification de Throne ». */}
-            <span className="proposal-card__name-prefix">{myRevisionLabels.titlePrefix.trim()}</span>
-            {` ${proposal.poseName}`}
-          </>
-        ) : (
-          proposal.pose.name
-        )}
+      <h2
+        id={titleId}
+        className={`proposal-card__name${proposal.kind === 'transition-proposal' ? ' proposal-card__name--transition' : ''}`}
+      >
+        <MyProposalTitle proposal={proposal} />
       </h2>
       <p id={submittedId} className="my-proposal__submitted">
         {submitted.before}
@@ -98,7 +121,11 @@ export function MyProposalCard({ proposal }: { readonly proposal: MyProposal }) 
         {proposal.status.kind === 'accepted-with-adjustments' && (
           <div className="adjustment-summary my-proposal__adjustments">
             <h3 className="proposal-card__zone-title">{myProposalsLabels.adjustmentsTitle}</h3>
-            <AdjustmentList adjustments={proposal.status.adjustments} />
+            {proposal.kind === 'transition-proposal' ? (
+              <TransitionAdjustmentList adjustments={proposal.status.adjustments} />
+            ) : (
+              <AdjustmentList adjustments={proposal.status.adjustments} />
+            )}
             <p className="adjustment-summary__rest">{myProposalsLabels.adjustmentsRest}</p>
           </div>
         )}
@@ -112,6 +139,11 @@ export function MyProposalCard({ proposal }: { readonly proposal: MyProposal }) 
       {proposal.kind === 'pose-proposal' && (
         <div className="my-proposal__pose">
           <PoseDetails pose={proposal.pose} />
+        </div>
+      )}
+      {proposal.kind === 'transition-proposal' && (
+        <div className="my-proposal__pose">
+          <TransitionDetails transition={proposal.transition} />
         </div>
       )}
     </article>

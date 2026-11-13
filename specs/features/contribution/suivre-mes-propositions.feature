@@ -361,11 +361,12 @@ Fonctionnalité: Suivre mes propositions
       Quand Alice consulte ses propositions sur le site
       Alors le site présente la proposition de la pose "Front Bird" comme refusée, avec le motif « Doublon de Bird, déjà au catalogue. »
 
+    # Révisé par la story 7 (proposer-une-transition.feature) : l'état vide couvre tous les types de proposition.
     @web
-    Scénario: Le site signale qu'aucune pose n'a encore été proposée et invite à en proposer une
+    Scénario: Le site signale qu'aucune proposition n'a encore été faite et invite à proposer une pose
       Soit Alice est connectée sur le site
       Quand Alice consulte ses propositions sur le site
-      Alors le site indique « Tu n'as encore proposé aucune pose. »
+      Alors le site indique « Tu n'as encore rien proposé. »
       Et le site invite Alice à proposer une pose
 
   # Un incident technique ne doit pas passer pour une liste vide.

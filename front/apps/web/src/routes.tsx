@@ -1,10 +1,18 @@
-import { myProposalsLabels, proposalLabels, revisionLabels, validationLabels } from '@acrofunjam/core';
+import {
+  myProposalsLabels,
+  proposalLabels,
+  revisionLabels,
+  transitionProposalLabels,
+  validationLabels,
+} from '@acrofunjam/core';
 import type { ReactNode } from 'react';
 import { matchPath, type RouteObject } from 'react-router';
 import { CatalogRoute } from './catalog/CatalogRoute';
+import { PosePageRoute } from './catalog/PosePageRoute';
 import { MyProposalsPage } from './contribution/MyProposalsPage';
 import { ProposePosePage } from './contribution/ProposePosePage';
 import { ProposeRevisionPage } from './contribution/ProposeRevisionPage';
+import { ProposeTransitionPage } from './contribution/ProposeTransitionPage';
 import { ValidationPage } from './contribution/ValidationPage';
 import { RegisterPage, SignInPage } from './identity/IdentityPages';
 import { NotFoundPage } from './layout/NotFoundPage';
@@ -12,10 +20,12 @@ import type { SiteRouteHandle } from './layout/route-handle';
 import { SiteLayout } from './layout/SiteLayout';
 import {
   myProposalsPath,
+  posePagePattern,
   proposePosePath,
   registrationPagePath,
   revisionPagePattern,
   signInPagePath,
+  transitionProposalPagePattern,
   validationPath,
 } from './paths';
 
@@ -28,9 +38,18 @@ const signInContexts: Readonly<Record<string, string>> = {
   [myProposalsPath]: myProposalsLabels.signInContext,
 };
 
-const signInContextOf = (returnPath: string): string | undefined =>
-  signInContexts[returnPath] ??
-  (matchPath(revisionPagePattern, returnPath.split(/[?#]/)[0] ?? '') ? revisionLabels.signInContext : undefined);
+/** The forms of a pose (stories 6 and 7), by the pattern of their path. */
+const poseFormContexts: ReadonlyArray<readonly [string, string]> = [
+  [revisionPagePattern, revisionLabels.signInContext],
+  [transitionProposalPagePattern, transitionProposalLabels.signInContext],
+];
+
+const signInContextOf = (returnPath: string): string | undefined => {
+  const pathname = returnPath.split(/[?#]/)[0] ?? '';
+  return (
+    signInContexts[returnPath] ?? poseFormContexts.find(([pattern]) => matchPath(pattern, pathname))?.[1]
+  );
+};
 
 const ownSessionNotice: SiteRouteHandle = { ownSessionNotice: true };
 
@@ -40,10 +59,12 @@ export const routes = (extra?: ReactNode): RouteObject[] => [
     element: <SiteLayout extra={extra} />,
     children: [
       { index: true, element: <CatalogRoute /> },
+      { path: posePagePattern, element: <PosePageRoute /> },
       { path: signInPagePath, element: <SignInPage contextOf={signInContextOf} />, handle: ownSessionNotice },
       { path: registrationPagePath, element: <RegisterPage />, handle: ownSessionNotice },
       { path: proposePosePath, element: <ProposePosePage />, handle: ownSessionNotice },
       { path: revisionPagePattern, element: <ProposeRevisionPage />, handle: ownSessionNotice },
+      { path: transitionProposalPagePattern, element: <ProposeTransitionPage />, handle: ownSessionNotice },
       { path: validationPath, element: <ValidationPage />, handle: ownSessionNotice },
       { path: myProposalsPath, element: <MyProposalsPage />, handle: ownSessionNotice },
       { path: '*', element: <NotFoundPage /> },

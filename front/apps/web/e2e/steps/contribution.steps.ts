@@ -264,9 +264,9 @@ Then(
 Then(
   /^le site indique que la proposition n'a pas pu aboutir et qu'(\w+) peut réessayer$/,
   async ({ proposalForm }, _who: string) => {
-    // A pose proposal (story 3) or a revision (story 6): « Ta proposition » or « Ta modification ».
+    // A pose proposal (story 3), a revision (story 6) or a transition (story 7).
     await expect(proposalForm.alert).toContainText(
-      /Ta (proposition|modification) n'a pas pu être envoyée : impossible de joindre AcroFunJam\./,
+      /Ta (proposition|modification|transition) n'a pas pu être envoyée : impossible de joindre AcroFunJam\./,
     );
     await expect(proposalForm.alert.getByRole('button', { name: 'Réessayer' })).toBeVisible();
   },

@@ -56,12 +56,15 @@ describe('access to the page « Propositions à valider »', () => {
   it('should end the session and send to the sign-in page, for good, when it expired as the queue loads', async () => {
     const gateway = signedIn(['propose', 'validate-proposals']);
     const validation = new FakeValidationGateway();
-    validation.queue.set(fail({ kind: 'unauthenticated' }));
+    // The queue answers only once the account is gone: the API no longer knows the person, /me tells it too.
+    validation.queue.set('held');
     const { router } = renderSite('/propositions-a-valider', { gateway, validation });
     const visited: string[] = [];
     router.subscribe((state) => visited.push(state.location.pathname));
     await screen.findByRole('heading', { level: 1, name: 'Propositions à valider' });
-    gateway.account = null; // the API no longer knows the person: /me tells it too
+    await waitFor(() => expect(validation.queueRequests).toBe(1));
+    gateway.account = null;
+    validation.queue.release(fail({ kind: 'unauthenticated' }));
 
     expect(await screen.findByRole('form', { name: 'Se connecter' })).toBeInTheDocument();
     // The session is over on the site at once: the sign-in page does not send back to the queue (no ping-pong).

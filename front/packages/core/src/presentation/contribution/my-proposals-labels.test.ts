@@ -16,8 +16,9 @@ describe('myProposalsLabels', () => {
       catalogLink: 'Mes propositions',
       seeMyProposals: 'Voir mes propositions',
       signInContext: 'Connecte-toi pour accéder à tes propositions.',
+      // Story 7 revises story 5: every kind of proposal is announced.
       introduction:
-        "Retrouve les poses et les modifications que tu as proposées, et ce qu'elles sont devenues.",
+        "Les poses, les modifications et les transitions que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
     });
   });
 
@@ -30,8 +31,9 @@ describe('myProposalsLabels', () => {
       retry: 'Réessayer',
       retrying: 'Chargement…',
       reload: 'Recharger la page',
-      emptyTitle: "Tu n'as encore proposé aucune pose.",
-      emptyText: "Les poses et les modifications que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
+      emptyTitle: "Tu n'as encore rien proposé.",
+      emptyText:
+        "Les poses, les modifications et les transitions que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
       proposePose: 'Proposer une pose',
     });
   });

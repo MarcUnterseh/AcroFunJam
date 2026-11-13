@@ -1,9 +1,16 @@
 import type { PoseProposalInput } from '../../domain/contribution/pose-proposal';
+import type { TransitionAdjustmentInput } from '../../domain/contribution/transition-adjustment';
 
 /** What the validator typed for a decision that could not be sent: the reason, or the adjustments and the note. */
 export type KeptDecision =
   | { readonly kind: 'rejection'; readonly reason: string }
-  | { readonly kind: 'acceptance'; readonly input: PoseProposalInput; readonly note: string };
+  | { readonly kind: 'acceptance'; readonly input: PoseProposalInput; readonly note: string }
+  /** The adjustments of a transition (story 7) and the note. */
+  | {
+      readonly kind: 'transition-acceptance';
+      readonly input: TransitionAdjustmentInput;
+      readonly note: string;
+    };
 
 /** The kept inputs, by proposal id, and their owner: the address of the session they were typed in. */
 export type KeptDecisionInputs = {

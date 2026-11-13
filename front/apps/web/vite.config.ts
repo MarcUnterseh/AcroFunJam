@@ -38,5 +38,8 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['src/**/*.test.{ts,tsx}'],
     setupFiles: ['./src/test/setup.ts'],
+    // Under the load of the whole front suite, a test that waits for several pages (findBy*: 5 s each, setup.ts)
+    // needs more than the default 5 s.
+    testTimeout: 20_000,
   },
 });

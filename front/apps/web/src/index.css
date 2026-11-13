@@ -157,6 +157,8 @@ main {
   font: inherit;
   font-weight: var(--afj-font-weight-semibold);
   white-space: nowrap;
+  text-align: center;
+  overflow-wrap: anywhere;
   text-decoration: none;
   cursor: pointer;
 }
@@ -1269,7 +1271,9 @@ main {
 
 /* The labels of the card buttons (« Accepter et publier », « Modifier les ajustements »…) wrap rather than overflow. */
 @media (width < 40em) {
-  .proposal-card .button {
+  .proposal-card .button,
+  .proposal-success__actions .button,
+  .revision-page__actions .button {
     white-space: normal;
   }
 }
@@ -1498,9 +1502,11 @@ main {
     margin-bottom: var(--afj-spacing-md);
   }
 
+  /* The width of their content, but a label too long for the column (a name of 60 characters) wraps. */
   .link-button {
     width: auto;
-    white-space: nowrap;
+    max-width: 100%;
+    white-space: normal;
   }
 
   /* Side by side, the width of their content; under the title, aligned left, when the row lacks room. */
@@ -1544,7 +1550,8 @@ main {
 
   .proposal-success__actions .button {
     width: auto;
-    white-space: nowrap;
+    max-width: 100%;
+    white-space: normal;
   }
 
   /* Same padding on every side once the screen is wide enough (panneau-succes.md). */
@@ -1569,5 +1576,341 @@ main {
 
   .pose-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* --- Story 7 « Proposer une transition » (docs/design/ecrans/7-proposer-une-transition.md) ------- */
+
+/* Clickable card of the catalog (carte-pose.md, « Carte cliquable du catalogue »): the name is the link, stretched
+   over the whole card; « Proposer une modification » stays above it. */
+.pose-card--linked {
+  position: relative;
+  border-color: var(--afj-color-border);
+}
+
+.pose-card__link {
+  color: var(--afj-color-text);
+  text-decoration: underline;
+  text-decoration-thickness: var(--afj-size-border-width);
+}
+
+.pose-card__link:visited {
+  color: var(--afj-color-text);
+}
+
+.pose-card__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--afj-radius-md);
+}
+
+/* The ring goes around the whole card; without :has(), the link keeps its own ring. */
+.pose-card--linked:has(.pose-card__link:focus-visible) {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus);
+  outline-offset: var(--afj-size-focus-ring-offset);
+}
+
+.pose-card--linked:has(.pose-card__link:focus-visible) .pose-card__link:focus-visible {
+  outline: none;
+}
+
+/* Link back to the parent page (lien-retour.md). */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--afj-spacing-xs);
+  min-block-size: var(--afj-size-touch-target);
+  margin-bottom: var(--afj-spacing-xs);
+  color: var(--afj-color-primary);
+  text-decoration: underline;
+  text-decoration-thickness: var(--afj-size-border-width);
+}
+
+.back-link:visited {
+  color: var(--afj-color-primary);
+}
+
+.back-link:focus-visible {
+  border-radius: var(--afj-radius-sm);
+}
+
+/* Page of a pose: the column of the pages of follow-up (≈ 690 px), aligned left. */
+.pose-page {
+  max-width: calc(
+    var(--afj-size-form-wide-max-width) + 2 * var(--afj-spacing-lg) + 2 * var(--afj-size-border-width)
+  );
+}
+
+.pose-page h1 {
+  margin: 0 0 var(--afj-spacing-md);
+  overflow-wrap: anywhere;
+}
+
+.pose-page__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--afj-spacing-sm);
+  margin-bottom: var(--afj-spacing-lg);
+}
+
+.pose-page__panel {
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
+}
+
+.pose-page .difficulty-legend {
+  margin-block: var(--afj-spacing-lg) 0;
+}
+
+.pose-page > .form-alert {
+  margin-top: var(--afj-spacing-md);
+}
+
+.pose-page__not-found p {
+  margin: 0 0 var(--afj-spacing-md);
+}
+
+.pose-page__section {
+  margin-top: var(--afj-spacing-xl);
+  container-type: inline-size;
+}
+
+.pose-page__section-title {
+  margin: 0 0 var(--afj-spacing-sm);
+  font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-bold);
+  line-height: var(--afj-line-height-tight);
+  overflow-wrap: anywhere;
+}
+
+/* Transitions of a section (element-transition.md): a flat list, separated by decorative rules. */
+.transition-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: var(--afj-size-border-width) solid var(--afj-color-divider);
+}
+
+.transition {
+  display: grid;
+  gap: var(--afj-spacing-xs);
+  padding: var(--afj-spacing-md) 0;
+  border-bottom: var(--afj-size-border-width) solid var(--afj-color-divider);
+}
+
+.transition__title {
+  margin: 0;
+  font-size: var(--afj-font-size-md);
+  font-weight: var(--afj-font-weight-bold);
+  line-height: var(--afj-line-height-tight);
+  overflow-wrap: anywhere;
+}
+
+.transition__poses {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--afj-spacing-xs);
+}
+
+.transition__poses .icon {
+  color: var(--afj-color-text-muted);
+}
+
+.transition__other-pose {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--afj-spacing-xs);
+  margin: 0;
+  color: var(--afj-color-text-muted);
+}
+
+.transition__other-pose-link {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  min-block-size: var(--afj-size-touch-target);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-primary);
+  text-decoration: underline;
+  text-decoration-thickness: var(--afj-size-border-width);
+  overflow-wrap: anywhere;
+}
+
+.transition__other-pose-link:visited {
+  color: var(--afj-color-primary);
+}
+
+.transition__other-pose-link:focus-visible {
+  border-radius: var(--afj-radius-sm);
+}
+
+/* A target of 44 px at least, centred on a short name (« Star »), without widening the line around it. */
+.transition__other-pose-link::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  inline-size: max(100%, var(--afj-size-touch-target));
+  block-size: max(100%, var(--afj-size-touch-target));
+  translate: -50% -50%;
+}
+
+/* The description keeps its line breaks (Q105), plain text; a long address breaks anywhere. */
+.transition__description {
+  margin: var(--afj-spacing-xs) 0 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.transition-list__empty {
+  margin: 0;
+  padding: var(--afj-spacing-md) 0;
+  color: var(--afj-color-text-muted);
+  border-block: var(--afj-size-border-width) solid var(--afj-color-divider);
+}
+
+/* The two difficulties of a transition side by side, once its container is wide enough. */
+@container (width >= 40em) {
+  /* Each value next to its term; the columns clearly apart, more than a term from its value. */
+  .difficulty-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--afj-spacing-xxl);
+  }
+
+  .difficulty-details .pose-card__row {
+    justify-content: flex-start;
+  }
+}
+
+/* Drop-down list (champ.md, « Variante liste déroulante »): native select, chevron drawn above it. */
+.field__select {
+  position: relative;
+  display: flex;
+}
+
+.field select {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--afj-size-control);
+  padding-block: 0;
+  padding-inline: var(--afj-spacing-md)
+    calc(var(--afj-spacing-md) + var(--afj-size-icon) + var(--afj-spacing-sm));
+  font: inherit;
+  text-overflow: ellipsis;
+  color: var(--afj-color-text);
+  background: var(--afj-color-background);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md);
+  appearance: none;
+}
+
+.field select[aria-invalid='true'] {
+  padding-inline: calc(var(--afj-spacing-md) - var(--afj-size-border-width))
+    calc(var(--afj-spacing-md) + var(--afj-size-icon) + var(--afj-spacing-sm) - var(--afj-size-border-width));
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-danger);
+}
+
+.field__select .icon {
+  position: absolute;
+  inset-inline-end: var(--afj-spacing-md);
+  top: 50%;
+  translate: 0 -50%;
+  color: var(--afj-color-text);
+  pointer-events: none;
+}
+
+/* The help shared by the two difficulties, before their groups (as the help of the flow questions). */
+.difficulty-questions {
+  display: grid;
+  gap: var(--afj-spacing-md);
+}
+
+.difficulty-questions__help {
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+/* Card of a transition proposal (carte-transition.md): the linking words in regular weight, the names in bold. */
+.proposal-card__name--transition {
+  font-weight: var(--afj-font-weight-regular);
+}
+
+.proposal-card__name--transition strong {
+  font-weight: var(--afj-font-weight-bold);
+}
+
+.transition-description {
+  display: grid;
+  gap: var(--afj-spacing-xs);
+  margin-top: var(--afj-spacing-md);
+}
+
+.transition-description p {
+  margin: 0;
+}
+
+.transition-description__label {
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.transition-description__content {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+@media (hover: hover) {
+  /* The card reacts to the pointer, except over « Proposer une modification », which reacts alone. */
+  .pose-card--linked:hover:not(:has(.pose-card__revision-link:hover)) {
+    background: var(--afj-color-surface-hover);
+    border-color: var(--afj-color-text);
+  }
+
+  .pose-card--linked:hover:not(:has(.pose-card__revision-link:hover)) .pose-card__link {
+    text-decoration-thickness: var(--afj-size-border-width-strong);
+  }
+
+  .back-link:hover,
+  .transition__other-pose-link:hover {
+    color: var(--afj-color-primary-hover);
+    text-decoration-thickness: var(--afj-size-border-width-strong);
+  }
+
+  .field select:not([aria-invalid='true']):hover {
+    border-color: var(--afj-color-text);
+  }
+}
+
+.back-link:active,
+.transition__other-pose-link:active {
+  color: var(--afj-color-primary-active);
+}
+
+@media (forced-colors: active) {
+  .pose-card--linked {
+    border-color: CanvasText;
+  }
+
+  .pose-card__link,
+  .back-link,
+  .transition__other-pose-link {
+    color: LinkText;
+  }
+}
+
+@media (width >= 40em) {
+  .pose-page__actions {
+    flex-flow: row wrap;
+    gap: var(--afj-spacing-md);
+  }
+
+  .pose-page__panel {
+    padding: var(--afj-spacing-lg);
   }
 }

@@ -38,6 +38,8 @@ test-results/
 # Web (Vite / Playwright)
 .vite/
 playwright/.auth/
+# Screenshots of the screens of a story (npm run screenshots --prefix front/apps/web)
+front/apps/web/screenshots/
 blob-report/
 
 # Mobile (Expo / React Native)

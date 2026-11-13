@@ -3,7 +3,9 @@ import {
   createAuthGateway,
   createCatalogGateway,
   createContributionGateway,
+  createPosePageGateway,
   createPoseRevisionGateway,
+  createTransitionProposalGateway,
   createValidationGateway,
 } from '@acrofunjam/api-client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -12,11 +14,14 @@ import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import 'virtual:tokens.css';
 import { CatalogGatewayProvider } from './catalog/CatalogGatewayContext';
+import { PosePageProvider } from './catalog/PosePageContext';
 import { ContributionProvider } from './contribution/ContributionContext';
 import { createSessionDecisionInputStore } from './contribution/session-decision-input-store';
 import { createSessionProposalInputStore } from './contribution/session-proposal-input-store';
 import { createSessionRevisionInputStore } from './contribution/session-revision-input-store';
 import { PoseRevisionProvider } from './contribution/PoseRevisionContext';
+import { createSessionTransitionInputStore } from './contribution/session-transition-input-store';
+import { TransitionProposalProvider } from './contribution/TransitionProposalContext';
 import { ValidationProvider } from './contribution/ValidationContext';
 import { IdentityProvider } from './identity/IdentityContext';
 import { createLocalSessionMemory } from './identity/local-session-memory';
@@ -34,6 +39,8 @@ const proposalInputStore = createSessionProposalInputStore(sessionStorage);
 const decisionInputStore = createSessionDecisionInputStore(sessionStorage);
 // The input of « Proposer une modification » (story 6), kept by pose and forgotten the same way.
 const revisionInputStore = createSessionRevisionInputStore(sessionStorage);
+// The input of « Proposer une transition » (story 7), kept by pose of origin and forgotten the same way.
+const transitionInputStore = createSessionTransitionInputStore(sessionStorage);
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing #root element');
@@ -42,23 +49,31 @@ createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <CatalogGatewayProvider gateway={createCatalogGateway(apiClient)}>
-        <ContributionProvider gateway={createContributionGateway(apiClient)} store={proposalInputStore}>
-          <ValidationProvider gateway={createValidationGateway(apiClient)} store={decisionInputStore}>
-            <PoseRevisionProvider gateway={createPoseRevisionGateway(apiClient)} store={revisionInputStore}>
-              <IdentityProvider
-                gateway={createAuthGateway(apiClient)}
-                memory={createLocalSessionMemory(localStorage, window)}
-                forgetOnSignOut={[
-                  proposalInputStore,
-                  decisionInputStore,
-                  { clear: revisionInputStore.clearAll },
-                ]}
-              >
-                <RouterProvider router={router} />
-              </IdentityProvider>
-            </PoseRevisionProvider>
-          </ValidationProvider>
-        </ContributionProvider>
+        <PosePageProvider gateway={createPosePageGateway(apiClient)}>
+          <ContributionProvider gateway={createContributionGateway(apiClient)} store={proposalInputStore}>
+            <ValidationProvider gateway={createValidationGateway(apiClient)} store={decisionInputStore}>
+              <PoseRevisionProvider gateway={createPoseRevisionGateway(apiClient)} store={revisionInputStore}>
+                <TransitionProposalProvider
+                  gateway={createTransitionProposalGateway(apiClient)}
+                  store={transitionInputStore}
+                >
+                  <IdentityProvider
+                    gateway={createAuthGateway(apiClient)}
+                    memory={createLocalSessionMemory(localStorage, window)}
+                    forgetOnSignOut={[
+                      proposalInputStore,
+                      decisionInputStore,
+                      { clear: revisionInputStore.clearAll },
+                      { clear: transitionInputStore.clearAll },
+                    ]}
+                  >
+                    <RouterProvider router={router} />
+                  </IdentityProvider>
+                </TransitionProposalProvider>
+              </PoseRevisionProvider>
+            </ValidationProvider>
+          </ContributionProvider>
+        </PosePageProvider>
       </CatalogGatewayProvider>
     </QueryClientProvider>
   </StrictMode>,

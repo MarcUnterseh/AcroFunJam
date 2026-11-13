@@ -7,6 +7,7 @@ import {
   type KeptDecision,
   type PendingProposal,
   type RecordedDecision,
+  type RecordedTransitionDecision,
 } from '@acrofunjam/core';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, Navigate } from 'react-router';
@@ -18,6 +19,7 @@ import { catalogPath, signInPath, validationPath } from '../paths';
 import { DecisionReport } from './DecisionReport';
 import { RoleWithdrawn } from './RoleWithdrawn';
 import { ProposalCard } from './ProposalCard';
+import { TransitionProposalCard } from './TransitionProposalCard';
 import { usePendingCountUpdates } from './usePendingCount';
 import { useValidation } from './ValidationContext';
 
@@ -88,7 +90,9 @@ export function ValidationQueue({ owner }: { readonly owner: string }) {
   const [queue, setQueue] = useState<Queue>({ status: 'loading' });
   const [retrying, setRetrying] = useState(false);
   // The reports of the decisions, by proposal: kept until the page is loaded again.
-  const [decided, setDecided] = useState<Readonly<Record<string, RecordedDecision>>>({});
+  const [decided, setDecided] = useState<
+    Readonly<Record<string, RecordedDecision | RecordedTransitionDecision>>
+  >({});
   const { decided: takeOffTheCount } = usePendingCountUpdates();
   const mounted = useRef(true);
   // The input kept in the tab (after an expired session or an outage) is given back once, to its owner only.
@@ -144,7 +148,7 @@ export function ValidationQueue({ owner }: { readonly owner: string }) {
     setSignInAgain(true);
   }, [expired, sessionExpired]);
 
-  const recorded = (id: string, decision: RecordedDecision) => {
+  const recorded = (id: string, decision: RecordedDecision | RecordedTransitionDecision) => {
     setDecided((current) => ({ ...current, [id]: decision }));
     takeOffTheCount();
   };
@@ -186,6 +190,13 @@ export function ValidationQueue({ owner }: { readonly owner: string }) {
           <li key={proposal.id}>
             {decided[proposal.id] ? (
               <DecisionReport recorded={decided[proposal.id]!} />
+            ) : proposal.kind === 'transition-proposal' ? (
+              <TransitionProposalCard
+                proposal={proposal}
+                owner={owner}
+                kept={kept[proposal.id]}
+                onDecided={(decision) => recorded(proposal.id, decision)}
+              />
             ) : (
               <ProposalCard
                 proposal={proposal}

@@ -23,7 +23,7 @@ export class MyProposalsPage {
   }
 
   get emptyMessage() {
-    return this.page.getByText("Tu n'as encore proposé aucune pose.", { exact: true });
+    return this.page.getByText("Tu n'as encore rien proposé.", { exact: true });
   }
 
   get proposePoseLink() {
@@ -55,7 +55,9 @@ export class MyProposalsPage {
   /** The status of a proposal: « Statut : Acceptée le 8 novembre 2026 ». */
   status(name: string): Locator {
     // The paragraph, whole: getByText would stop at the visually hidden span « Statut : ».
-    return this.card(name).locator('p').filter({ hasText: /^Statut : / });
+    return this.card(name)
+      .locator('p')
+      .filter({ hasText: /^Statut : / });
   }
 
   /** A text of the card, whole. */

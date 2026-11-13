@@ -2,6 +2,7 @@ import { fail, ok, type CatalogGateway, type PoseSummary } from '@acrofunjam/cor
 import { onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CatalogGatewayProvider } from './CatalogGatewayContext';
 import { CatalogPage } from './CatalogPage';
@@ -22,7 +23,10 @@ const renderWithGateway = (
   render(
     <QueryClientProvider client={queryClient}>
       <CatalogGatewayProvider gateway={gateway}>
-        <CatalogPage />
+        {/* The cards lead to the page of their pose (story 7). */}
+        <MemoryRouter>
+          <CatalogPage />
+        </MemoryRouter>
       </CatalogGatewayProvider>
     </QueryClientProvider>,
   );

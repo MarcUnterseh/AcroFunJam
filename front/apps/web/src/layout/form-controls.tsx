@@ -4,6 +4,7 @@ import {
   useState,
   type InputHTMLAttributes,
   type ReactNode,
+  type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from 'react';
 import { Icon } from './Icon';
@@ -121,6 +122,55 @@ export const TextAreaField = forwardRef<HTMLTextAreaElement, TextAreaFieldProps>
         </p>
       )}
       {counter}
+      {error && (
+        <p id={`${fieldId}-erreur`} className="field__error">
+          <Icon name="error" />
+          <span>{error}</span>
+        </p>
+      )}
+    </div>
+  );
+});
+
+type SelectFieldProps = {
+  readonly label: string;
+  readonly error?: string | undefined;
+  /** The empty option, first, selected by default; not disabled: the person may come back to it (champ.md). */
+  readonly emptyOption: string;
+  readonly options: readonly { readonly value: string; readonly label: string }[];
+} & Omit<SelectHTMLAttributes<HTMLSelectElement>, 'aria-invalid' | 'aria-describedby' | 'children'>;
+
+/**
+ * Drop-down list variant of the field (docs/design/composants/champ.md, « Variante liste déroulante », story 7): a
+ * native select, for its accessibility and the typed letters, its chevron drawn above it; label and error linked as
+ * for a field.
+ */
+export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(function SelectField(
+  { label, error, emptyOption, options, id, ...select },
+  ref,
+) {
+  const generated = useId();
+  const fieldId = id ?? generated;
+  return (
+    <div className="field">
+      <label htmlFor={fieldId}>{label}</label>
+      <div className="field__select">
+        <select
+          ref={ref}
+          id={fieldId}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${fieldId}-erreur` : undefined}
+          {...select}
+        >
+          <option value="">{emptyOption}</option>
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <Icon name="chevronDown" />
+      </div>
       {error && (
         <p id={`${fieldId}-erreur`} className="field__error">
           <Icon name="error" />

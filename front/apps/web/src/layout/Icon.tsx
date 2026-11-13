@@ -1,4 +1,14 @@
-type IconName = 'error' | 'info' | 'check' | 'dash' | 'plus' | 'success' | 'arrow' | 'clock';
+type IconName =
+  | 'error'
+  | 'info'
+  | 'check'
+  | 'dash'
+  | 'plus'
+  | 'success'
+  | 'arrow'
+  | 'clock'
+  | 'chevronLeft'
+  | 'chevronDown';
 
 const line = { stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' } as const;
 
@@ -45,6 +55,10 @@ const shapes: Record<IconName, React.ReactNode> = {
       <polyline points="10,5.5 10,10 13.5,12" fill="none" {...line} strokeLinejoin="round" />
     </>
   ),
+  // Link back to the parent page (lien-retour.md, story 7).
+  chevronLeft: <polyline points="12.5,4.5 7,10 12.5,15.5" fill="none" {...line} strokeLinejoin="round" />,
+  // Drop-down list (champ.md, « Variante liste déroulante », story 7).
+  chevronDown: <polyline points="4.5,7.5 10,13 15.5,7.5" fill="none" {...line} strokeLinejoin="round" />,
   dash: <line x1="5" y1="10" x2="15" y2="10" {...line} />,
   plus: (
     <>

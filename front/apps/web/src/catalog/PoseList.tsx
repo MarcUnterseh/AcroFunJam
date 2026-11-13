@@ -8,7 +8,7 @@ import {
 } from '@acrofunjam/core';
 import { Link } from 'react-router';
 import { Icon } from '../layout/Icon';
-import { revisionPath } from '../paths';
+import { posePath, revisionPath } from '../paths';
 import { DifficultyDots } from './DifficultyDots';
 
 function Difficulty({ level }: { readonly level: DifficultyLevel }) {
@@ -35,25 +35,49 @@ type PoseCharacteristics = Pick<
   'baseDifficulty' | 'flyerDifficulty' | 'canStartFlow' | 'canEndFlow'
 >;
 
-/**
- * The characteristics of a pose, as the catalog presents them (docs/design/composants/carte-pose.md); also in
- * the card of a proposal to validate (carte-proposition.md), which shows the pose as it will be published.
- */
-export function PoseDetails({ pose }: { readonly pose: PoseCharacteristics }) {
+/** The rows « Base » and « Flyer » of a description list (carte-pose.md), shared with the transitions (story 7). */
+function DifficultyRows({ difficulties }: { readonly difficulties: Difficulties }) {
   return (
-    <dl className="pose-card__details">
+    <>
       <div className="pose-card__row">
         <dt>{catalogLabels.base}</dt>
         <dd>
-          <Difficulty level={pose.baseDifficulty} />
+          <Difficulty level={difficulties.baseDifficulty} />
         </dd>
       </div>
       <div className="pose-card__row">
         <dt>{catalogLabels.flyer}</dt>
         <dd>
-          <Difficulty level={pose.flyerDifficulty} />
+          <Difficulty level={difficulties.flyerDifficulty} />
         </dd>
       </div>
+    </>
+  );
+}
+
+type Difficulties = Pick<PoseSummary, 'baseDifficulty' | 'flyerDifficulty'>;
+
+/**
+ * The two difficulties of a transition (element-transition.md, carte-transition.md): the rows « Base » / « Flyer » of
+ * a pose card, unchanged, side by side from 40em of container.
+ */
+export function DifficultyDetails({ difficulties }: { readonly difficulties: Difficulties }) {
+  return (
+    <dl className="pose-card__details difficulty-details">
+      <DifficultyRows difficulties={difficulties} />
+    </dl>
+  );
+}
+
+/**
+ * The characteristics of a pose, as the catalog presents them (docs/design/composants/carte-pose.md); also in
+ * the card of a proposal to validate (carte-proposition.md), which shows the pose as it will be published, and on
+ * the page of the pose (story 7).
+ */
+export function PoseDetails({ pose }: { readonly pose: PoseCharacteristics }) {
+  return (
+    <dl className="pose-card__details">
+      <DifficultyRows difficulties={pose} />
       <div className="pose-card__row pose-card__row--first-boundary">
         <dt>{catalogLabels.canStartFlow}</dt>
         <dd>
@@ -71,13 +95,19 @@ export function PoseDetails({ pose }: { readonly pose: PoseCharacteristics }) {
 }
 
 /**
- * Pose card (docs/design/composants/carte-pose.md): no detail page yet. A person who may propose is invited to
- * propose a modification of the pose (story 6): a text link, named « Proposer une modification de <nom> ».
+ * Pose card (docs/design/composants/carte-pose.md, « Carte cliquable du catalogue »): its name is the link to the
+ * page of the pose (story 7), stretched over the whole card by the style, no click handler on the item. A person who
+ * may propose is invited to propose a modification of the pose (story 6): a text link above the stretched one, named
+ * « Proposer une modification de <nom> ».
  */
 function PoseCard({ pose, revisable }: { readonly pose: PoseSummary; readonly revisable: boolean }) {
   return (
-    <li className={`pose-card${revisable ? ' pose-card--revisable' : ''}`}>
-      <h2 className="pose-card__name">{pose.name}</h2>
+    <li className={`pose-card pose-card--linked${revisable ? ' pose-card--revisable' : ''}`}>
+      <h2 className="pose-card__name">
+        <Link to={posePath(pose.id)} className="pose-card__link">
+          {pose.name}
+        </Link>
+      </h2>
       <PoseDetails pose={pose} />
       {revisable && (
         <p className="pose-card__revision">

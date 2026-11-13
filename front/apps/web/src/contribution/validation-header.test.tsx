@@ -126,6 +126,7 @@ describe('header link « Propositions à valider »', () => {
   it('should mark the link as the current page on the page « Propositions à valider »', async () => {
     renderSite('/propositions-a-valider', { gateway: validator() });
 
-    await waitFor(async () => expect(await validationLink()).toHaveAttribute('aria-current', 'page'));
+    const link = await validationLink();
+    await waitFor(() => expect(link).toHaveAttribute('aria-current', 'page'));
   });
 });

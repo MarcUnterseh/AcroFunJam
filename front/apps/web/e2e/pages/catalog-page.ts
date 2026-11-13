@@ -62,6 +62,11 @@ export class CatalogPage {
     return this.page.getByRole('link', { name: `Proposer une modification de ${name}`, exact: true });
   }
 
+  /** The name of a pose card, a link to the page of the pose (story 7). */
+  poseLink(name: string) {
+    return this.poseList.getByRole('link', { name, exact: true });
+  }
+
   get revisionLinks() {
     return this.page.getByRole('link', { name: /^Proposer une modification de / });
   }

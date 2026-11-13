@@ -1,5 +1,5 @@
 import type { DecisionInputStore, KeptDecision, KeptDecisionInputs } from '@acrofunjam/core';
-import { attempt, isRecord, parseProposalInput } from './kept-input-parsing';
+import { attempt, isRecord, parseProposalInput, parseTransitionAdjustmentInput } from './kept-input-parsing';
 
 const key = 'afj-decision-inputs';
 
@@ -7,7 +7,12 @@ const parseDecision = (value: unknown): KeptDecision | null => {
   if (!isRecord(value)) return null;
   if (value['kind'] === 'rejection' && typeof value['reason'] === 'string')
     return { kind: 'rejection', reason: value['reason'] };
-  if (value['kind'] !== 'acceptance' || typeof value['note'] !== 'string') return null;
+  if (typeof value['note'] !== 'string') return null;
+  if (value['kind'] === 'transition-acceptance') {
+    const input = parseTransitionAdjustmentInput(value['input']);
+    return input && { kind: 'transition-acceptance', input, note: value['note'] };
+  }
+  if (value['kind'] !== 'acceptance') return null;
   const input = parseProposalInput(value['input']);
   return input && { kind: 'acceptance', input, note: value['note'] };
 };

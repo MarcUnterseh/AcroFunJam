@@ -124,16 +124,19 @@ describe('contributorLine', () => {
 
 describe('decisionReport', () => {
   it('should say the pose is published in the catalog when it is accepted as proposed', () => {
-    expect(decisionReport({ proposal: 'pose-proposal', decision: 'accepted', name: 'Throne', adjusted: false })).toEqual({
+    expect(
+      decisionReport({ proposal: 'pose-proposal', decision: 'accepted', name: 'Throne', adjusted: false }),
+    ).toEqual({
       title: 'La pose « Throne » est publiée dans le catalogue.',
       text: null,
     });
   });
 
   it('should say the pose is published with the adjustments of the validator when it was adjusted', () => {
-    expect(decisionReport({ proposal: 'pose-proposal', decision: 'accepted', name: 'Throne', adjusted: true }).title).toBe(
-      'La pose « Throne » est publiée dans le catalogue avec tes ajustements.',
-    );
+    expect(
+      decisionReport({ proposal: 'pose-proposal', decision: 'accepted', name: 'Throne', adjusted: true })
+        .title,
+    ).toBe('La pose « Throne » est publiée dans le catalogue avec tes ajustements.');
   });
 
   it('should say the proposal is rejected and that its contributor will see the reason', () => {
@@ -153,7 +156,8 @@ describe('decisionReport of a revision (story 6)', () => {
 
   it('should say the pose is modified with the adjustments of the validator when it was adjusted', () => {
     expect(
-      decisionReport({ proposal: 'pose-revision', decision: 'accepted', name: 'Throne', adjusted: true }).title,
+      decisionReport({ proposal: 'pose-revision', decision: 'accepted', name: 'Throne', adjusted: true })
+        .title,
     ).toBe('La pose « Throne » est modifiée dans le catalogue avec tes ajustements.');
   });
 
@@ -349,7 +353,7 @@ describe('validationLabels', () => {
       title: 'Propositions à valider',
       shortTitle: 'À valider',
       introduction:
-        "Vérifie chaque proposition de pose ou de modification : accepte-la, ajuste-la avant de l'accepter ou refuse-la.",
+        "Vérifie chaque proposition de pose, de modification ou de transition : accepte-la, ajuste-la avant de l'accepter ou refuse-la.",
     });
   });
 

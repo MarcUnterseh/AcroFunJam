@@ -7,6 +7,7 @@ import {
 } from '../../domain/contribution/pose-revision';
 import type { ProposalOutcome } from './ContributionGateway';
 import type { PendingRevision, PoseRevisionGateway, RevisionOpeningFailure } from './PoseRevisionGateway';
+import { keepKeyedInput, restoreKeyedInput } from './keyed-input';
 import type { RevisionInputStore } from './RevisionInputStorePort';
 
 // Story 6 « Proposer une modification d'une pose publiée »: the form of a person who may propose.
@@ -98,19 +99,11 @@ export const keepRevisionInput = (
   poseId: string,
   input: PoseRevisionInput,
   owner: string,
-): void => store.save(poseId, { owner, input });
+): void => keepKeyedInput(store, poseId, input, owner);
 
-/**
- * The kept input of the pose, given once (then forgotten), to its owner only: the input of someone else is
- * forgotten (shared device).
- */
+/** The kept input of the pose, given once (then forgotten), to its owner only (shared device). */
 export const restoreRevisionInput = (
   store: RevisionInputStore,
   poseId: string,
   owner: string,
-): PoseRevisionInput | null => {
-  const kept = store.load(poseId);
-  if (!kept) return null;
-  store.clear(poseId);
-  return kept.owner === owner ? kept.input : null;
-};
+): PoseRevisionInput | null => restoreKeyedInput(store, poseId, owner);

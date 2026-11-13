@@ -187,7 +187,7 @@ describe('access to the page « Mes propositions »', () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    expect(await screen.findByText("Tu n'as encore proposé aucune pose.")).toBeInTheDocument();
+    expect(await screen.findByText("Tu n'as encore rien proposé.")).toBeInTheDocument();
     expect(screen.queryByRole('article', { name: 'Throne' })).not.toBeInTheDocument();
     expect(contribution.myProposalsRequests).toBe(2);
   });

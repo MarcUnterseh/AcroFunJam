@@ -50,7 +50,37 @@ export type SubmittedRevision = {
   decision: ProposalDecision | null;
 };
 
-export const poseFields = ['name', 'baseDifficulty', 'flyerDifficulty', 'canStartFlow', 'canEndFlow'] as const;
+/** The values of a transition (story 7): its poses never change, the rest may be adjusted. */
+export type TransitionValues = {
+  name: string | null;
+  baseDifficulty: DifficultyCode;
+  flyerDifficulty: DifficultyCode;
+  description: string | null;
+};
+
+/** What became of a transition proposal; null while pending. */
+export type TransitionDecision =
+  | { kind: 'accepted'; retained: TransitionValues; message: string | null; decidedAt: string }
+  | { kind: 'rejected'; reason: string; decidedAt: string }
+  | { kind: 'published-directly' };
+
+/** A transition proposal as the simulated API keeps it, pending or decided (story 7). */
+export type SubmittedTransition = TransitionValues & {
+  id: string;
+  fromPoseId: string;
+  toPoseId: string;
+  contributorEmail: string;
+  submittedAt: string;
+  decision: TransitionDecision | null;
+};
+
+export const poseFields = [
+  'name',
+  'baseDifficulty',
+  'flyerDifficulty',
+  'canStartFlow',
+  'canEndFlow',
+] as const;
 
 /** Same normalisation and comparison key as the API (ADR 0017), enough for the scenarios of the site. */
 export const normalised = (name: string) => name.normalize('NFC').split(/\s+/u).filter(Boolean).join(' ');
@@ -77,6 +107,8 @@ export class ContributionApi {
   readonly submitted: SubmittedProposal[] = [];
   /** Every revision proposal received (story 6), in the order of submission. */
   readonly revisions: SubmittedRevision[] = [];
+  /** Every transition proposal received (story 7), in the order of submission. */
+  readonly transitions: SubmittedTransition[] = [];
   private unreachable = false;
   /** Proposals received, as sent by the site. */
   readonly received: ProposePoseRequest[] = [];
@@ -120,7 +152,7 @@ export class ContributionApi {
 
   /** One day apart, from 1 November 2026, proposals and revisions alike: the queue presents the oldest first. */
   private nextSubmissionDate(): string {
-    const count = this.submitted.length + this.revisions.length;
+    const count = this.submitted.length + this.revisions.length + this.transitions.length;
     return new Date(Date.UTC(2026, 10, 1 + count, 9)).toISOString();
   }
 
@@ -141,6 +173,39 @@ export class ContributionApi {
     this.revisions.push(submitted);
     if (directly) this.catalogApi.revise(revision.poseId, revision.changes);
     return submitted;
+  }
+
+  /**
+   * A transition proposal (« Alice a proposé la transition … », or sent by the site): pending, or published at once in
+   * the simulated catalog for a validator or an administrator (story 7).
+   */
+  addTransition(
+    transition: Pick<SubmittedTransition, 'fromPoseId' | 'toPoseId' | 'contributorEmail'> & TransitionValues,
+    directly: boolean,
+  ): SubmittedTransition {
+    const submitted: SubmittedTransition = {
+      ...transition,
+      id: crypto.randomUUID(),
+      submittedAt: this.nextSubmissionDate(),
+      decision: directly ? { kind: 'published-directly' } : null,
+    };
+    this.transitions.push(submitted);
+    if (directly) {
+      const { fromPoseId, toPoseId, name, baseDifficulty, flyerDifficulty, description } = transition;
+      this.catalogApi.publishTransition({
+        fromPoseId,
+        toPoseId,
+        name,
+        baseDifficulty,
+        flyerDifficulty,
+        description,
+      });
+    }
+    return submitted;
+  }
+
+  get pendingTransitions(): readonly SubmittedTransition[] {
+    return this.transitions.filter((transition) => transition.decision === null);
   }
 
   get pendingRevisions(): readonly SubmittedRevision[] {
@@ -166,7 +231,9 @@ export class ContributionApi {
       this.pending.some((proposal) => proposal.id !== except && keyOf(proposal.name) === keyOf(name)) ||
       this.pendingRevisions.some(
         (revision) =>
-          revision.id !== except && revision.changes.name !== undefined && keyOf(revision.changes.name) === keyOf(name),
+          revision.id !== except &&
+          revision.changes.name !== undefined &&
+          keyOf(revision.changes.name) === keyOf(name),
       )
     );
   }

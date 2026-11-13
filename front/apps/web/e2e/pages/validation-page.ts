@@ -42,9 +42,11 @@ export class ValidationPage {
     return new URL(this.page.url()).pathname === validationPath;
   }
 
+  /** The page is shown and its queue read (opened before the incidents of a scenario, it must not read it after). */
   async open(): Promise<void> {
     await this.page.goto(validationPath);
     await this.title.waitFor();
+    await this.page.getByText('Chargement des propositions…').waitFor({ state: 'detached' });
   }
 
   /** The card of the proposal of this pose (its proposed name). */

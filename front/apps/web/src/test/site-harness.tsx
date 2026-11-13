@@ -32,20 +32,39 @@ import {
   type MyPoseProposal,
   type MyPoseRevision,
   type MyProposalsFailure,
+  type PosePage,
+  type PosePageFailure,
+  type PosePageGateway,
   type ProposalFailure,
   type ProposalInputStore,
   type ProposalOutcome,
   type Result,
   type SessionMemory,
   type ValidPoseProposal,
+  type KeptTransitionInput,
+  type MyTransitionProposal,
+  type PendingTransitionProposal,
+  type TransitionAcceptance,
+  type TransitionAcceptanceOutcome,
+  type TransitionDescription,
+  type TransitionInputStore,
+  type TransitionName,
+  type TransitionPose,
+  type TransitionPosesFailure,
+  type TransitionProposalFailure,
+  type TransitionProposalGateway,
+  type TransitionProposalOutcome,
+  type ValidTransitionProposal,
 } from '@acrofunjam/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router';
 import { CatalogGatewayProvider } from '../catalog/CatalogGatewayContext';
+import { PosePageProvider } from '../catalog/PosePageContext';
 import { ContributionProvider } from '../contribution/ContributionContext';
 import { PoseRevisionProvider } from '../contribution/PoseRevisionContext';
+import { TransitionProposalProvider } from '../contribution/TransitionProposalContext';
 import { ValidationProvider } from '../contribution/ValidationContext';
 import { IdentityProvider } from '../identity/IdentityContext';
 import { routes } from '../routes';
@@ -95,6 +114,42 @@ export class MemoryProposalInputStore implements ProposalInputStore {
     this.kept = null;
   };
 }
+
+const star: TransitionPose = { id: 'pose-star', name: 'Star' };
+
+/**
+ * A transition pending validation (story 7): Alice proposes on 14 November 2026 « Ninja Star », from Star to Star,
+ * advanced / advanced, with a video link as description, unless stated otherwise.
+ */
+export const aPendingTransition = (
+  overrides: Partial<PendingTransitionProposal> = {},
+): PendingTransitionProposal => ({
+  kind: 'transition-proposal',
+  id: 'transition-ninja-star',
+  fromPose: star,
+  toPose: star,
+  transition: {
+    name: 'Ninja Star' as TransitionName,
+    baseDifficulty: 'advanced',
+    flyerDifficulty: 'advanced',
+    description: 'Vidéo : https://example.org/ninja-star' as TransitionDescription,
+  },
+  contributor: { email: 'alice@example.org', isYou: false },
+  submittedAt: new Date('2026-11-14T09:00:00Z'),
+  ...overrides,
+});
+
+/** A transition of the requester (story 7): « Ninja Star », from Star to Star, pending unless stated otherwise. */
+export const aMyTransition = (overrides: Partial<MyTransitionProposal> = {}): MyTransitionProposal => ({
+  kind: 'transition-proposal',
+  id: 'transition-ninja-star',
+  fromPose: star,
+  toPose: star,
+  transition: aPendingTransition().transition,
+  submittedAt: new Date('2026-11-14T09:00:00Z'),
+  status: { kind: 'pending' },
+  ...overrides,
+});
 
 /** A proposal pending validation, made by Alice on 3 November 2026 unless stated otherwise. */
 export const aPendingProposal = (overrides: Partial<PendingPoseProposal> = {}): PendingPoseProposal => ({
@@ -189,8 +244,13 @@ export class FakeValidationGateway implements ValidationGateway {
     ok({ name: 'Throne', adjusted: false }),
   ]);
   readonly rejection = new Answers<DecisionAnswer<void>>([ok(undefined)]);
+  /** Story 7: the acceptances of transitions, answered as Ninja Star published unless stated otherwise. */
+  readonly transitionAcceptance = new Answers<DecisionAnswer<TransitionAcceptanceOutcome>>([
+    ok({ name: 'Ninja Star', fromPose: star, toPose: star, adjusted: false }),
+  ]);
   countRequests = 0;
   readonly accepted: Array<{ id: string; kind: string; acceptance: Acceptance }> = [];
+  readonly acceptedTransitions: Array<{ id: string; kind: string; acceptance: TransitionAcceptance }> = [];
   readonly rejected: Array<{ id: string; kind: string; reason: RejectionReason }> = [];
 
   constructor(...proposals: PendingProposal[]) {
@@ -210,6 +270,10 @@ export class FakeValidationGateway implements ValidationGateway {
   acceptProposal = ({ id, kind }: ProposalReference, acceptance: Acceptance) => {
     this.accepted.push({ id, kind, acceptance });
     return this.acceptance.next();
+  };
+  acceptTransitionProposal = ({ id, kind }: ProposalReference, acceptance: TransitionAcceptance) => {
+    this.acceptedTransitions.push({ id, kind, acceptance });
+    return this.transitionAcceptance.next();
   };
   rejectProposal = ({ id, kind }: ProposalReference, reason: RejectionReason) => {
     this.rejected.push({ id, kind, reason });
@@ -233,7 +297,9 @@ export const aRevisablePose = (overrides: Partial<RevisablePose> = {}): Revisabl
 export class FakePoseRevisionGateway implements PoseRevisionGateway {
   readonly pose = new Answers<Result<RevisablePose, RevisionOpeningFailure>>([ok(aRevisablePose())]);
   readonly pending = new Answers<Result<PendingRevision | null, RevisionOpeningFailure>>([ok(null)]);
-  readonly answer = new Answers<Result<ProposalOutcome, RevisionFailure>>([ok({ status: 'pending', name: 'Throne' })]);
+  readonly answer = new Answers<Result<ProposalOutcome, RevisionFailure>>([
+    ok({ status: 'pending', name: 'Throne' }),
+  ]);
   readonly read: string[] = [];
   readonly sent: ValidPoseRevision[] = [];
 
@@ -245,6 +311,57 @@ export class FakePoseRevisionGateway implements PoseRevisionGateway {
   proposePoseRevision = (revision: ValidPoseRevision) => {
     this.sent.push(revision);
     return this.answer.next();
+  };
+}
+
+/** The page of a pose in the catalog (story 7): answered in turn (the last answer is repeated), the ids read. */
+export class FakePosePageGateway implements PosePageGateway {
+  readonly page: Answers<Result<PosePage, PosePageFailure>>;
+  readonly read: string[] = [];
+
+  constructor(...answers: Array<Result<PosePage, PosePageFailure> | 'held'>) {
+    this.page = new Answers(answers.length > 0 ? answers : [fail({ kind: 'not-found' })]);
+  }
+
+  getPosePage = (poseId: string) => {
+    this.read.push(poseId);
+    return this.page.next();
+  };
+}
+
+/** The published poses of the catalog as the form « Proposer une transition » reads them: Bird, Star, Throne. */
+export const transitionPoses: readonly TransitionPose[] = [
+  { id: 'pose-bird', name: 'Bird' },
+  star,
+  { id: 'pose-throne', name: 'Throne' },
+];
+
+/** Proposing a transition (story 7): the published poses, and the transitions sent, answered in turn. */
+export class FakeTransitionProposalGateway implements TransitionProposalGateway {
+  readonly poses = new Answers<Result<readonly TransitionPose[], TransitionPosesFailure>>([
+    ok(transitionPoses),
+  ]);
+  readonly answer = new Answers<Result<TransitionProposalOutcome, TransitionProposalFailure>>([
+    ok({ status: 'pending', fromPose: transitionPoses[2]!, toPose: transitionPoses[0]!, name: null }),
+  ]);
+  readonly sent: ValidTransitionProposal[] = [];
+
+  listPublishedPoses = () => this.poses.next();
+  proposeTransition = (transition: ValidTransitionProposal) => {
+    this.sent.push(transition);
+    return this.answer.next();
+  };
+}
+
+export class MemoryTransitionInputStore implements TransitionInputStore {
+  readonly kept = new Map<string, KeptTransitionInput>();
+  load = (originPoseId: string) => this.kept.get(originPoseId) ?? null;
+  save = (originPoseId: string, kept: KeptTransitionInput) => {
+    this.kept.set(originPoseId, kept);
+  };
+  clear = (originPoseId?: string) => {
+    if (originPoseId === undefined) this.kept.clear();
+    else this.kept.delete(originPoseId);
   };
 }
 
@@ -340,6 +457,9 @@ export const renderSite = (
     decisionStore = new MemoryDecisionInputStore(),
     revision = new FakePoseRevisionGateway(),
     revisionStore = new MemoryRevisionInputStore(),
+    posePage = new FakePosePageGateway(),
+    transitions = new FakeTransitionProposalGateway(),
+    transitionStore = new MemoryTransitionInputStore(),
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
   }: {
     gateway?: FakeAuthGateway;
@@ -351,6 +471,9 @@ export const renderSite = (
     decisionStore?: MemoryDecisionInputStore;
     revision?: FakePoseRevisionGateway;
     revisionStore?: MemoryRevisionInputStore;
+    posePage?: FakePosePageGateway;
+    transitions?: FakeTransitionProposalGateway;
+    transitionStore?: MemoryTransitionInputStore;
     queryClient?: QueryClient;
   } = {},
   extra?: ReactNode,
@@ -359,19 +482,23 @@ export const renderSite = (
   const view = render(
     <QueryClientProvider client={queryClient}>
       <CatalogGatewayProvider gateway={catalog}>
-        <ContributionProvider gateway={contribution} store={store}>
-          <ValidationProvider gateway={validation} store={decisionStore}>
-            <PoseRevisionProvider gateway={revision} store={revisionStore}>
-              <IdentityProvider
-                gateway={gateway}
-                memory={memory}
-                forgetOnSignOut={[store, decisionStore, revisionStore]}
-              >
-                <RouterProvider router={router} />
-              </IdentityProvider>
-            </PoseRevisionProvider>
-          </ValidationProvider>
-        </ContributionProvider>
+        <PosePageProvider gateway={posePage}>
+          <ContributionProvider gateway={contribution} store={store}>
+            <ValidationProvider gateway={validation} store={decisionStore}>
+              <PoseRevisionProvider gateway={revision} store={revisionStore}>
+                <TransitionProposalProvider gateway={transitions} store={transitionStore}>
+                  <IdentityProvider
+                    gateway={gateway}
+                    memory={memory}
+                    forgetOnSignOut={[store, decisionStore, revisionStore, transitionStore]}
+                  >
+                    <RouterProvider router={router} />
+                  </IdentityProvider>
+                </TransitionProposalProvider>
+              </PoseRevisionProvider>
+            </ValidationProvider>
+          </ContributionProvider>
+        </PosePageProvider>
       </CatalogGatewayProvider>
     </QueryClientProvider>,
   );
@@ -386,6 +513,9 @@ export const renderSite = (
     decisionStore,
     revision,
     revisionStore,
+    posePage,
+    transitions,
+    transitionStore,
     queryClient,
   };
 };

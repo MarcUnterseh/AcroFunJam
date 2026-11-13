@@ -39,6 +39,15 @@ Variante validateur ou administrateur : `h2` « La pose « Throne » est publié
 
 Pas de « Proposer une autre modification » : **aucun élément primaire** sous ce panneau, c'est voulu (rien à pousser après une modification). Mêmes tokens, même icône, mêmes règles d'empilement et de `flex-wrap`.
 
+### Variante transition (story 7)
+
+| Résultat | Titre (`h2`) | Texte (à confirmer par l'`ux-expert`) | Actions, dans cet ordre |
+|---|---|---|---|
+| Transition en attente (utilisateur) | « Merci, ta transition est envoyée. » | « La transition de Throne vers Bird est en attente de validation. Elle apparaîtra sur la page des deux poses quand un validateur l'aura acceptée. » | « Voir mes propositions », « Proposer une autre transition depuis Throne », « Revenir à Throne » |
+| Publication directe (validateur, administrateur) | « La transition « Ninja Star » de Star vers Star est publiée. » ; sans nom : « La transition de Throne vers Bird est publiée. » | « Elle apparaît maintenant sur la page des deux poses. » | « Voir la pose Throne », « Proposer une autre transition depuis Throne » |
+
+Toutes les actions sont des **liens-boutons secondaires** (même rendu, aucun primaire), dans l'ordre validé par l'`ux-expert` : rien n'est poussé plus qu'autre chose. « Proposer une autre transition depuis Throne » est le plus long libellé du site (~330 px en semi-gras) : en mobile il passe sur deux lignes à 320 px (`white-space: normal`, règle de `lien-bouton.md`) ; en grand écran, `flex-wrap` répartit les trois liens sur deux rangées dans la carte du formulaire. Voir la question « primaire » dans `../ecrans/7-proposer-une-transition.md`.
+
 - Un seul primaire ; les deux liens ont exactement le même rendu (secondaire, sans icône) : aucun des deux n'est poussé plus que l'autre.
 - « Voir mes propositions » vient avant « Voir le catalogue » : c'est là qu'on suit ce qu'on vient d'envoyer.
 

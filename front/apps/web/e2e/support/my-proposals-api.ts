@@ -1,8 +1,11 @@
 import type { BrowserContext, Route } from '@playwright/test';
 import type { components } from '@acrofunjam/api-client/schema';
+import type { CatalogApi } from './catalog-api';
 import {
   poseFields,
   type ContributionApi,
+  type SubmittedTransition,
+  type TransitionValues,
   type PoseValues,
   type SubmittedProposal,
   type SubmittedRevision,
@@ -13,6 +16,26 @@ type MyProposalsResponse = components['schemas']['MyProposalsResponse'];
 type MyProposalResponse = components['schemas']['MyProposalResponse'];
 type PoseAdjustmentsResponse = components['schemas']['PoseAdjustmentsResponse'];
 type PoseChangesResponse = components['schemas']['PoseChangesResponse'];
+type TransitionAdjustmentsResponse = components['schemas']['TransitionAdjustmentsResponse'];
+
+const transitionFields = ['name', 'baseDifficulty', 'flyerDifficulty', 'description'] as const;
+
+/** Only the adjusted fields of a transition, with the proposed and the retained value; null when nothing differs. */
+const transitionAdjustmentsOf = (
+  proposed: TransitionValues,
+  retained: TransitionValues,
+): TransitionAdjustmentsResponse | null => {
+  const adjusted = transitionFields.filter((field) => proposed[field] !== retained[field]);
+  if (adjusted.length === 0) return null;
+  const adjustment = <F extends (typeof transitionFields)[number]>(field: F) =>
+    adjusted.includes(field) ? { proposed: proposed[field], retained: retained[field] } : null;
+  return {
+    name: adjustment('name'),
+    baseDifficulty: adjustment('baseDifficulty') as TransitionAdjustmentsResponse['baseDifficulty'],
+    flyerDifficulty: adjustment('flyerDifficulty') as TransitionAdjustmentsResponse['flyerDifficulty'],
+    description: adjustment('description'),
+  };
+};
 type ProblemDetails = components['schemas']['ProblemDetails'];
 
 /** Only the adjusted fields, with the proposed and the retained value; null when nothing differs. */
@@ -122,6 +145,55 @@ const toRevisionResponse = (revision: SubmittedRevision): MyProposalResponse => 
   }
 };
 
+/** A transition as GET /contribution/my-proposals presents it (story 7): its poses under their current names. */
+const toTransitionResponse = (
+  catalogApi: CatalogApi,
+  transition: SubmittedTransition,
+): MyProposalResponse => {
+  const { id, submittedAt, decision } = transition;
+  const from = catalogApi.poseWithId(transition.fromPoseId)!;
+  const to = catalogApi.poseWithId(transition.toPoseId)!;
+  const proposed: TransitionValues = {
+    name: transition.name,
+    baseDifficulty: transition.baseDifficulty,
+    flyerDifficulty: transition.flyerDifficulty,
+    description: transition.description,
+  };
+  const common = {
+    kind: 'transition-proposal' as const,
+    id,
+    fromPose: { id: from.id, name: from.name },
+    toPose: { id: to.id, name: to.name },
+    submittedAt,
+    ...none,
+  };
+  switch (decision?.kind) {
+    case undefined:
+      return { ...common, status: 'pending', ...proposed };
+    case 'published-directly':
+      return { ...common, status: 'published-directly', ...proposed };
+    case 'rejected':
+      return {
+        ...common,
+        status: 'rejected',
+        ...proposed,
+        decidedAt: decision.decidedAt,
+        reason: decision.reason,
+      };
+    case 'accepted': {
+      const adjustments = transitionAdjustmentsOf(proposed, decision.retained);
+      return {
+        ...common,
+        status: adjustments ? 'accepted-with-adjustments' : 'accepted',
+        ...decision.retained,
+        decidedAt: decision.decidedAt,
+        adjustments,
+        message: adjustments ? decision.message : null,
+      };
+    }
+  }
+};
+
 /**
  * Simulated « Mes propositions » of the Contribution API (ADR 0023, ADR 0027): GET /contribution/my-proposals, the
  * pose proposals and the revisions of the requester only, the most recently submitted first; an accepted proposal
@@ -136,6 +208,7 @@ export class MyProposalsApi {
     private readonly context: BrowserContext,
     private readonly identityApi: IdentityApi,
     private readonly contributionApi: ContributionApi,
+    private readonly catalogApi: CatalogApi,
   ) {}
 
   async start(): Promise<void> {
@@ -156,6 +229,12 @@ export class MyProposalsApi {
       ...this.contributionApi.revisions
         .filter((revision) => mine(revision.contributorEmail))
         .map((revision) => ({ submittedAt: revision.submittedAt, item: toRevisionResponse(revision) })),
+      ...this.contributionApi.transitions
+        .filter((transition) => mine(transition.contributorEmail))
+        .map((transition) => ({
+          submittedAt: transition.submittedAt,
+          item: toTransitionResponse(this.catalogApi, transition),
+        })),
     ];
     const body: MyProposalsResponse = {
       proposals: items.sort((a, b) => b.submittedAt.localeCompare(a.submittedAt)).map(({ item }) => item),

@@ -8,14 +8,24 @@ import type {
 } from '../../domain/contribution/pose-proposal';
 import { retainedRevisionChangesNothing, revisedPose } from '../../domain/contribution/pose-revision';
 import { checkRejectionReason, type RejectionReasonError } from '../../domain/contribution/rejection-reason';
+import {
+  transitionAdjustmentsOf,
+  type TransitionAdjustmentInput,
+} from '../../domain/contribution/transition-adjustment';
+import type { TransitionFieldError } from '../../domain/contribution/transition-proposal';
+import type { TransitionPlaceTaken } from './TransitionProposalGateway';
 import type { DecisionInputStore, KeptDecision } from './DecisionInputStorePort';
 import type {
   Acceptance,
   AcceptanceOutcome,
   AccessFailure,
   DecisionFailure,
+  PendingPoseOrRevision,
   PendingProposal,
+  PendingTransitionProposal,
   ProposalReference,
+  TransitionAcceptance,
+  TransitionAcceptanceOutcome,
   ValidationGateway,
 } from './ValidationGateway';
 
@@ -39,7 +49,9 @@ export type DecisionError =
   | { readonly kind: 'name-already-in-catalog' }
   | { readonly kind: 'name-already-pending' }
   | { readonly kind: 'retained-revision-changes-nothing' }
-  | { readonly kind: 'pose-changed' };
+  | { readonly kind: 'pose-changed' }
+  | { readonly kind: TransitionPlaceTaken }
+  | { readonly kind: 'transition-pose-not-found' };
 
 export type RejectProposalError =
   DecisionError | { readonly kind: 'invalid-reason'; readonly code: RejectionReasonError };
@@ -132,12 +144,12 @@ const asProposed: Acceptance = { adjustments: [], note: null };
  * The pose the validator accepts as proposed, and adjusts from: the proposed pose, or the published pose with the
  * values a revision changes (story 6).
  */
-export const proposedPoseOf = (proposal: PendingProposal): PoseContent =>
+export const proposedPoseOf = (proposal: PendingPoseOrRevision): PoseContent =>
   proposal.kind === 'pose-revision' ? revisedPose(proposal.pose, proposal.changes) : proposal.pose;
 
 /** What to send: the adjustments and the note, or an acceptance as proposed when nothing differs. */
 const acceptanceOf = (
-  proposal: PendingProposal,
+  proposal: PendingPoseOrRevision,
   adjusted: AdjustedDecision | null,
 ): Result<Acceptance, AcceptProposalError> => {
   if (!adjusted) return ok(asProposed);
@@ -165,7 +177,7 @@ const acceptanceOf = (
 export const acceptProposal = async (
   gateway: ValidationGateway,
   store: DecisionInputStore,
-  proposal: PendingProposal,
+  proposal: PendingPoseOrRevision,
   adjusted: AdjustedDecision | null,
   owner: string,
 ): Promise<Result<AcceptanceOutcome, AcceptProposalError>> => {
@@ -173,6 +185,57 @@ export const acceptProposal = async (
   if (!acceptance.ok) return acceptance;
   const answer = await gateway.acceptProposal(proposal, acceptance.value);
   return recorded(store, owner, proposal.id, answer, adjusted && { kind: 'acceptance', ...adjusted });
+};
+
+export type AcceptTransitionError =
+  | DecisionError
+  | { readonly kind: 'invalid-input'; readonly errors: readonly TransitionFieldError[] }
+  | { readonly kind: 'invalid-note'; readonly code: AdjustmentNoteError };
+
+/** The values of a transition the validator retained and the message typed for the contributor (story 7). */
+export type AdjustedTransitionDecision = { readonly input: TransitionAdjustmentInput; readonly note: string };
+
+const asProposedTransition: TransitionAcceptance = { adjustments: [], note: null };
+
+/** What to send for a transition: the adjustments and the note, or an acceptance as proposed when nothing differs. */
+const transitionAcceptanceOf = (
+  proposal: PendingTransitionProposal,
+  adjusted: AdjustedTransitionDecision | null,
+): Result<TransitionAcceptance, AcceptTransitionError> => {
+  if (!adjusted) return ok(asProposedTransition);
+  const adjustments = transitionAdjustmentsOf(proposal.transition, adjusted.input);
+  if (!adjustments.ok) return fail({ kind: 'invalid-input', errors: adjustments.error });
+  const note = checkAdjustmentNote(adjusted.note);
+  if (!note.ok) return fail({ kind: 'invalid-note', code: note.error });
+  // A note only accompanies adjustments (R9 ter): without any, the acceptance is as proposed.
+  return ok(
+    adjustments.value.length > 0
+      ? { adjustments: adjustments.value, note: note.value }
+      : asProposedTransition,
+  );
+};
+
+/**
+ * Accepts a transition (story 7), as proposed or with the values retained by the validator (never its poses), checked
+ * first (no request if invalid). The API publishes the retained transition, unless its place is taken meanwhile.
+ */
+export const acceptTransitionProposal = async (
+  gateway: ValidationGateway,
+  store: DecisionInputStore,
+  proposal: PendingTransitionProposal,
+  adjusted: AdjustedTransitionDecision | null,
+  owner: string,
+): Promise<Result<TransitionAcceptanceOutcome, AcceptTransitionError>> => {
+  const acceptance = transitionAcceptanceOf(proposal, adjusted);
+  if (!acceptance.ok) return acceptance;
+  const answer = await gateway.acceptTransitionProposal(proposal, acceptance.value);
+  return recorded(
+    store,
+    owner,
+    proposal.id,
+    answer,
+    adjusted && { kind: 'transition-acceptance', ...adjusted },
+  );
 };
 
 /** Keeps the input of a decision for its owner, next to the other proposals of the same owner. */

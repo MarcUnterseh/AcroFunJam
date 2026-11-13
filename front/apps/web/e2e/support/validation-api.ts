@@ -10,6 +10,7 @@ import {
   type PoseValues,
   type ProposalDecision,
   type SubmittedRevision,
+  type SubmittedTransition,
 } from './contribution-api';
 import type { IdentityApi } from './identity-api';
 
@@ -149,8 +150,12 @@ export class ValidationApi {
       submittedAt: revision.submittedAt,
       item: this.pendingRevision(revision, contributor(revision.contributorEmail)),
     }));
+    const transitions = this.contributionApi.pendingTransitions.map((transition) => ({
+      submittedAt: transition.submittedAt,
+      item: this.pendingTransition(transition, contributor(transition.contributorEmail)),
+    }));
     const body: ValidationQueueResponse = {
-      proposals: [...proposals, ...revisions]
+      proposals: [...proposals, ...revisions, ...transitions]
         .sort((a, b) => a.submittedAt.localeCompare(b.submittedAt))
         .map(({ item }) => item),
     };
@@ -181,10 +186,35 @@ export class ValidationApi {
     };
   }
 
+  /** A pending transition (story 7): its poses under their current names, and the proposed transition. */
+  private pendingTransition(
+    transition: SubmittedTransition,
+    contributor: { email: string; isYou: boolean },
+  ): PendingProposalResponse {
+    const from = this.catalogApi.poseWithId(transition.fromPoseId)!;
+    const to = this.catalogApi.poseWithId(transition.toPoseId)!;
+    const { id, name, baseDifficulty, flyerDifficulty, description, submittedAt } = transition;
+    return {
+      kind: 'transition-proposal',
+      id,
+      fromPose: { id: from.id, name: from.name },
+      toPose: { id: to.id, name: to.name },
+      name,
+      baseDifficulty,
+      flyerDifficulty,
+      description,
+      contributor,
+      submittedAt,
+    };
+  }
+
   private async count(route: Route): Promise<void> {
     this.countRequests += 1;
     const body: PendingCountResponse = {
-      count: this.queue.length + this.contributionApi.pendingRevisions.length,
+      count:
+        this.queue.length +
+        this.contributionApi.pendingRevisions.length +
+        this.contributionApi.pendingTransitions.length,
     };
     return route.fulfill({ json: body });
   }

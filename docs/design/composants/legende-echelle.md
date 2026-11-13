@@ -38,6 +38,18 @@ L'`ol` porte déjà l'ordre (lu « liste de 4 éléments, 1 Découverte… ») :
 
 Tutoiement, tournure épicène (décisions 3 et 4 de `principes.md`). Pas d'icône ni de fond coloré : c'est un rappel, pas une alerte ; un fond `infoSurface` ou une icône le mettraient en concurrence avec les vrais messages d'état.
 
+## Variante page d'une pose (story 7)
+
+Même composant, sous le panneau des caractéristiques ; l'avertissement est raccourci et centré sur les transitions, même rendu (`size.sm`, `textMuted`) :
+
+« Tu restes juge de tes limites. Les chutes arrivent surtout pendant les transitions : apprends-les avec un spotter. »
+
+(Validé le 2026-11-13, Q106 : la phrase complète du catalogue alourdissait la page ; vocabulaire du glossaire : « spotter », « avertissement de responsabilité ».)
+
+- Toujours ni icône ni fond coloré : un rappel permanent n'est pas une alerte. Mettre l'avertissement dans un encadré `info` le banaliserait (les encadrés `info` disent des choses ponctuelles : session, publication directe).
+- Marge haute du bloc : `spacing.lg` sous le panneau des caractéristiques ; marge basse `spacing.lg` avant la première section.
+- Le texte peut faire 4 à 5 lignes à 320 px : il passe à la ligne normalement (pas de `nowrap`).
+
 ## Mobile (React Native)
 
 `View` en `flexDirection: 'row'`, `flexWrap: 'wrap'` ; points en `View` de `sizes.scaleDot` avec `borderRadius` égal à la moitié ; `importantForAccessibility="no-hide-descendants"` sur l'échelle.

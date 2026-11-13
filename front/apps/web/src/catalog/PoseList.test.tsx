@@ -1,7 +1,12 @@
 import type { PoseSummary } from '@acrofunjam/core';
-import { render, screen, within } from '@testing-library/react';
+import { render as renderInPage, screen, within } from '@testing-library/react';
+import type { ReactNode } from 'react';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { PoseList } from './PoseList';
+
+/** The cards lead to the page of their pose (story 7): they are rendered in a router. */
+const render = (list: ReactNode) => renderInPage(<MemoryRouter>{list}</MemoryRouter>);
 
 const poses: PoseSummary[] = [
   {
@@ -78,5 +83,25 @@ describe('PoseList', () => {
       (dots) => dots.querySelectorAll('.difficulty-dots__dot--filled').length,
     );
     expect(filled).toEqual([3, 4]);
+  });
+
+  it('should lead from the name of a card to the page of the pose, the only link of a visitor', () => {
+    render(<PoseList poses={poses} />);
+
+    const [card] = within(screen.getByRole('list', { name: 'Poses du catalogue' })).getAllByRole('listitem');
+    const name = within(card!).getByRole('heading', { level: 2 });
+    expect(within(name).getByRole('link', { name: 'Throne' })).toHaveAttribute('href', '/poses/p-1');
+    expect(within(card!).getAllByRole('link')).toHaveLength(1);
+  });
+
+  it('should keep « Proposer une modification » apart from the link of the name', () => {
+    render(<PoseList poses={poses} revisable />);
+
+    const [card] = within(screen.getByRole('list', { name: 'Poses du catalogue' })).getAllByRole('listitem');
+    expect(
+      within(card!)
+        .getAllByRole('link')
+        .map((link) => link.getAttribute('href')),
+    ).toEqual(['/poses/p-1', '/poses/p-1/proposer-une-modification']);
   });
 });

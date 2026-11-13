@@ -64,7 +64,7 @@ describe('page « Mes propositions »', () => {
     await screen.findByRole('list');
     expect(
       screen.getByText(
-        "Retrouve les poses et les modifications que tu as proposées, et ce qu'elles sont devenues.",
+        "Les poses, les modifications et les transitions que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
       ),
     ).toBeInTheDocument();
     expect(screen.getByText('2 propositions, de la plus récente à la plus ancienne')).toBeInTheDocument();
@@ -201,10 +201,10 @@ describe('page « Mes propositions »', () => {
   it('should say nothing was proposed yet, and invite to propose a pose, when there is no proposal', async () => {
     openMyProposals(withProposals());
 
-    expect(await screen.findByText("Tu n'as encore proposé aucune pose.")).toBeInTheDocument();
+    expect(await screen.findByText("Tu n'as encore rien proposé.")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Les poses et les modifications que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
+        "Les poses, les modifications et les transitions que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
       ),
     ).toBeInTheDocument();
     const link = screen.getByRole('link', { name: 'Proposer une pose' });
@@ -223,7 +223,7 @@ describe('page « Mes propositions »', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Impossible de charger tes propositions. Vérifie ta connexion Internet, puis réessaie.',
     );
-    expect(screen.queryByText("Tu n'as encore proposé aucune pose.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Tu n'as encore rien proposé.")).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Réessayer' }));
 
     expect(await card('Throne')).toBeInTheDocument();

@@ -12,13 +12,17 @@ import {
   type ProposalReference,
   type Result,
   type RevisionMessage,
+  type TransitionAcceptance,
+  type TransitionAdjustment,
   type ValidationGateway,
 } from '@acrofunjam/core';
 import type { ApiClient } from '../client';
 import type { components } from '../generated/schema';
 import { isDifficultyCode } from '../shared-kernel/difficulty-codes';
+import { toTransitionContent, toTransitionPose, transitionPlaceRefusals } from './transition-reading';
 
 type AcceptPoseProposalRequest = components['schemas']['AcceptPoseProposalRequest'];
+type AcceptTransitionProposalRequest = components['schemas']['AcceptTransitionProposalRequest'];
 
 const isString = (value: unknown): value is string => typeof value === 'string';
 const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
@@ -94,6 +98,14 @@ const toPendingProposal = (item: unknown): PendingProposal | null => {
         message: message as RevisionMessage | null,
       };
     }
+    case 'transition-proposal': {
+      // Story 7: its poses under their current names, and the proposed transition.
+      const fromPose = toTransitionPose(item['fromPose']);
+      const toPose = toTransitionPose(item['toPose']);
+      const transition = toTransitionContent(item);
+      if (!fromPose || !toPose || !transition) return null;
+      return { kind: 'transition-proposal', ...common, fromPose, toPose, transition };
+    }
     default:
       return null;
   }
@@ -143,6 +155,11 @@ const decisionRefusals: Readonly<Record<string, DecisionFailure>> = {
   // Story 6: the retained revision would leave the pose as it is; the pose changed since it was proposed.
   'contribution.retained-revision-changes-nothing': { kind: 'retained-revision-changes-nothing' },
   'contribution.pose-changed-since-revision-started': { kind: 'pose-changed' },
+  // Story 7: the retained name of a transition, or its place without a name, is taken between its poses.
+  ...transitionPlaceRefusals,
+  // Story 7: a pose of the transition left the catalog meanwhile.
+  'contribution.from-pose-not-found': { kind: 'transition-pose-not-found' },
+  'contribution.to-pose-not-found': { kind: 'transition-pose-not-found' },
 };
 
 // 401 and 403 whatever the code (session, deleted account, role withdrawn). The content rules (400 pose.*, the
@@ -156,6 +173,29 @@ const decisionFailure = (status: number, problem: unknown): DecisionFailure =>
 const toRequest = ({ adjustments, note }: Acceptance): AcceptPoseProposalRequest =>
   adjustments.reduce<AcceptPoseProposalRequest>(
     (request, adjustment) => ({ ...request, ...toField(adjustment) }),
+    note === null ? {} : { message: note },
+  );
+
+/**
+ * The retained value of an adjusted field of a transition, as the contract names it: a removed name or description is
+ * sent as an empty text (absent or null would keep the proposed one, ADR 0030).
+ */
+const toTransitionField = (adjustment: TransitionAdjustment): AcceptTransitionProposalRequest => {
+  switch (adjustment.field) {
+    case 'name':
+      return { name: adjustment.retained ?? '' };
+    case 'baseDifficulty':
+      return { baseDifficulty: adjustment.retained };
+    case 'flyerDifficulty':
+      return { flyerDifficulty: adjustment.retained };
+    case 'description':
+      return { description: adjustment.retained ?? '' };
+  }
+};
+
+const toTransitionRequest = ({ adjustments, note }: TransitionAcceptance): AcceptTransitionProposalRequest =>
+  adjustments.reduce<AcceptTransitionProposalRequest>(
+    (request, adjustment) => ({ ...request, ...toTransitionField(adjustment) }),
     note === null ? {} : { message: note },
   );
 
@@ -176,10 +216,16 @@ const acceptancePath = ({ kind }: ProposalReference) =>
     ? '/contribution/pose-revision-proposals/{id}/acceptance'
     : '/contribution/pose-proposals/{id}/acceptance';
 
-const rejectionPath = ({ kind }: ProposalReference) =>
-  kind === 'pose-revision'
-    ? '/contribution/pose-revision-proposals/{id}/rejection'
-    : '/contribution/pose-proposals/{id}/rejection';
+const rejectionPath = ({ kind }: ProposalReference) => {
+  switch (kind) {
+    case 'pose-revision':
+      return '/contribution/pose-revision-proposals/{id}/rejection';
+    case 'transition-proposal':
+      return '/contribution/transition-proposals/{id}/rejection';
+    default:
+      return '/contribution/pose-proposals/{id}/rejection';
+  }
+};
 
 /** HTTP adapter of the ValidationGateway port of @acrofunjam/core (story 4). */
 export const createValidationGateway = (client: ApiClient): ValidationGateway => ({
@@ -210,6 +256,29 @@ export const createValidationGateway = (client: ApiClient): ValidationGateway =>
       });
       if (!response.ok || !data) return fail(decisionFailure(response.status, error));
       return ok({ name: data.name, adjusted: data.adjusted });
+    }),
+
+  acceptTransitionProposal: (proposal, acceptance) =>
+    unlessUnreachable(async () => {
+      const { data, error, response } = await client.POST(
+        '/contribution/transition-proposals/{id}/acceptance',
+        {
+          params: { path: { id: proposal.id } },
+          body: toTransitionRequest(acceptance),
+        },
+      );
+      if (!response.ok || !data) return fail(decisionFailure(response.status, error));
+      const fromPose = toTransitionPose(data.fromPose);
+      const toPose = toTransitionPose(data.toPose);
+      const name: unknown = data.name;
+      if (
+        !fromPose ||
+        !toPose ||
+        (name !== null && typeof name !== 'string') ||
+        typeof data.adjusted !== 'boolean'
+      )
+        return fail({ kind: 'outdated' });
+      return ok({ name, fromPose, toPose, adjusted: data.adjusted });
     }),
 
   rejectProposal: (proposal, reason) =>

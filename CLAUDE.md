@@ -76,6 +76,7 @@ npm run typecheck --prefix front     # tsc -b + tsc mobile
 npm run generate --prefix front/packages/api-client   # régénère le contrat depuis l'API lancée (ou -- <fichier>)
 npm run dev --prefix front/apps/web  # http://localhost:5173, proxy vers l'API (API_PROXY_TARGET, défaut :5252)
 npm run e2e --prefix front/apps/web  # playwright-bdd (une fois : npx playwright install chromium)
+npm run screenshots --prefix front/apps/web  # captures des écrans d'une story (e2e/screenshots/story-<n>.screens.ts, API simulée) en 320 px et 1280 px → front/apps/web/screenshots/story-<n>/ (non versionné)
 npm start --prefix front/apps/mobile # Expo ; e2e mobile : maestro test front/apps/mobile/e2e/
 ```
 

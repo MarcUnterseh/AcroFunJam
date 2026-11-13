@@ -26,6 +26,8 @@ Si un nouveau contexte délimité apparaît : `/new-bounded-context`. Si une dé
 ### 2b. Conception visuelle (agent `ui-designer`), si la story touche une interface
 Transmets-lui les scénarios validés et la sortie de l'`ux-expert`. Il ajoute ou ajuste les tokens de `@acrofunjam/ui-tokens` et spécifie les composants et les écrans dans `docs/design/`. Présente à l'utilisateur ses choix visuels structurants (identité, palette, police) avant de les implémenter.
 
+**Maquette visuelle** : pour chaque écran nouveau ou profondément modifié, fais construire une maquette HTML statique fidèle à la spécification (valeurs des tokens de `@acrofunjam/ui-tokens` en variables CSS, libellés réels, états clés côte à côte : nominal, vide, erreur, succès ; mobile 320 px et grand écran ; thème sombre), enregistrée dans `docs/design/maquettes/<n>-<ecran>.html`, puis publie-la en page privée (outil Artifact) et donne le lien à l'utilisateur. **Point d'arrêt** : l'utilisateur valide la maquette avant l'implémentation des écrans.
+
 ## 3. Double boucle, pour chaque scénario (dans l'ordre conseillé)
 
 ### 3a. Boucle externe : RED d'acceptation
@@ -49,7 +51,10 @@ Retire le tag `@wip` du scénario, puis lance toutes les suites rapides.
 
 ## 4. Revue (agent `architecture-reviewer`)
 Corrige les points 🔴 et 🟠 (via de nouveaux cycles TDD si un comportement change).
-Si la story touche une interface, lance en parallèle une revue `ux-expert` (parcours, états, accessibilité des écrans livrés) et une revue `ui-designer` (respect des tokens et des spécifications de `docs/design/`).
+Si la story touche une interface :
+- **Captures du rendu réel** : lance `npm run screenshots --prefix front/apps/web` (Playwright, API mockée comme les e2e) pour photographier chaque écran de la story dans ses états clés, en mobile 320 px, en grand écran et en thème sombre ; les images vont dans `front/apps/web/screenshots/<story>/` (non versionné). Ajoute les cas de la story au script de captures s'ils n'y sont pas.
+- Lance en parallèle une revue `ux-expert` (parcours, états, accessibilité des écrans livrés) et une revue `ui-designer` (respect des tokens et des spécifications de `docs/design/`), en leur donnant le chemin des captures à examiner (outil Read sur les images) en plus du code.
+- Présente à l'utilisateur les captures principales (planche publiée en page privée avec l'outil Artifact) avec le résumé de la revue.
 
 ## 5. Clôture
 - Supprime `.claude/.state/tdd-phase`.

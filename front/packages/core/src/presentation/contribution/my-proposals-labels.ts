@@ -13,15 +13,18 @@ export const myProposalsLabels = {
   /** Link of the confirmation of « Proposer une pose ». */
   seeMyProposals: 'Voir mes propositions',
   signInContext: 'Connecte-toi pour accéder à tes propositions.',
-  introduction: "Retrouve les poses et les modifications que tu as proposées, et ce qu'elles sont devenues.",
+  // Story 7 revises story 5: every kind of proposal is announced (decision 10).
+  introduction:
+    "Les poses, les modifications et les transitions que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
   loading: 'Chargement de tes propositions…',
   loadingFailed: 'Impossible de charger tes propositions. Vérifie ta connexion Internet, puis réessaie.',
   loadingOutdated: 'Impossible de charger tes propositions : le site doit être mis à jour. Recharge la page.',
   retry: 'Réessayer',
   retrying: 'Chargement…',
   reload: 'Recharger la page',
-  emptyTitle: "Tu n'as encore proposé aucune pose.",
-  emptyText: "Les poses et les modifications que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
+  emptyTitle: "Tu n'as encore rien proposé.",
+  emptyText:
+    "Les poses, les modifications et les transitions que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
   // The session expired: the page tells it itself, in a lasting block (no banner of the site).
   sessionExpiredTitle: 'Ta session a expiré.',
   sessionExpiredText: 'Connecte-toi de nouveau pour retrouver tes propositions.',
@@ -99,6 +102,12 @@ const consequences = {
     adjusted: 'La pose est modifiée dans le catalogue avec ces ajustements.',
     rejected: 'La pose reste inchangée dans le catalogue.',
   },
+  'transition-proposal': {
+    pending: 'La transition apparaîtra dans le catalogue une fois acceptée.',
+    published: 'Elle est publiée dans le catalogue.',
+    adjusted: 'Elle est publiée dans le catalogue avec ces ajustements.',
+    rejected: "Elle n'est pas publiée dans le catalogue.",
+  },
 } as const;
 
 /** « Acceptée le 5 novembre 2026 »: the date of a decision, to the day (Q21). */
@@ -121,8 +130,8 @@ const decided = (
  * 6), whose consequences speak of the pose that changes.
  */
 export const myProposalStatusLabel = (
-  status: MyProposalStatus,
-  kind: 'pose-proposal' | 'pose-revision' = 'pose-proposal',
+  status: MyProposalStatus<unknown>,
+  kind: keyof typeof consequences = 'pose-proposal',
 ): MyProposalStatusLabel => {
   const consequence = consequences[kind];
   switch (status.kind) {

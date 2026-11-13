@@ -5,6 +5,9 @@ import type { PoseContent, ValidPoseProposal } from '../../domain/contribution/p
 import type { PoseValueChange } from '../../domain/contribution/pose-revision';
 import type { RejectionReason } from '../../domain/contribution/rejection-reason';
 import type { RevisionMessage } from '../../domain/contribution/revision-message';
+import type { TransitionAdjustment } from '../../domain/contribution/transition-adjustment';
+import type { TransitionContent, TransitionPose } from '../../domain/contribution/transition-proposal';
+import type { TransitionPlaceTaken } from './TransitionProposalGateway';
 
 /** Who made a proposal: their address (null if the account no longer exists), and whether it is the requester. */
 export type ProposalContributor = { readonly email: string | null; readonly isYou: boolean };
@@ -32,8 +35,25 @@ export type PendingPoseRevision = {
   readonly submittedAt: Date;
 };
 
-/** An item of the validation queue: a pose proposal or a revision proposal, mixed, the oldest first. */
-export type PendingProposal = PendingPoseProposal | PendingPoseRevision;
+/**
+ * A transition proposal pending validation (story 7, ADR 0030): its poses under their current names, and the proposed
+ * transition.
+ */
+export type PendingTransitionProposal = {
+  readonly kind: 'transition-proposal';
+  readonly id: string;
+  readonly fromPose: TransitionPose;
+  readonly toPose: TransitionPose;
+  readonly transition: TransitionContent;
+  readonly contributor: ProposalContributor;
+  readonly submittedAt: Date;
+};
+
+/** A proposal about a pose: a pose proposal or a revision, accepted with the adjustments of a pose. */
+export type PendingPoseOrRevision = PendingPoseProposal | PendingPoseRevision;
+
+/** An item of the validation queue: poses, revisions and transitions, mixed, the oldest first. */
+export type PendingProposal = PendingPoseOrRevision | PendingTransitionProposal;
 
 /** Which proposal a decision is about: the API decides each kind at its own address. */
 export type ProposalReference = Pick<PendingProposal, 'kind' | 'id'>;
@@ -46,6 +66,20 @@ export type Acceptance = {
 
 /** The pose published by an acceptance, as stated by the API: its retained name, and whether it was adjusted. */
 export type AcceptanceOutcome = { readonly name: string; readonly adjusted: boolean };
+
+/** What the validator sends to accept a transition: the adjusted values only, and the optional note. */
+export type TransitionAcceptance = {
+  readonly adjustments: readonly TransitionAdjustment[];
+  readonly note: AdjustmentNote | null;
+};
+
+/** The transition published by an acceptance, as stated by the API: its poses, its retained name, whether adjusted. */
+export type TransitionAcceptanceOutcome = {
+  readonly name: string | null;
+  readonly fromPose: TransitionPose;
+  readonly toPose: TransitionPose;
+  readonly adjusted: boolean;
+};
 
 /** Why the API refused to show the queue or to decide, whatever the proposal. */
 export type AccessFailure =
@@ -69,7 +103,11 @@ export type DecisionFailure =
   /** A revision whose retained values would leave the pose as it is (story 6, R15). */
   | { readonly kind: 'retained-revision-changes-nothing' }
   /** The pose of a revision changed since it was proposed (story 6, safety net of the API). */
-  | { readonly kind: 'pose-changed' };
+  | { readonly kind: 'pose-changed' }
+  /** The retained name of a transition, or its place without a name, is taken between its poses (story 7). */
+  | { readonly kind: TransitionPlaceTaken }
+  /** A pose of the transition left the catalog meanwhile (story 7): it can only be rejected. */
+  | { readonly kind: 'transition-pose-not-found' };
 
 /** Port: the validation of proposals by the Contribution API (implemented by @acrofunjam/api-client). */
 export interface ValidationGateway {
@@ -79,6 +117,11 @@ export interface ValidationGateway {
     proposal: ProposalReference,
     acceptance: Acceptance,
   ): Promise<Result<AcceptanceOutcome, DecisionFailure>>;
+  /** Story 7: a transition is accepted at its own address, with the adjustments of a transition. */
+  acceptTransitionProposal(
+    proposal: ProposalReference,
+    acceptance: TransitionAcceptance,
+  ): Promise<Result<TransitionAcceptanceOutcome, DecisionFailure>>;
   rejectProposal(
     proposal: ProposalReference,
     reason: RejectionReason,

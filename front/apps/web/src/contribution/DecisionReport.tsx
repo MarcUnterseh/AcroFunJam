@@ -1,4 +1,10 @@
-import { decisionReport, validationLabels, type RecordedDecision } from '@acrofunjam/core';
+import {
+  decisionReport,
+  transitionDecisionReport,
+  validationLabels,
+  type RecordedDecision,
+  type RecordedTransitionDecision,
+} from '@acrofunjam/core';
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import { Icon } from '../layout/Icon';
@@ -9,9 +15,17 @@ import { catalogPath } from '../paths';
  * until the page is loaded again: success for a publication, information for a rejection. Its title keeps the
  * heading level of the cards (h2) and takes the focus, so that the person does not lose their place.
  */
-export function DecisionReport({ recorded }: { readonly recorded: RecordedDecision }) {
+export function DecisionReport({
+  recorded,
+}: {
+  readonly recorded: RecordedDecision | RecordedTransitionDecision;
+}) {
   const title = useRef<HTMLHeadingElement>(null);
-  const { title: heading, text } = decisionReport(recorded);
+  // A transition is reported by its name and its poses (story 7).
+  const { title: heading, text } =
+    recorded.proposal === 'transition-proposal'
+      ? transitionDecisionReport(recorded)
+      : decisionReport(recorded);
   const accepted = recorded.decision === 'accepted';
 
   useEffect(() => title.current?.focus(), []);

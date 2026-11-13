@@ -3,14 +3,17 @@ import { test as base, createBdd } from 'playwright-bdd';
 import { CatalogPage } from './pages/catalog-page';
 import { IdentityForm, SiteHeader } from './pages/identity-pages';
 import { MyProposalsPage } from './pages/my-proposals-page';
+import { PosePage } from './pages/pose-page';
 import { ProposalForm } from './pages/proposal-form';
 import { RevisionForm } from './pages/revision-form';
+import { TransitionForm } from './pages/transition-form';
 import { ValidationPage } from './pages/validation-page';
 import { CatalogApi } from './support/catalog-api';
 import { ContributionApi } from './support/contribution-api';
 import { IdentityApi } from './support/identity-api';
 import { MyProposalsApi } from './support/my-proposals-api';
 import { PoseRevisionApi } from './support/pose-revision-api';
+import { TransitionApi } from './support/transition-api';
 import { ValidationApi } from './support/validation-api';
 
 type Fixtures = {
@@ -20,9 +23,12 @@ type Fixtures = {
   validationApi: ValidationApi;
   myProposalsApi: MyProposalsApi;
   poseRevisionApi: PoseRevisionApi;
+  transitionApi: TransitionApi;
   catalogPage: CatalogPage;
+  posePage: PosePage;
   proposalForm: ProposalForm;
   revisionForm: RevisionForm;
+  transitionForm: TransitionForm;
   validationPage: ValidationPage;
   myProposalsPage: MyProposalsPage;
   header: SiteHeader;
@@ -68,8 +74,8 @@ export const test = base.extend<Fixtures>({
     { auto: true },
   ],
   myProposalsApi: [
-    async ({ context, identityApi, contributionApi }, use) => {
-      const api = new MyProposalsApi(context, identityApi, contributionApi);
+    async ({ context, identityApi, contributionApi, catalogApi }, use) => {
+      const api = new MyProposalsApi(context, identityApi, contributionApi, catalogApi);
       await api.start();
       await use(api);
     },
@@ -83,9 +89,19 @@ export const test = base.extend<Fixtures>({
     },
     { auto: true },
   ],
+  transitionApi: [
+    async ({ context, identityApi, catalogApi, contributionApi }, use) => {
+      const api = new TransitionApi(context, identityApi, catalogApi, contributionApi);
+      await api.start();
+      await use(api);
+    },
+    { auto: true },
+  ],
   catalogPage: async ({ page }, use) => use(new CatalogPage(page)),
+  posePage: async ({ page }, use) => use(new PosePage(page)),
   proposalForm: async ({ page }, use) => use(new ProposalForm(page)),
   revisionForm: async ({ page }, use) => use(new RevisionForm(page)),
+  transitionForm: async ({ page }, use) => use(new TransitionForm(page)),
   validationPage: async ({ page }, use) => use(new ValidationPage(page)),
   myProposalsPage: async ({ page }, use) => use(new MyProposalsPage(page)),
   header: async ({ page }, use) => use(new SiteHeader(page)),

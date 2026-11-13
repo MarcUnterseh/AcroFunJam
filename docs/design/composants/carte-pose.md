@@ -1,6 +1,8 @@
 # Carte de pose
 
-Présentation d'une pose publiée dans la grille du catalogue. Remplace le tableau de la story 1. La carte n'est **pas interactive** en story 3 (pas encore de page de détail).
+Présentation d'une pose publiée dans la grille du catalogue. Remplace le tableau de la story 1. La carte n'est **pas interactive** en story 3 (pas encore de page de détail) ; elle mène à la page de la pose à partir de la story 7 (« Carte cliquable du catalogue »).
+
+Story 7 : la page d'une pose reprend la `dl` sans la modifier (panneau des caractéristiques) ; l'élément de transition (`element-transition.md`) et les cartes de transition (`carte-transition.md`) reprennent ses deux lignes « Base » / « Flyer ».
 
 Story 4 : la carte de proposition (`carte-proposition.md`) reprend son conteneur, son `h2` et sa `dl` **sans les modifier**, pour que le validateur voie la pose telle qu'elle sera publiée. Toute évolution de la `dl` ici s'applique aussi là.
 
@@ -49,10 +51,42 @@ Balisage : `li` (dans l'`ul` de la grille) > `article` facultatif > `h2` + `dl`.
 
 ## États
 
-Aucun état interactif en story 3 (ni survol, ni focus) ; story 6 : seul le lien « Proposer une modification » (section suivante) est interactif, la carte elle-même ne l'est pas. Quand la carte mènera au détail d'une pose :
-- le **nom** deviendra le lien (`h2 > a`), étendu à toute la carte par un pseudo-élément ; un arrêt de tabulation pour le nom, plus un pour « Proposer une modification » (personne connectée), qui reste cliquable au-dessus du pseudo-élément (`z-index`) ;
-- survol : fond `surfaceHover`, nom souligné ; focus : anneau `focus` autour de la carte entière ;
-- le contour passera de `divider` à `border` (la carte deviendra un contrôle, contraste 3:1 exigé).
+Aucun état interactif en story 3 (ni survol, ni focus) ; story 6 : seul le lien « Proposer une modification » (section suivante) est interactif. Story 7 : la carte du **catalogue** mène à la page de la pose (section suivante). Les cartes qui reprennent la `dl` (proposition, ma proposition, modification) restent non interactives.
+
+## Carte cliquable du catalogue (story 7)
+
+Le **nom** devient le lien vers `/poses/:id` (`h2 > a`), étendu à toute la carte par un pseudo-élément (`::after`, `position: absolute; inset: 0`, sur une carte en `position: relative`). Pas d'`onClick` sur le `li`. Deux arrêts de tabulation au plus : le nom, puis « Proposer une modification » (personne connectée), qui reste au-dessus du pseudo-élément (`position: relative; z-index: 1`, déjà en place).
+
+```
+┌──────────────────────────────────────┐   <- contour border (3,3:1) : la carte est un contrôle
+│ Throne                               │   <- h2 > a : text, bold, souligné en permanence
+│ ‾‾‾‾‾‾                               │
+│ Base                  Débutant ●●○○  │
+│ …                                    │
+│ ──────────────────────────────────── │
+│ Proposer une modification            │   <- au-dessus de la zone étendue
+└──────────────────────────────────────┘
+```
+
+| Élément | Tokens |
+|---|---|
+| Conteneur | contour **`border`** au lieu de `divider` (3,3:1 sur `background` : la carte devient un contrôle, 1.4.11) ; le reste inchangé (`surface`, `radius.md`, padding `spacing.md`) |
+| Lien du nom | couleur **`text`** (14,6:1 sur `surface`), `weight.bold`, souligné en permanence (`borderWidth`) ; `overflow-wrap: anywhere` ; zone cliquable = toute la carte |
+| Zone étendue (`::after`) | rayon `radius.md` (épouse la carte) ; aucune couleur |
+
+Pourquoi `text` et pas `primary` pour le nom : douze titres terre cuite concurrenceraient « Proposer une pose » et le lien « Proposer une modification » de chaque carte ; le soulignement permanent et le contour `border` disent « cliquable » sans la couleur (règle « jamais la couleur seule »).
+
+| État | Rendu |
+|---|---|
+| Repos | contour `border` ; nom souligné 1 px |
+| Survol de la carte (pointeur fin, hors lien « Proposer une modification ») | fond `surfaceHover` ; contour `text` ; nom souligné **2 px** (`borderWidthStrong`). Contrastes sur `surfaceHover` : `text` 13,9:1, `textMuted` 5,5:1, lien `primary` 4,65:1, point vide `border` 3,0:1 (décoratif) |
+| Focus du nom (`:focus-visible`) | anneau `focus` 3 px décalé de 2 px **autour de la carte entière** (`.pose-card:has(a:focus-visible)`, l'anneau propre du lien est retiré) ; rayon `radius.md` ; distinct du survol (pas de changement de fond) |
+| Pressé | identique au survol : un fond `divider` ferait tomber le lien `primary` à 4,0:1 |
+| Survol du lien « Proposer une modification » | seul ce lien réagit (règles de la section suivante) ; la carte garde son fond de repos (`:has(.pose-card__revision-link:hover)`) |
+
+- Sans `:has()` : l'anneau reste sur le lien du nom (repli acceptable).
+- `forced-colors: active` : contour `CanvasText`, nom en `LinkText` souligné, anneau `Highlight`.
+- Sélection du texte : la zone étendue empêche de sélectionner le texte de la carte à la souris ; accepté (le nom et les valeurs se lisent sur la page de la pose).
 
 ## Lien « Proposer une modification » (story 6)
 

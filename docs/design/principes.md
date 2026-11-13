@@ -40,6 +40,37 @@ Une couleur d'accent (primaire), des neutres, et trois couleurs de retour (dange
 | `badge` | `#343A40` gris anthracite | fond de la pastille de compteur (en-tête), story 4 |
 | `badgeContrast` | `#FFFFFF` | chiffres de la pastille, story 4 |
 
+### Story 7 (proposition du 2026-11-13) : aucun nouveau token
+
+- Carte cliquable du catalogue : contour `border` (3,3:1, la carte devient un contrôle), nom en `text` souligné en permanence (pas en `primary`, pour ne pas multiplier la terre cuite dans la grille), survol `surfaceHover`, anneau `focus` autour de la carte (`composants/carte-pose.md`).
+- Page d'une pose : même colonne que les pages de suivi (≈ 690 px, `formWideMaxWidth`), transitions en **liste plate** à filets `divider`, sans carte par transition (`composants/element-transition.md`).
+- Transition sans nom : « Throne → Bird » avec l'icône flèche existante en `textMuted`, décorative ; le nom accessible porte le sens.
+- Liste déroulante native stylée comme un champ (`composants/champ.md`).
+- Nouveaux couples vérifiés : `textMuted` sur `surfaceHover` 5,5:1 ; `textMuted` sur `divider` 4,7:1 ; `primary` sur `divider` **4,0:1** (insuffisant : aucun lien `primary` sur fond `divider`, d'où une carte pressée identique à la carte survolée).
+
+### Thème sombre (proposition de la story 7, non tokenisé)
+
+Le mode sombre reste **hors périmètre** des écrans livrés. La maquette `maquettes/7-page-pose-et-transition.html` en propose une première palette, pour juger si l'identité tient. Si elle est retenue, elle deviendra un second jeu de couleurs dans `@acrofunjam/ui-tokens` (mêmes rôles, par exemple `colorsDark`) et `toCssVariables()` produira une redéfinition sous `prefers-color-scheme: dark` : décision structurante, à valider (ADR).
+
+| Rôle | Clair | Sombre proposé | Contrastes vérifiés (sombre) |
+|---|---|---|---|
+| `background` / `surface` / `surfaceHover` | `#FFFFFF` / `#F8F9FA` / `#F1F3F5` | `#121417` / `#1C1F24` / `#262A30` | — |
+| `text` | `#212529` | `#E9ECEF` | 15,6 / 13,9 / 12,2:1 sur les trois fonds |
+| `textMuted` | `#5C636A` | `#ADB5BD` | 8,9 / 8,0 / 6,9:1 |
+| `border` | `#868E96` | `#7D8590` | 4,9 / 4,4 / 3,9:1 |
+| `divider` | `#DEE2E6` | `#343A40` | décoratif |
+| `primary` / `primaryHover` / `primaryActive` | `#C2410C` / `#9A3412` / `#7C2D12` | `#F2804A` / `#F79B6C` / `#FAB48E` | `primary` : 7,0 / 6,3 / 5,5:1 sur les trois fonds ; s'éclaircit au survol (sur fond sombre, « plus marqué » = plus clair) |
+| `primaryContrast` | `#FFFFFF` | `#121417` | 7,0:1 sur `primary` sombre ; texte **sombre** sur le bouton (un blanc sur une terre cuite assez claire pour les liens sur fond sombre tomberait sous 3:1) |
+| `focus` / `info` | `#1864AB` | `#74C0FC` | 9,4 / 8,4:1 sur `background` / `surface` |
+| `infoSurface` | `#E7F5FF` | `#0F2A40` | `text` 12,4:1, `info` 7,5:1 |
+| `danger` / `dangerSurface` | `#C92A2A` / `#FFF5F5` | `#FF8787` / `#3A1618` | `danger` 8,0:1 sur `background`, 6,9:1 sur `dangerSurface` |
+| `success` / `successSurface` | `#237032` / `#EBFBEE` | `#69DB7C` / `#0F2E1A` | `success` 8,4:1 sur `successSurface`, 9,5:1 sur `surface` |
+| `selected` / `selectedSurface` | `#9A3412` / `#FFF4E6` | `#F79B6C` / `#3A2416` | `text` 12,3:1 et `selected` 6,8:1 sur `selectedSurface` |
+| `disabledSurface` | `#E9ECEF` | `#2B3035` | `textMuted` ≥ 6:1 |
+| `badge` / `badgeContrast` | `#343A40` / `#FFFFFF` | `#DEE2E6` / `#212529` | 11,8:1 (pastille claire sur en-tête sombre : 12,7:1) |
+
+Règles inchangées : terre cuite pour l'action et les liens seulement, danger jamais en fond plein, focus bleu.
+
 ### Story 6 (proposition du 2026-11-12) : aucun nouveau token
 
 - Lien « Proposer une modification » des cartes du catalogue : lien **textuel** `primary` souligné sur `surface` (4,9:1 ; survol `primaryHover` 6,9:1, pressé `primaryActive` 8,9:1), zone de 44 px (`composants/carte-pose.md`).
@@ -160,7 +191,7 @@ Rien en dessous de 14 px. Les champs restent à 16 px (évite le zoom automatiqu
 
 ## Icônes
 
-Mises en œuvre en 2b : erreur (cercle + point d'exclamation), information (cercle + « i ») ; le bouton du mot de passe est en texte seul (pas d'œil). Story 3 : **coche** et **tiret** (valeurs Oui / Non des cartes, `sizes.icon`), **plus** (lien « Proposer une pose »), **succès** (cercle + coche, `sizes.iconLarge`). Story 4 : **flèche vers la droite** (récapitulatif « proposé → retenu »), succès en `sizes.icon` (compte rendu de décision) ; aucune icône sur les boutons de décision (poids égal). Story 5 : **horloge** (proposition en attente, `composants/statut-proposition.md`), même cadran que erreur et information ; le lien « Mes propositions » est sans icône. SVG en ligne dessinés dans le dépôt (trait 2 px sur une grille de 20, `currentColor`, `aria-hidden="true"` car toujours accompagnés d'un texte), **sans bibliothèque d'icônes** (une bibliothèque demanderait un ADR).
+Mises en œuvre en 2b : erreur (cercle + point d'exclamation), information (cercle + « i ») ; le bouton du mot de passe est en texte seul (pas d'œil). Story 3 : **coche** et **tiret** (valeurs Oui / Non des cartes, `sizes.icon`), **plus** (lien « Proposer une pose »), **succès** (cercle + coche, `sizes.iconLarge`). Story 4 : **flèche vers la droite** (récapitulatif « proposé → retenu »), succès en `sizes.icon` (compte rendu de décision) ; aucune icône sur les boutons de décision (poids égal). Story 5 : **horloge** (proposition en attente, `composants/statut-proposition.md`), même cadran que erreur et information ; le lien « Mes propositions » est sans icône. Story 7 : **chevron gauche** (lien de retour « Catalogue »), **chevron bas** (liste déroulante) ; la **flèche** existante sert aussi au libellé « Throne → Bird ». SVG en ligne dessinés dans le dépôt (trait 2 px sur une grille de 20, `currentColor`, `aria-hidden="true"` car toujours accompagnés d'un texte), **sans bibliothèque d'icônes** (une bibliothèque demanderait un ADR).
 
 ## Mouvement
 

@@ -4,9 +4,12 @@ import { DifficultyDots } from './DifficultyDots';
 
 /**
  * Legend of the difficulty scale, then the responsibility warning (docs/design/composants/legende-echelle.md).
- * The ordered list carries the order: no "<" between the levels.
+ * The ordered list carries the order: no "<" between the levels. The page of a pose gives its own warning, about
+ * the transitions (« Variante page d'une pose », story 7).
  */
-export function DifficultyLegend() {
+export function DifficultyLegend({
+  warning = catalogLabels.responsibilityWarning,
+}: { readonly warning?: string } = {}) {
   const introduction = useId();
   return (
     <div className="difficulty-legend">
@@ -22,7 +25,7 @@ export function DifficultyLegend() {
           </li>
         ))}
       </ol>
-      <p className="difficulty-legend__warning">{catalogLabels.responsibilityWarning}</p>
+      <p className="difficulty-legend__warning">{warning}</p>
     </div>
   );
 }

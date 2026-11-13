@@ -18,10 +18,12 @@ import {
 import type { ApiClient } from '../client';
 import type { components } from '../generated/schema';
 import { isDifficultyCode } from '../shared-kernel/difficulty-codes';
+import { toTransitionAdjustments, toTransitionContent, toTransitionPose } from './transition-reading';
 
 type ProposePoseRequest = components['schemas']['ProposePoseRequest'];
 type MyPoseProposalResponse = components['schemas']['MyProposalResponseMyPoseProposalResponse'];
 type MyPoseRevisionResponse = components['schemas']['MyProposalResponseMyPoseRevisionResponse'];
+type MyTransitionProposalResponse = components['schemas']['MyProposalResponseMyTransitionProposalResponse'];
 type PoseAdjustmentsResponse = components['schemas']['PoseAdjustmentsResponse'];
 
 const nameRefusals: Readonly<Record<string, ProposalFailure>> = {
@@ -99,8 +101,9 @@ const isString = (v: unknown): v is string => typeof v === 'string';
 const isBoolean = (v: unknown): v is boolean => typeof v === 'boolean';
 
 /** The adjusted fields, in the order of the form; undefined when they cannot be read (none, or unreadable). */
-const toAdjustments = (adjustments: PoseAdjustmentsResponse | null): PoseAdjustment[] | undefined => {
-  if (adjustments === null || typeof adjustments !== 'object') return undefined;
+const toAdjustments = (value: unknown): PoseAdjustment[] | undefined => {
+  if (value === null || typeof value !== 'object') return undefined;
+  const adjustments = value as PoseAdjustmentsResponse;
   const name = change(adjustments.name, isString);
   const base = change(adjustments.baseDifficulty, isDifficultyCode);
   const flyer = change(adjustments.flyerDifficulty, isDifficultyCode);
@@ -116,8 +119,6 @@ const toAdjustments = (adjustments: PoseAdjustmentsResponse | null): PoseAdjustm
   if (end) read.push({ field: 'canEndFlow', ...end });
   return read.length > 0 ? read : undefined;
 };
-
-const unknownStatus: MyProposalStatus = { kind: 'unknown' };
 
 const valueChecks = {
   name: isString,
@@ -174,8 +175,32 @@ const toMyProposal = (item: ItemOfMyProposals): MyProposal | undefined => {
         // The API returns the normalised name of the pose when proposed.
         poseName: revision.poseName as PoseName,
         submittedAt: new Date(revision.submittedAt),
-        status: toStatus(revision),
+        status: toStatus(revision, toAdjustments),
         changes,
+      };
+    }
+    case 'transition-proposal': {
+      // Story 7: its poses under their current names, the transition retained once accepted, proposed otherwise.
+      const transition = item as unknown as MyTransitionProposalResponse;
+      const fromPose = toTransitionPose(transition.fromPose);
+      const toPose = toTransitionPose(transition.toPose);
+      const content = toTransitionContent(item);
+      if (
+        typeof transition.id !== 'string' ||
+        !fromPose ||
+        !toPose ||
+        !content ||
+        !isDate(transition.submittedAt)
+      )
+        return undefined;
+      return {
+        kind: 'transition-proposal',
+        id: transition.id,
+        fromPose,
+        toPose,
+        transition: content,
+        submittedAt: new Date(transition.submittedAt),
+        status: toStatus(transition, toTransitionAdjustments),
       };
     }
     default:
@@ -183,8 +208,19 @@ const toMyProposal = (item: ItemOfMyProposals): MyProposal | undefined => {
   }
 };
 
-/** The status for the contributor; "unknown" when it cannot be read (unknown code, or a known one without its details). */
-const toStatus = (proposal: MyPoseProposalResponse | MyPoseRevisionResponse): MyProposalStatus => {
+type DecidedItem = Pick<MyPoseProposalResponse, 'status' | 'decidedAt' | 'message' | 'reason'> & {
+  readonly adjustments: unknown;
+};
+
+/**
+ * The status for the contributor, its adjustments read as those of its kind of proposal; "unknown" when it cannot be
+ * read (unknown code, or a known one without its details).
+ */
+const toStatus = <A>(
+  proposal: DecidedItem,
+  adjustmentsOf: (adjustments: unknown) => A[] | undefined,
+): MyProposalStatus<A> => {
+  const unknownStatus: MyProposalStatus<A> = { kind: 'unknown' };
   const status: string = proposal.status;
   if (status === 'pending') return { kind: 'pending' };
   if (status === 'published-directly') return { kind: 'published-directly' };
@@ -194,7 +230,7 @@ const toStatus = (proposal: MyPoseProposalResponse | MyPoseRevisionResponse): My
     case 'accepted':
       return { kind: 'accepted', decidedAt };
     case 'accepted-with-adjustments': {
-      const adjustments = toAdjustments(proposal.adjustments);
+      const adjustments = adjustmentsOf(proposal.adjustments);
       if (!adjustments || (proposal.message !== null && !isString(proposal.message))) return unknownStatus;
       return {
         kind: 'accepted-with-adjustments',
@@ -223,7 +259,7 @@ const toMyPoseProposal = (proposal: MyPoseProposalResponse): MyProposal => ({
     canEndFlow: proposal.canEndFlow,
   },
   submittedAt: new Date(proposal.submittedAt),
-  status: toStatus(proposal),
+  status: toStatus(proposal, toAdjustments),
 });
 
 /** HTTP adapter of the ContributionGateway port of @acrofunjam/core. */

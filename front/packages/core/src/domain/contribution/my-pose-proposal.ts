@@ -4,19 +4,21 @@ import type { PoseName } from '../shared-kernel/pose-name';
 import type { PoseContent } from './pose-proposal';
 import type { PoseValueChange } from './pose-revision';
 import type { RejectionReason } from './rejection-reason';
+import type { TransitionAdjustment } from './transition-adjustment';
+import type { TransitionContent, TransitionPose } from './transition-proposal';
 
 /**
  * What became of a proposal, for its contributor (glossary « Statut pour le contributeur », ADR 0023): never who
  * decided. "unknown": a status the site cannot read (an API newer than the site).
  */
-export type MyProposalStatus =
+export type MyProposalStatus<A = PoseAdjustment> =
   | { readonly kind: 'pending' }
   | { readonly kind: 'accepted'; readonly decidedAt: Date }
   | {
       readonly kind: 'accepted-with-adjustments';
       readonly decidedAt: Date;
       /** The adjusted fields only, in the order of the form: proposed → retained. */
-      readonly adjustments: readonly PoseAdjustment[];
+      readonly adjustments: readonly A[];
       readonly message: AdjustmentNote | null;
     }
   | { readonly kind: 'rejected'; readonly decidedAt: Date; readonly reason: RejectionReason }
@@ -50,5 +52,20 @@ export type MyPoseRevision = {
   readonly changes: readonly PoseValueChange[];
 };
 
-/** An item of « Mes propositions »: a pose proposal or a revision proposal, mixed, the most recent first. */
-export type MyProposal = MyPoseProposal | MyPoseRevision;
+/**
+ * A transition proposal of the requester (story 7, ADR 0030): its poses under their current names, and the transition,
+ * retained once accepted, proposed otherwise; its adjustments are those of a transition (name, difficulties,
+ * description).
+ */
+export type MyTransitionProposal = {
+  readonly kind: 'transition-proposal';
+  readonly id: string;
+  readonly fromPose: TransitionPose;
+  readonly toPose: TransitionPose;
+  readonly transition: TransitionContent;
+  readonly submittedAt: Date;
+  readonly status: MyProposalStatus<TransitionAdjustment>;
+};
+
+/** An item of « Mes propositions »: pose proposals, revisions and transitions, mixed, the most recent first. */
+export type MyProposal = MyPoseProposal | MyPoseRevision | MyTransitionProposal;

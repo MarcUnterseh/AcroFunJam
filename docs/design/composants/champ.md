@@ -26,7 +26,28 @@ Ton mot de passe doit contenir au moins 10 caractères.           <- aide (facul
 - Ordre sous le champ : aide, compteur, erreur.
 - Pas de texte indicatif (*placeholder*) en guise de libellé ; s'il y en a un, il est en `textMuted`.
 - Aucun astérisque : tous les champs des stories 2b et 3 sont obligatoires ; l'introduction du formulaire le dit (« Tous les champs sont obligatoires. », story 3).
-- Champ **facultatif** (story 4, « Message pour le contributeur ») : le mot « (facultatif) » fait partie du libellé, même graisse ; pas d'autre marque visuelle.
+- Champ **facultatif** (story 4, « Message pour le contributeur ») : le mot « (facultatif) » fait partie du libellé, même graisse ; pas d'autre marque visuelle. Story 7 : on marque les champs facultatifs (« (facultatif) », « (facultative) »), jamais les obligatoires ; l'introduction du formulaire nomme les facultatifs.
+
+## Variante liste déroulante (story 7)
+
+`select` natif pour choisir une valeur dans une liste longue (pose de départ, pose d'arrivée). Natif pour l'accessibilité et la saisie au clavier (lettres tapées), sans bibliothèque.
+
+```
+Pose d'arrivée
+┌──────────────────────────────┐
+│ Choisis une pose           ⌄ │   <- 48 px, chevron aria-hidden
+└──────────────────────────────┘
+```
+
+| Élément | Rendu |
+|---|---|
+| Contrôle | mêmes dimensions, bordure, rayon, fond, typo et états que le champ texte ; `appearance: none` ; padding droit `spacing.md` + `sizes.icon` + `spacing.sm` (place du chevron) ; largeur 100 % de la colonne ; `text-overflow: ellipsis` sur la valeur affichée (la liste ouverte montre les noms en entier) |
+| Chevron | icône **chevron bas** (nouvelle, trait 2 px, grille de 20, `currentColor`), `sizes.icon`, `text`, `aria-hidden` ; dans un conteneur `position: relative`, à `spacing.md` du bord droit, centré verticalement, `pointer-events: none` |
+| Option vide | « Choisis une pose », valeur vide, sélectionnée par défaut ; pas de `disabled` (on doit pouvoir y revenir) ; rendu natif |
+| Liste ouverte | rendu natif du système (non stylée) ; `color-scheme` de la page pour un rendu cohérent en thème sombre |
+| Invalide | bordure 2 px `danger` (`aria-invalid="true"`), padding compensé ; erreur sous le champ comme le champ texte |
+
+Mode contraste élevé : bordure et chevron en `CanvasText` (via `currentColor`).
 
 ## Variante zone de texte (story 4)
 

@@ -9,8 +9,8 @@ import {
   validatorTextErrorLabel,
   validatorTextLength,
   type KeptDecision,
+  type PendingPoseOrRevision,
   type PendingPoseRevision,
-  type PendingProposal,
   type PoseContent,
   type PoseFieldValue,
   type ProposalField,
@@ -28,7 +28,7 @@ import { useProposalDecision, type Sending } from './useProposalDecision';
 import { ValidatorTextCounter } from './ValidatorTextCounter';
 
 /** « Proposée par alice@example.org le 3 novembre 2026 »: the contributor emphasised, the date in a time. */
-function ContributorLine({ proposal }: { readonly proposal: PendingProposal }) {
+function ContributorLine({ proposal }: { readonly proposal: PendingPoseOrRevision }) {
   const line = contributorLine(proposal.contributor, proposal.submittedAt);
   // A deleted account has no address to emphasise: « un compte supprimé » is plain text.
   const known = proposal.contributor.isYou || proposal.contributor.email !== null;
@@ -84,7 +84,7 @@ export function ProposalCard({
   kept,
   onDecided,
 }: {
-  readonly proposal: PendingProposal;
+  readonly proposal: PendingPoseOrRevision;
   /** Address of the validator the queue was shown to: the owner of the kept input (ADR 0019). */
   readonly owner: string;
   /** The input kept in the tab for this proposal, given back after an expired session or an outage. */
@@ -148,7 +148,9 @@ export function ProposalCard({
     <article className="proposal-card" aria-labelledby={titleId}>
       <h2 ref={refs.title} id={titleId} className="proposal-card__name" tabIndex={-1}>
         {/* The space outside the prefix: the accessible name reads « Modification de Throne ». */}
-        {revision && <span className="proposal-card__name-prefix">{revisionCardLabels.titlePrefix.trim()}</span>}
+        {revision && (
+          <span className="proposal-card__name-prefix">{revisionCardLabels.titlePrefix.trim()}</span>
+        )}
         {revision ? ` ${name}` : name}
       </h2>
       <ContributorLine proposal={proposal} />
