@@ -32,6 +32,8 @@ Balisage : `div` (`display: flex`) > icône (`aria-hidden`) + `div` contenu > `p
 | **Information** | refusée | information (cercle + « i ») | `info` 5,8:1 | « Refusée le 5 novembre 2026 » | « Elle n'est pas publiée dans le catalogue. » (le motif suit, `carte-ma-proposition.md`) |
 | **Neutre** | statut inconnu | information | `textMuted` | « Statut indisponible. Recharge la page. » (sans texte masqué « Statut : ») | aucune |
 
+**Story 6, proposition de modification** (`carte-ma-modification.md`) : mêmes variantes, mêmes icônes, mêmes mots de statut ; seules les conséquences changent (textes validés par l'`ux-expert`) : en attente « La pose changera dans le catalogue une fois la modification acceptée. » ; acceptée et publiée directement « La pose est modifiée dans le catalogue. » ; acceptée avec ajustements « La pose est modifiée dans le catalogue avec ces ajustements. » ; refusée « La pose reste inchangée dans le catalogue. ».
+
 - **Refusée n'est jamais en `danger`** (ni icône d'erreur, ni texte rouge) : un refus n'est pas une faute de la personne (`principes.md`, story 4). Ton information, comme le compte rendu d'un refus côté validateur.
 - **En attente** est neutre (`textMuted`), ni orange ni bleu : rien à faire, rien d'anormal. L'horloge dit « le temps passe », sans urgence.
 - **Statut inconnu** : icône information en `textMuted` (et non `info`) pour ne pas ressembler à un refus ; le texte suffit. Pas de `danger` : la proposition n'a pas de problème, c'est le site qui est en retard.

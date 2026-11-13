@@ -52,6 +52,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/catalog/poses/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetPublishedPose"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/contribution/pose-proposals": {
         parameters: {
             query?: never;
@@ -132,16 +148,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/contribution/my-pose-proposals": {
+    "/contribution/my-proposals": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["GetMyPoseProposals"];
+        get: operations["GetMyProposals"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contribution/pose-revision-proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ProposePoseRevision"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contribution/pose-revision-proposals/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetPendingRevisionOfPose"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contribution/pose-revision-proposals/{id}/acceptance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AcceptPoseRevision"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contribution/pose-revision-proposals/{id}/rejection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RejectPoseRevision"];
         delete?: never;
         options?: never;
         head?: never;
@@ -647,11 +727,27 @@ export interface components {
             proposed: components["schemas"]["DifficultyCode"];
             retained: components["schemas"]["DifficultyCode"];
         };
+        DifficultyChangeResponse: {
+            current: components["schemas"]["DifficultyCode"];
+            proposed: components["schemas"]["DifficultyCode"];
+        };
         /** @enum {unknown} */
         DifficultyCode: "discovery" | "beginner" | "intermediate" | "advanced";
+        DifficultyValueChangeResponse: {
+            before: components["schemas"]["DifficultyCode"];
+            after: components["schemas"]["DifficultyCode"];
+        };
         FlowAdjustmentResponse: {
             proposed: boolean;
             retained: boolean;
+        };
+        FlowChangeResponse: {
+            current: boolean;
+            proposed: boolean;
+        };
+        FlowValueChangeResponse: {
+            before: boolean;
+            after: boolean;
         };
         ForgotPasswordRequest: {
             email: string;
@@ -687,7 +783,10 @@ export interface components {
             role: string;
             capabilities: string[];
         };
-        MyPoseProposalResponse: {
+        MyProposalResponse: components["schemas"]["MyProposalResponseMyPoseProposalResponse"] | components["schemas"]["MyProposalResponseMyPoseRevisionResponse"];
+        MyProposalResponseMyPoseProposalResponse: {
+            /** @enum {string} */
+            kind?: "pose-proposal";
             /** Format: uuid */
             id: string;
             status: components["schemas"]["MyProposalStatusCode"];
@@ -704,8 +803,24 @@ export interface components {
             message: null | string;
             reason: null | string;
         };
-        MyPoseProposalsResponse: {
-            proposals: components["schemas"]["MyPoseProposalResponse"][];
+        MyProposalResponseMyPoseRevisionResponse: {
+            /** @enum {string} */
+            kind?: "pose-revision";
+            /** Format: uuid */
+            id: string;
+            status: components["schemas"]["MyProposalStatusCode"];
+            poseName: string;
+            /** Format: date-time */
+            submittedAt: string;
+            /** Format: date-time */
+            decidedAt: null | string;
+            changes: components["schemas"]["PoseChangesResponse"];
+            adjustments: null | components["schemas"]["PoseAdjustmentsResponse"];
+            message: null | string;
+            reason: null | string;
+        };
+        MyProposalsResponse: {
+            proposals: components["schemas"]["MyProposalResponse"][];
         };
         /** @enum {unknown} */
         MyProposalStatusCode: "pending" | "accepted" | "accepted-with-adjustments" | "rejected" | "published-directly";
@@ -713,11 +828,22 @@ export interface components {
             proposed: string;
             retained: string;
         };
+        NameChangeResponse: {
+            current: string;
+            proposed: string;
+        };
+        NameValueChangeResponse: {
+            before: string;
+            after: string;
+        };
         PendingCountResponse: {
             /** Format: int32 */
             count: number | string;
         };
-        PendingPoseProposalResponse: {
+        PendingProposalResponse: components["schemas"]["PendingProposalResponsePendingPoseProposalResponse"] | components["schemas"]["PendingProposalResponsePendingPoseRevisionResponse"];
+        PendingProposalResponsePendingPoseProposalResponse: {
+            /** @enum {string} */
+            kind?: "pose-proposal";
             /** Format: uuid */
             id: string;
             name: string;
@@ -729,12 +855,37 @@ export interface components {
             /** Format: date-time */
             submittedAt: string;
         };
+        PendingProposalResponsePendingPoseRevisionResponse: {
+            /** @enum {string} */
+            kind?: "pose-revision";
+            /** Format: uuid */
+            id: string;
+            pose: components["schemas"]["RevisedPoseResponse"];
+            changes: components["schemas"]["RevisionChangesResponse"];
+            message: null | string;
+            contributor: components["schemas"]["ProposalContributorResponse"];
+            /** Format: date-time */
+            submittedAt: string;
+        };
+        PendingRevisionOfPoseResponse: {
+            pendingRevision: null | components["schemas"]["PendingRevisionResponse"];
+        };
+        PendingRevisionResponse: {
+            isYours: boolean;
+        };
         PoseAdjustmentsResponse: {
             name: null | components["schemas"]["NameAdjustmentResponse"];
             baseDifficulty: null | components["schemas"]["DifficultyAdjustmentResponse"];
             flyerDifficulty: null | components["schemas"]["DifficultyAdjustmentResponse"];
             canStartFlow: null | components["schemas"]["FlowAdjustmentResponse"];
             canEndFlow: null | components["schemas"]["FlowAdjustmentResponse"];
+        };
+        PoseChangesResponse: {
+            name: null | components["schemas"]["NameValueChangeResponse"];
+            baseDifficulty: null | components["schemas"]["DifficultyValueChangeResponse"];
+            flyerDifficulty: null | components["schemas"]["DifficultyValueChangeResponse"];
+            canStartFlow: null | components["schemas"]["FlowValueChangeResponse"];
+            canEndFlow: null | components["schemas"]["FlowValueChangeResponse"];
         };
         PoseListResponse: {
             poses: components["schemas"]["PoseSummaryResponse"][];
@@ -743,6 +894,18 @@ export interface components {
             /** Format: uuid */
             id: string;
             status: components["schemas"]["ProposalStatusCode"];
+            name: string;
+            baseDifficulty: components["schemas"]["DifficultyCode"];
+            flyerDifficulty: components["schemas"]["DifficultyCode"];
+            canStartFlow: boolean;
+            canEndFlow: boolean;
+        };
+        PoseRevisionProposalResponse: {
+            /** Format: uuid */
+            id: string;
+            status: components["schemas"]["ProposalStatusCode"];
+            /** Format: uuid */
+            poseId: string;
             name: string;
             baseDifficulty: components["schemas"]["DifficultyCode"];
             flyerDifficulty: components["schemas"]["DifficultyCode"];
@@ -779,6 +942,29 @@ export interface components {
             canStartFlow: null | boolean;
             canEndFlow: null | boolean;
         };
+        ProposePoseRevisionRequest: {
+            /** Format: uuid */
+            poseId: string;
+            /** Format: int32 */
+            poseVersion: null | number | string;
+            name: null | string;
+            baseDifficulty: null | string;
+            flyerDifficulty: null | string;
+            canStartFlow: null | boolean;
+            canEndFlow: null | boolean;
+            message: null | string;
+        };
+        PublishedPoseResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            baseDifficulty: components["schemas"]["DifficultyCode"];
+            flyerDifficulty: components["schemas"]["DifficultyCode"];
+            canStartFlow: boolean;
+            canEndFlow: boolean;
+            /** Format: int32 */
+            version: number | string;
+        };
         RefreshRequest: {
             refreshToken: string;
         };
@@ -802,6 +988,22 @@ export interface components {
             resetCode: string;
             newPassword: string;
         };
+        RevisedPoseResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            baseDifficulty: components["schemas"]["DifficultyCode"];
+            flyerDifficulty: components["schemas"]["DifficultyCode"];
+            canStartFlow: boolean;
+            canEndFlow: boolean;
+        };
+        RevisionChangesResponse: {
+            name: null | components["schemas"]["NameChangeResponse"];
+            baseDifficulty: null | components["schemas"]["DifficultyChangeResponse"];
+            flyerDifficulty: null | components["schemas"]["DifficultyChangeResponse"];
+            canStartFlow: null | components["schemas"]["FlowChangeResponse"];
+            canEndFlow: null | components["schemas"]["FlowChangeResponse"];
+        };
         RoleChangeRequest: {
             email: null | string;
             role: null | string;
@@ -822,7 +1024,7 @@ export interface components {
             isMachineRemembered: boolean;
         };
         ValidationQueueResponse: {
-            proposals: components["schemas"]["PendingPoseProposalResponse"][];
+            proposals: components["schemas"]["PendingProposalResponse"][];
         };
     };
     responses: never;
@@ -887,6 +1089,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PoseListResponse"];
+                };
+            };
+        };
+    };
+    GetPublishedPose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishedPoseResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
         };
@@ -1178,7 +1411,7 @@ export interface operations {
             };
         };
     };
-    GetMyPoseProposals: {
+    GetMyProposals: {
         parameters: {
             query?: never;
             header?: never;
@@ -1193,7 +1426,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MyPoseProposalsResponse"];
+                    "application/json": components["schemas"]["MyProposalsResponse"];
                 };
             };
             /** @description Unauthorized */
@@ -1207,6 +1440,284 @@ export interface operations {
             };
             /** @description Forbidden */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ProposePoseRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProposePoseRevisionRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PoseRevisionProposalResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetPendingRevisionOfPose: {
+        parameters: {
+            query: {
+                poseId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PendingRevisionOfPoseResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    AcceptPoseRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": null | components["schemas"]["AcceptPoseProposalRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcceptedPoseProposalResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    RejectPoseRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectPoseProposalRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedPoseProposalResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

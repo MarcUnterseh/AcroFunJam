@@ -54,7 +54,7 @@ describe('accepting a proposal as proposed', () => {
     await user.click(button(card, 'Publication…'));
 
     expect(validation.accepted).toEqual([
-      { id: 'proposal-throne', acceptance: { adjustments: [], note: null } },
+      { id: 'proposal-throne', kind: 'pose-proposal', acceptance: { adjustments: [], note: null } },
     ]);
     expect(button(card, 'Publication…')).toHaveAttribute('aria-disabled', 'true');
     expect(button(card, 'Refuser')).toHaveAttribute('aria-disabled', 'true');
@@ -130,7 +130,9 @@ describe('accepting a proposal as proposed', () => {
       await user.click(button(card, 'Accepter et publier'));
 
       await within(card).findByRole('alert');
-      await waitFor(() => expect(within(card).getByRole('heading', { level: 2, name: 'Throne' })).toHaveFocus());
+      await waitFor(() =>
+        expect(within(card).getByRole('heading', { level: 2, name: 'Throne' })).toHaveFocus(),
+      );
     },
   );
 
@@ -234,7 +236,9 @@ describe('accepting a proposal as proposed', () => {
 
     await user.click(button(screen.getByRole('article', { name: 'Star' }), 'Accepter et publier'));
     expect(await screen.findByText('Toutes les propositions de la liste sont traitées.')).toBeInTheDocument();
-    expect(screen.getAllByRole('heading', { level: 2, name: /est publiée dans le catalogue/ })).toHaveLength(2);
+    expect(screen.getAllByRole('heading', { level: 2, name: /est publiée dans le catalogue/ })).toHaveLength(
+      2,
+    );
   });
 
   it('should remove the alert of the expired session when the validator is signed in again (another tab)', async () => {
@@ -330,7 +334,7 @@ describe('rejecting a proposal', () => {
     await waitFor(() => expect(title).toHaveFocus());
     expect(screen.getByText('Le contributeur verra ton motif.')).toBeInTheDocument();
     expect(validation.rejected).toEqual([
-      { id: 'proposal-throne', reason: "Ce n'est pas une pose tenable." },
+      { id: 'proposal-throne', kind: 'pose-proposal', reason: "Ce n'est pas une pose tenable." },
     ]);
   });
 
@@ -478,6 +482,7 @@ describe('adjusting a proposal before accepting it', () => {
     expect(validation.accepted).toEqual([
       {
         id: 'proposal-throne',
+        kind: 'pose-proposal',
         acceptance: {
           adjustments: [{ field: 'flyerDifficulty', proposed: 'discovery', retained: 'beginner' }],
           note: 'Plutôt débutant côté flyer.',
@@ -525,8 +530,8 @@ describe('adjusting a proposal before accepting it', () => {
       note: null,
     };
     expect(validation.accepted).toEqual([
-      { id: 'proposal-throne', acceptance: adjusted },
-      { id: 'proposal-throne', acceptance: adjusted },
+      { id: 'proposal-throne', kind: 'pose-proposal', acceptance: adjusted },
+      { id: 'proposal-throne', kind: 'pose-proposal', acceptance: adjusted },
     ]);
   });
 
@@ -544,7 +549,9 @@ describe('adjusting a proposal before accepting it', () => {
     const { card, user } = await openAdjustment();
     await user.click(radio(card, 'Difficulté flyer', 'Débutant'));
     await user.click(button(card, 'Vérifier les ajustements'));
-    await user.click(within(card).getByRole('textbox', { name: 'Message pour le contributeur (facultatif)' }));
+    await user.click(
+      within(card).getByRole('textbox', { name: 'Message pour le contributeur (facultatif)' }),
+    );
 
     await user.paste('x'.repeat(450));
 

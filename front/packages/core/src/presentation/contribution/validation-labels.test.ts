@@ -1,19 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import type { PoseAdjustment } from '../../domain/contribution/pose-adjustment';
+import type { PoseValueChange } from '../../domain/contribution/pose-revision';
 import {
   adjustedNameRefusalLabel,
   adjustmentLine,
   contributorLine,
+  currentValueLabel,
   decisionFailureLabel,
+  decisionLabelsOf,
   decisionReport,
   pendingBadge,
   pendingCountLabel,
   pendingCountSuffix,
   proposedValueLabel,
   validationLabels,
+  revisionCardLabels,
   validationLinkName,
   validatorTextCounterLabel,
   validatorTextErrorLabel,
+  valueChangeLine,
 } from './validation-labels';
 
 describe('validationLabels', () => {
@@ -119,22 +124,65 @@ describe('contributorLine', () => {
 
 describe('decisionReport', () => {
   it('should say the pose is published in the catalog when it is accepted as proposed', () => {
-    expect(decisionReport({ decision: 'accepted', name: 'Throne', adjusted: false })).toEqual({
+    expect(decisionReport({ proposal: 'pose-proposal', decision: 'accepted', name: 'Throne', adjusted: false })).toEqual({
       title: 'La pose « Throne » est publiée dans le catalogue.',
       text: null,
     });
   });
 
   it('should say the pose is published with the adjustments of the validator when it was adjusted', () => {
-    expect(decisionReport({ decision: 'accepted', name: 'Throne', adjusted: true }).title).toBe(
+    expect(decisionReport({ proposal: 'pose-proposal', decision: 'accepted', name: 'Throne', adjusted: true }).title).toBe(
       'La pose « Throne » est publiée dans le catalogue avec tes ajustements.',
     );
   });
 
   it('should say the proposal is rejected and that its contributor will see the reason', () => {
-    expect(decisionReport({ decision: 'rejected', name: 'Front Bird' })).toEqual({
+    expect(decisionReport({ proposal: 'pose-proposal', decision: 'rejected', name: 'Front Bird' })).toEqual({
       title: 'La proposition « Front Bird » est refusée.',
       text: 'Le contributeur verra ton motif.',
+    });
+  });
+});
+
+describe('decisionReport of a revision (story 6)', () => {
+  it('should say the pose is modified in the catalog when the revision is accepted', () => {
+    expect(
+      decisionReport({ proposal: 'pose-revision', decision: 'accepted', name: 'Throne', adjusted: false }),
+    ).toEqual({ title: 'La pose « Throne » est modifiée dans le catalogue.', text: null });
+  });
+
+  it('should say the pose is modified with the adjustments of the validator when it was adjusted', () => {
+    expect(
+      decisionReport({ proposal: 'pose-revision', decision: 'accepted', name: 'Throne', adjusted: true }).title,
+    ).toBe('La pose « Throne » est modifiée dans le catalogue avec tes ajustements.');
+  });
+
+  it('should say the revision is rejected and that its contributor will see the reason', () => {
+    expect(decisionReport({ proposal: 'pose-revision', decision: 'rejected', name: 'Throne' })).toEqual({
+      title: 'La modification de « Throne » est refusée.',
+      text: 'Le contributeur verra ton motif.',
+    });
+  });
+});
+
+describe('decisionLabelsOf', () => {
+  it('should name the decisions on a pose proposal as in story 4', () => {
+    expect(decisionLabelsOf('pose-proposal')).toEqual({
+      accept: 'Accepter et publier',
+      adjust: 'Ajuster avant de publier',
+      adjustTitle: 'Ajuster avant de publier',
+      publishAdjusted: 'Publier avec ces ajustements',
+      nothingAdjusted: "Tu n'as rien modifié. Tu peux accepter la proposition telle quelle.",
+    });
+  });
+
+  it('should name the decisions on a revision as the screen of story 6 specifies them', () => {
+    expect(decisionLabelsOf('pose-revision')).toEqual({
+      accept: 'Accepter la modification',
+      adjust: "Ajuster avant d'accepter",
+      adjustTitle: "Ajuster avant d'accepter",
+      publishAdjusted: 'Accepter avec ces ajustements',
+      nothingAdjusted: "Tu n'as rien modifié. Tu peux accepter la modification telle quelle.",
     });
   });
 });
@@ -160,6 +208,14 @@ describe('decisionFailureLabel', () => {
     [
       'name-already-pending',
       "Une autre proposition de ce nom attend d'être validée. Ajuste le nom avant de publier, ou refuse la proposition si c'est un doublon.",
+    ],
+    [
+      'retained-revision-changes-nothing',
+      'Avec ces ajustements, la pose ne changerait pas. Modifie tes ajustements, ou refuse la modification.',
+    ],
+    [
+      'pose-changed',
+      'Cette pose a changé depuis que la modification a été proposée. Recharge la page pour voir ses valeurs actuelles.',
     ],
   ] as const)('should explain "%s" as "%s"', (kind, label) => {
     expect(decisionFailureLabel(kind)).toBe(label);
@@ -238,6 +294,35 @@ describe('proposedValueLabel', () => {
   });
 });
 
+describe('currentValueLabel', () => {
+  it.each([
+    [{ field: 'name', value: 'Throne' }, 'Actuellement : Throne'],
+    [{ field: 'baseDifficulty', value: 'beginner' }, 'Actuellement : Débutant'],
+    [{ field: 'canEndFlow', value: false }, 'Actuellement : Non'],
+  ] as const)('should remind the current value %o as "%s"', (current, label) => {
+    expect(currentValueLabel(current)).toBe(label);
+  });
+});
+
+describe('valueChangeLine', () => {
+  it.each([
+    [
+      { field: 'name', before: 'Thron', after: 'Throne' },
+      { term: 'Nom de la pose', before: 'Thron', after: 'Throne' },
+    ],
+    [
+      { field: 'flyerDifficulty', before: 'intermediate', after: 'discovery' },
+      { term: 'Difficulté flyer', before: 'Intermédiaire', after: 'Découverte' },
+    ],
+    [
+      { field: 'canStartFlow', before: false, after: true },
+      { term: 'Peut commencer un flow', before: 'Non', after: 'Oui' },
+    ],
+  ] as const)('should present the change %o in a summary « avant → après »', (change, line) => {
+    expect(valueChangeLine(change as PoseValueChange)).toEqual(line);
+  });
+});
+
 describe('adjustmentLine', () => {
   it.each([
     [
@@ -263,7 +348,8 @@ describe('validationLabels', () => {
       navigation: 'Contribution',
       title: 'Propositions à valider',
       shortTitle: 'À valider',
-      introduction: 'Vérifie chaque proposition, puis publie-la, ajuste-la avant de la publier ou refuse-la.',
+      introduction:
+        "Vérifie chaque proposition de pose ou de modification : accepte-la, ajuste-la avant de l'accepter ou refuse-la.",
     });
   });
 
@@ -315,5 +401,19 @@ describe('validationLabels', () => {
 
   it('should announce the input given back after signing in again, the decision still to be sent', () => {
     expect(validationLabels.inputRestored).toBe('Ta saisie a été restaurée. Tu peux envoyer ta décision.');
+  });
+});
+
+describe('revisionCardLabels', () => {
+  it('should present a revision as the card of story 6 specifies it', () => {
+    expect(revisionCardLabels).toEqual({
+      titlePrefix: 'Modification de ',
+      changesTitle: 'Ce qui change dans la pose',
+      changesKey: 'Valeur actuelle → valeur proposée',
+      before: 'Actuellement : ',
+      after: ', proposé : ',
+      message: 'Message de modification',
+      revisedPose: 'La pose après modification',
+    });
   });
 });

@@ -8,10 +8,34 @@ import {
 } from 'react';
 import { Icon } from './Icon';
 
+/** One help, or several (« Actuellement : Throne », then « 60 caractères au maximum. »), each in its paragraph. */
+export type Help = string | readonly string[] | undefined;
+
+export const helpsOf = (help: Help): readonly string[] =>
+  help === undefined ? [] : typeof help === 'string' ? [help] : help;
+
+/** The ids of the helps of a field, in order: « <id>-aide », « <id>-aide-2 »… */
+export const helpIds = (id: string, help: Help): string[] =>
+  helpsOf(help).map((_, index) => (index === 0 ? `${id}-aide` : `${id}-aide-${index + 1}`));
+
+/**
+ * Tag « Modifiée » in a label or a legend (docs/design/composants/etiquette-modifiee.md): hidden from the
+ * accessible name, read in the description instead (the field refers to it first).
+ */
+export function ModifiedTag({ id, text }: { readonly id: string; readonly text: string }) {
+  return (
+    <span id={id} className="modified-tag" aria-hidden="true">
+      {text}
+    </span>
+  );
+}
+
 type FieldProps = {
   readonly label: string;
-  readonly help?: string | undefined;
+  readonly help?: Help;
   readonly error?: string | undefined;
+  /** « Modifiée »: the value differs from the current one (story 6). */
+  readonly tag?: string | undefined;
 } & Omit<InputHTMLAttributes<HTMLInputElement>, 'aria-invalid' | 'aria-describedby'>;
 
 /**
@@ -21,14 +45,20 @@ type FieldProps = {
 export const Field = forwardRef<
   HTMLInputElement,
   FieldProps & { readonly trailing?: ReactNode; readonly counter?: ReactNode }
->(function Field({ label, help, error, trailing, counter, id, ...input }, ref) {
+>(function Field({ label, help, error, tag, trailing, counter, id, ...input }, ref) {
   const generated = useId();
   const inputId = id ?? generated;
+  const helps = helpsOf(help);
+  const helpIdsOfField = helpIds(inputId, help);
+  const tagId = `${inputId}-etiquette`;
   const describedBy =
-    [help && `${inputId}-aide`, error && `${inputId}-erreur`].filter(Boolean).join(' ') || undefined;
+    [tag && tagId, ...helpIdsOfField, error && `${inputId}-erreur`].filter(Boolean).join(' ') || undefined;
   return (
     <div className="field">
-      <label htmlFor={inputId}>{label}</label>
+      <label htmlFor={inputId} className={tag ? 'field__label--tagged' : undefined}>
+        {label}
+        {tag && <ModifiedTag id={tagId} text={tag} />}
+      </label>
       <div className="field__control">
         <input
           ref={ref}
@@ -39,11 +69,11 @@ export const Field = forwardRef<
         />
         {trailing}
       </div>
-      {help && (
-        <p id={`${inputId}-aide`} className="field__help">
-          {help}
+      {helps.map((text, index) => (
+        <p key={helpIdsOfField[index]} id={helpIdsOfField[index]} className="field__help">
+          {text}
         </p>
-      )}
+      ))}
       {counter}
       {error && (
         <p id={`${inputId}-erreur`} className="field__error">
@@ -125,19 +155,22 @@ export const PasswordField = forwardRef<HTMLInputElement, FieldProps>(function P
 });
 
 /**
- * Alert at the top of a form for a refusal coming from the API (role="alert", the focus stays put).
+ * Alert at the top of a form for a refusal coming from the API (role="alert", the focus stays put, unless the
+ * element that had it disappeared: the alert may then take it, tabIndex -1).
  * Information variant: nothing went wrong on the person's side (expired session, input kept).
  */
-export function FormAlert({
-  variant = 'error',
-  children,
-}: {
-  readonly variant?: 'error' | 'info';
-  readonly children: ReactNode;
-}) {
+export const FormAlert = forwardRef<
+  HTMLDivElement,
+  { readonly variant?: 'error' | 'info'; readonly children: ReactNode }
+>(function FormAlert({ variant = 'error', children }, ref) {
   return (
-    <div role="alert" className={`form-alert${variant === 'info' ? ' form-alert--info' : ''}`}>
+    <div
+      ref={ref}
+      role="alert"
+      tabIndex={ref ? -1 : undefined}
+      className={`form-alert${variant === 'info' ? ' form-alert--info' : ''}`}
+    >
       {children}
     </div>
   );
-}
+});

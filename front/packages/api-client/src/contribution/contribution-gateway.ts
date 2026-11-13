@@ -9,6 +9,7 @@ import {
   type PoseAdjustment,
   type RejectionReason,
   type PoseName,
+  type PoseValueChange,
   type ProposalFailure,
   type ProposalOutcome,
   type Result,
@@ -19,7 +20,8 @@ import type { components } from '../generated/schema';
 import { isDifficultyCode } from '../shared-kernel/difficulty-codes';
 
 type ProposePoseRequest = components['schemas']['ProposePoseRequest'];
-type MyPoseProposalResponse = components['schemas']['MyPoseProposalResponse'];
+type MyPoseProposalResponse = components['schemas']['MyProposalResponseMyPoseProposalResponse'];
+type MyPoseRevisionResponse = components['schemas']['MyProposalResponseMyPoseRevisionResponse'];
 type PoseAdjustmentsResponse = components['schemas']['PoseAdjustmentsResponse'];
 
 const nameRefusals: Readonly<Record<string, ProposalFailure>> = {
@@ -106,7 +108,8 @@ const toAdjustments = (adjustments: PoseAdjustmentsResponse | null): PoseAdjustm
   const end = change(adjustments.canEndFlow, isBoolean);
   if ([name, base, flyer, start, end].includes(undefined)) return undefined;
   const read: PoseAdjustment[] = [];
-  if (name) read.push({ field: 'name', proposed: name.proposed as PoseName, retained: name.retained as PoseName });
+  if (name)
+    read.push({ field: 'name', proposed: name.proposed as PoseName, retained: name.retained as PoseName });
   if (base) read.push({ field: 'baseDifficulty', ...base });
   if (flyer) read.push({ field: 'flyerDifficulty', ...flyer });
   if (start) read.push({ field: 'canStartFlow', ...start });
@@ -116,8 +119,72 @@ const toAdjustments = (adjustments: PoseAdjustmentsResponse | null): PoseAdjustm
 
 const unknownStatus: MyProposalStatus = { kind: 'unknown' };
 
+const valueChecks = {
+  name: isString,
+  baseDifficulty: isDifficultyCode,
+  flyerDifficulty: isDifficultyCode,
+  canStartFlow: isBoolean,
+  canEndFlow: isBoolean,
+} as const;
+
+/** What changes in the pose, before → after, the changed fields only; undefined when it cannot be read or is empty. */
+const toChanges = (changes: unknown): PoseValueChange[] | undefined => {
+  if (typeof changes !== 'object' || changes === null) return undefined;
+  const read: PoseValueChange[] = [];
+  for (const [field, isValue] of Object.entries(valueChecks) as [
+    keyof typeof valueChecks,
+    (v: unknown) => boolean,
+  ][]) {
+    const change: unknown = (changes as Record<string, unknown>)[field];
+    if (change === null) continue;
+    if (typeof change !== 'object' || change === undefined) return undefined;
+    const { before, after } = change as { before?: unknown; after?: unknown };
+    if (!isValue(before) || !isValue(after)) return undefined;
+    read.push({ field, before, after } as PoseValueChange);
+  }
+  return read.length > 0 ? read : undefined;
+};
+
+type ItemOfMyProposals = { readonly kind?: unknown } & Record<string, unknown>;
+
+/**
+ * An item of « Mes propositions » (ADR 0027), or undefined when the site cannot read it (unknown kind, unreadable
+ * pose or changes): the whole list would mislead, the site must be reloaded. An unreadable status only makes the
+ * card say its status cannot be read.
+ */
+const toMyProposal = (item: ItemOfMyProposals): MyProposal | undefined => {
+  switch (item.kind) {
+    case 'pose-proposal': {
+      const proposal = item as unknown as MyPoseProposalResponse;
+      return isReadablePose(proposal) ? toMyPoseProposal(proposal) : undefined;
+    }
+    case 'pose-revision': {
+      const revision = item as unknown as MyPoseRevisionResponse;
+      const changes = toChanges(revision.changes);
+      if (
+        typeof revision.id !== 'string' ||
+        !isString(revision.poseName) ||
+        !isDate(revision.submittedAt) ||
+        !changes
+      )
+        return undefined;
+      return {
+        kind: 'pose-revision',
+        id: revision.id,
+        // The API returns the normalised name of the pose when proposed.
+        poseName: revision.poseName as PoseName,
+        submittedAt: new Date(revision.submittedAt),
+        status: toStatus(revision),
+        changes,
+      };
+    }
+    default:
+      return undefined;
+  }
+};
+
 /** The status for the contributor; "unknown" when it cannot be read (unknown code, or a known one without its details). */
-const toStatus = (proposal: MyPoseProposalResponse): MyProposalStatus => {
+const toStatus = (proposal: MyPoseProposalResponse | MyPoseRevisionResponse): MyProposalStatus => {
   const status: string = proposal.status;
   if (status === 'pending') return { kind: 'pending' };
   if (status === 'published-directly') return { kind: 'published-directly' };
@@ -145,7 +212,8 @@ const toStatus = (proposal: MyPoseProposalResponse): MyProposalStatus => {
   }
 };
 
-const toMyProposal = (proposal: MyPoseProposalResponse): MyProposal => ({
+const toMyPoseProposal = (proposal: MyPoseProposalResponse): MyProposal => ({
+  kind: 'pose-proposal',
   id: proposal.id,
   pose: {
     name: proposal.name as PoseName,
@@ -179,12 +247,17 @@ export const createContributionGateway = (client: ApiClient): ContributionGatewa
 
   async getMyProposals(): Promise<Result<readonly MyProposal[], MyProposalsFailure>> {
     try {
-      const { data, response } = await client.GET('/contribution/my-pose-proposals');
+      const { data, response } = await client.GET('/contribution/my-proposals');
       if (!response.ok || !data) return fail(myProposalsFailure(response.status));
-      // A pose that cannot be read: the whole list would mislead, the site must be reloaded.
-      const proposals: unknown = data.proposals;
-      if (!Array.isArray(proposals) || !proposals.every(isReadablePose)) return fail({ kind: 'outdated' });
-      return ok((proposals as MyPoseProposalResponse[]).map(toMyProposal));
+      // An item that cannot be read: the whole list would mislead, the site must be reloaded.
+      const items: unknown = data.proposals;
+      if (!Array.isArray(items)) return fail({ kind: 'outdated' });
+      const proposals = items.map((item) =>
+        typeof item === 'object' && item !== null ? toMyProposal(item as ItemOfMyProposals) : undefined,
+      );
+      return proposals.every((proposal) => proposal !== undefined)
+        ? ok(proposals)
+        : fail({ kind: 'outdated' });
     } catch {
       return fail({ kind: 'unreachable' });
     }

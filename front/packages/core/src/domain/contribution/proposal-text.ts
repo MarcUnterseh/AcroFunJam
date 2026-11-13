@@ -1,6 +1,7 @@
 /**
- * The free text a validator writes for a contributor (rejection reason, adjustment note): same normalisation and
- * same measure as the API (ValidatorText, ADR 0022).
+ * The free text of a proposal: written by a validator for a contributor (rejection reason, adjustment note, ADR
+ * 0022) or by a contributor for the validator (revision message, story 6). Same normalisation and same measure as
+ * the API (ProposalText).
  */
 export const validatorTextPolicy = { maxLength: 500 } as const;
 

@@ -57,6 +57,15 @@ export class CatalogPage {
     return this.page.getByRole('main').getByRole('link', { name: 'Mes propositions', exact: true });
   }
 
+  /** « Proposer une modification » of a pose card (story 6), named « Proposer une modification de <nom> ». */
+  revisionLink(name: string) {
+    return this.page.getByRole('link', { name: `Proposer une modification de ${name}`, exact: true });
+  }
+
+  get revisionLinks() {
+    return this.page.getByRole('link', { name: /^Proposer une modification de / });
+  }
+
   get loadingFailure() {
     return this.page.getByRole('alert');
   }

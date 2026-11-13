@@ -1,4 +1,5 @@
 import { useId, type Ref } from 'react';
+import { helpIds, helpsOf, ModifiedTag, type Help } from '../layout/form-controls';
 import { Icon } from '../layout/Icon';
 
 export type TileOption<T extends string> = { readonly value: T; readonly label: string };
@@ -13,8 +14,13 @@ type TileRadioGroupProps<T extends string> = {
   readonly error?: string | undefined;
   /** Id of a help shared with other groups (the help of the flow questions). */
   readonly helpId?: string | undefined;
-  /** Help of this group, between the legend and the error (« Proposée : Débutant », story 4). */
-  readonly help?: string | undefined;
+  /**
+   * Help of this group, between the legend and the error (« Proposée : Débutant », story 4), or several
+   * (« Actuellement : Intermédiaire », then « Proposée : Découverte », story 6).
+   */
+  readonly help?: Help;
+  /** « Modifiée »: the value differs from the current one (story 6). */
+  readonly tag?: string | undefined;
   /** Receives the first radio, to give it the focus when the group is the first one in error. */
   readonly firstRadioRef?: Ref<HTMLInputElement> | undefined;
   readonly layout: 'levels' | 'yes-no';
@@ -34,20 +40,28 @@ export function TileRadioGroup<T extends string>({
   error,
   helpId,
   help,
+  tag,
   firstRadioRef,
   layout,
 }: TileRadioGroupProps<T>) {
   const errorId = useId();
-  const ownHelpId = useId();
-  const describedBy = [helpId, help && ownHelpId, error && errorId].filter(Boolean).join(' ') || undefined;
+  const ownId = useId();
+  const tagId = `${ownId}-etiquette`;
+  const helps = helpsOf(help);
+  const ownHelpIds = helpIds(ownId, help);
+  const describedBy =
+    [tag && tagId, helpId, ...ownHelpIds, error && errorId].filter(Boolean).join(' ') || undefined;
   return (
     <fieldset className={`tile-group${error ? ' tile-group--invalid' : ''}`} aria-describedby={describedBy}>
-      <legend>{legend}</legend>
-      {help && (
-        <p id={ownHelpId} className="tile-group__help">
-          {help}
+      <legend className={tag ? 'tile-group__legend--tagged' : undefined}>
+        {legend}
+        {tag && <ModifiedTag id={tagId} text={tag} />}
+      </legend>
+      {helps.map((text, index) => (
+        <p key={ownHelpIds[index]} id={ownHelpIds[index]} className="tile-group__help">
+          {text}
         </p>
-      )}
+      ))}
       {error && (
         <p id={errorId} className="field__error tile-group__error">
           <Icon name="error" />

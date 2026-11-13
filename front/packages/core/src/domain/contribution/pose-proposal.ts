@@ -33,6 +33,17 @@ export type PoseContent = {
   readonly canEndFlow: boolean;
 };
 
+/** The fields of a pose, in the order of the form: name, difficulties, flow indicators. */
+export const poseFields = [
+  'name',
+  'baseDifficulty',
+  'flyerDifficulty',
+  'canStartFlow',
+  'canEndFlow',
+] as const;
+
+export type PoseField = (typeof poseFields)[number];
+
 /** A proposal the site may send: every rule it can check is met (the API checks the uniqueness of the name). */
 export type ValidPoseProposal = PoseContent;
 

@@ -13,7 +13,7 @@ export const myProposalsLabels = {
   /** Link of the confirmation of « Proposer une pose ». */
   seeMyProposals: 'Voir mes propositions',
   signInContext: 'Connecte-toi pour accéder à tes propositions.',
-  introduction: "Retrouve les poses que tu as proposées et ce qu'elles sont devenues.",
+  introduction: "Retrouve les poses et les modifications que tu as proposées, et ce qu'elles sont devenues.",
   loading: 'Chargement de tes propositions…',
   loadingFailed: 'Impossible de charger tes propositions. Vérifie ta connexion Internet, puis réessaie.',
   loadingOutdated: 'Impossible de charger tes propositions : le site doit être mis à jour. Recharge la page.',
@@ -21,7 +21,7 @@ export const myProposalsLabels = {
   retrying: 'Chargement…',
   reload: 'Recharger la page',
   emptyTitle: "Tu n'as encore proposé aucune pose.",
-  emptyText: "Les poses que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
+  emptyText: "Les poses et les modifications que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
   // The session expired: the page tells it itself, in a lasting block (no banner of the site).
   sessionExpiredTitle: 'Ta session a expiré.',
   sessionExpiredText: 'Connecte-toi de nouveau pour retrouver tes propositions.',
@@ -36,6 +36,22 @@ export const myProposalsLabels = {
   adjustmentsRest: 'Les autres valeurs sont celles que tu as proposées.',
   message: "Message d'ajustement",
   reason: 'Motif du refus',
+} as const;
+
+/**
+ * Card of a revision of the requester (docs/design/composants/carte-ma-modification.md, story 6): « Modification de
+ * Throne » (the name when proposed), then what changes in the pose, before → proposed, or before → retained once
+ * accepted with adjustments.
+ */
+export const myRevisionLabels = {
+  titlePrefix: 'Modification de ',
+  changesTitle: 'Ce qui change dans la pose',
+  proposedKey: "Valeur d'avant → valeur proposée",
+  retainedKey: "Valeur d'avant → valeur retenue",
+  /** Visually hidden texts read before the value before and the value after. */
+  before: 'Avant : ',
+  proposed: ', proposé : ',
+  retained: ', retenu : ',
 } as const;
 
 /** Under the introduction: how many proposals, and their order, which is not obvious. */
@@ -68,7 +84,22 @@ export type MyProposalStatusLabel = {
 };
 
 const statusPrefix = 'Statut : ';
-const published = 'Elle est publiée dans le catalogue.';
+
+/** What a status means for the pose, by kind of proposal: a pose is published, a revision modifies the pose. */
+const consequences = {
+  'pose-proposal': {
+    pending: 'Elle apparaîtra dans le catalogue une fois acceptée.',
+    published: 'Elle est publiée dans le catalogue.',
+    adjusted: 'Elle est publiée dans le catalogue avec ces ajustements.',
+    rejected: "Elle n'est pas publiée dans le catalogue.",
+  },
+  'pose-revision': {
+    pending: 'La pose changera dans le catalogue une fois la modification acceptée.',
+    published: 'La pose est modifiée dans le catalogue.',
+    adjusted: 'La pose est modifiée dans le catalogue avec ces ajustements.',
+    rejected: 'La pose reste inchangée dans le catalogue.',
+  },
+} as const;
 
 /** « Acceptée le 5 novembre 2026 »: the date of a decision, to the day (Q21). */
 const decided = (
@@ -85,8 +116,15 @@ const decided = (
   consequence,
 });
 
-/** The status of a proposal for its contributor (decision Q22), never who decided. */
-export const myProposalStatusLabel = (status: MyProposalStatus): MyProposalStatusLabel => {
+/**
+ * The status of a proposal for its contributor (decision Q22), never who decided; same words for a revision (story
+ * 6), whose consequences speak of the pose that changes.
+ */
+export const myProposalStatusLabel = (
+  status: MyProposalStatus,
+  kind: 'pose-proposal' | 'pose-revision' = 'pose-proposal',
+): MyProposalStatusLabel => {
+  const consequence = consequences[kind];
   switch (status.kind) {
     case 'pending':
       return {
@@ -95,20 +133,15 @@ export const myProposalStatusLabel = (status: MyProposalStatus): MyProposalStatu
         prefix: statusPrefix,
         text: 'En attente de validation',
         day: null,
-        consequence: 'Elle apparaîtra dans le catalogue une fois acceptée.',
+        consequence: consequence.pending,
       };
     case 'accepted':
-      return decided('success', 'Acceptée le ', status.decidedAt, published);
+      return decided('success', 'Acceptée le ', status.decidedAt, consequence.published);
     case 'accepted-with-adjustments':
-      return decided(
-        'success',
-        'Acceptée avec ajustements le ',
-        status.decidedAt,
-        'Elle est publiée dans le catalogue avec ces ajustements.',
-      );
+      return decided('success', 'Acceptée avec ajustements le ', status.decidedAt, consequence.adjusted);
     case 'rejected':
       // A rejection is no fault of the person: information, never danger.
-      return decided('information', 'Refusée le ', status.decidedAt, "Elle n'est pas publiée dans le catalogue.");
+      return decided('information', 'Refusée le ', status.decidedAt, consequence.rejected);
     case 'published-directly':
       return {
         tone: 'success',
@@ -116,7 +149,7 @@ export const myProposalStatusLabel = (status: MyProposalStatus): MyProposalStatu
         prefix: statusPrefix,
         text: 'Publiée directement',
         day: null,
-        consequence: published,
+        consequence: consequence.published,
       };
     case 'unknown':
       // Neutral, so as not to look like a rejection: the site is late, not the proposal.

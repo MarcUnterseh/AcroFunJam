@@ -18,6 +18,7 @@ class FakeGateway implements ContributionGateway {
 }
 
 const proposal = (name: string, submittedAt: string): MyProposal => ({
+  kind: 'pose-proposal',
   id: `proposal-${name}`,
   pose: {
     name: name as PoseName,

@@ -6,6 +6,7 @@ import { createValidationGateway } from './validation-gateway';
 const throneId = '0b4c8e0e-2b2f-4f55-9d3a-0e6a3c1d8f10';
 
 const pendingThrone = {
+  kind: 'pose-proposal',
   id: throneId,
   name: 'Throne',
   baseDifficulty: 'beginner',
@@ -15,6 +16,41 @@ const pendingThrone = {
   contributor: { email: 'alice@example.org', isYou: false },
   submittedAt: '2026-11-03T09:00:00+00:00',
 };
+
+const birdId = '6f0d3c2a-9c71-4b1e-a7a2-1f4e5d6c7b80';
+const revisionId = '2a1b3c4d-5e6f-4a0b-8c9d-0e1f2a3b4c5d';
+const noChange = {
+  name: null,
+  baseDifficulty: null,
+  flyerDifficulty: null,
+  canStartFlow: null,
+  canEndFlow: null,
+};
+
+const revisionOfBird = {
+  kind: 'pose-revision',
+  id: revisionId,
+  pose: {
+    id: birdId,
+    name: 'Bird',
+    baseDifficulty: 'discovery',
+    flyerDifficulty: 'intermediate',
+    canStartFlow: true,
+    canEndFlow: true,
+  },
+  changes: {
+    ...noChange,
+    name: { current: 'Bird', proposed: 'Front Bird' },
+    flyerDifficulty: { current: 'intermediate', proposed: 'discovery' },
+    canEndFlow: { current: true, proposed: false },
+  },
+  message: 'Le flyer est à plat.',
+  contributor: { email: null, isYou: false },
+  submittedAt: '2026-11-12T09:00:00+00:00',
+};
+
+const aPoseProposal = { kind: 'pose-proposal', id: throneId } as const;
+const aRevision = { kind: 'pose-revision', id: revisionId } as const;
 
 const apiAnswering = (status: number, body?: unknown, requests: Request[] = []) =>
   createApiClient({
@@ -50,6 +86,7 @@ describe('createValidationGateway', () => {
       expect(queue).toEqual(
         ok([
           {
+            kind: 'pose-proposal',
             id: throneId,
             pose: {
               name: 'Throne',
@@ -63,6 +100,35 @@ describe('createValidationGateway', () => {
           },
         ]),
       );
+    });
+
+    it('should read a pending revision with the current values of the pose and its changed fields only', async () => {
+      const gateway = createValidationGateway(
+        apiAnswering(200, { proposals: [pendingThrone, revisionOfBird] }),
+      );
+
+      const queue = await gateway.getValidationQueue();
+
+      expect(queue.ok && queue.value[1]).toEqual({
+        kind: 'pose-revision',
+        id: revisionId,
+        pose: {
+          id: birdId,
+          name: 'Bird',
+          baseDifficulty: 'discovery',
+          flyerDifficulty: 'intermediate',
+          canStartFlow: true,
+          canEndFlow: true,
+        },
+        changes: [
+          { field: 'name', before: 'Bird', after: 'Front Bird' },
+          { field: 'flyerDifficulty', before: 'intermediate', after: 'discovery' },
+          { field: 'canEndFlow', before: true, after: false },
+        ],
+        message: 'Le flyer est à plat.',
+        contributor: { email: null, isYou: false },
+        submittedAt: new Date('2026-11-12T09:00:00Z'),
+      });
     });
 
     it.each([
@@ -82,6 +148,17 @@ describe('createValidationGateway', () => {
       { ...pendingThrone, flyerDifficulty: 'expert' },
       { ...pendingThrone, canEndFlow: null },
       { ...pendingThrone, submittedAt: 'hier' },
+      { ...pendingThrone, kind: 'pose-merge' },
+      { ...pendingThrone, kind: undefined },
+      { ...revisionOfBird, pose: { ...revisionOfBird.pose, baseDifficulty: 'expert' } },
+      { ...revisionOfBird, changes: { ...revisionOfBird.changes, baseDifficulty: { current: 'beginner' } } },
+      {
+        ...revisionOfBird,
+        changes: { ...revisionOfBird.changes, canStartFlow: { current: 1, proposed: 0 } },
+      },
+      { ...revisionOfBird, changes: { name: null } },
+      { ...revisionOfBird, changes: noChange },
+      { ...revisionOfBird, message: 3 },
     ])('should tell the site is outdated when a proposal cannot be read (%o)', async (unreadable) => {
       const gateway = createValidationGateway(apiAnswering(200, { proposals: [pendingThrone, unreadable] }));
 
@@ -137,7 +214,7 @@ describe('createValidationGateway', () => {
       const requests: Request[] = [];
       const gateway = createValidationGateway(apiAnswering(200, accepted(false), requests));
 
-      const outcome = await gateway.acceptProposal(throneId, { adjustments: [], note: null });
+      const outcome = await gateway.acceptProposal(aPoseProposal, { adjustments: [], note: null });
 
       expect(requests[0]!.method).toBe('POST');
       expect(new URL(requests[0]!.url).pathname).toBe(`/contribution/pose-proposals/${throneId}/acceptance`);
@@ -149,7 +226,7 @@ describe('createValidationGateway', () => {
       const requests: Request[] = [];
       const gateway = createValidationGateway(apiAnswering(200, accepted(true, 'High Throne'), requests));
 
-      const outcome = await gateway.acceptProposal(throneId, {
+      const outcome = await gateway.acceptProposal(aPoseProposal, {
         adjustments: [
           { field: 'name', proposed: 'Throne' as PoseName, retained: 'High Throne' as PoseName },
           { field: 'flyerDifficulty', proposed: 'intermediate', retained: 'discovery' },
@@ -184,13 +261,43 @@ describe('createValidationGateway', () => {
     ])('should report "%i %s" as "%s"', async (status, title, kind) => {
       const gateway = createValidationGateway(apiAnswering(status, problem(status, title)));
 
-      expect(await gateway.acceptProposal(throneId, { adjustments: [], note: null })).toEqual(fail({ kind }));
+      expect(await gateway.acceptProposal(aPoseProposal, { adjustments: [], note: null })).toEqual(
+        fail({ kind }),
+      );
+    });
+
+    it('should accept a revision at POST /contribution/pose-revision-proposals/{id}/acceptance', async () => {
+      const requests: Request[] = [];
+      const gateway = createValidationGateway(
+        apiAnswering(200, { ...accepted(false), id: revisionId }, requests),
+      );
+
+      const outcome = await gateway.acceptProposal(aRevision, { adjustments: [], note: null });
+
+      expect(new URL(requests[0]!.url).pathname).toBe(
+        `/contribution/pose-revision-proposals/${revisionId}/acceptance`,
+      );
+      expect(outcome).toEqual(ok({ name: 'Throne', adjusted: false }));
+    });
+
+    it.each([
+      [422, 'contribution.retained-revision-changes-nothing', 'retained-revision-changes-nothing'],
+      [409, 'contribution.pose-changed-since-revision-started', 'pose-changed'],
+      [404, 'contribution.proposal-not-found', 'not-found'],
+      [404, 'contribution.pose-not-found', 'not-found'],
+      [409, 'contribution.pose-name-already-in-catalog', 'name-already-in-catalog'],
+    ])('should report "%i %s" as "%s" for a revision', async (status, title, kind) => {
+      const gateway = createValidationGateway(apiAnswering(status, problem(status, title)));
+
+      expect(await gateway.acceptProposal(aRevision, { adjustments: [], note: null })).toEqual(
+        fail({ kind }),
+      );
     });
 
     it('should report that the API cannot be reached when the network fails', async () => {
       const gateway = createValidationGateway(networkDown());
 
-      expect(await gateway.acceptProposal(throneId, { adjustments: [], note: null })).toEqual(
+      expect(await gateway.acceptProposal(aPoseProposal, { adjustments: [], note: null })).toEqual(
         fail({ kind: 'unreachable' }),
       );
     });
@@ -205,12 +312,25 @@ describe('createValidationGateway', () => {
         apiAnswering(200, { id: throneId, status: 'rejected' }, requests),
       );
 
-      const outcome = await gateway.rejectProposal(throneId, reason);
+      const outcome = await gateway.rejectProposal(aPoseProposal, reason);
 
       expect(requests[0]!.method).toBe('POST');
       expect(new URL(requests[0]!.url).pathname).toBe(`/contribution/pose-proposals/${throneId}/rejection`);
       expect(await requests[0]!.json()).toEqual({ reason });
       expect(outcome).toEqual(ok(undefined));
+    });
+
+    it('should reject a revision at POST /contribution/pose-revision-proposals/{id}/rejection', async () => {
+      const requests: Request[] = [];
+      const gateway = createValidationGateway(
+        apiAnswering(200, { id: revisionId, status: 'rejected' }, requests),
+      );
+
+      expect(await gateway.rejectProposal(aRevision, reason)).toEqual(ok(undefined));
+      expect(new URL(requests[0]!.url).pathname).toBe(
+        `/contribution/pose-revision-proposals/${revisionId}/rejection`,
+      );
+      expect(await requests[0]!.json()).toEqual({ reason });
     });
 
     it.each([
@@ -223,11 +343,11 @@ describe('createValidationGateway', () => {
     ])('should report "%i %s" as "%s"', async (status, title, kind) => {
       const gateway = createValidationGateway(apiAnswering(status, problem(status, title)));
 
-      expect(await gateway.rejectProposal(throneId, reason)).toEqual(fail({ kind }));
+      expect(await gateway.rejectProposal(aPoseProposal, reason)).toEqual(fail({ kind }));
     });
 
     it('should report that the API cannot be reached when the network fails', async () => {
-      expect(await createValidationGateway(networkDown()).rejectProposal(throneId, reason)).toEqual(
+      expect(await createValidationGateway(networkDown()).rejectProposal(aPoseProposal, reason)).toEqual(
         fail({ kind: 'unreachable' }),
       );
     });

@@ -1,11 +1,9 @@
 import {
   poseNameLength,
   proposalLabels,
-  proposedValueLabel,
   validationLabels,
   type PoseProposalInput,
   type ProposalField,
-  type ValidPoseProposal,
 } from '@acrofunjam/core';
 import { useId, type ReactNode, type RefObject } from 'react';
 import { Field } from '../layout/form-controls';
@@ -19,12 +17,14 @@ export type AdjustmentFormRefs = {
 };
 
 /**
- * Zone « Ajuster avant de publier » of a proposal card (carte-proposition.md): the fields of « Proposer une
- * pose », prefilled, each with a reminder of the proposed value (« Proposé : … »), then « Vérifier les
- * ajustements » and « Annuler ». The errors are given by the card, in each field.
+ * Zone « Ajuster avant de publier » of a proposal card (carte-proposition.md), « Ajuster avant d'accepter » of a
+ * revision card (carte-modification.md): the fields of « Proposer une pose », prefilled, each with its reminders
+ * (« Proposé : … », or « Actuellement : … » then « Proposé : … »), then « Vérifier les ajustements » and
+ * « Annuler ». The errors are given by the card, in each field.
  */
 export function AdjustmentForm({
-  proposed,
+  title,
+  reminders,
   input,
   onChange,
   errorOf,
@@ -32,7 +32,9 @@ export function AdjustmentForm({
   refs,
   actions,
 }: {
-  readonly proposed: ValidPoseProposal;
+  readonly title: string;
+  /** The reminders under the label or the legend of each field. */
+  readonly reminders: (field: ProposalField) => readonly string[];
   readonly input: PoseProposalInput;
   readonly onChange: <F extends ProposalField>(field: F, value: PoseProposalInput[F]) => void;
   readonly errorOf: (field: ProposalField) => string | undefined;
@@ -43,11 +45,10 @@ export function AdjustmentForm({
 }) {
   // Radio names are unique per card: several cards may be adjusted at the same time.
   const ids = { group: useId(), startHelp: useId(), endHelp: useId() };
-  const reminder = <F extends keyof ValidPoseProposal>(field: F) =>
-    proposedValueLabel({ field, value: proposed[field] } as Parameters<typeof proposedValueLabel>[0]);
+  const reminder = reminders;
   return (
     <div className="proposal-card__zone adjustment-form">
-      <h3 className="proposal-card__zone-title">{validationLabels.adjustTitle}</h3>
+      <h3 className="proposal-card__zone-title">{title}</h3>
       <p className="proposal-card__zone-introduction">{validationLabels.adjustIntroduction}</p>
       {notice}
       <Field

@@ -975,8 +975,7 @@ main {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--afj-spacing-xs);
-  margin: calc(var(--afj-spacing-xs) - var(--afj-spacing-lg)) 0
-    calc(var(--afj-spacing-sm) - var(--afj-spacing-lg));
+  margin: 0 0 var(--afj-spacing-sm);
   font-size: var(--afj-font-size-sm);
   color: var(--afj-color-text-muted);
 }
@@ -1036,9 +1035,25 @@ main {
 }
 
 .adjustment-summary__rest {
-  margin: calc(var(--afj-spacing-sm) - var(--afj-spacing-lg)) 0 0;
+  margin: var(--afj-spacing-sm) 0 0;
   font-size: var(--afj-font-size-sm);
   color: var(--afj-color-text-muted);
+}
+
+/* In a decision zone of a card (a grid with a large gap), the key and the rest are attached to their list. */
+.proposal-card__zone.adjustment-summary > .adjustment-summary__key {
+  margin: calc(var(--afj-spacing-xs) - var(--afj-spacing-lg)) 0
+    calc(var(--afj-spacing-sm) - var(--afj-spacing-lg));
+}
+
+.proposal-card__zone.adjustment-summary > .adjustment-summary__rest {
+  margin-top: calc(var(--afj-spacing-sm) - var(--afj-spacing-lg));
+}
+
+/* Out of a decision zone (« Mes propositions », the revision in the queue): the title is attached to its key. */
+.my-proposal__adjustments .proposal-card__zone-title,
+.revision-changes__summary .proposal-card__zone-title {
+  margin-bottom: var(--afj-spacing-xs);
 }
 
 /* --- Page « Mes propositions » (docs/design/ecrans/5-mes-propositions.md) ------------------- */
@@ -1091,19 +1106,6 @@ main {
 .my-proposal-status__consequence {
   margin: var(--afj-spacing-xs) 0 0;
   color: var(--afj-color-text-muted);
-}
-
-/* Contributor variant of the summary: no zone around it, its own spacings. */
-.my-proposal__adjustments .proposal-card__zone-title {
-  margin-bottom: var(--afj-spacing-xs);
-}
-
-.my-proposal__adjustments .adjustment-summary__key {
-  margin: 0 0 var(--afj-spacing-sm);
-}
-
-.my-proposal__adjustments .adjustment-summary__rest {
-  margin: var(--afj-spacing-sm) 0 0;
 }
 
 /* Message of adjustment, reason of a rejection: a label, then the text of the validator, unquoted. */
@@ -1272,9 +1274,189 @@ main {
   }
 }
 
+/* --- Story 6 « Proposer une modification » (docs/design/ecrans/6-proposer-une-modification.md) --- */
+
+/* Pose card with its link « Proposer une modification » (carte-pose.md): the link sits at the bottom of the card,
+   so that the links of a row are aligned whatever the height of the names. */
+.pose-card--revisable {
+  display: flex;
+  flex-direction: column;
+}
+
+.pose-card--revisable .pose-card__details {
+  margin-bottom: var(--afj-spacing-sm);
+}
+
+.pose-card__revision {
+  display: flex;
+  margin: auto 0 0;
+  padding-top: var(--afj-spacing-xs);
+  border-top: var(--afj-size-border-width) solid var(--afj-color-divider);
+}
+
+.pose-card__revision-link {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--afj-size-touch-target);
+  color: var(--afj-color-primary);
+  text-decoration: underline;
+  text-decoration-thickness: var(--afj-size-border-width);
+}
+
+.pose-card__revision-link:visited {
+  color: var(--afj-color-primary);
+}
+
+.pose-card__revision-link:focus-visible {
+  border-radius: var(--afj-radius-sm);
+}
+
+/* Tag « Modifiée » in a label or a legend (etiquette-modifiee.md): on the line of the label, wraps if needed. */
+.field__label--tagged,
+.tile-group__legend--tagged {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--afj-spacing-sm);
+}
+
+.modified-tag {
+  display: inline-block;
+  padding: 0 var(--afj-spacing-xs);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  line-height: var(--afj-line-height-tight);
+  color: var(--afj-color-text);
+  background: var(--afj-color-selected-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-selected);
+  border-radius: var(--afj-radius-sm);
+}
+
+/* The form of a revision: the line of the pose is attached to the title. */
+.revision-page h1 {
+  margin-bottom: var(--afj-spacing-xs);
+}
+
+.revision-page__pose {
+  margin: 0 0 var(--afj-spacing-sm);
+  color: var(--afj-color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.revision-page__pose strong {
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text);
+}
+
+.revision-page__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--afj-spacing-md);
+}
+
+.revision-page__actions .button {
+  width: 100%;
+}
+
+.revision-page__block {
+  margin: var(--afj-spacing-lg) 0;
+}
+
+.revision-page__block:focus-visible {
+  outline-offset: var(--afj-size-focus-ring-offset);
+}
+
+/* Alerts of the page out of the form (opening, session expired): the same space as the block. */
+.revision-page > .form-alert {
+  margin-block: var(--afj-spacing-lg) 0;
+}
+
+/* The block in place of the form keeps a space under it, before « Voir le catalogue ». */
+.revision-page > .revision-page__block {
+  margin-block-end: var(--afj-spacing-lg);
+}
+
+.revision-page__exit {
+  width: 100%;
+}
+
+/* Summary « actuellement → nouveau » of a validator, in place of the form. */
+.revision-summary {
+  margin: var(--afj-spacing-lg) 0;
+}
+
+.revision-summary__title {
+  margin: 0 0 var(--afj-spacing-xs);
+  font-size: var(--afj-font-size-md);
+  font-weight: var(--afj-font-weight-bold);
+  line-height: var(--afj-line-height-tight);
+}
+
+.revision-summary__title:focus-visible {
+  border-radius: var(--afj-radius-sm);
+}
+
+/* Card of a revision (carte-modification.md): « Modification de » in regular weight, the name in bold. */
+.proposal-card__name-prefix {
+  font-weight: var(--afj-font-weight-regular);
+}
+
+.revision-changes {
+  display: grid;
+  gap: var(--afj-spacing-md);
+}
+
+.revision-pose {
+  margin-top: var(--afj-spacing-md);
+  padding-top: var(--afj-spacing-md);
+  border-top: var(--afj-size-border-width) solid var(--afj-color-divider);
+}
+
+.revision-pose__title {
+  margin: 0 0 var(--afj-spacing-sm);
+  font-size: var(--afj-font-size-md);
+  font-weight: var(--afj-font-weight-bold);
+  line-height: var(--afj-line-height-tight);
+}
+
+@media (forced-colors: active) {
+  .pose-card__revision-link {
+    color: LinkText;
+  }
+
+  .modified-tag {
+    color: CanvasText;
+    background: Canvas;
+    border-color: CanvasText;
+  }
+}
+
+@media (hover: hover) {
+  .pose-card__revision-link:hover {
+    color: var(--afj-color-primary-hover);
+    text-decoration-thickness: var(--afj-size-border-width-strong);
+  }
+}
+
+/* After the hover: a pressed link shows it, even under the pointer. */
+.pose-card__revision-link:active {
+  color: var(--afj-color-primary-active);
+}
+
 /* --- Wide screens -------------------------------------------------------------------------- */
 
 @media (width >= 40em) {
+  .revision-page__actions {
+    flex-flow: row wrap;
+  }
+
+  .revision-page__actions .button,
+  .revision-page__exit {
+    width: auto;
+  }
+
   .site-header__inner {
     display: flex;
     align-items: center;

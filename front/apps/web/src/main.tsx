@@ -3,6 +3,7 @@ import {
   createAuthGateway,
   createCatalogGateway,
   createContributionGateway,
+  createPoseRevisionGateway,
   createValidationGateway,
 } from '@acrofunjam/api-client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -14,6 +15,8 @@ import { CatalogGatewayProvider } from './catalog/CatalogGatewayContext';
 import { ContributionProvider } from './contribution/ContributionContext';
 import { createSessionDecisionInputStore } from './contribution/session-decision-input-store';
 import { createSessionProposalInputStore } from './contribution/session-proposal-input-store';
+import { createSessionRevisionInputStore } from './contribution/session-revision-input-store';
+import { PoseRevisionProvider } from './contribution/PoseRevisionContext';
 import { ValidationProvider } from './contribution/ValidationContext';
 import { IdentityProvider } from './identity/IdentityContext';
 import { createLocalSessionMemory } from './identity/local-session-memory';
@@ -29,6 +32,8 @@ const router = createBrowserRouter(routes());
 const proposalInputStore = createSessionProposalInputStore(sessionStorage);
 // The input of the decisions on proposals (story 4), kept and forgotten the same way.
 const decisionInputStore = createSessionDecisionInputStore(sessionStorage);
+// The input of « Proposer une modification » (story 6), kept by pose and forgotten the same way.
+const revisionInputStore = createSessionRevisionInputStore(sessionStorage);
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing #root element');
@@ -39,13 +44,19 @@ createRoot(root).render(
       <CatalogGatewayProvider gateway={createCatalogGateway(apiClient)}>
         <ContributionProvider gateway={createContributionGateway(apiClient)} store={proposalInputStore}>
           <ValidationProvider gateway={createValidationGateway(apiClient)} store={decisionInputStore}>
-            <IdentityProvider
-              gateway={createAuthGateway(apiClient)}
-              memory={createLocalSessionMemory(localStorage, window)}
-              forgetOnSignOut={[proposalInputStore, decisionInputStore]}
-            >
-              <RouterProvider router={router} />
-            </IdentityProvider>
+            <PoseRevisionProvider gateway={createPoseRevisionGateway(apiClient)} store={revisionInputStore}>
+              <IdentityProvider
+                gateway={createAuthGateway(apiClient)}
+                memory={createLocalSessionMemory(localStorage, window)}
+                forgetOnSignOut={[
+                  proposalInputStore,
+                  decisionInputStore,
+                  { clear: revisionInputStore.clearAll },
+                ]}
+              >
+                <RouterProvider router={router} />
+              </IdentityProvider>
+            </PoseRevisionProvider>
           </ValidationProvider>
         </ContributionProvider>
       </CatalogGatewayProvider>

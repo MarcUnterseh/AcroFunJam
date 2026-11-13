@@ -1,5 +1,6 @@
 import { fail, ok, type Result } from '../common/result';
 import {
+  poseFields,
   validatePoseProposal,
   type PoseProposalInput,
   type ProposalFieldError,
@@ -15,9 +16,6 @@ export type PoseAdjustment = {
   };
 }[keyof ValidPoseProposal];
 
-/** The fields of a pose, in the order of the form. */
-const fields = ['name', 'baseDifficulty', 'flyerDifficulty', 'canStartFlow', 'canEndFlow'] as const;
-
 /**
  * The adjustments of the values retained by the validator, in the order of the form, or the content errors of
  * these values (same rules as a proposal, story 3). Compared once normalised, as the API does (R9 bis): a value
@@ -30,7 +28,7 @@ export const adjustmentsOf = (
 ): Result<readonly PoseAdjustment[], ProposalFieldError[]> => {
   const retained = validatePoseProposal(input);
   if (!retained.ok) return fail(retained.error);
-  const adjustments = fields
+  const adjustments = poseFields
     .filter((field) => retained.value[field] !== proposed[field])
     .map(
       (field) => ({ field, proposed: proposed[field], retained: retained.value[field] }) as PoseAdjustment,

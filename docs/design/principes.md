@@ -40,6 +40,14 @@ Une couleur d'accent (primaire), des neutres, et trois couleurs de retour (dange
 | `badge` | `#343A40` gris anthracite | fond de la pastille de compteur (en-tête), story 4 |
 | `badgeContrast` | `#FFFFFF` | chiffres de la pastille, story 4 |
 
+### Story 6 (proposition du 2026-11-12) : aucun nouveau token
+
+- Lien « Proposer une modification » des cartes du catalogue : lien **textuel** `primary` souligné sur `surface` (4,9:1 ; survol `primaryHover` 6,9:1, pressé `primaryActive` 8,9:1), zone de 44 px (`composants/carte-pose.md`).
+- « Avant → après » d'une modification : même liste que le récapitulatif des ajustements (barré + flèche + graisse, `textMuted` / `text`), un seul code visuel pour toute comparaison de valeurs (`composants/recapitulatif-modification.md`).
+- Étiquette « Modifiée » : `selectedSurface` + bordure `selected` + texte `text` (14,2:1), la famille « ton choix » des tuiles cochées ; le mot porte l'information (`composants/etiquette-modifiee.md`).
+- Une modification se distingue d'une proposition de pose par le **texte** du titre (« Modification de » en graisse normale, nom en gras), sans couleur ni badge.
+- Nouveaux couples vérifiés : `primaryHover` / `primaryActive` sur `surface` 6,9:1 / 8,9:1 ; `selected` sur `selectedSurface` 6,7:1 (déjà listé) ; `focus` sur `infoSurface` 5,5:1.
+
 ### Story 5 (proposition du 2026-11-09) : aucun nouveau token
 
 - Statut d'une proposition (`composants/statut-proposition.md`) : icône colorée + mot en semi-gras, **sans surface colorée** (un état durable n'est ni une alerte ni un compte rendu). Tons : succès (`success`) pour acceptée, acceptée avec ajustements et publiée directement ; information (`info`) pour refusée, jamais `danger` ; neutre (`textMuted`) pour en attente et statut inconnu. Contrastes des icônes sur `surface` : 5,8:1 pour les trois.

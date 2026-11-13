@@ -4,11 +4,13 @@ import { CatalogPage } from './pages/catalog-page';
 import { IdentityForm, SiteHeader } from './pages/identity-pages';
 import { MyProposalsPage } from './pages/my-proposals-page';
 import { ProposalForm } from './pages/proposal-form';
+import { RevisionForm } from './pages/revision-form';
 import { ValidationPage } from './pages/validation-page';
 import { CatalogApi } from './support/catalog-api';
 import { ContributionApi } from './support/contribution-api';
 import { IdentityApi } from './support/identity-api';
 import { MyProposalsApi } from './support/my-proposals-api';
+import { PoseRevisionApi } from './support/pose-revision-api';
 import { ValidationApi } from './support/validation-api';
 
 type Fixtures = {
@@ -17,8 +19,10 @@ type Fixtures = {
   contributionApi: ContributionApi;
   validationApi: ValidationApi;
   myProposalsApi: MyProposalsApi;
+  poseRevisionApi: PoseRevisionApi;
   catalogPage: CatalogPage;
   proposalForm: ProposalForm;
+  revisionForm: RevisionForm;
   validationPage: ValidationPage;
   myProposalsPage: MyProposalsPage;
   header: SiteHeader;
@@ -71,8 +75,17 @@ export const test = base.extend<Fixtures>({
     },
     { auto: true },
   ],
+  poseRevisionApi: [
+    async ({ context, identityApi, catalogApi, contributionApi }, use) => {
+      const api = new PoseRevisionApi(context, identityApi, catalogApi, contributionApi);
+      await api.start();
+      await use(api);
+    },
+    { auto: true },
+  ],
   catalogPage: async ({ page }, use) => use(new CatalogPage(page)),
   proposalForm: async ({ page }, use) => use(new ProposalForm(page)),
+  revisionForm: async ({ page }, use) => use(new RevisionForm(page)),
   validationPage: async ({ page }, use) => use(new ValidationPage(page)),
   myProposalsPage: async ({ page }, use) => use(new MyProposalsPage(page)),
   header: async ({ page }, use) => use(new SiteHeader(page)),

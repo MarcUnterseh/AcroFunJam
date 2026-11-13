@@ -4,14 +4,18 @@ import type { CatalogApi, DifficultyCode } from './catalog-api';
 import {
   keyOf,
   normalised,
+  poseFields,
   type ContributionApi,
   type PendingProposal,
   type PoseValues,
   type ProposalDecision,
+  type SubmittedRevision,
 } from './contribution-api';
 import type { IdentityApi } from './identity-api';
 
 type ValidationQueueResponse = components['schemas']['ValidationQueueResponse'];
+type PendingProposalResponse = components['schemas']['PendingProposalResponse'];
+type RevisionChangesResponse = components['schemas']['RevisionChangesResponse'];
 type PendingCountResponse = components['schemas']['PendingCountResponse'];
 type AcceptPoseProposalRequest = components['schemas']['AcceptPoseProposalRequest'];
 type AcceptedPoseProposalResponse = components['schemas']['AcceptedPoseProposalResponse'];
@@ -23,6 +27,26 @@ type ProblemDetails = components['schemas']['ProblemDetails'];
 export type SentDecision =
   | { kind: 'acceptance'; id: string; body: AcceptPoseProposalRequest | null }
   | { kind: 'rejection'; id: string; body: RejectPoseProposalRequest };
+
+const valuesOf = ({
+  name,
+  baseDifficulty,
+  flyerDifficulty,
+  canStartFlow,
+  canEndFlow,
+}: PoseValues): PoseValues => ({
+  name,
+  baseDifficulty,
+  flyerDifficulty,
+  canStartFlow,
+  canEndFlow,
+});
+
+/** The pose with the values a revision changes. */
+export const revised = (pose: PoseValues, changes: Partial<PoseValues>): PoseValues => ({
+  ...valuesOf(pose),
+  ...Object.fromEntries(Object.entries(changes).filter(([, value]) => value !== undefined)),
+});
 
 const maxValidatorTextLength = 500;
 /** Every decision is taken on 8 November 2026 (after the submissions, one day apart from 1 November). */
@@ -92,6 +116,12 @@ export class ValidationApi {
     await this.context.route('**/contribution/pose-proposals/*/rejection', (route) =>
       this.handle(route, () => this.reject(route)),
     );
+    await this.context.route('**/contribution/pose-revision-proposals/*/acceptance', (route) =>
+      this.handle(route, () => this.acceptRevision(route)),
+    );
+    await this.context.route('**/contribution/pose-revision-proposals/*/rejection', (route) =>
+      this.handle(route, () => this.rejectRevision(route)),
+    );
   }
 
   /** Reachability, then the session (401), then the capability (403), as the API policies do. */
@@ -103,21 +133,102 @@ export class ValidationApi {
     return answer();
   }
 
+  /** Pose proposals and revision proposals together, the oldest first (ADR 0027). */
   private async listQueue(route: Route): Promise<void> {
     const requester = this.identityApi.accountOf(route)!.email.toLowerCase();
-    const body: ValidationQueueResponse = {
-      proposals: this.queue.map(({ contributorEmail, ...proposal }) => ({
+    const contributor = (email: string) => ({ email, isYou: email.toLowerCase() === requester });
+    const proposals = this.queue.map(({ contributorEmail, ...proposal }) => ({
+      submittedAt: proposal.submittedAt,
+      item: {
+        kind: 'pose-proposal',
         ...proposal,
-        contributor: { email: contributorEmail, isYou: contributorEmail.toLowerCase() === requester },
-      })),
+        contributor: contributor(contributorEmail),
+      } as PendingProposalResponse,
+    }));
+    const revisions = this.contributionApi.pendingRevisions.map((revision) => ({
+      submittedAt: revision.submittedAt,
+      item: this.pendingRevision(revision, contributor(revision.contributorEmail)),
+    }));
+    const body: ValidationQueueResponse = {
+      proposals: [...proposals, ...revisions]
+        .sort((a, b) => a.submittedAt.localeCompare(b.submittedAt))
+        .map(({ item }) => item),
     };
     return route.fulfill({ json: body });
   }
 
+  /** A pending revision: the current values of the pose, and the changed fields only (current → proposed). */
+  private pendingRevision(
+    revision: SubmittedRevision,
+    contributor: { email: string; isYou: boolean },
+  ): PendingProposalResponse {
+    const pose = this.catalogApi.poseWithId(revision.poseId)!;
+    const change = (field: (typeof poseFields)[number]) =>
+      revision.changes[field] === undefined
+        ? null
+        : { current: pose[field], proposed: revision.changes[field] };
+    const changes = Object.fromEntries(
+      poseFields.map((field) => [field, change(field)]),
+    ) as RevisionChangesResponse;
+    return {
+      kind: 'pose-revision',
+      id: revision.id,
+      pose: { id: pose.id, ...valuesOf(pose) },
+      changes,
+      message: revision.message,
+      contributor,
+      submittedAt: revision.submittedAt,
+    };
+  }
+
   private async count(route: Route): Promise<void> {
     this.countRequests += 1;
-    const body: PendingCountResponse = { count: this.queue.length };
+    const body: PendingCountResponse = {
+      count: this.queue.length + this.contributionApi.pendingRevisions.length,
+    };
     return route.fulfill({ json: body });
+  }
+
+  /** Same checks as the acceptance of a pose proposal, then the pose is revised with the retained revision. */
+  private async acceptRevision(route: Route): Promise<void> {
+    const id = this.idOf(route);
+    const body = (route.request().postDataJSON() ?? null) as AcceptPoseProposalRequest | null;
+    this.decisions.push({ kind: 'acceptance', id, body });
+    const revision = this.contributionApi.revisions.find((submitted) => submitted.id === id);
+    if (!revision) return this.problem(route, 404, 'contribution.proposal-not-found');
+    if (revision.decision) return this.problem(route, 409, 'contribution.proposal-already-decided');
+    const pose = this.catalogApi.poseWithId(revision.poseId)!;
+    const proposed = revised(pose, revision.changes);
+    const retained = this.retained(
+      { ...proposed, id, contributorEmail: revision.contributorEmail, submittedAt: revision.submittedAt },
+      body,
+    );
+    if (poseFields.every((field) => retained[field] === pose[field]))
+      return this.problem(route, 422, 'contribution.retained-revision-changes-nothing');
+    const takenBy = (published: string) =>
+      keyOf(published) !== keyOf(pose.name) && keyOf(published) === keyOf(retained.name);
+    if (this.catalogApi.publishedNames.some(takenBy))
+      return this.problem(route, 409, 'contribution.pose-name-already-in-catalog');
+    const adjusted = poseFields.some((field) => retained[field] !== proposed[field]);
+    const note = normalisedText(body?.message);
+    this.contributionApi.decideRevision(id, this.acceptance(retained, adjusted ? note || null : null));
+    this.catalogApi.revise(pose.id, retained);
+    const answer: AcceptedPoseProposalResponse = { id, status: 'accepted', adjusted, ...retained };
+    return route.fulfill({ json: answer });
+  }
+
+  private async rejectRevision(route: Route): Promise<void> {
+    const id = this.idOf(route);
+    const body = route.request().postDataJSON() as RejectPoseProposalRequest;
+    this.decisions.push({ kind: 'rejection', id, body });
+    const reason = normalisedText(body.reason);
+    if (reason === '') return this.problem(route, 400, 'contribution.rejection-reason-required');
+    const revision = this.contributionApi.revisions.find((submitted) => submitted.id === id);
+    if (!revision) return this.problem(route, 404, 'contribution.proposal-not-found');
+    if (revision.decision) return this.problem(route, 409, 'contribution.proposal-already-decided');
+    this.contributionApi.decideRevision(id, this.rejection(reason));
+    const answer: RejectedPoseProposalResponse = { id, status: 'rejected' };
+    return route.fulfill({ json: answer });
   }
 
   private async accept(route: Route): Promise<void> {

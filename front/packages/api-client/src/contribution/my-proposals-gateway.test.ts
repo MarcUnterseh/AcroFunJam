@@ -8,6 +8,7 @@ const throneId = '0b4c8e0e-2b2f-4f55-9d3a-0e6a3c1d8f10';
 const none = { decidedAt: null, adjustments: null, message: null, reason: null };
 
 const pendingThrone = {
+  kind: 'pose-proposal',
   id: throneId,
   status: 'pending',
   name: 'Throne',
@@ -16,6 +17,26 @@ const pendingThrone = {
   canStartFlow: true,
   canEndFlow: false,
   submittedAt: '2026-11-03T09:00:00+00:00',
+  ...none,
+};
+
+const revisionId = '2a1b3c4d-5e6f-4a0b-8c9d-0e1f2a3b4c5d';
+const noChange = {
+  name: null,
+  baseDifficulty: null,
+  flyerDifficulty: null,
+  canStartFlow: null,
+  canEndFlow: null,
+};
+
+/** Story 6: Alice proposes to change the flyer difficulty of Throne, intermediate, to discovery. */
+const pendingRevision = {
+  kind: 'pose-revision',
+  id: revisionId,
+  status: 'pending',
+  poseName: 'Throne',
+  submittedAt: '2026-11-12T09:00:00+00:00',
+  changes: { ...noChange, flyerDifficulty: { before: 'intermediate', after: 'discovery' } },
   ...none,
 };
 
@@ -40,17 +61,18 @@ const apiAnswering = (status: number, body?: unknown, requests: Request[] = []) 
   });
 
 describe('createContributionGateway, getMyProposals', () => {
-  it('should read the proposals of the requester from GET /contribution/my-pose-proposals', async () => {
+  it('should read the proposals of the requester from GET /contribution/my-proposals', async () => {
     const requests: Request[] = [];
     const gateway = createContributionGateway(apiAnswering(200, { proposals: [pendingThrone] }, requests));
 
     const proposals = await gateway.getMyProposals();
 
     expect(requests[0]!.method).toBe('GET');
-    expect(new URL(requests[0]!.url).pathname).toBe('/contribution/my-pose-proposals');
+    expect(new URL(requests[0]!.url).pathname).toBe('/contribution/my-proposals');
     expect(proposals).toEqual(
       ok([
         {
+          kind: 'pose-proposal',
           id: throneId,
           pose: thronePose,
           submittedAt: new Date('2026-11-03T09:00:00Z'),
@@ -59,6 +81,64 @@ describe('createContributionGateway, getMyProposals', () => {
       ]),
     );
   });
+
+  it('should read a revision: the name of the pose when proposed, and the changed fields only, before → after', async () => {
+    const gateway = createContributionGateway(apiAnswering(200, { proposals: [pendingRevision] }));
+
+    expect(await gateway.getMyProposals()).toEqual(
+      ok([
+        {
+          kind: 'pose-revision',
+          id: revisionId,
+          poseName: 'Throne',
+          submittedAt: new Date('2026-11-12T09:00:00Z'),
+          status: { kind: 'pending' },
+          changes: [{ field: 'flyerDifficulty', before: 'intermediate', after: 'discovery' }],
+        },
+      ]),
+    );
+  });
+
+  it('should read the adjustments of a revision accepted with adjustments, as for a pose proposal', async () => {
+    const accepted = {
+      ...pendingRevision,
+      status: 'accepted-with-adjustments',
+      decidedAt: '2026-11-13T10:00:00+00:00',
+      changes: { ...noChange, flyerDifficulty: { before: 'intermediate', after: 'beginner' } },
+      adjustments: { ...noChange, flyerDifficulty: { proposed: 'discovery', retained: 'beginner' } },
+      message: 'Débutant plutôt.',
+    };
+    const answer = await createContributionGateway(
+      apiAnswering(200, { proposals: [accepted] }),
+    ).getMyProposals();
+
+    expect(answer.ok && answer.value[0]).toMatchObject({
+      status: {
+        kind: 'accepted-with-adjustments',
+        decidedAt: new Date('2026-11-13T10:00:00Z'),
+        adjustments: [{ field: 'flyerDifficulty', proposed: 'discovery', retained: 'beginner' }],
+        message: 'Débutant plutôt.',
+      },
+      changes: [{ field: 'flyerDifficulty', before: 'intermediate', after: 'beginner' }],
+    });
+  });
+
+  it.each([
+    { ...pendingThrone, kind: 'pose-merge' },
+    { ...pendingThrone, kind: undefined },
+    { ...pendingRevision, poseName: null },
+    { ...pendingRevision, changes: noChange },
+    { ...pendingRevision, changes: { ...noChange, baseDifficulty: { before: 'beginner', after: 'expert' } } },
+  ])(
+    'should tell the site is outdated when a proposal of an unknown kind or shape is received (%o)',
+    async (unreadable) => {
+      const gateway = createContributionGateway(
+        apiAnswering(200, { proposals: [pendingThrone, unreadable] }),
+      );
+
+      expect(await gateway.getMyProposals()).toEqual(fail({ kind: 'outdated' }));
+    },
+  );
 
   it.each([
     [401, 'Unauthorized', 'unauthenticated'],
@@ -171,11 +251,16 @@ describe('createContributionGateway, getMyProposals', () => {
     { ...pendingThrone, canEndFlow: null },
     { ...pendingThrone, submittedAt: 'hier' },
     { ...pendingThrone, id: 42 },
-  ])('should tell the site is outdated when the pose of a proposal cannot be read (%o)', async (unreadable) => {
-    const gateway = createContributionGateway(apiAnswering(200, { proposals: [pendingThrone, unreadable] }));
+  ])(
+    'should tell the site is outdated when the pose of a proposal cannot be read (%o)',
+    async (unreadable) => {
+      const gateway = createContributionGateway(
+        apiAnswering(200, { proposals: [pendingThrone, unreadable] }),
+      );
 
-    expect(await gateway.getMyProposals()).toEqual(fail({ kind: 'outdated' }));
-  });
+      expect(await gateway.getMyProposals()).toEqual(fail({ kind: 'outdated' }));
+    },
+  );
 
   it.each([{}, { proposals: null }, { proposals: 'none' }])(
     'should tell the site is outdated when the list cannot be read (%o)',

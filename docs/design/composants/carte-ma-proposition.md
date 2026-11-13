@@ -1,6 +1,6 @@
 # Carte « ma proposition »
 
-Une proposition du contributeur dans la page « Mes propositions » (story 5). Lecture seule : aucune action, aucun focus. Elle **reprend le conteneur de `carte-proposition.md`** (story 4) et **la `dl` de `carte-pose.md` sans la modifier**, ajoute le statut (`statut-proposition.md`) et, selon le cas, les détails de la décision. Écran : `../ecrans/5-mes-propositions.md`.
+Une proposition du contributeur dans la page « Mes propositions » (story 5). Lecture seule : aucune action, aucun focus. Elle **reprend le conteneur de `carte-proposition.md`** (story 4) et **la `dl` de `carte-pose.md` sans la modifier**, ajoute le statut (`statut-proposition.md`) et, selon le cas, les détails de la décision. Écran : `../ecrans/5-mes-propositions.md`. Story 6 : une modification proposée est présentée par `carte-ma-modification.md`, qui reprend ce document.
 
 ## Structure
 

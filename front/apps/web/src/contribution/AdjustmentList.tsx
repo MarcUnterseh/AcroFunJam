@@ -1,45 +1,21 @@
 import { adjustmentLine, validationLabels, type PoseAdjustment } from '@acrofunjam/core';
-import { Icon } from '../layout/Icon';
-
-const [proposedKey, retainedKey] = validationLabels.summaryKey.split(' → ');
+import { ValueChangeList } from './ValueChangeList';
 
 /**
  * The adjusted values « proposé → retenu » (docs/design/composants/recapitulatif-ajustements.md), in the order of
- * the form, preceded by its reading key; the same for the validator (story 4) and the contributor (story 5). Read
- * « Difficulté flyer : Proposé : Intermédiaire, retenu : Découverte »: the arrow is hidden, visually hidden texts
- * say which value is which.
+ * the form, preceded by its reading key; the same for the validator (story 4) and the contributor (story 5).
  */
 export function AdjustmentList({ adjustments }: { readonly adjustments: readonly PoseAdjustment[] }) {
+  const lines = adjustments.map((adjustment) => {
+    const { term, proposed, retained } = adjustmentLine(adjustment);
+    return { key: adjustment.field, term, before: proposed, after: retained };
+  });
   return (
-    <>
-      <p className="adjustment-summary__key" aria-hidden="true">
-        {proposedKey}
-        <Icon name="arrow" />
-        {retainedKey}
-      </p>
-      <dl className="adjustment-summary__list">
-        {adjustments.map((adjustment) => {
-          const line = adjustmentLine(adjustment);
-          return (
-            <div key={adjustment.field} className="adjustment">
-              <dt>{line.term}</dt>
-              <dd>
-                <span className="adjustment__proposed">
-                  <span className="visually-hidden">{validationLabels.summaryProposed}</span>
-                  {line.proposed}
-                </span>
-                <span className="adjustment__change">
-                  <Icon name="arrow" />
-                  <span className="adjustment__retained">
-                    <span className="visually-hidden">{validationLabels.summaryRetained}</span>
-                    {line.retained}
-                  </span>
-                </span>
-              </dd>
-            </div>
-          );
-        })}
-      </dl>
-    </>
+    <ValueChangeList
+      lines={lines}
+      readingKey={validationLabels.summaryKey}
+      beforeLabel={validationLabels.summaryProposed}
+      afterLabel={validationLabels.summaryRetained}
+    />
   );
 }

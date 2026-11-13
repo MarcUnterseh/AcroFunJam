@@ -30,6 +30,15 @@ Variante validateur ou administrateur : `h2` « La pose « Throne » est publié
 | Statut illisible (« Ta proposition est envoyée. ») | idem |
 | Publication directe (validateur, administrateur) | « Proposer une autre pose », « Voir le catalogue » : **pas** de « Voir mes propositions » |
 
+### Variante modification (story 6)
+
+| Résultat | Titre (`h2`) | Texte | Actions |
+|---|---|---|---|
+| Modification en attente (utilisateur) | « Merci, ta modification est envoyée. » | « Un validateur va l'examiner. La pose changera dans le catalogue une fois la modification acceptée. » | « Voir mes propositions », « Voir le catalogue » (deux liens-boutons secondaires) |
+| Publication directe (validateur, administrateur) | « La pose « Throne » est modifiée dans le catalogue. » (nouveau nom en cas de renommage) | aucun | « Voir le catalogue » (secondaire) |
+
+Pas de « Proposer une autre modification » : **aucun élément primaire** sous ce panneau, c'est voulu (rien à pousser après une modification). Mêmes tokens, même icône, mêmes règles d'empilement et de `flex-wrap`.
+
 - Un seul primaire ; les deux liens ont exactement le même rendu (secondaire, sans icône) : aucun des deux n'est poussé plus que l'autre.
 - « Voir mes propositions » vient avant « Voir le catalogue » : c'est là qu'on suit ce qu'on vient d'envoyer.
 

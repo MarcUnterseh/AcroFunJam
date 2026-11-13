@@ -43,7 +43,9 @@ const settled = () =>
 /** The block of the page that tells the session expired: no banner of the site, a link back here. */
 const expectSignInAgain = () => {
   const main = screen.getByRole('main');
-  expect(within(main).getByText('Connecte-toi de nouveau pour retrouver tes propositions.')).toBeInTheDocument();
+  expect(
+    within(main).getByText('Connecte-toi de nouveau pour retrouver tes propositions.'),
+  ).toBeInTheDocument();
   expect(within(main).getByRole('link', { name: 'Se connecter' })).toHaveAttribute(
     'href',
     '/connexion?retour=%2Fmes-propositions',
@@ -113,7 +115,11 @@ describe('access to the page « Mes propositions »', () => {
   it('should come back to the proposals once signed in again from the page', async () => {
     const gateway = new FakeAuthGateway();
     const contribution = withProposals(aMyProposal());
-    renderSite('/mes-propositions', { gateway, memory: new FakeSessionMemory(true), contribution }, <CurrentLocation />);
+    renderSite(
+      '/mes-propositions',
+      { gateway, memory: new FakeSessionMemory(true), contribution },
+      <CurrentLocation />,
+    );
     const main = screen.getByRole('main');
     await userEvent.click(await within(main).findByRole('link', { name: 'Se connecter' }));
 

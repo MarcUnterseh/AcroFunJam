@@ -52,6 +52,19 @@ export class ValidationPage {
     return this.page.getByRole('article', { name, exact: true });
   }
 
+  /** The card of the revision proposal of this pose (story 6): « Modification de Throne ». */
+  revisionCard(name: string): Locator {
+    return this.page.getByRole('article', { name: `Modification de ${name}`, exact: true });
+  }
+
+  /** The value of a term of the description lists of a card (the pose, a summary of changes). */
+  valueIn(card: Locator, term: string): Locator {
+    return card
+      .getByRole('term')
+      .filter({ hasText: new RegExp(`^${escaped(term)}$`) })
+      .locator('xpath=following-sibling::dd[1]');
+  }
+
   /** The report that replaced the card of a decided proposal. */
   report(name: string): Locator {
     return this.page.getByRole('heading', { level: 2, name: new RegExp(`« ${escaped(name)} »`) });

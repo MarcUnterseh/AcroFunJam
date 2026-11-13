@@ -7,8 +7,19 @@ import {
   type DecisionFailure,
   type DecisionInputStore,
   type KeptDecisionInputs,
+  type PendingPoseProposal,
+  type PendingPoseRevision,
   type PendingProposal,
   type PoseName,
+  type ProposalReference,
+  type KeptRevisionInput,
+  type PendingRevision,
+  type PoseRevisionGateway,
+  type RevisablePose,
+  type RevisionFailure,
+  type RevisionInputStore,
+  type RevisionOpeningFailure,
+  type ValidPoseRevision,
   type RejectionReason,
   type ValidationGateway,
   type AuthFailure,
@@ -18,6 +29,8 @@ import {
   type ContributionGateway,
   type KeptProposalInput,
   type MyProposal,
+  type MyPoseProposal,
+  type MyPoseRevision,
   type MyProposalsFailure,
   type ProposalFailure,
   type ProposalInputStore,
@@ -32,6 +45,7 @@ import type { ReactNode } from 'react';
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router';
 import { CatalogGatewayProvider } from '../catalog/CatalogGatewayContext';
 import { ContributionProvider } from '../contribution/ContributionContext';
+import { PoseRevisionProvider } from '../contribution/PoseRevisionContext';
 import { ValidationProvider } from '../contribution/ValidationContext';
 import { IdentityProvider } from '../identity/IdentityContext';
 import { routes } from '../routes';
@@ -83,7 +97,8 @@ export class MemoryProposalInputStore implements ProposalInputStore {
 }
 
 /** A proposal pending validation, made by Alice on 3 November 2026 unless stated otherwise. */
-export const aPendingProposal = (overrides: Partial<PendingProposal> = {}): PendingProposal => ({
+export const aPendingProposal = (overrides: Partial<PendingPoseProposal> = {}): PendingPoseProposal => ({
+  kind: 'pose-proposal',
   id: 'proposal-throne',
   pose: {
     name: 'Throne' as PoseName,
@@ -97,12 +112,49 @@ export const aPendingProposal = (overrides: Partial<PendingProposal> = {}): Pend
   ...overrides,
 });
 
+/**
+ * A revision pending validation (story 6): Alice proposes on 12 November 2026 to change the flyer difficulty of
+ * Throne (beginner / intermediate, can start and end a flow) to discovery, unless stated otherwise.
+ */
+export const aPendingRevision = (overrides: Partial<PendingPoseRevision> = {}): PendingPoseRevision => ({
+  kind: 'pose-revision',
+  id: 'revision-throne',
+  pose: {
+    id: 'pose-throne',
+    name: 'Throne' as PoseName,
+    baseDifficulty: 'beginner',
+    flyerDifficulty: 'intermediate',
+    canStartFlow: true,
+    canEndFlow: true,
+  },
+  changes: [{ field: 'flyerDifficulty', before: 'intermediate', after: 'discovery' }],
+  message: null,
+  contributor: { email: 'alice@example.org', isYou: false },
+  submittedAt: new Date('2026-11-12T09:00:00Z'),
+  ...overrides,
+});
+
 /** A proposal of the requester (story 5): Throne, proposed on 3 November 2026, pending unless stated otherwise. */
-export const aMyProposal = (overrides: Partial<MyProposal> = {}): MyProposal => ({
+export const aMyProposal = (overrides: Partial<MyPoseProposal> = {}): MyPoseProposal => ({
+  kind: 'pose-proposal',
   id: 'proposal-throne',
   pose: aPendingProposal().pose,
   submittedAt: new Date('2026-11-03T09:00:00Z'),
   status: { kind: 'pending' },
+  ...overrides,
+});
+
+/**
+ * A revision of the requester (story 6): the flyer difficulty of Throne, intermediate, proposed as discovery on 12
+ * November 2026, pending unless stated otherwise.
+ */
+export const aMyRevision = (overrides: Partial<MyPoseRevision> = {}): MyPoseRevision => ({
+  kind: 'pose-revision',
+  id: 'revision-throne',
+  poseName: 'Throne' as PoseName,
+  submittedAt: new Date('2026-11-12T09:00:00Z'),
+  status: { kind: 'pending' },
+  changes: [{ field: 'flyerDifficulty', before: 'intermediate', after: 'discovery' }],
   ...overrides,
 });
 
@@ -138,8 +190,8 @@ export class FakeValidationGateway implements ValidationGateway {
   ]);
   readonly rejection = new Answers<DecisionAnswer<void>>([ok(undefined)]);
   countRequests = 0;
-  readonly accepted: Array<{ id: string; acceptance: Acceptance }> = [];
-  readonly rejected: Array<{ id: string; reason: RejectionReason }> = [];
+  readonly accepted: Array<{ id: string; kind: string; acceptance: Acceptance }> = [];
+  readonly rejected: Array<{ id: string; kind: string; reason: RejectionReason }> = [];
 
   constructor(...proposals: PendingProposal[]) {
     this.queue.set(ok(proposals));
@@ -155,13 +207,56 @@ export class FakeValidationGateway implements ValidationGateway {
     this.countRequests += 1;
     return this.count.next();
   };
-  acceptProposal = (id: string, acceptance: Acceptance) => {
-    this.accepted.push({ id, acceptance });
+  acceptProposal = ({ id, kind }: ProposalReference, acceptance: Acceptance) => {
+    this.accepted.push({ id, kind, acceptance });
     return this.acceptance.next();
   };
-  rejectProposal = (id: string, reason: RejectionReason) => {
-    this.rejected.push({ id, reason });
+  rejectProposal = ({ id, kind }: ProposalReference, reason: RejectionReason) => {
+    this.rejected.push({ id, kind, reason });
     return this.rejection.next();
+  };
+}
+
+/** Throne, published (version 1): beginner / intermediate, can start and end a flow (story 6). */
+export const aRevisablePose = (overrides: Partial<RevisablePose> = {}): RevisablePose => ({
+  id: 'pose-throne',
+  name: 'Throne' as PoseName,
+  baseDifficulty: 'beginner',
+  flyerDifficulty: 'intermediate',
+  canStartFlow: true,
+  canEndFlow: true,
+  version: 1,
+  ...overrides,
+});
+
+/** The revision of a published pose (story 6): the pose, its pending revision, and the revisions sent. */
+export class FakePoseRevisionGateway implements PoseRevisionGateway {
+  readonly pose = new Answers<Result<RevisablePose, RevisionOpeningFailure>>([ok(aRevisablePose())]);
+  readonly pending = new Answers<Result<PendingRevision | null, RevisionOpeningFailure>>([ok(null)]);
+  readonly answer = new Answers<Result<ProposalOutcome, RevisionFailure>>([ok({ status: 'pending', name: 'Throne' })]);
+  readonly read: string[] = [];
+  readonly sent: ValidPoseRevision[] = [];
+
+  getRevisablePose = (poseId: string) => {
+    this.read.push(poseId);
+    return this.pose.next();
+  };
+  getPendingRevision = () => this.pending.next();
+  proposePoseRevision = (revision: ValidPoseRevision) => {
+    this.sent.push(revision);
+    return this.answer.next();
+  };
+}
+
+export class MemoryRevisionInputStore implements RevisionInputStore {
+  readonly kept = new Map<string, KeptRevisionInput>();
+  load = (poseId: string) => this.kept.get(poseId) ?? null;
+  save = (poseId: string, kept: KeptRevisionInput) => {
+    this.kept.set(poseId, kept);
+  };
+  clear = (poseId?: string) => {
+    if (poseId === undefined) this.kept.clear();
+    else this.kept.delete(poseId);
   };
 }
 
@@ -243,6 +338,8 @@ export const renderSite = (
     store = new MemoryProposalInputStore(),
     validation = new FakeValidationGateway(),
     decisionStore = new MemoryDecisionInputStore(),
+    revision = new FakePoseRevisionGateway(),
+    revisionStore = new MemoryRevisionInputStore(),
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
   }: {
     gateway?: FakeAuthGateway;
@@ -252,6 +349,8 @@ export const renderSite = (
     store?: MemoryProposalInputStore;
     validation?: FakeValidationGateway;
     decisionStore?: MemoryDecisionInputStore;
+    revision?: FakePoseRevisionGateway;
+    revisionStore?: MemoryRevisionInputStore;
     queryClient?: QueryClient;
   } = {},
   extra?: ReactNode,
@@ -262,13 +361,31 @@ export const renderSite = (
       <CatalogGatewayProvider gateway={catalog}>
         <ContributionProvider gateway={contribution} store={store}>
           <ValidationProvider gateway={validation} store={decisionStore}>
-            <IdentityProvider gateway={gateway} memory={memory} forgetOnSignOut={[store, decisionStore]}>
-              <RouterProvider router={router} />
-            </IdentityProvider>
+            <PoseRevisionProvider gateway={revision} store={revisionStore}>
+              <IdentityProvider
+                gateway={gateway}
+                memory={memory}
+                forgetOnSignOut={[store, decisionStore, revisionStore]}
+              >
+                <RouterProvider router={router} />
+              </IdentityProvider>
+            </PoseRevisionProvider>
           </ValidationProvider>
         </ContributionProvider>
       </CatalogGatewayProvider>
     </QueryClientProvider>,
   );
-  return { ...view, gateway, memory, router, contribution, store, validation, decisionStore, queryClient };
+  return {
+    ...view,
+    gateway,
+    memory,
+    router,
+    contribution,
+    store,
+    validation,
+    decisionStore,
+    revision,
+    revisionStore,
+    queryClient,
+  };
 };

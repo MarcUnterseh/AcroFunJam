@@ -1,11 +1,14 @@
 import {
   catalogLabels,
   difficultyLevelName,
+  revisionLabels,
   flowBoundaryAnswer,
   type DifficultyLevel,
   type PoseSummary,
 } from '@acrofunjam/core';
+import { Link } from 'react-router';
 import { Icon } from '../layout/Icon';
+import { revisionPath } from '../paths';
 import { DifficultyDots } from './DifficultyDots';
 
 function Difficulty({ level }: { readonly level: DifficultyLevel }) {
@@ -67,25 +70,41 @@ export function PoseDetails({ pose }: { readonly pose: PoseCharacteristics }) {
   );
 }
 
-/** Pose card (docs/design/composants/carte-pose.md): not interactive yet, no detail page. */
-function PoseCard({ pose }: { readonly pose: PoseSummary }) {
+/**
+ * Pose card (docs/design/composants/carte-pose.md): no detail page yet. A person who may propose is invited to
+ * propose a modification of the pose (story 6): a text link, named « Proposer une modification de <nom> ».
+ */
+function PoseCard({ pose, revisable }: { readonly pose: PoseSummary; readonly revisable: boolean }) {
   return (
-    <li className="pose-card">
+    <li className={`pose-card${revisable ? ' pose-card--revisable' : ''}`}>
       <h2 className="pose-card__name">{pose.name}</h2>
       <PoseDetails pose={pose} />
+      {revisable && (
+        <p className="pose-card__revision">
+          <Link to={revisionPath(pose.id)} className="pose-card__revision-link">
+            {/* The space outside the hidden part: the accessible name reads « … modification de Throne ». */}
+            {`${revisionLabels.title} `}
+            <span className="visually-hidden">de {pose.name}</span>
+          </Link>
+        </p>
+      )}
     </li>
   );
 }
 
-type PoseListProps = { readonly poses: readonly PoseSummary[] };
+type PoseListProps = {
+  readonly poses: readonly PoseSummary[];
+  /** The person may propose a modification (capability "propose"): a link on each card. */
+  readonly revisable?: boolean;
+};
 
 /** Grid of pose cards, in the order received (the API sorts them, ADR 0007). */
-export function PoseList({ poses }: PoseListProps) {
+export function PoseList({ poses, revisable = false }: PoseListProps) {
   return (
     // role="list" restores the list semantics that some browsers drop with "list-style: none".
     <ul className="pose-grid" role="list" aria-label={catalogLabels.poseList}>
       {poses.map((pose) => (
-        <PoseCard key={pose.id} pose={pose} />
+        <PoseCard key={pose.id} pose={pose} revisable={revisable} />
       ))}
     </ul>
   );

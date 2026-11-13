@@ -1,6 +1,8 @@
 import type { AdjustmentNote } from './adjustment-note';
 import type { PoseAdjustment } from './pose-adjustment';
+import type { PoseName } from '../shared-kernel/pose-name';
 import type { PoseContent } from './pose-proposal';
+import type { PoseValueChange } from './pose-revision';
 import type { RejectionReason } from './rejection-reason';
 
 /**
@@ -23,12 +25,30 @@ export type MyProposalStatus =
   | { readonly kind: 'unknown' };
 
 /**
- * A proposal of the requester, as « Mes propositions » presents it (glossary « Mes propositions »). The presented
- * pose is the retained one once accepted (the pose of the catalog), the proposed one otherwise.
+ * A pose proposal of the requester, as « Mes propositions » presents it (glossary « Mes propositions »). The
+ * presented pose is the retained one once accepted (the pose of the catalog), the proposed one otherwise.
  */
-export type MyProposal = {
+export type MyPoseProposal = {
+  readonly kind: 'pose-proposal';
   readonly id: string;
   readonly pose: PoseContent;
   readonly submittedAt: Date;
   readonly status: MyProposalStatus;
 };
+
+/**
+ * A revision proposal of the requester (story 6, ADR 0027): the pose by its name when proposed, and what changes in
+ * it, before → after (« valeur d'avant », frozen when proposed → the retained value once accepted, the proposed one
+ * otherwise), the changed fields only, in the order of the form.
+ */
+export type MyPoseRevision = {
+  readonly kind: 'pose-revision';
+  readonly id: string;
+  readonly poseName: PoseName;
+  readonly submittedAt: Date;
+  readonly status: MyProposalStatus;
+  readonly changes: readonly PoseValueChange[];
+};
+
+/** An item of « Mes propositions »: a pose proposal or a revision proposal, mixed, the most recent first. */
+export type MyProposal = MyPoseProposal | MyPoseRevision;

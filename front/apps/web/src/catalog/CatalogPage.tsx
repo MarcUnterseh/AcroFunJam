@@ -66,12 +66,12 @@ function EmptyCatalog({ canPropose }: { readonly canPropose: boolean }) {
   );
 }
 
-function Poses({ poses }: { readonly poses: readonly PoseSummary[] }) {
+function Poses({ poses, revisable }: { readonly poses: readonly PoseSummary[]; readonly revisable: boolean }) {
   return (
     <>
       <p className="catalog__count">{poseCountLabel(poses.length)}</p>
       <DifficultyLegend />
-      <PoseList poses={poses} />
+      <PoseList poses={poses} revisable={revisable} />
     </>
   );
 }
@@ -111,7 +111,7 @@ export function CatalogPage({ canPropose = false }: CatalogPageProps) {
       </p>
     );
   else if (poses.length === 0) content = <EmptyCatalog canPropose={canPropose} />;
-  else content = <Poses poses={poses} />;
+  else content = <Poses poses={poses} revisable={canPropose} />;
 
   return (
     <>

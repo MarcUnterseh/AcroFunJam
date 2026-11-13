@@ -1,6 +1,6 @@
 # Carte de proposition
 
-Une proposition en attente de validation dans la page « Propositions à valider » (story 4). Elle **reprend la carte de pose** (`carte-pose.md`) pour que le validateur voie la pose telle qu'elle apparaîtra dans le catalogue, puis ajoute le contributeur, la date et une **zone de décision**. Écran : `../ecrans/4-valider-une-proposition.md`. Son conteneur (fond, contour, rayon, paddings) est repris tel quel par la carte « ma proposition » de la story 5 (`carte-ma-proposition.md`).
+Une proposition en attente de validation dans la page « Propositions à valider » (story 4). Elle **reprend la carte de pose** (`carte-pose.md`) pour que le validateur voie la pose telle qu'elle apparaîtra dans le catalogue, puis ajoute le contributeur, la date et une **zone de décision**. Écran : `../ecrans/4-valider-une-proposition.md`. Son conteneur (fond, contour, rayon, paddings) est repris tel quel par la carte « ma proposition » de la story 5 (`carte-ma-proposition.md`). Story 6 : la carte de modification (`carte-modification.md`) reprend tout ce document (conteneur, contributeur, décision, refus, ajustement, alertes) et n'en décrit que les différences.
 
 ## Structure (repos)
 

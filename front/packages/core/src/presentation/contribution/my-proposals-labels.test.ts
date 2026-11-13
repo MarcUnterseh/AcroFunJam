@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import type { MyProposalStatus } from '../../domain/contribution/my-pose-proposal';
 import type { RejectionReason } from '../../domain/contribution/rejection-reason';
 import {
   myProposalCountLabel,
   myProposalsLabels,
   myProposalStatusLabel,
+  myRevisionLabels,
   submittedLine,
 } from './my-proposals-labels';
 
@@ -14,7 +16,8 @@ describe('myProposalsLabels', () => {
       catalogLink: 'Mes propositions',
       seeMyProposals: 'Voir mes propositions',
       signInContext: 'Connecte-toi pour accéder à tes propositions.',
-      introduction: "Retrouve les poses que tu as proposées et ce qu'elles sont devenues.",
+      introduction:
+        "Retrouve les poses et les modifications que tu as proposées, et ce qu'elles sont devenues.",
     });
   });
 
@@ -28,7 +31,7 @@ describe('myProposalsLabels', () => {
       retrying: 'Chargement…',
       reload: 'Recharger la page',
       emptyTitle: "Tu n'as encore proposé aucune pose.",
-      emptyText: "Les poses que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
+      emptyText: "Les poses et les modifications que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
       proposePose: 'Proposer une pose',
     });
   });
@@ -151,6 +154,41 @@ describe('myProposalStatusLabel', () => {
       text: 'Statut indisponible. Recharge la page.',
       day: null,
       consequence: null,
+    });
+  });
+});
+
+describe('myProposalStatusLabel of a revision (story 6)', () => {
+  const decidedAt = new Date('2026-11-13T10:00:00Z');
+
+  it.each([
+    [{ kind: 'pending' }, 'La pose changera dans le catalogue une fois la modification acceptée.'],
+    [{ kind: 'accepted', decidedAt }, 'La pose est modifiée dans le catalogue.'],
+    [{ kind: 'published-directly' }, 'La pose est modifiée dans le catalogue.'],
+    [
+      { kind: 'accepted-with-adjustments', decidedAt, adjustments: [], message: null },
+      'La pose est modifiée dans le catalogue avec ces ajustements.',
+    ],
+    [{ kind: 'rejected', decidedAt, reason: 'Non.' }, 'La pose reste inchangée dans le catalogue.'],
+  ] as const)('should say what the status %o means for the pose: "%s"', (status, consequence) => {
+    expect(myProposalStatusLabel(status as MyProposalStatus, 'pose-revision').consequence).toBe(consequence);
+  });
+
+  it('should keep the words of the status of a pose proposal', () => {
+    expect(myProposalStatusLabel({ kind: 'accepted', decidedAt }, 'pose-revision').text).toBe('Acceptée le ');
+  });
+});
+
+describe('myRevisionLabels', () => {
+  it('should present a revision as the card « ma modification » specifies it', () => {
+    expect(myRevisionLabels).toEqual({
+      titlePrefix: 'Modification de ',
+      changesTitle: 'Ce qui change dans la pose',
+      proposedKey: "Valeur d'avant → valeur proposée",
+      retainedKey: "Valeur d'avant → valeur retenue",
+      before: 'Avant : ',
+      proposed: ', proposé : ',
+      retained: ', retenu : ',
     });
   });
 });

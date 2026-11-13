@@ -1,7 +1,12 @@
 import { fail, ok, type Result } from '../../domain/common/result';
 import { checkAdjustmentNote, type AdjustmentNoteError } from '../../domain/contribution/adjustment-note';
 import { adjustmentsOf } from '../../domain/contribution/pose-adjustment';
-import type { PoseProposalInput, ProposalFieldError } from '../../domain/contribution/pose-proposal';
+import type {
+  PoseContent,
+  PoseProposalInput,
+  ProposalFieldError,
+} from '../../domain/contribution/pose-proposal';
+import { retainedRevisionChangesNothing, revisedPose } from '../../domain/contribution/pose-revision';
 import { checkRejectionReason, type RejectionReasonError } from '../../domain/contribution/rejection-reason';
 import type { DecisionInputStore, KeptDecision } from './DecisionInputStorePort';
 import type {
@@ -10,6 +15,7 @@ import type {
   AccessFailure,
   DecisionFailure,
   PendingProposal,
+  ProposalReference,
   ValidationGateway,
 } from './ValidationGateway';
 
@@ -31,7 +37,9 @@ export type DecisionError =
   | { readonly kind: 'already-decided' }
   | { readonly kind: 'not-found' }
   | { readonly kind: 'name-already-in-catalog' }
-  | { readonly kind: 'name-already-pending' };
+  | { readonly kind: 'name-already-pending' }
+  | { readonly kind: 'retained-revision-changes-nothing' }
+  | { readonly kind: 'pose-changed' };
 
 export type RejectProposalError =
   DecisionError | { readonly kind: 'invalid-reason'; readonly code: RejectionReasonError };
@@ -108,17 +116,24 @@ const recorded = <T>(
 export const rejectProposal = async (
   gateway: ValidationGateway,
   store: DecisionInputStore,
-  proposalId: string,
+  proposal: ProposalReference,
   rawReason: string,
   owner: string,
 ): Promise<Result<void, RejectProposalError>> => {
   const reason = checkRejectionReason(rawReason);
   if (!reason.ok) return fail({ kind: 'invalid-reason', code: reason.error });
-  const answer = await gateway.rejectProposal(proposalId, reason.value);
-  return recorded(store, owner, proposalId, answer, { kind: 'rejection', reason: rawReason });
+  const answer = await gateway.rejectProposal(proposal, reason.value);
+  return recorded(store, owner, proposal.id, answer, { kind: 'rejection', reason: rawReason });
 };
 
 const asProposed: Acceptance = { adjustments: [], note: null };
+
+/**
+ * The pose the validator accepts as proposed, and adjusts from: the proposed pose, or the published pose with the
+ * values a revision changes (story 6).
+ */
+export const proposedPoseOf = (proposal: PendingProposal): PoseContent =>
+  proposal.kind === 'pose-revision' ? revisedPose(proposal.pose, proposal.changes) : proposal.pose;
 
 /** What to send: the adjustments and the note, or an acceptance as proposed when nothing differs. */
 const acceptanceOf = (
@@ -126,8 +141,14 @@ const acceptanceOf = (
   adjusted: AdjustedDecision | null,
 ): Result<Acceptance, AcceptProposalError> => {
   if (!adjusted) return ok(asProposed);
-  const adjustments = adjustmentsOf(proposal.pose, adjusted.input);
+  const adjustments = adjustmentsOf(proposedPoseOf(proposal), adjusted.input);
   if (!adjustments.ok) return fail({ kind: 'invalid-input', errors: adjustments.error });
+  // A revision whose retained values leave the pose as it is cannot be accepted (R15): it is to be rejected.
+  if (
+    proposal.kind === 'pose-revision' &&
+    retainedRevisionChangesNothing(proposal.pose, proposal.changes, adjustments.value)
+  )
+    return fail({ kind: 'retained-revision-changes-nothing' });
   const note = checkAdjustmentNote(adjusted.note);
   if (!note.ok) return fail({ kind: 'invalid-note', code: note.error });
   // A note only accompanies adjustments (R9 ter): without any, the acceptance is as proposed.
@@ -150,7 +171,7 @@ export const acceptProposal = async (
 ): Promise<Result<AcceptanceOutcome, AcceptProposalError>> => {
   const acceptance = acceptanceOf(proposal, adjusted);
   if (!acceptance.ok) return acceptance;
-  const answer = await gateway.acceptProposal(proposal.id, acceptance.value);
+  const answer = await gateway.acceptProposal(proposal, acceptance.value);
   return recorded(store, owner, proposal.id, answer, adjusted && { kind: 'acceptance', ...adjusted });
 };
 

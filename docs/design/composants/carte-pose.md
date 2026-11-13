@@ -6,6 +6,8 @@ Story 4 : la carte de proposition (`carte-proposition.md`) reprend son conteneur
 
 Story 5 : la carte « ma proposition » (`carte-ma-proposition.md`) reprend aussi la `dl` sans la modifier (pose retenue pour une proposition acceptée, pose proposée sinon). Même règle : une évolution de la `dl` vaut pour les trois cartes.
 
+Story 6 : la carte de modification de la file (`carte-modification.md`) reprend la `dl` pour « La pose après modification » ; le lien « Proposer une modification » (ci-dessous) n'appartient qu'au catalogue.
+
 ## Structure
 
 ```
@@ -47,10 +49,43 @@ Balisage : `li` (dans l'`ul` de la grille) > `article` facultatif > `h2` + `dl`.
 
 ## États
 
-Aucun état interactif en story 3 (ni survol, ni focus). Quand la carte mènera au détail d'une pose :
-- le **nom** deviendra le lien (`h2 > a`), étendu à toute la carte par un pseudo-élément ; un seul arrêt de tabulation par carte ;
+Aucun état interactif en story 3 (ni survol, ni focus) ; story 6 : seul le lien « Proposer une modification » (section suivante) est interactif, la carte elle-même ne l'est pas. Quand la carte mènera au détail d'une pose :
+- le **nom** deviendra le lien (`h2 > a`), étendu à toute la carte par un pseudo-élément ; un arrêt de tabulation pour le nom, plus un pour « Proposer une modification » (personne connectée), qui reste cliquable au-dessus du pseudo-élément (`z-index`) ;
 - survol : fond `surfaceHover`, nom souligné ; focus : anneau `focus` autour de la carte entière ;
 - le contour passera de `divider` à `border` (la carte deviendra un contrôle, contraste 3:1 exigé).
+
+## Lien « Proposer une modification » (story 6)
+
+Seul élément interactif de la carte en story 6, **dans le catalogue uniquement** (jamais dans les cartes qui reprennent la `dl` : proposition, ma proposition, modification). Personne connectée seulement : **absent du DOM** pour un visiteur ou tant que la session est en attente, sans vide réservé.
+
+```
+│ Peut terminer un flow         – Non  │
+│ ──────────────────────────────────── │  <- séparateur divider
+│ Proposer une modification            │  <- lien texte souligné, primary, 44 px de zone
+└──────────────────────────────────────┘
+```
+
+Balisage : après la `dl`, dans un `p` : `<a href="/poses/:id/proposer-une-modification">Proposer une modification <span class="visually-hidden">de Throne</span></a>` (l'espace hors du texte masqué, pour que le nom accessible soit bien « Proposer une modification de Throne »). Nom accessible : « Proposer une modification de Throne » (unique dans la page) ; texte visible court.
+
+| Élément | Tokens |
+|---|---|
+| Carte | devient une colonne flex (`display: flex; flex-direction: column`) pour que le lien se cale **en bas** : les liens d'une même rangée de la grille sont alignés, quelle que soit la hauteur du nom |
+| Zone du lien | `margin-block-start: auto` (la pousse en bas) ; l'écart minimal avec la `dl` est donné par une marge basse `spacing.sm` de la `dl`, posée seulement quand le lien est présent ; bordure haute `borderWidth` `divider` (même séparateur décoratif que celui de la `dl`) ; padding haut `spacing.xs` |
+| Lien (`a`) | `display: inline-flex`, `align-items: center`, **`min-block-size: sizes.touchTarget` (44)** ; `size.md`, `weight.regular`, couleur **`primary`** (4,9:1 sur `surface`), **souligné en permanence** (épaisseur `borderWidth`) ; aligné à gauche ; passe à la ligne si la place manque (`overflow-wrap: anywhere` inutile : mots courts) |
+| Icône | aucune (texte seul : la grille reste légère sur mobile) |
+| Superposition | `position: relative; z-index: 1` : le lien restera au-dessus du pseudo-élément du futur lien étendu du nom (voir « États ») |
+
+Hauteur ajoutée à la carte : séparateur + 4 + 44 ≈ 49 px. Le lien fait toute la hauteur de la zone cliquable, mais seule la largeur du texte est cliquable ; à 288 px de carte, le libellé (~200 px) tient sur une ligne.
+
+| État | Rendu |
+|---|---|
+| Repos | `primary`, souligné 1 px |
+| Survol (pointeur fin) | `primaryHover` (6,9:1 sur `surface`), soulignement **2 px** (`borderWidthStrong`) |
+| Focus (`:focus-visible`) | anneau `focus` 3 px décalé de 2 px, rayon `radius.sm` ; distinct du survol (le soulignement ne change pas) |
+| Pressé (`:active`) | `primaryActive` (8,9:1 sur `surface`) |
+| Visité | identique au repos |
+
+Pourquoi un lien textuel plutôt qu'un lien-bouton (`lien-bouton.md`) : douze cartes à boutons de 48 px alourdiraient la grille et concurrenceraient « Proposer une pose », seule action primaire de la page. Le soulignement permanent suffit à signaler un lien sans la couleur. `forced-colors: active` : `LinkText`, soulignement conservé.
 
 ## Vignette (emplacement futur, non implémenté)
 

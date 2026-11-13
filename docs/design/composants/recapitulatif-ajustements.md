@@ -4,6 +4,8 @@ Avant d'envoyer une acceptation **avec ajustements**, le validateur relit ce qu'
 
 Deux variantes, une seule **liste** (`dl` des ajustements, nom proposé dans le code : `AdjustmentList`) partagée sans aucune différence de rendu ; seuls le titre, la mention finale, le focus et ce qui suit changent.
 
+Story 6 : la même liste sert à comparer la pose avant et après une **modification** (`recapitulatif-modification.md`) ; elle est devenue une liste de comparaison générique (`ValueChangeList`, `front/apps/web/src/contribution/ValueChangeList.tsx` ; `AdjustmentList` et `PoseChangeList` l'utilisent) dont les deux textes masqués sont des paramètres (« Proposé : » / « , retenu : » ici). Rendu inchangé. Pour une modification, les ajustements se lisent toujours ici (proposé → retenu), et les champs que la modification ne changeait pas y figurent avec la valeur actuelle comme valeur proposée.
+
 ## Structure
 
 ```

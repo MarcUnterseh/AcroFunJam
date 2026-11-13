@@ -1,20 +1,42 @@
 import type { Result } from '../../domain/common/result';
 import type { AdjustmentNote } from '../../domain/contribution/adjustment-note';
 import type { PoseAdjustment } from '../../domain/contribution/pose-adjustment';
-import type { ValidPoseProposal } from '../../domain/contribution/pose-proposal';
+import type { PoseContent, ValidPoseProposal } from '../../domain/contribution/pose-proposal';
+import type { PoseValueChange } from '../../domain/contribution/pose-revision';
 import type { RejectionReason } from '../../domain/contribution/rejection-reason';
+import type { RevisionMessage } from '../../domain/contribution/revision-message';
 
 /** Who made a proposal: their address (null if the account no longer exists), and whether it is the requester. */
 export type ProposalContributor = { readonly email: string | null; readonly isYou: boolean };
 
-/** A proposal pending validation, as the validation queue presents it (glossary « File de validation »). */
-export type PendingProposal = {
+/** A pose proposal pending validation, as the validation queue presents it (glossary « File de validation »). */
+export type PendingPoseProposal = {
+  readonly kind: 'pose-proposal';
   readonly id: string;
   /** The proposed pose (its name is normalised). */
   readonly pose: ValidPoseProposal;
   readonly contributor: ProposalContributor;
   readonly submittedAt: Date;
 };
+
+/** A revision proposal pending validation (story 6, ADR 0027): the pose as it is, and what would change. */
+export type PendingPoseRevision = {
+  readonly kind: 'pose-revision';
+  readonly id: string;
+  /** The published pose, with its current values. */
+  readonly pose: PoseContent & { readonly id: string };
+  /** The changed fields only, in the order of the form: current → proposed. */
+  readonly changes: readonly PoseValueChange[];
+  readonly message: RevisionMessage | null;
+  readonly contributor: ProposalContributor;
+  readonly submittedAt: Date;
+};
+
+/** An item of the validation queue: a pose proposal or a revision proposal, mixed, the oldest first. */
+export type PendingProposal = PendingPoseProposal | PendingPoseRevision;
+
+/** Which proposal a decision is about: the API decides each kind at its own address. */
+export type ProposalReference = Pick<PendingProposal, 'kind' | 'id'>;
 
 /** What the validator sends to accept a proposal: the adjusted values only, and the optional note. */
 export type Acceptance = {
@@ -43,12 +65,22 @@ export type DecisionFailure =
   | { readonly kind: 'not-found' }
   /** The retained name is taken (ADR 0017): by a published pose, or by another pending proposal. */
   | { readonly kind: 'name-already-in-catalog' }
-  | { readonly kind: 'name-already-pending' };
+  | { readonly kind: 'name-already-pending' }
+  /** A revision whose retained values would leave the pose as it is (story 6, R15). */
+  | { readonly kind: 'retained-revision-changes-nothing' }
+  /** The pose of a revision changed since it was proposed (story 6, safety net of the API). */
+  | { readonly kind: 'pose-changed' };
 
 /** Port: the validation of proposals by the Contribution API (implemented by @acrofunjam/api-client). */
 export interface ValidationGateway {
   getValidationQueue(): Promise<Result<readonly PendingProposal[], AccessFailure>>;
   countPendingProposals(): Promise<Result<number, AccessFailure>>;
-  acceptProposal(id: string, acceptance: Acceptance): Promise<Result<AcceptanceOutcome, DecisionFailure>>;
-  rejectProposal(id: string, reason: RejectionReason): Promise<Result<void, DecisionFailure>>;
+  acceptProposal(
+    proposal: ProposalReference,
+    acceptance: Acceptance,
+  ): Promise<Result<AcceptanceOutcome, DecisionFailure>>;
+  rejectProposal(
+    proposal: ProposalReference,
+    reason: RejectionReason,
+  ): Promise<Result<void, DecisionFailure>>;
 }

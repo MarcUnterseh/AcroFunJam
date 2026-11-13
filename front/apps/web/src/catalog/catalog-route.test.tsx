@@ -167,3 +167,21 @@ describe('retrying to load the catalog', () => {
     await waitFor(() => expect(announcements()).toContain(loadingFailed));
   });
 });
+
+describe('« Proposer une modification » on each pose card (story 6)', () => {
+  it('should invite a signed-in person to propose a modification of each pose, named after it', async () => {
+    renderSite('/', { gateway: signedIn(), catalog: withPoses });
+
+    const card = (await screen.findByRole('heading', { level: 2, name: 'Throne' })).closest('li')!;
+    const link = await within(card).findByRole('link', { name: 'Proposer une modification de Throne' });
+    expect(link).toHaveAttribute('href', '/poses/p-1/proposer-une-modification');
+    expect(link).toHaveTextContent(/^Proposer une modification/);
+  });
+
+  it('should not invite a visitor to propose a modification', async () => {
+    renderSite('/', { catalog: withPoses });
+
+    await screen.findByRole('heading', { level: 2, name: 'Throne' });
+    expect(screen.queryByRole('link', { name: /^Proposer une modification/ })).not.toBeInTheDocument();
+  });
+});

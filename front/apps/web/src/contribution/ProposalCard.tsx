@@ -1,10 +1,19 @@
 import {
   contributorLine,
+  currentValueLabel,
+  decisionLabelsOf,
+  proposedPoseOf,
+  proposedValueLabel,
+  revisionCardLabels,
   validationLabels,
   validatorTextErrorLabel,
   validatorTextLength,
   type KeptDecision,
+  type PendingPoseRevision,
   type PendingProposal,
+  type PoseContent,
+  type PoseFieldValue,
+  type ProposalField,
   type RecordedDecision,
 } from '@acrofunjam/core';
 import { useId, type Ref } from 'react';
@@ -12,6 +21,7 @@ import { PoseDetails } from '../catalog/PoseList';
 import { FormAlert, TextAreaField } from '../layout/form-controls';
 import { Icon } from '../layout/Icon';
 import { AdjustmentForm } from './AdjustmentForm';
+import { PoseChangeList } from './PoseChangeList';
 import { AdjustmentSummary } from './AdjustmentSummary';
 import { DecisionAlert } from './DecisionAlert';
 import { useProposalDecision, type Sending } from './useProposalDecision';
@@ -31,11 +41,42 @@ function ContributorLine({ proposal }: { readonly proposal: PendingProposal }) {
   );
 }
 
+/** A value of a pose, as the labels of the presentation take it. */
+const valueOf = (pose: PoseContent, field: ProposalField) =>
+  ({ field, value: pose[field] }) as PoseFieldValue;
+
+/**
+ * What a revision changes (carte-modification.md): « Valeur actuelle → valeur proposée » of the changed fields
+ * only, then the message of the contributor; it stays in view while the validator adjusts.
+ */
+function RevisionChanges({ revision }: { readonly revision: PendingPoseRevision }) {
+  return (
+    <div className="revision-changes">
+      <div className="adjustment-summary revision-changes__summary">
+        <h3 className="proposal-card__zone-title">{revisionCardLabels.changesTitle}</h3>
+        <PoseChangeList
+          changes={revision.changes}
+          readingKey={revisionCardLabels.changesKey}
+          beforeLabel={revisionCardLabels.before}
+          afterLabel={revisionCardLabels.after}
+        />
+      </div>
+      {revision.message && (
+        <div className="my-proposal__validator-text">
+          <p className="my-proposal__validator-text-label">{revisionCardLabels.message}</p>
+          <p className="my-proposal__validator-text-content">{revision.message}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /**
  * A proposal pending validation (docs/design/composants/carte-proposition.md): the pose as the catalog will
  * present it, its contributor, then the decisions, of equal weight; each decision zone opens in the card. A
  * refusal or an incident is told in the card; a recorded decision is handed to the queue, which replaces the
- * card by its report.
+ * card by its report. A revision (carte-modification.md, story 6) is titled « Modification de <nom> » and
+ * presents what changes, then the pose after modification.
  */
 export function ProposalCard({
   proposal,
@@ -54,6 +95,16 @@ export function ProposalCard({
   const decision = useProposalDecision({ proposal, owner, kept, onDecided });
   const { mode, reason, reasonError, note, noteError, alert, sending, refs, closed } = decision;
   const name = proposal.pose.name;
+  const labels = decisionLabelsOf(proposal.kind);
+  const revision = proposal.kind === 'pose-revision' ? proposal : null;
+  const proposed = proposedPoseOf(proposal);
+  // « Proposé : … » under each field; for a revision, « Actuellement : … » first, then « Proposé : … » when changed.
+  const reminders = (field: ProposalField): readonly string[] => {
+    const proposedValue = proposedValueLabel(valueOf(proposed, field));
+    if (!revision) return [proposedValue];
+    const current = currentValueLabel(valueOf(revision.pose, field));
+    return revision.changes.some((change) => change.field === field) ? [current, proposedValue] : [current];
+  };
 
   const button = (
     label: string,
@@ -75,7 +126,7 @@ export function ProposalCard({
       {action && sending === action ? busyLabel : label}
     </button>
   );
-  const acceptButton = button(validationLabels.accept, decision.accept, {
+  const acceptButton = button(labels.accept, decision.accept, {
     action: 'accept',
     busyLabel: validationLabels.publishing,
   });
@@ -96,16 +147,27 @@ export function ProposalCard({
   return (
     <article className="proposal-card" aria-labelledby={titleId}>
       <h2 ref={refs.title} id={titleId} className="proposal-card__name" tabIndex={-1}>
-        {name}
+        {/* The space outside the prefix: the accessible name reads « Modification de Throne ». */}
+        {revision && <span className="proposal-card__name-prefix">{revisionCardLabels.titlePrefix.trim()}</span>}
+        {revision ? ` ${name}` : name}
       </h2>
       <ContributorLine proposal={proposal} />
-      {(closed || mode === 'rest' || mode === 'rejecting') && <PoseDetails pose={proposal.pose} />}
+      {revision && <RevisionChanges revision={revision} />}
+      {(closed || mode === 'rest' || mode === 'rejecting') &&
+        (revision ? (
+          <div className="revision-pose">
+            <h3 className="revision-pose__title">{revisionCardLabels.revisedPose}</h3>
+            <PoseDetails pose={proposed} />
+          </div>
+        ) : (
+          <PoseDetails pose={proposal.pose} />
+        ))}
       <div className="proposal-card__decision">
         {(closed || mode !== 'adjusting') && decisionAlert}
         {!closed && mode === 'rest' && (
           <div className="proposal-card__actions">
             {acceptButton}
-            {button(validationLabels.adjust, () => decision.open('adjusting'), { ref: refs.adjust })}
+            {button(labels.adjust, () => decision.open('adjusting'), { ref: refs.adjust })}
             {button(validationLabels.reject, () => decision.open('rejecting'), { ref: refs.reject })}
           </div>
         )}
@@ -132,7 +194,8 @@ export function ProposalCard({
         )}
         {!closed && mode === 'adjusting' && (
           <AdjustmentForm
-            proposed={proposal.pose}
+            title={labels.adjustTitle}
+            reminders={reminders}
             input={decision.input}
             onChange={decision.change}
             errorOf={decision.errorOf}
@@ -151,7 +214,7 @@ export function ProposalCard({
                 <FormAlert variant="info">
                   <Icon name="info" />
                   <div className="form-alert__content">
-                    <p>{validationLabels.nothingAdjusted}</p>
+                    <p>{labels.nothingAdjusted}</p>
                     {acceptButton}
                   </div>
                 </FormAlert>
@@ -177,7 +240,7 @@ export function ProposalCard({
               error={noteError ? validatorTextErrorLabel(noteError, noteLength) : undefined}
             />
             <div className="proposal-card__actions">
-              {button(validationLabels.publishAdjusted, decision.publish, {
+              {button(labels.publishAdjusted, decision.publish, {
                 action: 'publish',
                 busyLabel: validationLabels.publishing,
                 primary: true,

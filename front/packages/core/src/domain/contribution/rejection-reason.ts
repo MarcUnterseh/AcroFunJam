@@ -1,5 +1,5 @@
 import { fail, ok, type Result } from '../common/result';
-import { isValidatorTextTooLong, normalizeValidatorText } from './validator-text';
+import { isValidatorTextTooLong, normalizeValidatorText } from './proposal-text';
 
 /** Why a validator rejects a proposal, written for its contributor (glossary « Motif de refus », ADR 0022). */
 export type RejectionReason = string & { readonly __brand: 'RejectionReason' };

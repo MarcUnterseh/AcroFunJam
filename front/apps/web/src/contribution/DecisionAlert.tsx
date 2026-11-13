@@ -71,6 +71,8 @@ export function DecisionAlert({
           </div>
         </FormAlert>
       );
+    // The pose changed since the revision was proposed (safety net of the API): reloading shows its values.
+    case 'pose-changed':
     case 'outdated':
       return (
         <FormAlert>

@@ -8,7 +8,9 @@ import {
   keepsDecisionInput,
   poseNameLength,
   proposalFieldErrorLabel,
+  proposedPoseOf,
   rejectProposal,
+  retainedRevisionChangesNothing,
   validatorTextLength,
   type AcceptProposalError,
   type AdjustmentNoteError,
@@ -35,7 +37,8 @@ import { validatorTextCounter } from './ValidatorTextCounter';
 export type Sending = 'accept' | 'reject' | 'publish';
 /** What the card shows: the pose and the decisions, or one of the zones opened in it. */
 export type Mode = 'rest' | 'rejecting' | 'adjusting' | 'summary';
-type FocusTarget = 'title' | 'retry' | 'reason' | 'reject' | 'adjust' | 'name' | 'summary' | 'note' | ProposalField;
+type FocusTarget =
+  'title' | 'retry' | 'reason' | 'reject' | 'adjust' | 'name' | 'summary' | 'note' | ProposalField;
 type DecisionFailure = AcceptProposalError | RejectProposalError;
 type NameRefusal = 'name-already-in-catalog' | 'name-already-pending';
 
@@ -64,7 +67,8 @@ export function useProposalDecision({
   const { reread } = usePendingCountUpdates();
   const announceTextCounter = useCounterAnnouncement(validatorTextCounter);
   const announceNameCounter = useCounterAnnouncement(nameCounter);
-  const proposed: PoseProposalInput = proposal.pose;
+  // The pose accepted as proposed, and adjusted from: the proposed pose, or the revised pose (story 6).
+  const proposed: PoseProposalInput = proposedPoseOf(proposal);
   const [mode, setMode] = useState<Mode>(modeOf(kept));
   const [reason, setReason] = useState(kept?.kind === 'rejection' ? kept.reason : '');
   const [reasonError, setReasonError] = useState<RejectionReasonError | null>(null);
@@ -135,6 +139,11 @@ export function useProposalDecision({
         setInputErrors(error.errors);
         setFocus(error.errors[0]?.field ?? 'name');
         return;
+      case 'retained-revision-changes-nothing':
+        // The retained revision would leave the pose as it is: the form is given back, with the alert.
+        setMode('adjusting');
+        setFocus('name');
+        break;
       case 'name-already-in-catalog':
       case 'name-already-pending':
         // With adjustments, the retained name is refused: the form is given back, the error on the name.
@@ -162,7 +171,7 @@ export function useProposalDecision({
   };
 
   /** Sends a decision once, even before the next render; its trigger shows it is busy. */
-  const send = async <T,>(
+  const send = async <T>(
     action: Sending,
     decide: () => Promise<Result<T, DecisionFailure>>,
     recorded: (value: T) => RecordedDecision,
@@ -183,6 +192,7 @@ export function useProposalDecision({
   };
 
   const accepted = (outcome: { name: string; adjusted: boolean }): RecordedDecision => ({
+    proposal: proposal.kind,
     decision: 'accepted',
     ...outcome,
   });
@@ -198,8 +208,8 @@ export function useProposalDecision({
   const reject = (retrying = false) =>
     send(
       'reject',
-      () => rejectProposal(gateway, store, proposal.id, reason, owner),
-      () => ({ decision: 'rejected', name }),
+      () => rejectProposal(gateway, store, proposal, reason, owner),
+      () => ({ proposal: proposal.kind, decision: 'rejected', name }),
       retrying,
     );
   const retry = () => void { accept, publish, reject }[lastSent](true);
@@ -247,6 +257,8 @@ export function useProposalDecision({
     setInputErrors((current) => current.filter((error) => error.field !== field));
     if (field === 'name') setNameRefusal(null);
     setNothingAdjusted(false);
+    // The retained values change: the alert « la pose ne changerait pas » no longer applies.
+    setAlert((current) => (current === 'retained-revision-changes-nothing' ? null : current));
   };
   const errorOf = (field: ProposalField): string | undefined => {
     if (field === 'name' && nameRefusal) return adjustedNameRefusalLabel(nameRefusal);
@@ -256,14 +268,24 @@ export function useProposalDecision({
 
   /** « Vérifier les ajustements »: the summary, the errors in the form, or nothing to adjust. */
   const check = () => {
-    const checked = adjustmentsOf(proposal.pose, input);
+    const checked = adjustmentsOf(proposedPoseOf(proposal), input);
     if (!checked.ok) {
       setInputErrors(checked.error);
       setFocus(checked.error[0]?.field ?? 'name');
       return;
     }
+    setAlert((current) => (current === 'retained-revision-changes-nothing' ? null : current));
     if (checked.value.length === 0) {
       setNothingAdjusted(true);
+      return;
+    }
+    // A revision whose retained values would leave the pose as it is cannot be accepted (R15): told at once.
+    if (
+      proposal.kind === 'pose-revision' &&
+      retainedRevisionChangesNothing(proposal.pose, proposal.changes, checked.value)
+    ) {
+      setAttempt((n) => n + 1);
+      setAlert('retained-revision-changes-nothing');
       return;
     }
     setAdjustments(checked.value);
@@ -274,7 +296,6 @@ export function useProposalDecision({
     setMode('adjusting');
     setFocus('name');
   };
-
 
   return {
     mode,

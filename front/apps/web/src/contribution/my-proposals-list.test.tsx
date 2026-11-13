@@ -1,4 +1,11 @@
-import { fail, ok, type AdjustmentNote, type MyProposal, type PoseName, type RejectionReason } from '@acrofunjam/core';
+import {
+  fail,
+  ok,
+  type AdjustmentNote,
+  type MyProposal,
+  type PoseName,
+  type RejectionReason,
+} from '@acrofunjam/core';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
@@ -56,7 +63,9 @@ describe('page « Mes propositions »', () => {
 
     await screen.findByRole('list');
     expect(
-      screen.getByText("Retrouve les poses que tu as proposées et ce qu'elles sont devenues."),
+      screen.getByText(
+        "Retrouve les poses et les modifications que tu as proposées, et ce qu'elles sont devenues.",
+      ),
     ).toBeInTheDocument();
     expect(screen.getByText('2 propositions, de la plus récente à la plus ancienne')).toBeInTheDocument();
     expect(names()).toEqual(['Throne', 'Star']);
@@ -84,12 +93,11 @@ describe('page « Mes propositions »', () => {
       within(throne).getByText('Elle apparaîtra dans le catalogue une fois acceptée.'),
     ).toBeInTheDocument();
     expect(throne.querySelector('.my-proposal-status--neutral svg')).toHaveAttribute('aria-hidden', 'true');
-    expect(within(throne).getAllByRole('definition').map((value) => value.textContent)).toEqual([
-      'Débutant',
-      'Découverte',
-      'Oui',
-      'Non',
-    ]);
+    expect(
+      within(throne)
+        .getAllByRole('definition')
+        .map((value) => value.textContent),
+    ).toEqual(['Débutant', 'Découverte', 'Oui', 'Non']);
   });
 
   const decidedAt = new Date('2026-11-05T10:00:00Z');
@@ -118,14 +126,20 @@ describe('page « Mes propositions »', () => {
     ).toBeInTheDocument();
     const title = within(throne).getByRole('heading', { level: 3, name: 'Ajustements apportés' });
     expect(title).not.toHaveAttribute('tabindex');
-    const terms = within(throne).getAllByRole('term').map((term) => term.textContent);
-    const values = within(throne).getAllByRole('definition').map((value) => value.textContent);
+    const terms = within(throne)
+      .getAllByRole('term')
+      .map((term) => term.textContent);
+    const values = within(throne)
+      .getAllByRole('definition')
+      .map((value) => value.textContent);
     expect(terms.slice(0, 2)).toEqual(['Nom de la pose', 'Difficulté flyer']);
     expect(values.slice(0, 2)).toEqual([
       'Proposé : throne, retenu : Throne',
       'Proposé : Intermédiaire, retenu : Découverte',
     ]);
-    expect(within(throne).getByText('Les autres valeurs sont celles que tu as proposées.')).toBeInTheDocument();
+    expect(
+      within(throne).getByText('Les autres valeurs sont celles que tu as proposées.'),
+    ).toBeInTheDocument();
     expect(within(throne).queryByText("Message d'ajustement")).not.toBeInTheDocument();
   });
 
@@ -189,7 +203,9 @@ describe('page « Mes propositions »', () => {
 
     expect(await screen.findByText("Tu n'as encore proposé aucune pose.")).toBeInTheDocument();
     expect(
-      screen.getByText("Les poses que tu proposes apparaissent ici, avec ce qu'elles deviennent."),
+      screen.getByText(
+        "Les poses et les modifications que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
+      ),
     ).toBeInTheDocument();
     const link = screen.getByRole('link', { name: 'Proposer une pose' });
     expect(link).toHaveAttribute('href', '/proposer-une-pose');

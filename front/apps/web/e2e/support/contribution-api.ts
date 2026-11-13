@@ -34,6 +34,24 @@ export type ProposalDecision =
 /** A proposal as the simulated API keeps it, pending or decided. */
 export type SubmittedProposal = PendingProposal & { decision: ProposalDecision | null };
 
+/** The fields a revision changes, with their proposed value (story 6); an absent field keeps its value. */
+export type PoseChanges = Partial<PoseValues>;
+
+/** A revision proposal as the simulated API keeps it, pending or decided (story 6). */
+export type SubmittedRevision = {
+  id: string;
+  poseId: string;
+  /** The pose when the revision was proposed (« valeur d'avant »). */
+  before: PoseValues;
+  changes: PoseChanges;
+  message: string | null;
+  contributorEmail: string;
+  submittedAt: string;
+  decision: ProposalDecision | null;
+};
+
+export const poseFields = ['name', 'baseDifficulty', 'flyerDifficulty', 'canStartFlow', 'canEndFlow'] as const;
+
 /** Same normalisation and comparison key as the API (ADR 0017), enough for the scenarios of the site. */
 export const normalised = (name: string) => name.normalize('NFC').split(/\s+/u).filter(Boolean).join(' ');
 export const keyOf = (name: string) =>
@@ -57,6 +75,8 @@ export class ContributionApi {
   readonly pending: PendingProposal[] = [];
   /** Every proposal received, pending, decided or published directly, in the order of submission. */
   readonly submitted: SubmittedProposal[] = [];
+  /** Every revision proposal received (story 6), in the order of submission. */
+  readonly revisions: SubmittedRevision[] = [];
   private unreachable = false;
   /** Proposals received, as sent by the site. */
   readonly received: ProposePoseRequest[] = [];
@@ -93,11 +113,44 @@ export class ContributionApi {
     proposal: Omit<PendingProposal, 'id' | 'submittedAt'>,
     decision: ProposalDecision | null,
   ): PendingProposal {
-    // One day apart, from 1 November 2026: the queue presents the oldest first.
-    const submittedAt = new Date(Date.UTC(2026, 10, 1 + this.submitted.length, 9)).toISOString();
-    const submitted = { ...proposal, id: crypto.randomUUID(), submittedAt };
+    const submitted = { ...proposal, id: crypto.randomUUID(), submittedAt: this.nextSubmissionDate() };
     this.submitted.push({ ...submitted, decision });
     return submitted;
+  }
+
+  /** One day apart, from 1 November 2026, proposals and revisions alike: the queue presents the oldest first. */
+  private nextSubmissionDate(): string {
+    const count = this.submitted.length + this.revisions.length;
+    return new Date(Date.UTC(2026, 10, 1 + count, 9)).toISOString();
+  }
+
+  /**
+   * A revision proposal of a published pose (« Alice a proposé de modifier la pose … »): pending, or published at
+   * once in the simulated catalog for a validator or an administrator (story 6).
+   */
+  addRevision(
+    revision: Pick<SubmittedRevision, 'poseId' | 'before' | 'changes' | 'message' | 'contributorEmail'>,
+    directly: boolean,
+  ): SubmittedRevision {
+    const submitted: SubmittedRevision = {
+      ...revision,
+      id: crypto.randomUUID(),
+      submittedAt: this.nextSubmissionDate(),
+      decision: directly ? { kind: 'published-directly' } : null,
+    };
+    this.revisions.push(submitted);
+    if (directly) this.catalogApi.revise(revision.poseId, revision.changes);
+    return submitted;
+  }
+
+  get pendingRevisions(): readonly SubmittedRevision[] {
+    return this.revisions.filter((revision) => revision.decision === null);
+  }
+
+  /** The revision was decided: it leaves the queue, and its contributor will see the decision. */
+  decideRevision(id: string, decision: ProposalDecision): void {
+    const revision = this.revisions.find((submitted) => submitted.id === id);
+    if (revision) revision.decision = decision;
   }
 
   /** The proposal was decided: it leaves the queue, and its contributor will see the decision. */
@@ -109,7 +162,13 @@ export class ContributionApi {
   }
 
   isNamePending(name: string, except?: string): boolean {
-    return this.pending.some((proposal) => proposal.id !== except && keyOf(proposal.name) === keyOf(name));
+    return (
+      this.pending.some((proposal) => proposal.id !== except && keyOf(proposal.name) === keyOf(name)) ||
+      this.pendingRevisions.some(
+        (revision) =>
+          revision.id !== except && revision.changes.name !== undefined && keyOf(revision.changes.name) === keyOf(name),
+      )
+    );
   }
 
   async start(): Promise<void> {

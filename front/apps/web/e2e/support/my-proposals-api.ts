@@ -1,20 +1,25 @@
 import type { BrowserContext, Route } from '@playwright/test';
 import type { components } from '@acrofunjam/api-client/schema';
-import type { ContributionApi, PoseValues, SubmittedProposal } from './contribution-api';
+import {
+  poseFields,
+  type ContributionApi,
+  type PoseValues,
+  type SubmittedProposal,
+  type SubmittedRevision,
+} from './contribution-api';
 import type { IdentityApi } from './identity-api';
 
-type MyPoseProposalsResponse = components['schemas']['MyPoseProposalsResponse'];
-type MyPoseProposalResponse = components['schemas']['MyPoseProposalResponse'];
+type MyProposalsResponse = components['schemas']['MyProposalsResponse'];
+type MyProposalResponse = components['schemas']['MyProposalResponse'];
 type PoseAdjustmentsResponse = components['schemas']['PoseAdjustmentsResponse'];
+type PoseChangesResponse = components['schemas']['PoseChangesResponse'];
 type ProblemDetails = components['schemas']['ProblemDetails'];
-
-const fields = ['name', 'baseDifficulty', 'flyerDifficulty', 'canStartFlow', 'canEndFlow'] as const;
 
 /** Only the adjusted fields, with the proposed and the retained value; null when nothing differs. */
 const adjustmentsOf = (proposed: PoseValues, retained: PoseValues): PoseAdjustmentsResponse | null => {
-  const adjusted = fields.filter((field) => proposed[field] !== retained[field]);
+  const adjusted = poseFields.filter((field) => proposed[field] !== retained[field]);
   if (adjusted.length === 0) return null;
-  const adjustment = <F extends (typeof fields)[number]>(field: F) =>
+  const adjustment = <F extends (typeof poseFields)[number]>(field: F) =>
     adjusted.includes(field) ? { proposed: proposed[field], retained: retained[field] } : null;
   return {
     name: adjustment('name'),
@@ -33,17 +38,20 @@ const poseOf = ({ name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlo
   canEndFlow,
 });
 
-/** A proposal as GET /contribution/my-pose-proposals presents it to its contributor (never the validator). */
-const toResponse = (proposal: SubmittedProposal): MyPoseProposalResponse => {
+const none = { decidedAt: null, adjustments: null, message: null, reason: null };
+
+/** A pose proposal as GET /contribution/my-proposals presents it to its contributor (never the validator). */
+const toPoseProposalResponse = (proposal: SubmittedProposal): MyProposalResponse => {
   const { id, submittedAt, decision } = proposal;
-  const none = { decidedAt: null, adjustments: null, message: null, reason: null };
+  const kind = 'pose-proposal' as const;
   switch (decision?.kind) {
     case undefined:
-      return { id, status: 'pending', ...poseOf(proposal), submittedAt, ...none };
+      return { kind, id, status: 'pending', ...poseOf(proposal), submittedAt, ...none };
     case 'published-directly':
-      return { id, status: 'published-directly', ...poseOf(proposal), submittedAt, ...none };
+      return { kind, id, status: 'published-directly', ...poseOf(proposal), submittedAt, ...none };
     case 'rejected':
       return {
+        kind,
         id,
         status: 'rejected',
         ...poseOf(proposal),
@@ -55,6 +63,7 @@ const toResponse = (proposal: SubmittedProposal): MyPoseProposalResponse => {
     case 'accepted': {
       const adjustments = adjustmentsOf(proposal, decision.retained);
       return {
+        kind,
         id,
         status: adjustments ? 'accepted-with-adjustments' : 'accepted',
         ...poseOf(decision.retained),
@@ -68,11 +77,56 @@ const toResponse = (proposal: SubmittedProposal): MyPoseProposalResponse => {
   }
 };
 
+/** The fields that change in the pose, before → after (the retained values once accepted, the proposed ones otherwise). */
+const changesOf = (before: PoseValues, after: PoseValues): PoseChangesResponse => {
+  const change = <F extends (typeof poseFields)[number]>(field: F) =>
+    before[field] === after[field] ? null : { before: before[field], after: after[field] };
+  return {
+    name: change('name'),
+    baseDifficulty: change('baseDifficulty'),
+    flyerDifficulty: change('flyerDifficulty'),
+    canStartFlow: change('canStartFlow'),
+    canEndFlow: change('canEndFlow'),
+  };
+};
+
+/** A revision as GET /contribution/my-proposals presents it (story 6): the pose by its name when proposed. */
+const toRevisionResponse = (revision: SubmittedRevision): MyProposalResponse => {
+  const { id, submittedAt, decision, before } = revision;
+  const proposed = { ...before, ...revision.changes };
+  const common = { kind: 'pose-revision' as const, id, poseName: before.name, submittedAt, ...none };
+  switch (decision?.kind) {
+    case undefined:
+      return { ...common, status: 'pending', changes: changesOf(before, proposed) };
+    case 'published-directly':
+      return { ...common, status: 'published-directly', changes: changesOf(before, proposed) };
+    case 'rejected':
+      return {
+        ...common,
+        status: 'rejected',
+        changes: changesOf(before, proposed),
+        decidedAt: decision.decidedAt,
+        reason: decision.reason,
+      };
+    case 'accepted': {
+      const adjustments = adjustmentsOf(proposed, decision.retained);
+      return {
+        ...common,
+        status: adjustments ? 'accepted-with-adjustments' : 'accepted',
+        changes: changesOf(before, decision.retained),
+        decidedAt: decision.decidedAt,
+        adjustments,
+        message: adjustments ? decision.message : null,
+      };
+    }
+  }
+};
+
 /**
- * Simulated « Mes propositions » of the Contribution API (ADR 0023): GET /contribution/my-pose-proposals, the
- * proposals of the requester only, the most recently submitted first; an accepted proposal presents the retained
- * pose. 401 without a valid session. Shares the proposals and the reachability of the simulated Contribution
- * API (one API). The rules themselves are checked by the @api scenarios.
+ * Simulated « Mes propositions » of the Contribution API (ADR 0023, ADR 0027): GET /contribution/my-proposals, the
+ * pose proposals and the revisions of the requester only, the most recently submitted first; an accepted proposal
+ * presents the retained pose. 401 without a valid session. Shares the proposals and the reachability of the
+ * simulated Contribution API (one API). The rules themselves are checked by the @api scenarios.
  */
 export class MyProposalsApi {
   /** How many times the site asked for the proposals of the requester. */
@@ -85,7 +139,7 @@ export class MyProposalsApi {
   ) {}
 
   async start(): Promise<void> {
-    await this.context.route('**/contribution/my-pose-proposals', (route) => this.list(route));
+    await this.context.route('**/contribution/my-proposals', (route) => this.list(route));
   }
 
   private async list(route: Route): Promise<void> {
@@ -94,11 +148,17 @@ export class MyProposalsApi {
     const account = this.identityApi.accountOf(route);
     if (!account) return this.problem(route, 401, 'Unauthorized');
     const requester = account.email.toLowerCase();
-    const body: MyPoseProposalsResponse = {
-      proposals: this.contributionApi.submitted
-        .filter((proposal) => proposal.contributorEmail.toLowerCase() === requester)
-        .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt))
-        .map(toResponse),
+    const mine = (contributorEmail: string) => contributorEmail.toLowerCase() === requester;
+    const items = [
+      ...this.contributionApi.submitted
+        .filter((proposal) => mine(proposal.contributorEmail))
+        .map((proposal) => ({ submittedAt: proposal.submittedAt, item: toPoseProposalResponse(proposal) })),
+      ...this.contributionApi.revisions
+        .filter((revision) => mine(revision.contributorEmail))
+        .map((revision) => ({ submittedAt: revision.submittedAt, item: toRevisionResponse(revision) })),
+    ];
+    const body: MyProposalsResponse = {
+      proposals: items.sort((a, b) => b.submittedAt.localeCompare(a.submittedAt)).map(({ item }) => item),
     };
     return route.fulfill({ json: body });
   }

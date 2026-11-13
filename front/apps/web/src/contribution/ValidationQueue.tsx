@@ -177,7 +177,9 @@ export function ValidationQueue({ owner }: { readonly owner: string }) {
     <>
       <p className="follow-up-page__introduction">{validationLabels.introduction}</p>
       {/* Not a live region: each decision already has its report, which takes the focus. */}
-      <p className="follow-up-page__count">{pendingCountLabel(proposals.length - Object.keys(decided).length)}</p>
+      <p className="follow-up-page__count">
+        {pendingCountLabel(proposals.length - Object.keys(decided).length)}
+      </p>
       {/* role="list" restores the list semantics that some browsers drop with "list-style: none". */}
       <ul className="validation-queue" role="list">
         {proposals.map((proposal) => (

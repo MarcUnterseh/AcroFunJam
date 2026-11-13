@@ -17,7 +17,10 @@ import type {
   AcceptanceOutcome,
   AccessFailure,
   DecisionFailure,
+  PendingPoseProposal,
+  PendingPoseRevision,
   PendingProposal,
+  ProposalReference,
   ValidationGateway,
 } from './ValidationGateway';
 
@@ -26,8 +29,8 @@ class FakeValidationGateway implements ValidationGateway {
   count: Result<number, AccessFailure> = ok(0);
   acceptance: Result<AcceptanceOutcome, DecisionFailure> = ok({ name: 'Throne', adjusted: false });
   rejection: Result<void, DecisionFailure> = ok(undefined);
-  readonly accepted: { id: string; acceptance: Acceptance }[] = [];
-  readonly rejected: { id: string; reason: RejectionReason }[] = [];
+  readonly accepted: { id: string; kind: string; acceptance: Acceptance }[] = [];
+  readonly rejected: { id: string; kind: string; reason: RejectionReason }[] = [];
 
   async getValidationQueue() {
     return this.queue;
@@ -37,18 +40,19 @@ class FakeValidationGateway implements ValidationGateway {
     return this.count;
   }
 
-  async acceptProposal(id: string, acceptance: Acceptance) {
-    this.accepted.push({ id, acceptance });
+  async acceptProposal({ id, kind }: ProposalReference, acceptance: Acceptance) {
+    this.accepted.push({ id, kind, acceptance });
     return this.acceptance;
   }
 
-  async rejectProposal(id: string, reason: RejectionReason) {
-    this.rejected.push({ id, reason });
+  async rejectProposal({ id, kind }: ProposalReference, reason: RejectionReason) {
+    this.rejected.push({ id, kind, reason });
     return this.rejection;
   }
 }
 
-const throneByAlice: PendingProposal = {
+const throneByAlice: PendingPoseProposal = {
+  kind: 'pose-proposal',
   id: '0b4c8e0e-2b2f-4f55-9d3a-0e6a3c1d8f10',
   pose: {
     name: 'Throne' as PoseName,
@@ -61,12 +65,31 @@ const throneByAlice: PendingProposal = {
   submittedAt: new Date('2026-11-03T09:00:00Z'),
 };
 
+/** Alice proposes to change the flyer difficulty of Bird, intermediate today, to discovery (story 6). */
+const revisionOfBird: PendingPoseRevision = {
+  kind: 'pose-revision',
+  id: '2a1b3c4d-5e6f-4a0b-8c9d-0e1f2a3b4c5d',
+  pose: {
+    id: '6f0d3c2a-9c71-4b1e-a7a2-1f4e5d6c7b80',
+    name: 'Bird' as PoseName,
+    baseDifficulty: 'discovery',
+    flyerDifficulty: 'intermediate',
+    canStartFlow: true,
+    canEndFlow: true,
+  },
+  changes: [{ field: 'flyerDifficulty', before: 'intermediate', after: 'discovery' }],
+  message: null,
+  contributor: { email: 'alice@example.org', isYou: false },
+  submittedAt: new Date('2026-11-12T09:00:00Z'),
+};
+
 describe('getValidationQueue', () => {
   it('should give the proposals pending validation, as the API orders them', async () => {
     const gateway = new FakeValidationGateway();
-    gateway.queue = ok([throneByAlice]);
+    const queue: PendingProposal[] = [throneByAlice, revisionOfBird];
+    gateway.queue = ok(queue);
 
-    expect(await getValidationQueue(gateway)).toEqual(ok([throneByAlice]));
+    expect(await getValidationQueue(gateway)).toEqual(ok(queue));
   });
 
   it.each([
@@ -118,7 +141,7 @@ describe('rejectProposal', () => {
   it('should send nothing and report the missing reason when the reason is only spaces', async () => {
     const { gateway, store } = setUp();
 
-    const result = await rejectProposal(gateway, store, throneByAlice.id, '   ', bruno);
+    const result = await rejectProposal(gateway, store, throneByAlice, '   ', bruno);
 
     expect(result).toEqual(fail({ kind: 'invalid-reason', code: 'contribution.rejection-reason-required' }));
     expect(gateway.rejected).toEqual([]);
@@ -127,9 +150,9 @@ describe('rejectProposal', () => {
   it('should send the reason without superfluous spaces and tell the proposal is rejected', async () => {
     const { gateway, store } = setUp();
 
-    const result = await rejectProposal(gateway, store, throneByAlice.id, `  ${reason} `, bruno);
+    const result = await rejectProposal(gateway, store, throneByAlice, `  ${reason} `, bruno);
 
-    expect(gateway.rejected).toEqual([{ id: throneByAlice.id, reason }]);
+    expect(gateway.rejected).toEqual([{ id: throneByAlice.id, kind: 'pose-proposal', reason }]);
     expect(result).toEqual(ok(undefined));
   });
 
@@ -144,9 +167,7 @@ describe('rejectProposal', () => {
     const { gateway, store } = setUp();
     gateway.rejection = fail({ kind: failure });
 
-    expect(await rejectProposal(gateway, store, throneByAlice.id, reason, bruno)).toEqual(
-      fail({ kind: error }),
-    );
+    expect(await rejectProposal(gateway, store, throneByAlice, reason, bruno)).toEqual(fail({ kind: error }));
   });
 
   it.each(['unauthenticated', 'unreachable', 'outdated'] as const)(
@@ -155,7 +176,7 @@ describe('rejectProposal', () => {
       const { gateway, store } = setUp();
       gateway.rejection = fail({ kind: failure });
 
-      await rejectProposal(gateway, store, throneByAlice.id, reason, bruno);
+      await rejectProposal(gateway, store, throneByAlice, reason, bruno);
 
       expect(store.kept).toEqual({
         owner: bruno,
@@ -174,13 +195,21 @@ describe('rejectProposal', () => {
       },
     };
 
-    await rejectProposal(gateway, store, throneByAlice.id, reason, bruno);
+    await rejectProposal(gateway, store, throneByAlice, reason, bruno);
 
     expect(store.kept).toEqual({
       owner: bruno,
       decisions: { [starId]: { kind: 'rejection', reason: 'Doublon de Bird.' } },
     });
   });
+  it('should send the rejection of a revision as such', async () => {
+    const { gateway, store } = setUp();
+
+    await rejectProposal(gateway, store, revisionOfBird, reason, bruno);
+
+    expect(gateway.rejected).toEqual([{ id: revisionOfBird.id, kind: 'pose-revision', reason }]);
+  });
+
   it('should leave the kept input of someone else untouched when the rejection is received', async () => {
     const { gateway, store } = setUp();
     const paulInput: KeptDecisionInputs = {
@@ -189,7 +218,7 @@ describe('rejectProposal', () => {
     };
     store.kept = paulInput;
 
-    await rejectProposal(gateway, store, throneByAlice.id, reason, bruno);
+    await rejectProposal(gateway, store, throneByAlice, reason, bruno);
 
     expect(store.kept).toEqual(paulInput);
   });
@@ -271,7 +300,9 @@ describe('acceptProposal', () => {
 
     const result = await acceptProposal(gateway, store, throneByAlice, null, bruno);
 
-    expect(gateway.accepted).toEqual([{ id: throneByAlice.id, acceptance: { adjustments: [], note: null } }]);
+    expect(gateway.accepted).toEqual([
+      { id: throneByAlice.id, kind: 'pose-proposal', acceptance: { adjustments: [], note: null } },
+    ]);
     expect(result).toEqual(ok({ name: 'Throne', adjusted: false }));
   });
 
@@ -284,6 +315,7 @@ describe('acceptProposal', () => {
     expect(gateway.accepted).toEqual([
       {
         id: throneByAlice.id,
+        kind: 'pose-proposal',
         acceptance: {
           adjustments: [{ field: 'flyerDifficulty', proposed: 'discovery', retained: 'beginner' }],
           note: 'Côté flyer, débutant.',
@@ -331,7 +363,9 @@ describe('acceptProposal', () => {
       bruno,
     );
 
-    expect(gateway.accepted).toEqual([{ id: throneByAlice.id, acceptance: { adjustments: [], note: null } }]);
+    expect(gateway.accepted).toEqual([
+      { id: throneByAlice.id, kind: 'pose-proposal', acceptance: { adjustments: [], note: null } },
+    ]);
   });
 
   it.each(['unauthenticated', 'unreachable', 'outdated'] as const)(
@@ -376,5 +410,60 @@ describe('acceptProposal', () => {
     gateway.acceptance = fail({ kind: failure });
 
     expect(await acceptProposal(gateway, store, throneByAlice, null, bruno)).toEqual(fail({ kind: error }));
+  });
+
+  describe('of a revision (story 6)', () => {
+    it('should send no adjustment when accepting the revision as proposed', async () => {
+      const { gateway, store } = setUp();
+
+      await acceptProposal(gateway, store, revisionOfBird, null, bruno);
+
+      expect(gateway.accepted).toEqual([
+        { id: revisionOfBird.id, kind: 'pose-revision', acceptance: { adjustments: [], note: null } },
+      ]);
+    });
+
+    it('should adjust the revised pose: the proposed value of a field is the one of the revision, or the current one', async () => {
+      const { gateway, store } = setUp();
+      const input = {
+        ...revisionOfBird.pose,
+        flyerDifficulty: 'beginner',
+        baseDifficulty: 'beginner',
+      } as const;
+
+      await acceptProposal(gateway, store, revisionOfBird, { input, note: '' }, bruno);
+
+      expect(gateway.accepted[0]?.acceptance.adjustments).toEqual([
+        { field: 'baseDifficulty', proposed: 'discovery', retained: 'beginner' },
+        { field: 'flyerDifficulty', proposed: 'discovery', retained: 'beginner' },
+      ]);
+    });
+
+    it('should send nothing and report it when the retained revision would leave the pose as it is', async () => {
+      const { gateway, store } = setUp();
+
+      const result = await acceptProposal(
+        gateway,
+        store,
+        revisionOfBird,
+        { input: revisionOfBird.pose, note: '' },
+        bruno,
+      );
+
+      expect(result).toEqual(fail({ kind: 'retained-revision-changes-nothing' }));
+      expect(gateway.accepted).toEqual([]);
+    });
+
+    it.each(['retained-revision-changes-nothing', 'pose-changed'] as const)(
+      'should report "%s" from the API as such',
+      async (failure) => {
+        const { gateway, store } = setUp();
+        gateway.acceptance = fail({ kind: failure });
+
+        expect(await acceptProposal(gateway, store, revisionOfBird, null, bruno)).toEqual(
+          fail({ kind: failure }),
+        );
+      },
+    );
   });
 });

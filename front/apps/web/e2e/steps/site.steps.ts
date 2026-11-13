@@ -16,5 +16,6 @@ const escaped = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // The quoted sentences, whole: a message may only go on with complete sentences (an advice after a refusal).
 Then('le site indique « {} »', async ({ page }, text: string) => {
-  await expect(page.getByText(new RegExp(`^${escaped(text)}(?:\\s+[^\\s].*[.!?])?$`))).toBeVisible();
+  // The same sentence may also be announced in the status region of the site: the one shown comes first.
+  await expect(page.getByText(new RegExp(`^${escaped(text)}(?:\\s+[^\\s].*[.!?])?$`)).first()).toBeVisible();
 });

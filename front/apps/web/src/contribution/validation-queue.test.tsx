@@ -39,7 +39,7 @@ describe('page « Propositions à valider »', () => {
     openQueue(new FakeValidationGateway(aPendingProposal(), star));
 
     const list = await screen.findByRole('list');
-    expect(screen.getByText(/^Vérifie chaque proposition, puis publie-la/)).toBeInTheDocument();
+    expect(screen.getByText(/^Vérifie chaque proposition de pose ou de modification/)).toBeInTheDocument();
     expect(
       screen.getByText('2 propositions en attente, de la plus ancienne à la plus récente'),
     ).toBeInTheDocument();

@@ -1,5 +1,5 @@
 import { fail, ok, type Result } from '../common/result';
-import { isValidatorTextTooLong, normalizeValidatorText } from './validator-text';
+import { isValidatorTextTooLong, normalizeValidatorText } from './proposal-text';
 
 /**
  * The optional message of a validator that accompanies an acceptance with adjustments, and only it

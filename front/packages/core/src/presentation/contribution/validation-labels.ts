@@ -1,8 +1,9 @@
 import type { AdjustmentNoteError } from '../../domain/contribution/adjustment-note';
 import type { PoseAdjustment } from '../../domain/contribution/pose-adjustment';
+import type { PoseValueChange } from '../../domain/contribution/pose-revision';
 import type { ValidPoseProposal } from '../../domain/contribution/pose-proposal';
 import type { RejectionReasonError } from '../../domain/contribution/rejection-reason';
-import { validatorTextPolicy } from '../../domain/contribution/validator-text';
+import { validatorTextPolicy } from '../../domain/contribution/proposal-text';
 import { dayLabel } from '../shared-kernel/date-labels';
 import { difficultyLevelName } from '../shared-kernel/difficulty-level-labels';
 import { proposalLabels } from './proposal-labels';
@@ -21,7 +22,8 @@ export const validationLabels = {
   /** Visible label of the header link under 1024 px; the accessible name stays complete (validationLinkName). */
   shortTitle: 'À valider',
   signInContext: 'Connecte-toi pour accéder aux propositions à valider.',
-  introduction: 'Vérifie chaque proposition, puis publie-la, ajuste-la avant de la publier ou refuse-la.',
+  introduction:
+    "Vérifie chaque proposition de pose ou de modification : accepte-la, ajuste-la avant de l'accepter ou refuse-la.",
   loading: 'Chargement des propositions…',
   loadingFailed: 'Impossible de charger les propositions. Vérifie ta connexion Internet, puis réessaie.',
   loadingOutdated: 'Impossible de charger les propositions : le site doit être mis à jour. Recharge la page.',
@@ -66,6 +68,51 @@ export const validationLabels = {
   /** Under the title, once every proposal of the list is decided (their reports stay until the page is reloaded). */
   allDecided: 'Toutes les propositions de la liste sont traitées.',
 } as const;
+
+/** Which kind of proposal a card or a report is about (story 6): a pose proposal or a revision proposal. */
+export type ProposalKind = 'pose-proposal' | 'pose-revision';
+
+/**
+ * Card of a revision proposal (docs/design/composants/carte-modification.md): its title « Modification de Throne »
+ * (the prefix in regular weight), the summary « actuellement → proposé » of the changed fields, the message of the
+ * contributor, then the pose as it will be once accepted.
+ */
+export const revisionCardLabels = {
+  titlePrefix: 'Modification de ',
+  changesTitle: 'Ce qui change dans la pose',
+  changesKey: 'Valeur actuelle → valeur proposée',
+  /** Visually hidden texts read before the current value and the proposed value. */
+  before: 'Actuellement : ',
+  after: ', proposé : ',
+  message: 'Message de modification',
+  revisedPose: 'La pose après modification',
+} as const;
+
+/** The decisions of a card, named by the kind of proposal: one publishes a pose, or accepts a modification. */
+export const decisionLabelsOf = (
+  kind: ProposalKind,
+): {
+  readonly accept: string;
+  readonly adjust: string;
+  readonly adjustTitle: string;
+  readonly publishAdjusted: string;
+  readonly nothingAdjusted: string;
+} =>
+  kind === 'pose-revision'
+    ? {
+        accept: 'Accepter la modification',
+        adjust: "Ajuster avant d'accepter",
+        adjustTitle: "Ajuster avant d'accepter",
+        publishAdjusted: 'Accepter avec ces ajustements',
+        nothingAdjusted: "Tu n'as rien modifié. Tu peux accepter la modification telle quelle.",
+      }
+    : {
+        accept: validationLabels.accept,
+        adjust: validationLabels.adjust,
+        adjustTitle: validationLabels.adjustTitle,
+        publishAdjusted: validationLabels.publishAdjusted,
+        nothingAdjusted: validationLabels.nothingAdjusted,
+      };
 
 /** Beyond this number, the badge shows « 99+ » (docs/design/composants/pastille-compteur.md). */
 const badgeLimit = 99;
@@ -117,24 +164,33 @@ export const contributorLine = (
 });
 
 /** A decision recorded by the API, as the report that replaces its card presents it. */
-export type RecordedDecision =
+export type RecordedDecision = { readonly proposal: ProposalKind } & (
   | { readonly decision: 'accepted'; readonly name: string; readonly adjusted: boolean }
-  | { readonly decision: 'rejected'; readonly name: string };
+  | { readonly decision: 'rejected'; readonly name: string }
+);
 
 /**
- * Report of a decision (docs/design/composants/compte-rendu-decision.md): success for a publication, information
- * for a rejection. The name of an accepted pose is the retained name, as returned by the API.
+ * Report of a decision (docs/design/composants/compte-rendu-decision.md): success for a publication or a
+ * modification, information for a rejection. The name of an accepted pose is the retained name, as returned by
+ * the API (the new name of a renamed pose).
  */
 export const decisionReport = (
   recorded: RecordedDecision,
 ): { readonly title: string; readonly text: string | null } => {
+  const revision = recorded.proposal === 'pose-revision';
   if (recorded.decision === 'rejected')
     return {
-      title: `La proposition « ${recorded.name} » est refusée.`,
+      title: revision
+        ? `La modification de « ${recorded.name} » est refusée.`
+        : `La proposition « ${recorded.name} » est refusée.`,
       text: 'Le contributeur verra ton motif.',
     };
   const adjustments = recorded.adjusted ? ' avec tes ajustements' : '';
-  return { title: `La pose « ${recorded.name} » est publiée dans le catalogue${adjustments}.`, text: null };
+  const outcome = revision ? 'modifiée' : 'publiée';
+  return {
+    title: `La pose « ${recorded.name} » est ${outcome} dans le catalogue${adjustments}.`,
+    text: null,
+  };
 };
 
 /**
@@ -150,7 +206,9 @@ export type DecisionFailureKind =
   | 'not-found'
   | 'role-withdrawn'
   | 'name-already-in-catalog'
-  | 'name-already-pending';
+  | 'name-already-pending'
+  | 'retained-revision-changes-nothing'
+  | 'pose-changed';
 
 const nameRefusals = {
   'name-already-in-catalog': 'Une pose de ce nom existe déjà dans le catalogue.',
@@ -171,6 +229,10 @@ const decisionFailures: Readonly<Record<DecisionFailureKind, string>> = {
   'role-withdrawn': 'Tu ne peux plus accepter ni refuser de proposition : ton rôle a changé.',
   'name-already-in-catalog': `${nameRefusals['name-already-in-catalog']} ${nameAdvice}`,
   'name-already-pending': `${nameRefusals['name-already-pending']} ${nameAdvice}`,
+  'retained-revision-changes-nothing':
+    'Avec ces ajustements, la pose ne changerait pas. Modifie tes ajustements, ou refuse la modification.',
+  'pose-changed':
+    'Cette pose a changé depuis que la modification a été proposée. Recharge la page pour voir ses valeurs actuelles.',
 };
 
 /** The same incidents, when the validator had typed something (an open zone): the input is kept (ADR 0019). */
@@ -245,6 +307,9 @@ export const proposedValueLabel = (proposed: PoseFieldValue): string => {
   return `${isDifficulty ? 'Proposée' : 'Proposé'} : ${displayed(proposed)}`;
 };
 
+/** « Actuellement : Débutant »: reminder of the current value of a field of a pose (story 6). */
+export const currentValueLabel = (current: PoseFieldValue): string => `Actuellement : ${displayed(current)}`;
+
 /** Terms of the summary, read out of the card (« Base » becomes « Difficulté base »). */
 const adjustmentTerms: Readonly<Record<keyof PoseValues, string>> = {
   name: 'Nom de la pose',
@@ -254,11 +319,26 @@ const adjustmentTerms: Readonly<Record<keyof PoseValues, string>> = {
   canEndFlow: 'Peut terminer un flow',
 };
 
+/**
+ * A line of a summary « avant → après » (docs/design/composants/recapitulatif-modification.md): the term of the
+ * field, its value before and after, as displayed.
+ */
+export const valueChangeLine = (
+  change: PoseValueChange,
+): { readonly term: string; readonly before: string; readonly after: string } => ({
+  term: adjustmentTerms[change.field],
+  before: displayed({ field: change.field, value: change.before } as PoseFieldValue),
+  after: displayed({ field: change.field, value: change.after } as PoseFieldValue),
+});
+
 /** A line of the summary « proposé → retenu » (docs/design/composants/recapitulatif-ajustements.md). */
 export const adjustmentLine = (
   adjustment: PoseAdjustment,
-): { readonly term: string; readonly proposed: string; readonly retained: string } => ({
-  term: adjustmentTerms[adjustment.field],
-  proposed: displayed({ field: adjustment.field, value: adjustment.proposed } as PoseFieldValue),
-  retained: displayed({ field: adjustment.field, value: adjustment.retained } as PoseFieldValue),
-});
+): { readonly term: string; readonly proposed: string; readonly retained: string } => {
+  const { term, before, after } = valueChangeLine({
+    field: adjustment.field,
+    before: adjustment.proposed,
+    after: adjustment.retained,
+  } as PoseValueChange);
+  return { term, proposed: before, retained: after };
+};
