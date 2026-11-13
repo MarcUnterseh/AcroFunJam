@@ -1,0 +1,27 @@
+namespace AcroFunJam.Specs.Support.Contribution;
+
+/// <summary>
+/// The last decision of the scenario (acceptance or rejection), shared by the step classes, so that one outcome step
+/// (« la décision est impossible car … ») checks a decision on a pose proposal as well as on a revision proposal.
+/// </summary>
+public sealed class ScenarioDecisions
+{
+    public HttpResponseMessage? Last
+    {
+        get;
+        set
+        {
+            field = value;
+            OnRevision = false;
+        }
+    }
+
+    /// <summary>Whether the last decision was on a revision proposal (story 6) rather than on a pose proposal.</summary>
+    public bool OnRevision { get; private set; }
+
+    public void OnRevisionProposal(HttpResponseMessage response)
+    {
+        Last = response;
+        OnRevision = true;
+    }
+}

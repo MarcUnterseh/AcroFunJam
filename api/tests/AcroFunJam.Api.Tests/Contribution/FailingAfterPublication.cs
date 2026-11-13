@@ -21,6 +21,13 @@ internal sealed class FailingAfterPublication(CatalogPublisher publisher) : ICat
         return Injected;
     }
 
+    public async Task<Result<bool>> RevisePose(
+        PoseRevisionProposalId source, PublishedPoseId pose, PublishedPoseVersion expected, RetainedPose retained, CancellationToken ct)
+    {
+        (await publisher.RevisePose(source, pose, expected, retained, ct)).IsSuccess.ShouldBeTrue();
+        return Injected;
+    }
+
     /// <summary>The same Api, whose catalog publisher fails after publishing.</summary>
     public static WebApplicationFactory<Program> In(ApiWithDatabase api) =>
         api.WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>

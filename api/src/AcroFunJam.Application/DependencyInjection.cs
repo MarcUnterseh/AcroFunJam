@@ -1,3 +1,4 @@
+using AcroFunJam.Application.Catalog.GetPublishedPose;
 using AcroFunJam.Application.Catalog.IsPoseNamePublished;
 using AcroFunJam.Application.Catalog.ListPublishedPoses;
 using AcroFunJam.Application.Catalog.PublishPose;
@@ -6,9 +7,14 @@ using AcroFunJam.Application.Common;
 using AcroFunJam.Application.Contribution;
 using AcroFunJam.Application.Contribution.AcceptPoseProposal;
 using AcroFunJam.Application.Contribution.CountPendingPoseProposals;
-using AcroFunJam.Application.Contribution.GetMyPoseProposals;
+using AcroFunJam.Application.Contribution.GetMyProposals;
 using AcroFunJam.Application.Contribution.GetPendingPoseProposals;
 using AcroFunJam.Application.Contribution.ProposePose;
+using AcroFunJam.Application.Contribution.ProposePoseRevision;
+using AcroFunJam.Application.Contribution.GetPendingRevisionOfPose;
+using AcroFunJam.Application.Contribution.AcceptPoseRevision;
+using AcroFunJam.Application.Contribution.RejectPoseRevision;
+using AcroFunJam.Application.Catalog.RevisePose;
 using AcroFunJam.Application.Contribution.RejectPoseProposal;
 using AcroFunJam.Application.Identity.AssignRole;
 using AcroFunJam.Application.Identity.BootstrapInitialAdministrator;
@@ -29,17 +35,23 @@ public static class DependencyInjection
         services.AddScoped<IQueryHandler<ListPublishedPoses, IReadOnlyList<PublishedPoseSummary>>, ListPublishedPosesHandler>();
         services.AddScoped<ICommandHandler<PublishPose, PoseId>, PublishPoseHandler>();
         services.AddScoped<IQueryHandler<IsPoseNamePublished, bool>, IsPoseNamePublishedHandler>();
+        services.AddScoped<IQueryHandler<GetPublishedPose, PublishedPoseDetails>, GetPublishedPoseHandler>();
         services.AddScoped<IQueryHandler<GetMyAccount, MyAccountDto>, GetMyAccountHandler>();
         services.AddScoped<ICommandHandler<AssignRole, bool>, AssignRoleHandler>();
         services.AddScoped<ICommandHandler<RevokeRole, bool>, RevokeRoleHandler>();
         services.AddScoped<ICommandHandler<BootstrapInitialAdministrator, bool>, BootstrapInitialAdministratorHandler>();
         services.AddScoped<IQueryHandler<GetAccountEmails, IReadOnlyDictionary<AccountId, EmailAddress>>, GetAccountEmailsHandler>();
         services.AddScoped<ICommandHandler<ProposePose, PoseProposalDto>, ProposePoseHandler>();
-        services.AddScoped<IQueryHandler<GetPendingPoseProposals, IReadOnlyList<PendingPoseProposalDto>>, GetPendingPoseProposalsHandler>();
+        services.AddScoped<IQueryHandler<GetPendingPoseProposals, IReadOnlyList<PendingProposalDto>>, GetPendingPoseProposalsHandler>();
         services.AddScoped<IQueryHandler<CountPendingPoseProposals, int>, CountPendingPoseProposalsHandler>();
         services.AddScoped<ICommandHandler<AcceptPoseProposal, DecidedPoseProposalDto>, AcceptPoseProposalHandler>();
         services.AddScoped<ICommandHandler<RejectPoseProposal, DecidedPoseProposalDto>, RejectPoseProposalHandler>();
-        services.AddScoped<IQueryHandler<GetMyPoseProposals, IReadOnlyList<MyPoseProposal>>, GetMyPoseProposalsHandler>();
+        services.AddScoped<IQueryHandler<GetMyProposals, IReadOnlyList<IMyProposal>>, GetMyProposalsHandler>();
+        services.AddScoped<ICommandHandler<ProposePoseRevision, PoseRevisionProposalDto>, ProposePoseRevisionHandler>();
+        services.AddScoped<ICommandHandler<AcceptPoseRevision, DecidedPoseRevisionDto>, AcceptPoseRevisionHandler>();
+        services.AddScoped<ICommandHandler<RejectPoseRevision, DecidedPoseRevisionDto>, RejectPoseRevisionHandler>();
+        services.AddScoped<IQueryHandler<GetPendingRevisionOfPose, PendingRevisionOfPose?>, GetPendingRevisionOfPoseHandler>();
+        services.AddScoped<ICommandHandler<RevisePose, PoseVersion>, RevisePoseHandler>();
         return services;
     }
 }

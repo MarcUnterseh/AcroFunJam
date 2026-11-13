@@ -94,7 +94,8 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
     [InlineData("/contribution/validation-queue/count", "get", new[] { "200", "401", "403" })]
     [InlineData("/contribution/pose-proposals/{id}/acceptance", "post", new[] { "200", "400", "401", "403", "404", "409", "422" })]
     [InlineData("/contribution/pose-proposals/{id}/rejection", "post", new[] { "200", "400", "401", "403", "404", "409" })]
-    [InlineData("/contribution/my-pose-proposals", "get", new[] { "200", "401", "403" })]
+    [InlineData("/contribution/my-proposals", "get", new[] { "200", "401", "403" })]
+    [InlineData("/contribution/pose-revision-proposals/pending", "get", new[] { "200", "400", "401", "403" })]
     public async Task OpenApiDocument_Should_DescribeTheContributionOperations_When_TheyRequireASignedInPerson(
         string path, string method, string[] statuses)
     {
@@ -132,7 +133,7 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
     }
 
     [Fact]
-    public async Task OpenApiDocument_Should_DescribeMyPoseProposals_When_TheContributorFollowsTheirProposals()
+    public async Task OpenApiDocument_Should_DescribeMyProposals_When_TheContributorFollowsTheirProposals()
     {
         using var client = api.CreateClient();
 
@@ -140,7 +141,7 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
         var schemas = document.GetProperty("components").GetProperty("schemas");
 
         // Every member is always written, null when it does not apply (ADR 0023): the front tells "absent" from "outdated".
-        schemas.GetProperty("MyPoseProposalResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
+        schemas.GetProperty("MyProposalResponseMyPoseProposalResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
             .ShouldBe(
                 [
                     "id", "status", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "submittedAt", "decidedAt",
@@ -151,6 +152,17 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
             .ShouldBe(["pending", "accepted", "accepted-with-adjustments", "rejected", "published-directly"], ignoreOrder: true);
         schemas.GetProperty("PoseAdjustmentsResponse").GetProperty("properties").EnumerateObject().Select(p => p.Name)
             .ShouldBe(["name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow"], ignoreOrder: true);
+    }
+
+    /// <summary>Story 6: « Mes propositions » is read at /contribution/my-proposals only, which replaces the endpoint of story 5.</summary>
+    [Fact]
+    public async Task OpenApiDocument_Should_NoLongerDescribeMyPoseProposals_When_MyProposalsReplacesIt()
+    {
+        using var client = api.CreateClient();
+
+        var document = await client.GetFromJsonAsync<JsonElement>(new Uri("/openapi/v1.json", UriKind.Relative), Ct);
+
+        document.GetProperty("paths").TryGetProperty("/contribution/my-pose-proposals", out _).ShouldBeFalse();
     }
 
     private static bool HasBearerRequirement(JsonElement operation) =>

@@ -62,6 +62,82 @@ public sealed class EfPoseRepositoryTests(PostgreSqlFixture database) : IClassFi
     }
 
     [Fact]
+    public async Task GetById_Should_RestoreThePoseWithItsVersion_When_ItWasSaved()
+    {
+        var pose = APublishedPose("Throne");
+        await Save(pose);
+
+        await using var context = database.CreateDbContext();
+        var restored = await new EfPoseRepository(context, new TrackedAggregates()).GetById(pose.Id, Ct);
+
+        restored.ShouldNotBeNull().ShouldSatisfyAllConditions(
+            p => p.Name.ShouldBe(pose.Name),
+            p => p.Difficulty.ShouldBe(pose.Difficulty),
+            p => p.Flow.ShouldBe(pose.Flow),
+            p => p.Version.ShouldBe(PoseVersion.Initial));
+    }
+
+    private async Task<AcroFunJam.Domain.Common.Result<bool>> Revise(PoseId id, string name, PoseVersion expected)
+    {
+        await using var context = database.CreateDbContext();
+        var aggregates = new TrackedAggregates();
+        var repository = new EfPoseRepository(context, aggregates);
+        var pose = (await repository.GetById(id, Ct))!;
+        pose.Revise(
+                PoseName.Create(name).Value!, pose.Difficulty, pose.Flow, expected, nameTakenByAnotherPose: false, new SourceProposalId(Guid.NewGuid()),
+                Now)
+            .IsSuccess.ShouldBeTrue();
+        repository.Update(pose);
+        return await UnitOfWorks.For(context, aggregates).SaveChanges(Ct);
+    }
+
+    [Fact]
+    public async Task Update_Should_StoreTheRevisedValuesAndVersion_When_TheUnitOfWorkSaves()
+    {
+        var pose = APublishedPose("Thron");
+        await Save(pose);
+
+        (await Revise(pose.Id, "Throne", PoseVersion.Initial)).IsSuccess.ShouldBeTrue();
+
+        await using var assert = database.CreateDbContext();
+        var stored = await assert.Set<PoseRecord>().SingleAsync(p => p.Id == pose.Id.Value, Ct);
+        stored.Name.ShouldBe("Throne");
+        stored.NameKey.ShouldBe(PoseName.Create("Throne").Value!.Key.Value);
+        stored.Version.ShouldBe(2);
+    }
+
+    /// <summary>Two revisions read at the same version: the second one finds the pose changed (ADR 0024).</summary>
+    [Fact]
+    public async Task Update_Should_FailWithPoseVersionMismatch_When_ThePoseWasRevisedSinceItWasRead()
+    {
+        var pose = APublishedPose("Thron");
+        await Save(pose);
+        await using var context = database.CreateDbContext();
+        var aggregates = new TrackedAggregates();
+        var repository = new EfPoseRepository(context, aggregates);
+        var stale = (await repository.GetById(pose.Id, Ct))!;
+        (await Revise(pose.Id, "Throne", PoseVersion.Initial)).IsSuccess.ShouldBeTrue();
+
+        stale.Revise(
+            PoseName.Create("Thrown").Value!, stale.Difficulty, stale.Flow, PoseVersion.Initial, nameTakenByAnotherPose: false,
+            new SourceProposalId(Guid.NewGuid()), Now);
+        repository.Update(stale);
+        var saved = await UnitOfWorks.For(context, aggregates).SaveChanges(Ct);
+
+        saved.Error.ShouldBe(CatalogErrors.PoseVersionMismatch);
+    }
+
+    [Fact]
+    public async Task GetById_Should_ReturnNull_When_NoPoseHasTheId()
+    {
+        await using var context = database.CreateDbContext();
+
+        var restored = await new EfPoseRepository(context, new TrackedAggregates()).GetById(new PoseId(Guid.NewGuid()), Ct);
+
+        restored.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task IsNameTaken_Should_ReturnTrue_When_APublishedPoseHasTheNameKey()
     {
         await Save(APublishedPose("High Bird"));

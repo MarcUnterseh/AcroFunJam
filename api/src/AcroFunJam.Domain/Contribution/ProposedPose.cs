@@ -19,6 +19,9 @@ public sealed record ProposedPose
         Flow = flow;
     }
 
+    /// <summary>A proposed pose made of values that already follow the content rules (a revised pose, ADR 0026).</summary>
+    internal static ProposedPose From(PoseName name, Difficulty difficulty, FlowBoundaries flow) => new(name, difficulty, flow);
+
     public static Result<ProposedPose> Create(
         string? name, string? baseDifficulty, string? flyerDifficulty, bool? canStartFlow, bool? canEndFlow)
     {

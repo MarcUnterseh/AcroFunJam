@@ -19,6 +19,7 @@ public sealed class PoseRecordConfiguration : IEntityTypeConfiguration<PoseRecor
             table.HasCheckConstraint("ck_poses_flyer_difficulty", "flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
             table.HasCheckConstraint("ck_poses_name_length", "char_length(name) <= 60");
             table.HasCheckConstraint("ck_poses_name_key", "name_key <> ''");
+            table.HasCheckConstraint("ck_poses_version", "version >= 1");
         });
         builder.HasKey(pose => pose.Id);
         builder.Property(pose => pose.Id).HasColumnName("id");
@@ -30,6 +31,8 @@ public sealed class PoseRecordConfiguration : IEntityTypeConfiguration<PoseRecor
         builder.Property(pose => pose.CanEndFlow).HasColumnName("can_end_flow");
         builder.Property(pose => pose.SourceProposalId).HasColumnName("source_proposal_id");
         builder.Property(pose => pose.PublishedAt).HasColumnName("published_at");
+        // A revision is saved only if the pose is still at the version it was read at (ADR 0024).
+        builder.Property(pose => pose.Version).HasColumnName("version").IsConcurrencyToken();
 
         builder.HasIndex(pose => pose.NameKey).HasDatabaseName(NameKeyIndex).IsUnique();
     }

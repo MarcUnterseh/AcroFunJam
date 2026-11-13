@@ -20,8 +20,8 @@ public sealed class EfPublishedPosesReaderTests(PostgreSqlFixture database) : IC
             await arrangeContext.Set<PoseRecord>().ExecuteDeleteAsync(ct);
             await arrangeContext.Database.ExecuteSqlRawAsync(
                 """
-                INSERT INTO catalog.poses (id, name, name_key, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow, published_at)
-                VALUES (gen_random_uuid(), '---', 'x', 'discovery', 'discovery', true, true, now())
+                INSERT INTO catalog.poses (id, name, name_key, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow, published_at, version)
+                VALUES (gen_random_uuid(), '---', 'x', 'discovery', 'discovery', true, true, now(), 1)
                 """, ct);
         }
 

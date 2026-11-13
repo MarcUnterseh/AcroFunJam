@@ -18,4 +18,7 @@ public static class DifficultyLabels
 
     /// <summary>The code of a known label; an unknown label (e.g. "expert") is sent as is, for the API to refuse it.</summary>
     public static string ToCodeOrAsIs(string label) => CodesByLabel.GetValueOrDefault(label, label);
+
+    /// <summary>The French label of a difficulty code; any other value (a pose name) as is.</summary>
+    public static string ToLabelOrAsIs(string value) => CodesByLabel.FirstOrDefault(pair => pair.Value == value).Key ?? value;
 }

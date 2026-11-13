@@ -7,7 +7,7 @@ namespace AcroFunJam.Domain.Contribution;
 /// One of their proposals, as its contributor sees it (« Mes propositions », story 5, ADR 0023). Deliberately without any
 /// member designating the validator who decided (Q12): it cannot leak to the contributor.
 /// </summary>
-public sealed class MyPoseProposal
+public sealed class MyPoseProposal : IMyProposal
 {
     public required PoseProposalId Id { get; init; }
 
@@ -33,6 +33,11 @@ public sealed class MyPoseProposal
 
     /// <summary>Why the proposal was rejected; none otherwise.</summary>
     public RejectionReason? Reason { get; init; }
+
+    /// <summary>Listed under the presented name (ADR 0023).</summary>
+    public PoseName ListedName => Name;
+
+    public Guid Identifier => Id.Value;
 
     private MyPoseProposal()
     {

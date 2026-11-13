@@ -8,3 +8,7 @@ public sealed record PoseListResponse(IReadOnlyList<PoseSummaryResponse> Poses);
 /// <summary>A published pose; both flow indicators are always given (ADR 0018).</summary>
 public sealed record PoseSummaryResponse(
     Guid Id, string Name, DifficultyCode BaseDifficulty, DifficultyCode FlyerDifficulty, bool CanStartFlow, bool CanEndFlow);
+
+/// <summary>A published pose with its version, to start a revision of it (story 6, ADR 0024).</summary>
+public sealed record PublishedPoseResponse(
+    Guid Id, string Name, DifficultyCode BaseDifficulty, DifficultyCode FlyerDifficulty, bool CanStartFlow, bool CanEndFlow, int Version);

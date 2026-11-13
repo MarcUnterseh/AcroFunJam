@@ -16,9 +16,9 @@ public sealed record RejectionReason
 
     public static Result<RejectionReason> Create(string? raw)
     {
-        var reason = ValidatorText.Normalize(raw);
+        var reason = ProposalText.Normalize(raw);
         if (reason.Length == 0) return ContributionErrors.RejectionReasonRequired;
-        if (ValidatorText.IsLongerThan(reason, MaxLength)) return ContributionErrors.RejectionReasonTooLong;
+        if (ProposalText.IsLongerThan(reason, MaxLength)) return ContributionErrors.RejectionReasonTooLong;
         return Result<RejectionReason>.Success(new RejectionReason(reason));
     }
 }

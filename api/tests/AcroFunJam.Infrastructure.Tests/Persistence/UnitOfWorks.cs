@@ -11,6 +11,6 @@ internal static class UnitOfWorks
         new(
             context,
             aggregates,
-            [CatalogUniqueConstraints.PoseNameKey, ContributionUniqueConstraints.PendingPoseNameKey],
-            [ContributionConcurrencyConflicts.PoseProposalDecided]);
+            [CatalogUniqueConstraints.PoseNameKey, ContributionUniqueConstraints.PendingPoseNameKey, ContributionUniqueConstraints.PendingRevisionReservedNameKey, ContributionUniqueConstraints.PendingRevisionOfPose],
+            [ContributionConcurrencyConflicts.PoseProposalDecided, ContributionConcurrencyConflicts.PoseRevisionProposalDecided, CatalogConcurrencyConflicts.PoseRevisedMeanwhile]);
 }

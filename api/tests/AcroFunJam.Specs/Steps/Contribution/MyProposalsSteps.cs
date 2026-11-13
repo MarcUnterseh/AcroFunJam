@@ -19,7 +19,8 @@ public sealed class MyProposalsSteps(People people, Deployment deployment, Consu
     private const string Text = @"« ?(.*?) ?»";
     private const string Day = @"(\d{4}-\d{2}-\d{2})";
 
-    private static readonly Uri MyPoseProposals = new("/contribution/my-pose-proposals", UriKind.Relative);
+    /// <summary>Pose proposals and revision proposals together (story 6, ADR 0027); these steps read the pose proposals.</summary>
+    private static readonly Uri MyPoseProposals = new("/contribution/my-proposals", UriKind.Relative);
 
     /// <summary>The person who consulted their proposals in this scenario.</summary>
     private string? _consulter;
@@ -172,7 +173,7 @@ public sealed class MyProposalsSteps(People people, Deployment deployment, Consu
 
     private static readonly string[] ContractMembers =
     [
-        "id", "status", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "submittedAt", "decidedAt",
+        "kind", "id", "status", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "submittedAt", "decidedAt",
         "adjustments", "message", "reason",
     ];
 
@@ -185,10 +186,16 @@ public sealed class MyProposalsSteps(People people, Deployment deployment, Consu
     }
 
     private async Task<IReadOnlyList<MyProposalResponse>> MyProposals() =>
-        JsonSerializer.Deserialize<MyProposalsResponse>(await SuccessfulBody(), JsonSerializerOptions.Web).ShouldNotBeNull().Proposals;
+        [
+            .. JsonSerializer.Deserialize<MyProposalsResponse>(await SuccessfulBody(), JsonSerializerOptions.Web).ShouldNotBeNull().Proposals
+                .Where(p => p.Kind == "pose-proposal"),
+        ];
 
     private async Task<IReadOnlyList<JsonElement>> MyProposalElements() =>
-        [.. JsonSerializer.Deserialize<JsonElement>(await SuccessfulBody()).GetProperty("proposals").EnumerateArray()];
+    [
+        .. JsonSerializer.Deserialize<JsonElement>(await SuccessfulBody()).GetProperty("proposals").EnumerateArray()
+            .Where(p => p.GetProperty("kind").GetString() == "pose-proposal"),
+    ];
 
     private async Task<MyProposalResponse> MyProposal(string pose) =>
         (await MyProposals()).Where(p => p.Name == pose).ShouldHaveSingleItem();
@@ -250,6 +257,7 @@ public sealed class MyProposalsSteps(People people, Deployment deployment, Consu
     private sealed record MyProposalsResponse(IReadOnlyList<MyProposalResponse> Proposals);
 
     private sealed record MyProposalResponse(
+        string? Kind,
         Guid Id,
         string? Status,
         string Name,

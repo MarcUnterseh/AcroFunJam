@@ -32,4 +32,34 @@ public sealed class PendingProposalOrderTests
         PendingProposalOrder.Instance.Compare(bird, foldedLeaf).ShouldBeLessThan(0);
         PendingProposalOrder.Instance.Compare(foldedLeaf, bird).ShouldBeGreaterThan(0);
     }
+
+    /// <summary>A revision proposal, named in the queue by the pose before the revision (story 6, ADR 0027).</summary>
+    private static PoseRevisionProposal ARevisionOf(string name, DateTimeOffset submittedAt)
+    {
+        var before = ProposedPose.Create(name, "beginner", "intermediate", canStartFlow: true, canEndFlow: true).Value!;
+        return PoseRevisionProposal.Rehydrate(
+            new PoseRevisionProposalId(Guid.NewGuid()), new ContributorId(Guid.NewGuid()), new PublishedPoseId(Guid.NewGuid()),
+            new PublishedPoseVersion(1),
+            ProposedRevision.Restore(new PriorPose(before.Name, before.Difficulty, before.Flow), AProposedPose.Named(name)),
+            submittedAt);
+    }
+
+    [Fact]
+    public void Compare_Should_PutTheOldestFirst_When_ARevisionAndAPoseProposalAreMixed()
+    {
+        IPendingProposal star = AProposal("Star", Monday);
+        IPendingProposal throneRevision = ARevisionOf("Throne", Tuesday);
+
+        PendingProposalOrder.Instance.Compare(star, throneRevision).ShouldBeLessThan(0);
+        PendingProposalOrder.Instance.Compare(throneRevision, star).ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public void Compare_Should_FollowTheCatalogOrderOfThePoseBeforeTheRevision_When_SubmittedAtTheSameInstant()
+    {
+        IPendingProposal bird = ARevisionOf("Bird", Monday);
+        IPendingProposal star = AProposal("Star", Monday);
+
+        PendingProposalOrder.Instance.Compare(bird, star).ShouldBeLessThan(0);
+    }
 }

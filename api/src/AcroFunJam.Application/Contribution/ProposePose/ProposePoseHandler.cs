@@ -8,8 +8,9 @@ internal sealed class ProposePoseHandler(
     IContributors contributors,
     ICatalogPoseNames catalogPoseNames,
     IPoseProposalRepository proposals,
+    IPoseRevisionProposalRepository revisions,
     ICatalogPublisher catalogPublisher,
-    IPoseNameReservation nameReservation,
+    IPoseReservation nameReservation,
     IUnitOfWork unitOfWork,
     TimeProvider clock) : ICommandHandler<ProposePose, PoseProposalDto>
 {
@@ -27,7 +28,8 @@ internal sealed class ProposePoseHandler(
             if (published.IsFailure) return published.Error!;
             var availability = NameAvailability.From(
                 publishedInCatalog: published.Value,
-                pendingProposal: await proposals.ExistsPendingWithNameKey(key, transactionCt));
+                pendingProposal: await proposals.ExistsPendingWithNameKey(key, transactionCt)
+                    || await revisions.ExistsPendingWithReservedNameKey(key, transactionCt));
             var submitted = PoseProposal.Submit(
                 new PoseProposalId(Guid.CreateVersion7()), contributor, command.Pose, availability, clock.GetUtcNow());
             if (submitted.IsFailure) return submitted.Error!;

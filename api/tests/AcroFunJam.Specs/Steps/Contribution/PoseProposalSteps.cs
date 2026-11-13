@@ -10,17 +10,15 @@ using Reqnroll;
 namespace AcroFunJam.Specs.Steps.Contribution;
 
 [Binding]
-public sealed class PoseProposalSteps(People people, Deployment deployment, ScenarioProposals proposals, ScenarioClock clock)
+public sealed class PoseProposalSteps(People people, Deployment deployment, ScenarioProposals proposals, ScenarioClock clock, ScenarioResponses responses)
 {
     private static readonly Uri PoseProposals = new("/contribution/pose-proposals", UriKind.Relative);
-
-    private HttpResponseMessage? _lastResponse;
 
     // --- Proposing ----------------------------------------------------------------------------
 
     [When(@"^(\w+) propose la pose ""([^""]*)"" de difficulté base ""([^""]*)"" et de difficulté flyer ""([^""]*)""$")]
     public async Task WhenSomeoneProposesAPose(string name, string pose, string baseDifficulty, string flyerDifficulty) =>
-        _lastResponse = await Propose(name, AValidProposal(pose) with
+        responses.Last = await Propose(name, AValidProposal(pose) with
         {
             BaseDifficulty = DifficultyLabels.ToCodeOrAsIs(baseDifficulty),
             FlyerDifficulty = DifficultyLabels.ToCodeOrAsIs(flyerDifficulty),
@@ -30,14 +28,14 @@ public sealed class PoseProposalSteps(People people, Deployment deployment, Scen
     public async Task GivenSomeoneHasProposedAPose(string name, string pose, string baseDifficulty, string flyerDifficulty)
     {
         await WhenSomeoneProposesAPose(name, pose, baseDifficulty, flyerDifficulty);
-        _lastResponse!.StatusCode.ShouldBe(HttpStatusCode.Created, await _lastResponse.Content.ReadAsStringAsync());
+        responses.Last!.StatusCode.ShouldBe(HttpStatusCode.Created, await responses.Last.Content.ReadAsStringAsync());
     }
 
     [When(@"^un visiteur propose la pose ""([^""]*)"" de difficulté base ""([^""]*)"" et de difficulté flyer ""([^""]*)""$")]
     public async Task WhenAVisitorProposesAPose(string pose, string baseDifficulty, string flyerDifficulty)
     {
         using var visitor = deployment.Current.CreateClient();
-        _lastResponse = await visitor.PostAsJsonAsync(PoseProposals, AValidProposal(pose) with
+        responses.Last = await visitor.PostAsJsonAsync(PoseProposals, AValidProposal(pose) with
         {
             BaseDifficulty = DifficultyLabels.ToCode(baseDifficulty),
             FlyerDifficulty = DifficultyLabels.ToCode(flyerDifficulty),
@@ -46,14 +44,14 @@ public sealed class PoseProposalSteps(People people, Deployment deployment, Scen
 
     [When(@"^(\w+) propose une pose nommée ""([^""]*)""$")]
     public async Task WhenSomeoneProposesAPoseNamed(string name, string pose) =>
-        _lastResponse = await Propose(name, AValidProposal(pose));
+        responses.Last = await Propose(name, AValidProposal(pose));
 
     /// <summary>An attempt that the API refused as inadmissible (400), not one that failed for another reason.</summary>
     [Given(@"^(\w+) a tenté de proposer une pose nommée ""([^""]*)""$")]
     public async Task GivenSomeoneHasTriedToProposeAPoseNamed(string name, string pose)
     {
         await WhenSomeoneProposesAPoseNamed(name, pose);
-        _lastResponse!.StatusCode.ShouldBe(HttpStatusCode.BadRequest, await _lastResponse.Content.ReadAsStringAsync());
+        responses.Last!.StatusCode.ShouldBe(HttpStatusCode.BadRequest, await responses.Last.Content.ReadAsStringAsync());
     }
 
     [When(@"^(\w+) propose une pose dont le nom compte (\d+) caractères$")]
@@ -62,19 +60,19 @@ public sealed class PoseProposalSteps(People people, Deployment deployment, Scen
 
     [When(@"^(\w+) propose la pose ""([^""]*)"" sans (difficulté base|difficulté flyer)$")]
     public async Task WhenSomeoneProposesAPoseWithoutADifficulty(string name, string pose, string missing) =>
-        _lastResponse = await Propose(name, missing == "difficulté base"
+        responses.Last = await Propose(name, missing == "difficulté base"
             ? AValidProposal(pose) with { BaseDifficulty = null }
             : AValidProposal(pose) with { FlyerDifficulty = null });
 
     [When(@"^(\w+) propose la pose ""([^""]*)"" qui (peut|ne peut pas) commencer un flow et (peut|ne peut pas) terminer un flow$")]
     public async Task WhenSomeoneProposesAPoseWithFlowBoundaries(string name, string pose, string canStart, string canEnd) =>
-        _lastResponse = await Propose(name, AValidProposal(pose) with { CanStartFlow = canStart == "peut", CanEndFlow = canEnd == "peut" });
+        responses.Last = await Propose(name, AValidProposal(pose) with { CanStartFlow = canStart == "peut", CanEndFlow = canEnd == "peut" });
 
     [Given(@"^(\w+) a proposé la pose ""([^""]*)"" qui (peut|ne peut pas) commencer un flow et (peut|ne peut pas) terminer un flow$")]
     public async Task GivenSomeoneHasProposedAPoseWithFlowBoundaries(string name, string pose, string canStart, string canEnd)
     {
         await WhenSomeoneProposesAPoseWithFlowBoundaries(name, pose, canStart, canEnd);
-        _lastResponse!.StatusCode.ShouldBe(HttpStatusCode.Created, await _lastResponse.Content.ReadAsStringAsync());
+        responses.Last!.StatusCode.ShouldBe(HttpStatusCode.Created, await responses.Last.Content.ReadAsStringAsync());
     }
 
     [Given(@"^(\w+) a proposé le (\d{4}-\d{2}-\d{2}) la pose ""([^""]*)"" de difficulté base ""([^""]*)"" et de difficulté flyer ""([^""]*)"", qui (peut|ne peut pas) commencer un flow et (peut|ne peut pas) terminer un flow$")]
@@ -82,19 +80,19 @@ public sealed class PoseProposalSteps(People people, Deployment deployment, Scen
         string name, string day, string pose, string baseDifficulty, string flyerDifficulty, string canStart, string canEnd)
     {
         clock.SetUtcNow(ScenarioClock.Parse(day));
-        _lastResponse = await Propose(name, new ProposalRequest(
+        responses.Last = await Propose(name, new ProposalRequest(
             pose, DifficultyLabels.ToCode(baseDifficulty), DifficultyLabels.ToCode(flyerDifficulty), canStart == "peut", canEnd == "peut"));
-        _lastResponse.StatusCode.ShouldBe(HttpStatusCode.Created, await _lastResponse.Content.ReadAsStringAsync());
+        responses.Last.StatusCode.ShouldBe(HttpStatusCode.Created, await responses.Last.Content.ReadAsStringAsync());
     }
 
     [Given(@"^(\w+) a proposé le (\d{4}-\d{2}-\d{2}) la pose ""([^""]*)"" de difficulté base ""([^""]*)"" et de difficulté flyer ""([^""]*)""$")]
     public async Task GivenSomeoneHasProposedAPoseWithDifficultiesOn(string name, string day, string pose, string baseDifficulty, string flyerDifficulty)
     {
         clock.SetUtcNow(ScenarioClock.Parse(day));
-        _lastResponse = await Propose(
+        responses.Last = await Propose(
             name,
             AValidProposal(pose) with { BaseDifficulty = DifficultyLabels.ToCode(baseDifficulty), FlyerDifficulty = DifficultyLabels.ToCode(flyerDifficulty) });
-        _lastResponse.StatusCode.ShouldBe(HttpStatusCode.Created, await _lastResponse.Content.ReadAsStringAsync());
+        responses.Last.StatusCode.ShouldBe(HttpStatusCode.Created, await responses.Last.Content.ReadAsStringAsync());
     }
 
     /// <summary>Each contributor not met yet in the scenario is a user with the default address.</summary>
@@ -107,7 +105,7 @@ public sealed class PoseProposalSteps(People people, Deployment deployment, Scen
             if (!people.IsKnown(name)) (await people.Register(name, People.DefaultEmail(name))).EnsureSuccessStatusCode();
 
             clock.SetUtcNow(ScenarioClock.Parse(row["soumise le"]));
-            _lastResponse = await Propose(name, AValidProposal(row["pose"]));
+            responses.Last = await Propose(name, AValidProposal(row["pose"]));
             (await Received()).Status.ShouldBe("pending");
         }
     }
@@ -117,7 +115,7 @@ public sealed class PoseProposalSteps(People people, Deployment deployment, Scen
 
     [When(@"^(\w+) propose la pose ""([^""]*)"" sans préciser si elle peut (commencer|terminer) un flow$")]
     public async Task WhenSomeoneProposesAPoseWithoutAFlowBoundary(string name, string pose, string boundary) =>
-        _lastResponse = await Propose(name, boundary == "commencer"
+        responses.Last = await Propose(name, boundary == "commencer"
             ? AValidProposal(pose) with { CanStartFlow = null }
             : AValidProposal(pose) with { CanEndFlow = null });
 
@@ -168,7 +166,7 @@ public sealed class PoseProposalSteps(People people, Deployment deployment, Scen
     public async Task ThenTheProposalIsInadmissible(string reason)
     {
         var (status, code) = Inadmissibility(reason);
-        var response = _lastResponse.ShouldNotBeNull();
+        var response = responses.Last.ShouldNotBeNull();
         var body = await response.Content.ReadAsStringAsync();
         response.StatusCode.ShouldBe(status, body);
         response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
@@ -182,6 +180,12 @@ public sealed class PoseProposalSteps(People people, Deployment deployment, Scen
     private static (HttpStatusCode Status, string? Code) Inadmissibility(string reason) => reason switch
     {
         "il faut être connecté" => (HttpStatusCode.Unauthorized, null),
+        "le compte n'existe plus et il faut se reconnecter" => (HttpStatusCode.Unauthorized, "identity.account-deleted"),
+        "la pose est introuvable dans le catalogue" => (HttpStatusCode.NotFound, "contribution.pose-not-found"),
+        "la modification ne change rien à la pose" => (HttpStatusCode.UnprocessableEntity, "contribution.revision-changes-nothing"),
+        "une modification de cette pose est déjà en attente de validation" => (HttpStatusCode.Conflict, "contribution.pose-revision-already-pending"),
+        "le message de modification est trop long" => (HttpStatusCode.BadRequest, "contribution.revision-message-too-long"),
+        "la pose a changé depuis le début de la modification" => (HttpStatusCode.Conflict, "contribution.pose-changed-since-revision-started"),
         "le nom de la pose est obligatoire" => (HttpStatusCode.BadRequest, "pose.name-required"),
         "le nom de la pose est trop long" => (HttpStatusCode.BadRequest, "pose.name-too-long"),
         "la difficulté base est obligatoire" => (HttpStatusCode.BadRequest, "pose.base-difficulty-required"),
@@ -219,7 +223,7 @@ public sealed class PoseProposalSteps(People people, Deployment deployment, Scen
 
     private async Task<ProposalResponse> Received()
     {
-        var response = _lastResponse.ShouldNotBeNull();
+        var response = responses.Last.ShouldNotBeNull();
         response.StatusCode.ShouldBe(HttpStatusCode.Created, await response.Content.ReadAsStringAsync());
         return (await response.Content.ReadFromJsonAsync<ProposalResponse>())!;
     }

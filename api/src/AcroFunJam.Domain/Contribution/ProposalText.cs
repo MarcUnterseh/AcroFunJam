@@ -1,10 +1,10 @@
 namespace AcroFunJam.Domain.Contribution;
 
 /// <summary>
-/// The free text a validator writes for a contributor (<see cref="RejectionReason"/>, <see cref="AdjustmentNote"/>):
+/// The free text written on a proposal (<see cref="RejectionReason"/>, <see cref="AdjustmentNote"/>, <see cref="RevisionMessage"/>):
 /// same normalisation and same way of counting its length (ADR 0022).
 /// </summary>
-internal static class ValidatorText
+internal static class ProposalText
 {
     /// <summary>Without superfluous spaces: leading, trailing or consecutive (a line break counts as a space).</summary>
     public static string Normalize(string? raw) =>

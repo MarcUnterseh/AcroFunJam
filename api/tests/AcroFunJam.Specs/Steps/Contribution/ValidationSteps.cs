@@ -17,7 +17,8 @@ namespace AcroFunJam.Specs.Steps.Contribution;
 /// </summary>
 [Binding]
 public sealed class ValidationSteps(
-    People people, Deployment deployment, ScenarioProposals proposals, ScenarioClock clock, Consultation consultation)
+    People people, Deployment deployment, ScenarioProposals proposals, ScenarioClock clock, Consultation consultation, ScenarioDecisions decisions,
+    ScenarioPoseRevisions revisions)
 {
     private const string Proposal = @"la proposition de la pose ""([^""]*)"" par (\w+)";
     private const string Reason = @"« ?(.*?) ?»";
@@ -29,7 +30,6 @@ public sealed class ValidationSteps(
     private static readonly Uri ValidationQueue = new("/contribution/validation-queue", UriKind.Relative);
     private static readonly Uri PendingCount = new("/contribution/validation-queue/count", UriKind.Relative);
 
-    private HttpResponseMessage? _decision;
 
     // --- Consulting the queue -----------------------------------------------------------------
 
@@ -80,9 +80,23 @@ public sealed class ValidationSteps(
     public async Task ThenTheQueuePresentsExactlyThePoses(DataTable expected) =>
         (await Queue()).Proposals.Select(p => p.Name).ShouldBe(expected.Rows.Select(row => row["pose"]), ignoreOrder: true);
 
+    /// <summary>
+    /// By pose name (column « pose »), or by kind and name (column « proposition » : « pose Star », « modification de Throne »,
+    /// story 6, ADR 0027).
+    /// </summary>
     [Then("les propositions sont présentées dans cet ordre :")]
-    public async Task ThenTheProposalsArePresentedInOrder(DataTable expected) =>
-        (await Queue()).Proposals.Select(p => p.Name).ShouldBe(expected.Rows.Select(row => row["pose"]));
+    public async Task ThenTheProposalsArePresentedInOrder(DataTable expected)
+    {
+        var queue = (await Queue()).Proposals;
+        if (expected.Header.Contains("proposition"))
+        {
+            queue.Select(p => p.Kind == "pose-revision" ? "modification de " + p.Pose?.Name : "pose " + p.Name)
+                .ShouldBe(expected.Rows.Select(row => row["proposition"]));
+            return;
+        }
+
+        queue.Select(p => p.Name).ShouldBe(expected.Rows.Select(row => row["pose"]));
+    }
 
     [Then(@"^(\w+) est informée? qu'aucune proposition n'est en attente de validation$")]
     public async Task ThenTheQueueIsEmpty(string name)
@@ -107,15 +121,15 @@ public sealed class ValidationSteps(
 
     [When("^(\\w+) accepte " + Proposal + "$")]
     public async Task WhenSomeoneAccepts(string name, string pose, string contributor) =>
-        _decision = await Accept(await people.SignedInClient(name), proposals.IdOf(pose, contributor));
+        decisions.Last = await Accept(await people.SignedInClient(name), proposals.IdOf(pose, contributor));
 
     [When("^(\\w+) accepte " + Proposal + " en corrigeant " + Adjustment + "$")]
     public async Task WhenSomeoneAcceptsWithAnAdjustment(string name, string pose, string contributor, string adjustment) =>
-        _decision = await Accept(await people.SignedInClient(name), proposals.IdOf(pose, contributor), Adjusting(adjustment));
+        decisions.Last = await Accept(await people.SignedInClient(name), proposals.IdOf(pose, contributor), Adjusting(adjustment));
 
     [When("^(\\w+) accepte " + Proposal + " en corrigeant " + Adjustment + ", avec le message " + Reason + "$")]
     public async Task WhenSomeoneAcceptsWithAnAdjustmentAndANote(string name, string pose, string contributor, string adjustment, string note) =>
-        _decision = await Accept(
+        decisions.Last = await Accept(
             await people.SignedInClient(name), proposals.IdOf(pose, contributor), Adjusting(adjustment) with { Message = note });
 
     [When("^(\\w+) accepte " + Proposal + " en corrigeant " + Adjustment + @", avec un message de (\d+) caractères$")]
@@ -124,52 +138,52 @@ public sealed class ValidationSteps(
 
     [When("^(\\w+) accepte " + Proposal + " sans ajustement, avec le message " + Reason + "$")]
     public async Task WhenSomeoneAcceptsWithoutAdjustmentWithANote(string name, string pose, string contributor, string note) =>
-        _decision = await Accept(await people.SignedInClient(name), proposals.IdOf(pose, contributor), new AcceptanceRequest { Message = note });
+        decisions.Last = await Accept(await people.SignedInClient(name), proposals.IdOf(pose, contributor), new AcceptanceRequest { Message = note });
 
     [When("^(\\w+) accepte le " + Day + " " + Proposal + "$")]
     public async Task WhenSomeoneAcceptsOn(string name, string day, string pose, string contributor)
     {
         clock.SetUtcNow(ScenarioClock.Parse(day));
-        _decision = await Accept(await people.SignedInClient(name), proposals.IdOf(pose, contributor));
+        decisions.Last = await Accept(await people.SignedInClient(name), proposals.IdOf(pose, contributor));
     }
 
     [When("^un visiteur accepte " + Proposal + "$")]
     public async Task WhenAVisitorAccepts(string pose, string contributor)
     {
         using var visitor = deployment.Current.CreateClient();
-        _decision = await Accept(visitor, proposals.IdOf(pose, contributor));
+        decisions.Last = await Accept(visitor, proposals.IdOf(pose, contributor));
     }
 
     [When(@"^(\w+) accepte une proposition qui n'existe pas$")]
     public async Task WhenSomeoneAcceptsAnUnknownProposal(string name) =>
-        _decision = await Accept(await people.SignedInClient(name), Guid.NewGuid());
+        decisions.Last = await Accept(await people.SignedInClient(name), Guid.NewGuid());
 
     [Given("^(\\w+) a accepté " + Proposal + "$")]
     public async Task GivenSomeoneHasAccepted(string name, string pose, string contributor)
     {
         await WhenSomeoneAccepts(name, pose, contributor);
-        _decision!.StatusCode.ShouldBe(HttpStatusCode.OK, await _decision.Content.ReadAsStringAsync());
+        decisions.Last!.StatusCode.ShouldBe(HttpStatusCode.OK, await decisions.Last.Content.ReadAsStringAsync());
     }
 
     [Given("^(\\w+) a accepté " + Proposal + " en corrigeant " + Adjustment + "$")]
     public async Task GivenSomeoneHasAcceptedWithAnAdjustment(string name, string pose, string contributor, string adjustment)
     {
         await WhenSomeoneAcceptsWithAnAdjustment(name, pose, contributor, adjustment);
-        _decision!.StatusCode.ShouldBe(HttpStatusCode.OK, await _decision.Content.ReadAsStringAsync());
+        decisions.Last!.StatusCode.ShouldBe(HttpStatusCode.OK, await decisions.Last.Content.ReadAsStringAsync());
     }
 
     [Given("^(\\w+) a accepté " + Proposal + " en corrigeant " + Adjustment + ", avec le message " + Reason + "$")]
     public async Task GivenSomeoneHasAcceptedWithAnAdjustmentAndANote(string name, string pose, string contributor, string adjustment, string note)
     {
         await WhenSomeoneAcceptsWithAnAdjustmentAndANote(name, pose, contributor, adjustment, note);
-        _decision!.StatusCode.ShouldBe(HttpStatusCode.OK, await _decision.Content.ReadAsStringAsync());
+        decisions.Last!.StatusCode.ShouldBe(HttpStatusCode.OK, await decisions.Last.Content.ReadAsStringAsync());
     }
 
     [Given("^(\\w+) a accepté le " + Day + " " + Proposal + "$")]
     public async Task GivenSomeoneHasAcceptedOn(string name, string day, string pose, string contributor)
     {
         await WhenSomeoneAcceptsOn(name, day, pose, contributor);
-        _decision!.StatusCode.ShouldBe(HttpStatusCode.OK, await _decision.Content.ReadAsStringAsync());
+        decisions.Last!.StatusCode.ShouldBe(HttpStatusCode.OK, await decisions.Last.Content.ReadAsStringAsync());
     }
 
     /// <summary>An attempt that the API refused (4xx), not a proposal it could not find.</summary>
@@ -177,7 +191,7 @@ public sealed class ValidationSteps(
     public async Task GivenSomeoneHasTriedToAcceptWithAnAdjustment(string name, string pose, string contributor, string adjustment)
     {
         await WhenSomeoneAcceptsWithAnAdjustment(name, pose, contributor, adjustment);
-        await ShouldBeARefusedAttempt(_decision!);
+        await ShouldBeARefusedAttempt(decisions.Last!);
     }
 
     /// <summary>An attempt that the API refused (4xx), not a proposal it could not find.</summary>
@@ -186,7 +200,7 @@ public sealed class ValidationSteps(
         string name, string pose, string contributor, string adjustment, int length)
     {
         await WhenSomeoneAcceptsWithAnAdjustmentAndANoteOfLength(name, pose, contributor, adjustment, length);
-        await ShouldBeARefusedAttempt(_decision!);
+        await ShouldBeARefusedAttempt(decisions.Last!);
     }
 
     /// <summary>An attempt that the API refused (4xx), not a proposal it could not find.</summary>
@@ -194,16 +208,16 @@ public sealed class ValidationSteps(
     public async Task GivenSomeoneHasTriedToAccept(string name, string pose, string contributor)
     {
         await WhenSomeoneAccepts(name, pose, contributor);
-        await ShouldBeARefusedAttempt(_decision!);
+        await ShouldBeARefusedAttempt(decisions.Last!);
     }
 
     [When("^(\\w+) refuse " + Proposal + " avec le motif " + Reason + "$")]
     public async Task WhenSomeoneRejects(string name, string pose, string contributor, string reason) =>
-        _decision = await Reject(await people.SignedInClient(name), proposals.IdOf(pose, contributor), new RejectionRequest(reason));
+        decisions.Last = await Reject(await people.SignedInClient(name), proposals.IdOf(pose, contributor), new RejectionRequest(reason));
 
     [When("^(\\w+) refuse " + Proposal + " sans motif$")]
     public async Task WhenSomeoneRejectsWithoutReason(string name, string pose, string contributor) =>
-        _decision = await Reject(await people.SignedInClient(name), proposals.IdOf(pose, contributor), new RejectionRequest(null));
+        decisions.Last = await Reject(await people.SignedInClient(name), proposals.IdOf(pose, contributor), new RejectionRequest(null));
 
     [When("^(\\w+) refuse " + Proposal + @" avec un motif de (\d+) caractères$")]
     public Task WhenSomeoneRejectsWithAReasonOfLength(string name, string pose, string contributor, int length) =>
@@ -213,7 +227,7 @@ public sealed class ValidationSteps(
     public async Task GivenSomeoneHasRejected(string name, string pose, string contributor, string reason)
     {
         await WhenSomeoneRejects(name, pose, contributor, reason);
-        _decision!.StatusCode.ShouldBe(HttpStatusCode.OK, await _decision.Content.ReadAsStringAsync());
+        decisions.Last!.StatusCode.ShouldBe(HttpStatusCode.OK, await decisions.Last.Content.ReadAsStringAsync());
     }
 
     /// <summary>An attempt that the API refused (4xx), not a proposal it could not find.</summary>
@@ -221,7 +235,7 @@ public sealed class ValidationSteps(
     public async Task GivenSomeoneHasTriedToRejectWithoutReason(string name, string pose, string contributor)
     {
         await WhenSomeoneRejectsWithoutReason(name, pose, contributor);
-        await ShouldBeARefusedAttempt(_decision!);
+        await ShouldBeARefusedAttempt(decisions.Last!);
     }
 
     // --- Outcome of a decision ----------------------------------------------------------------
@@ -277,6 +291,17 @@ public sealed class ValidationSteps(
     [Then(@"^la proposition garde la difficulté (base|flyer) proposée ""([^""]*)"" et la difficulté (?:base|flyer) retenue ""([^""]*)""$")]
     public async Task ThenTheProposalKeepsTheProposedAndRetainedDifficulty(string role, string proposed, string retained)
     {
+        if (decisions.OnRevision)
+        {
+            // Story 6: the same outcome for a revision proposal.
+            var (pose, contributor) = revisions.Last;
+            var revision = await PoseRevisionProposalsInDatabase.RevisionOf(people[contributor].Email, pose);
+            var kept = revision.Retained.ShouldNotBeNull();
+            (role == "base" ? revision.Proposed.BaseDifficulty : revision.Proposed.FlyerDifficulty).ShouldBe(DifficultyLabels.ToCode(proposed));
+            (role == "base" ? kept.BaseDifficulty : kept.FlyerDifficulty).ShouldBe(DifficultyLabels.ToCode(retained));
+            return;
+        }
+
         var poses = await PoseProposalsInDatabase.PosesOf((await Accepted()).Id);
         var stored = poses.Retained.ShouldNotBeNull();
         (role == "base" ? poses.Proposed.BaseDifficulty : poses.Proposed.FlyerDifficulty).ShouldBe(DifficultyLabels.ToCode(proposed));
@@ -304,7 +329,7 @@ public sealed class ValidationSteps(
     [Then("^" + Proposal + " est refusée$")]
     public async Task ThenTheProposalIsRejected(string pose, string contributor)
     {
-        var response = _decision.ShouldNotBeNull();
+        var response = decisions.Last.ShouldNotBeNull();
         response.StatusCode.ShouldBe(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
         var rejected = (await Body<RejectedResponse>(response)).ShouldNotBeNull();
         rejected.Id.ShouldBe(proposals.IdOf(pose, contributor));
@@ -313,7 +338,7 @@ public sealed class ValidationSteps(
     }
 
     [Then(@"^la décision est refusée car (.+)$")]
-    public Task ThenTheDecisionIsRefused(string reason) => ShouldBeRefused(_decision, reason);
+    public Task ThenTheDecisionIsRefused(string reason) => ShouldBeRefused(decisions.Last, reason);
 
     [Then(@"^la décision est impossible car (.+)$")]
     [Then(@"^le refus est impossible car (.+)$")]
@@ -321,7 +346,7 @@ public sealed class ValidationSteps(
     public async Task ThenTheDecisionIsImpossible(string reason)
     {
         var (status, code) = Impossibility(reason);
-        await ShouldBeAProblem(_decision, status, code);
+        await ShouldBeAProblem(decisions.Last, status, code);
     }
 
     // --- Refusals and impossibilities ---------------------------------------------------------
@@ -347,7 +372,7 @@ public sealed class ValidationSteps(
         _ => throw new ArgumentOutOfRangeException(nameof(reason), reason, "Motif de refus inconnu."),
     };
 
-    private static (HttpStatusCode Status, string Code) Impossibility(string reason) => reason switch
+    internal static (HttpStatusCode Status, string Code) Impossibility(string reason) => reason switch
     {
         "la proposition a déjà été traitée" => (HttpStatusCode.Conflict, "contribution.proposal-already-decided"),
         "la proposition est introuvable" => (HttpStatusCode.NotFound, "contribution.proposal-not-found"),
@@ -359,6 +384,8 @@ public sealed class ValidationSteps(
         "le nom de la pose est obligatoire" => (HttpStatusCode.BadRequest, "pose.name-required"),
         "le nom de la pose est trop long" => (HttpStatusCode.BadRequest, "pose.name-too-long"),
         "le message est trop long" => (HttpStatusCode.BadRequest, "contribution.adjustment-note-too-long"),
+        "la modification retenue ne change rien à la pose" =>
+            (HttpStatusCode.UnprocessableEntity, "contribution.retained-revision-changes-nothing"),
         "un message n'accompagne qu'une acceptation avec ajustements" =>
             (HttpStatusCode.UnprocessableEntity, "contribution.adjustment-note-without-adjustment"),
         _ when reason.StartsWith("le niveau de difficulté \"", StringComparison.Ordinal) =>
@@ -400,7 +427,7 @@ public sealed class ValidationSteps(
     /// « la difficulté flyer en "découverte" », « le nom en "Throne" », « le nom en un nom de 61 caractères »,
     /// « l'indicateur en « ne peut pas terminer un flow » »: only the adjusted value is sent, the others are absent.
     /// </summary>
-    private static AcceptanceRequest Adjusting(string adjustment)
+    internal static AcceptanceRequest Adjusting(string adjustment)
     {
         // « le nom en "Throne" et la difficulté flyer en "découverte" »: several adjustments in one acceptance.
         var several = Regex.Split(adjustment, " et (?=le |la |l')");
@@ -450,7 +477,7 @@ public sealed class ValidationSteps(
 
     private async Task<AcceptedResponse> Accepted()
     {
-        var response = _decision.ShouldNotBeNull();
+        var response = decisions.Last.ShouldNotBeNull();
         response.StatusCode.ShouldBe(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
         var accepted = (await Body<AcceptedResponse>(response)).ShouldNotBeNull();
         accepted.Status.ShouldBe("accepted");
@@ -472,8 +499,10 @@ public sealed class ValidationSteps(
     private sealed record QueueResponse(IReadOnlyList<QueuedProposalResponse> Proposals);
 
     private sealed record QueuedProposalResponse(
+        string? Kind,
         Guid Id,
-        string Name,
+        string? Name,
+        QueuedPoseResponse? Pose,
         string? BaseDifficulty,
         string? FlyerDifficulty,
         bool? CanStartFlow,
@@ -483,12 +512,15 @@ public sealed class ValidationSteps(
 
     private sealed record ContributorResponse(string? Email, bool? IsYou);
 
+    /// <summary>The revised pose of a revision proposal (story 6, ADR 0027).</summary>
+    private sealed record QueuedPoseResponse(Guid Id, string Name);
+
     private sealed record CountResponse(int Count);
 
-    private sealed record RejectionRequest(string? Reason);
+    internal sealed record RejectionRequest(string? Reason);
 
     /// <summary>The acceptance: each adjusted value, the others absent (null), and the optional adjustment note.</summary>
-    private sealed record AcceptanceRequest
+    internal sealed record AcceptanceRequest
     {
         public string? Name { get; init; }
 
@@ -509,5 +541,5 @@ public sealed class ValidationSteps(
     private sealed record RejectedResponse(Guid Id, string Status);
 
     private sealed record PresentedProposal(
-        string Name, string? BaseDifficulty, string? FlyerDifficulty, bool? CanStartFlow, bool? CanEndFlow, string? ContributorEmail, string? SubmittedOn);
+        string? Name, string? BaseDifficulty, string? FlyerDifficulty, bool? CanStartFlow, bool? CanEndFlow, string? ContributorEmail, string? SubmittedOn);
 }

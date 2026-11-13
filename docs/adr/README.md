@@ -25,3 +25,7 @@
 | [0021](0021-couche-presentation-du-front-partage.md) | Couche de présentation partagée du front (`core/src/presentation`, complète 0002) | accepté |
 | [0022](0022-decider-d-une-proposition.md) | Décider d'une proposition : mise à jour conditionnelle sur le statut, publication dans la même transaction, adresse e-mail lue à Identité | accepté |
 | [0023](0023-publication-directe-enregistree-et-mes-propositions.md) | Publication directe enregistrée comme un fait (`published_directly`), modèle de lecture « Mes propositions » | accepté |
+| [0024](0024-version-d-une-pose-publiee.md) | Version d'une pose publiée (contrôle « la pose a changé entre-temps ») | accepté |
+| [0025](0025-reservation-par-pose-puis-par-nom.md) | Réservation par pose, puis par nom (complète 0017) | accepté |
+| [0026](0026-proposition-de-modification-d-une-pose.md) | Proposition de modification d'une pose : agrégat distinct, révision dans la même transaction | accepté |
+| [0027](0027-file-de-validation-et-mes-propositions-heterogenes.md) | File de validation et « Mes propositions » hétérogènes (`kind`, `/contribution/my-proposals`) | accepté |

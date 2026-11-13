@@ -30,6 +30,7 @@ public static class DependencyInjection
 
         // Catalog
         services.AddSingleton(CatalogUniqueConstraints.PoseNameKey);
+        services.AddSingleton(CatalogConcurrencyConflicts.PoseRevisedMeanwhile);
         services.AddScoped<IPublishedPosesReader, EfPublishedPosesReader>();
         services.AddScoped<IPoseRepository, EfPoseRepository>();
 
@@ -39,10 +40,16 @@ public static class DependencyInjection
 
         // Contribution
         services.AddSingleton(ContributionUniqueConstraints.PendingPoseNameKey);
+        services.AddSingleton(ContributionUniqueConstraints.PendingRevisionReservedNameKey);
+        services.AddSingleton(ContributionUniqueConstraints.PendingRevisionOfPose);
         services.AddSingleton(ContributionConcurrencyConflicts.PoseProposalDecided);
+        services.AddSingleton(ContributionConcurrencyConflicts.PoseRevisionProposalDecided);
         services.AddScoped<IPoseProposalRepository, EfPoseProposalRepository>();
         services.AddScoped<IPendingPoseProposalsReader, EfPendingPoseProposalsReader>();
         services.AddScoped<IMyPoseProposalsReader, EfMyPoseProposalsReader>();
+        services.AddScoped<IPoseRevisionProposalRepository, EfPoseRevisionProposalRepository>();
+        services.AddScoped<IPendingPoseRevisionsReader, EfPendingPoseRevisionsReader>();
+        services.AddScoped<IMyPoseRevisionsReader, EfMyPoseRevisionsReader>();
 
         // Anti-corruption layers between contexts (ADR 0016)
         services.AddScoped<IContributors, IdentityContributors>();
@@ -50,7 +57,8 @@ public static class DependencyInjection
         services.AddScoped<IContributorEmails, IdentityContributorEmails>();
         services.AddScoped<ICatalogPublisher, CatalogPublisher>();
         services.AddScoped<ICatalogPoseNames, CatalogPoseNames>();
-        services.AddScoped<IPoseNameReservation, PgPoseNameReservation>(); // names of both contexts (ADR 0017)
+        services.AddScoped<ICatalogPoses, CatalogPoses>();
+        services.AddScoped<IPoseReservation, PgPoseReservation>(); // names of both contexts (ADR 0017)
 
         return services;
     }

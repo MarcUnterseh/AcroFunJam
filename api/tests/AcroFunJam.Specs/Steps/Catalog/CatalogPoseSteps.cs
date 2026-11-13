@@ -29,6 +29,11 @@ public sealed partial class CatalogPoseSteps(AcroFunJamApiFactory api, CatalogPu
     public Task GivenAPublishedPoseWithFlowBoundaries(string name, string canStart, string canEnd) =>
         catalog.Publish(name, "discovery", "discovery", canStartFlow: canStart == "peut", canEndFlow: canEnd == "peut");
 
+    [Given(@"^la pose publiée ""([^""]+)"" de difficulté base ""([^""]+)"" et de difficulté flyer ""([^""]+)"", qui (peut|ne peut pas) commencer un flow et (peut|ne peut pas) terminer un flow$")]
+    public Task GivenAPublishedPoseWithDifficultiesAndFlowBoundaries(string name, string baseDifficulty, string flyerDifficulty, string canStart, string canEnd) =>
+        catalog.Publish(
+            name, DifficultyLabels.ToCode(baseDifficulty), DifficultyLabels.ToCode(flyerDifficulty), canStartFlow: canStart == "peut", canEndFlow: canEnd == "peut");
+
     [Given(@"^les poses publiées ((?:""[^""]+""(?:, | et )?)+) dans le catalogue$")]
     public async Task GivenThePublishedPosesNamed(string names)
     {
@@ -83,6 +88,13 @@ public sealed partial class CatalogPoseSteps(AcroFunJamApiFactory api, CatalogPu
         var pose = _consultedList.ShouldNotBeNull().Poses.Where(p => p.Name == name).ShouldHaveSingleItem();
         pose.BaseDifficulty.ShouldBe(DifficultyLabels.ToCode(baseDifficulty));
         pose.FlyerDifficulty.ShouldBe(DifficultyLabels.ToCode(flyerDifficulty));
+    }
+
+    [Then(@"^la pose ""([^""]+)"" est présentée avec la difficulté base ""([^""]+)"" et la difficulté flyer ""([^""]+)"", qui (peut|ne peut pas) commencer un flow et (peut|ne peut pas) terminer un flow$")]
+    public void ThenThePoseIsPresentedWithDifficultiesAndFlowBoundaries(string name, string baseDifficulty, string flyerDifficulty, string canStart, string canEnd)
+    {
+        ThenThePoseIsPresentedWith(name, baseDifficulty, flyerDifficulty);
+        ThenThePoseIsPresentedWithFlowBoundaries(name, canStart, canEnd);
     }
 
     [Then(@"^la pose ""([^""]+)"" est présentée comme une pose qui (peut|ne peut pas) commencer un flow et (peut|ne peut pas) terminer un flow$")]

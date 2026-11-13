@@ -32,11 +32,11 @@ public sealed record PoseAdjustments
     public static Result<PoseAdjustments> Create(
         string? name, string? baseDifficulty, string? flyerDifficulty, bool? canStartFlow, bool? canEndFlow)
     {
-        var poseName = Optional(name, PoseName.Create);
+        var poseName = OptionalPoseValues.Name(name);
         if (poseName.IsFailure) return poseName.Error!;
-        var baseLevel = OptionalLevel(baseDifficulty);
+        var baseLevel = OptionalPoseValues.Level(baseDifficulty);
         if (baseLevel.IsFailure) return baseLevel.Error!;
-        var flyerLevel = OptionalLevel(flyerDifficulty);
+        var flyerLevel = OptionalPoseValues.Level(flyerDifficulty);
         if (flyerLevel.IsFailure) return flyerLevel.Error!;
 
         return Result<PoseAdjustments>.Success(new PoseAdjustments
@@ -47,20 +47,5 @@ public sealed record PoseAdjustments
             CanStartFlow = canStartFlow,
             CanEndFlow = canEndFlow,
         });
-    }
-
-    private static Result<T?> Optional<T>(string? raw, Func<string, Result<T>> create)
-        where T : class
-    {
-        if (raw is null) return Result<T?>.Success(null);
-        var value = create(raw);
-        return value.IsFailure ? value.Error! : Result<T?>.Success(value.Value);
-    }
-
-    private static Result<DifficultyLevel?> OptionalLevel(string? code)
-    {
-        if (code is null) return Result<DifficultyLevel?>.Success(null);
-        var level = DifficultyLevel.FromCode(code);
-        return level.IsFailure ? level.Error! : Result<DifficultyLevel?>.Success(level.Value);
     }
 }

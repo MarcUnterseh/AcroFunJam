@@ -17,11 +17,12 @@ public sealed class AcceptPoseProposalHandlerTests
     private readonly PoseProposal _throne = APendingProposal.Named("Throne").Build();
     private readonly PoseProposal _thron = APendingProposal.Named("Thron").Build();
     private readonly FakeValidators _validators = new(Bruno);
-    private readonly FakePoseNameReservation _reservation = new();
+    private readonly FakePoseReservation _reservation = new();
     private readonly FakeCatalogPoseNames _catalog = new();
     private readonly FakePoseProposalRepository _proposals;
     private readonly FakeCatalogPublisher _publisher;
     private readonly FakeUnitOfWork _unitOfWork;
+    private readonly FakePoseRevisionProposalRepository _revisions = new();
 
     /// <summary>For each save: the decisions of the updated proposals, how many poses were already published, and whether the name was reserved.</summary>
     private readonly List<(ProposalDecision?[] Updated, int Published, bool InReservation)> _saves = [];
@@ -43,7 +44,7 @@ public sealed class AcceptPoseProposalHandlerTests
         PoseAdjustments.Create(name, baseDifficulty: null, flyerDifficulty, canStartFlow: null, canEndFlow: null).Value!;
 
     private AcceptPoseProposalHandler Handler(IPoseProposalRepository? proposals = null, ICatalogPoseNames? catalog = null) =>
-        new(_validators, proposals ?? _proposals, catalog ?? _catalog, _reservation, _publisher, _unitOfWork, new FixedTimeProvider(Now));
+        new(_validators, proposals ?? _proposals, _revisions, catalog ?? _catalog, _reservation, _publisher, _unitOfWork, new FixedTimeProvider(Now));
 
     [Fact]
     public async Task Handle_Should_FailWithUnknownValidator_When_TheValidatorAccountNoLongerExists()
@@ -109,7 +110,7 @@ public sealed class AcceptPoseProposalHandlerTests
     {
         // Another decision was saved since the proposal was loaded: the conditional update finds it no longer pending.
         var handler = new AcceptPoseProposalHandler(
-            _validators, _proposals, _catalog, _reservation, _publisher, new FakeUnitOfWork(ContributionErrors.ProposalAlreadyDecided),
+            _validators, _proposals, _revisions, _catalog, _reservation, _publisher, new FakeUnitOfWork(ContributionErrors.ProposalAlreadyDecided),
             new FixedTimeProvider(Now));
 
         var result = await handler.Handle(AsProposed(_throne.Id, Bruno.Id), Ct);
@@ -123,7 +124,7 @@ public sealed class AcceptPoseProposalHandlerTests
     {
         // A pose of the same name was published in between: the reservation rolls the whole acceptance back (ADR 0022).
         var handler = new AcceptPoseProposalHandler(
-            _validators, _proposals, _catalog, _reservation, new FakeCatalogPublisher(ContributionErrors.PoseNameAlreadyInCatalog), _unitOfWork,
+            _validators, _proposals, _revisions, _catalog, _reservation, new FakeCatalogPublisher(ContributionErrors.PoseNameAlreadyInCatalog), _unitOfWork,
             new FixedTimeProvider(Now));
 
         var result = await handler.Handle(AsProposed(_throne.Id, Bruno.Id), Ct);
@@ -207,5 +208,17 @@ public sealed class AcceptPoseProposalHandlerTests
         var result = await Handler().Handle(new AcceptPoseProposal(_throne.Id, Bruno.Id, adjustments, Note: null), Ct);
 
         result.Value.ShouldBe(new DecidedPoseProposalDto(_throne.Id, ProposalStatus.Accepted, _throne.Pose.Retain(adjustments), Adjusted: true));
+    }
+
+    /// <summary>A name proposed by a pending revision is reserved (story 6, ADR 0025): a validator may not retain it either.</summary>
+    [Fact]
+    public async Task Handle_Should_FailWithPoseNameAlreadyPending_When_APendingRevisionReservesTheRetainedName()
+    {
+        _revisions.PendingReservedNames.Add("High Bird");
+
+        var result = await Handler().Handle(new AcceptPoseProposal(_thron.Id, Bruno.Id, Adjusting(name: "High Bird"), Note: null), Ct);
+
+        result.Error.ShouldBe(ContributionErrors.PoseNameAlreadyPending);
+        _publisher.Published.ShouldBeEmpty();
     }
 }

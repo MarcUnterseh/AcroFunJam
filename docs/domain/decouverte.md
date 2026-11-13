@@ -281,7 +281,7 @@ Carte d'example mapping du 2026-11-04, **révisée le même jour** avec les déc
 **Pour la story 5 « Suivre mes propositions »** (décisions du 2026-11-04) : le contributeur voit le **détail des ajustements champ par champ** (valeur proposée → valeur retenue), le message facultatif qui les accompagne, et le motif d'un refus. Il ne voit pas quel validateur a décidé.
 
 **Questions encore ouvertes (recommandation de l'analyse entre parenthèses)**
-- **Q11** Que deviennent les propositions en attente d'un compte supprimé ? (Elles restent dans la file, contributeur présenté comme « compte supprimé ». À trancher avec la story de suppression de compte.)
+- ~~**Q11** Que deviennent les propositions en attente d'un compte supprimé ?~~ **Tranchée le 2026-11-12 (story 6), par alignement** : une proposition en attente, de pose comme de modification, dont le contributeur a supprimé son compte reste dans la file de validation (contributeur sans adresse) ; un validateur la refuse. Aucun retrait automatique.
 - **Q18 (tranchée le 2026-11-04, expert acroyoga)** « Termine seulement » : **Free Bird** (débutant / débutant), on y arrive depuis Bird et on en sort comme de Bird. « Commence seulement » : aucune pose incontestée en L-basing ; **Candlestick** (débutant / intermédiaire) est retenue comme exemple, signalé comme tel dans les scénarios. Appliqué à `proposer-une-pose.feature` et `consulter-les-poses.feature`.
 
 Tranchées le 2026-11-04 : Q13 (détail des ajustements, story 5), Q14 (message facultatif réservé aux acceptations avec ajustements), Q15 (comparaison après normalisation), Q16 (message dédié et lien vers le catalogue), Q17 (récapitulatif seulement pour une acceptation avec ajustements).
@@ -306,7 +306,7 @@ Tranchées le 2026-11-04 : Q13 (détail des ajustements, story 5), Q14 (message 
   - « Cette proposition n'est plus en attente de validation. » pour une proposition introuvable, traitée comme déjà traitée.
 - **Reportés** :
   - story 5 « Suivre mes propositions » (même mise en production) ;
-  - Q11, propositions d'un compte supprimé ;
+  - Q11, propositions d'un compte supprimé (tranchée le 2026-11-12, story 6 : elles restent dans la file, un validateur les refuse) ;
   - contrôle manuel à 320 px avec un texte agrandi à 200 % : le formulaire d'ajustement déborde (au-delà de WCAG 1.4.10, le test automatique à 320 px passe) ;
   - test direct du hook `useProposalDecision` (couvert par les tests de la carte) ;
   - vérifier la sécurité d'un indicateur avant publication relève d'une charte de validation, à rédiger avec l'expert acroyoga ;
@@ -385,6 +385,89 @@ Carte d'example mapping du 2026-11-09, **révisée le même jour** avec les déc
 
 **Termes ajoutés ou révisés dans le glossaire** : Mes propositions (ajouté puis révisé), Publication directe (statut affiché « Publiée directement »).
 
+### Story 6 « Proposer une modification d'une pose publiée » (validée le 2026-11-12)
+Carte d'example mapping du 2026-11-12, **révisée le même jour** avec les décisions du porteur du produit et les avis de l'ux-expert. Scénarios (tous `@wip`) : `specs/features/contribution/proposer-une-modification.feature`. Contexte Contribution → Catalogue, cibles @api et @web (pas de mobile, comme les stories 3 à 5).
+
+**Story** : en tant que contributeur connecté, je propose une modification d'une pose publiée ; un validateur ou un administrateur l'accepte, au besoin avec ajustements, ou la refuse, comme une proposition de pose, afin que le catalogue reste juste.
+
+**Vocabulaire** (glossaire à mettre à jour par le domain-expert) : **proposition de modification** (la demande, agrégat distinct de la proposition de pose) ; **modification proposée** / **modification retenue** (le contenu, avant et après les ajustements) ; **valeur d'avant** (figée au moment de la proposition) et **valeur actuelle** (lue au moment de la consultation) ; **message de modification** ; **réviser une pose** (commande du Catalogue ; sur le site, on dit « modifiée »). À l'écran et dans les scénarios : « l'indicateur « peut terminer un flow » », jamais « l'indicateur de fin de flow ».
+
+**Décisions du porteur du produit (2026-11-12)**
+1. **Champs modifiables** (Q28) : les cinq champs d'une pose, nom compris (Q43, Q44, Q54).
+2. **Forme** (Q29) : seuls les champs changés sont proposés, au moins un ; les autres gardent leur valeur.
+3. **Modification identique** (Q30) : irrecevable, comparaison après normalisation (les espaces superflus ne comptent pas, la casse du nom compte), comme Q15.
+4. **Nom** (Q33) : unique avec la même clé de comparaison, face au catalogue (la pose elle-même mise à part), aux propositions de pose en attente et aux autres modifications en attente ; réservé tant que la modification attend ; l'ancien nom est libéré après un renommage accepté.
+5. **Charte de validation** (A) : tant que les alias n'existent pas, un renommage vers un autre nom en usage, ou une modification qui transforme la pose en une autre (« Bird » → « High Bird »), est **refusé avec un motif**. C'est une décision du validateur, pas une règle du modèle.
+6. **Message de modification** (B ; Q35, Q45, Q67) : facultatif, 500 caractères au plus, mêmes règles de normalisation que le message d'ajustement.
+7. **Publication directe** (C ; Q34, Q47, Q63) : un validateur ou un administrateur publie directement sa modification, renommage et changement d'indicateur vers « peut » compris. Sur le site, il voit un récapitulatif « actuellement → nouveau » avant de publier ; pas de récapitulatif pour un utilisateur (Q62).
+8. **Une seule modification en attente par pose, pour tous** (D ; Q31, Q48, Q60, Q61), validateurs compris. Règle simple, **à revoir peut-être plus tard**. Le site le signale dès l'ouverture du formulaire, en distinguant « la tienne » (lien « Voir mes propositions ») ; l'API refuse aussi à l'envoi. Retirer une modification en attente : hors périmètre.
+9. **Contrôle de version** (D) : si la pose a changé entre l'ouverture du formulaire et l'envoi, la modification est irrecevable ; le site affiche les nouvelles valeurs actuelles en gardant la saisie.
+10. **Ajustements** (Q36, Q53) : le validateur peut ajuster tout champ, règles de la story 4 ; une modification retenue qui ne change rien à la pose rend l'acceptation impossible (il faut refuser).
+11. **Nom pris entre-temps** (Q32) : l'acceptation est impossible, la modification reste en attente.
+12. **File de validation** (Q38, Q69, Q70) : même file, même ordre, même nombre que les propositions de pose ; carte « Modification de <nom> » présentant « valeur actuelle → valeur proposée » des seuls champs modifiés, le message de modification, puis la pose après acceptation ; boutons « Accepter la modification », « Ajuster avant d'accepter », « Refuser ».
+13. **Compte supprimé** (Q50) : la modification reste dans la file ; le validateur la refuse. **Q11 tranchée par alignement (2026-11-12)** : il en va de même pour une proposition de pose ; toute proposition (de pose comme de modification) dont le contributeur a supprimé son compte reste dans la file de validation, et un validateur la refuse.
+14. **« Mes propositions »** (Q37, Q51, Q64, Q65, Q66) : liste unique avec les propositions de pose ; titre = nom de la pose au moment de la proposition ; valeur d'avant figée (« avant → proposé ») ; une modification acceptée avec ajustements présente deux blocs, « Ce qui change dans la pose » (avant → retenu) et « Ajustements apportés » (proposé → retenu).
+    - **Précision (2026-11-12)** : quand le validateur ajuste un champ que la modification ne changeait pas, ce champ figure dans **les deux blocs** : dans « Ce qui change dans la pose » (valeur d'avant → valeur retenue) **et** dans « Ajustements apportés » (valeur proposée, c'est-à-dire la valeur d'avant → valeur retenue). Exemple : Throne débutant / avancé, Alice propose la difficulté flyer intermédiaire, Bruno accepte en corrigeant la difficulté base en découverte : « Ce qui change » présente base débutant → découverte et flyer avancé → intermédiaire ; « Ajustements apportés » présente base débutant → découverte.
+15. **Site** (Q39, Q68, Q71) : lien « Proposer une modification » sur chaque carte du catalogue (nom accessible « Proposer une modification de <nom> »), réservé aux personnes connectées ; page dédiée `/poses/:id/proposer-une-modification`, préremplie avec « Actuellement : … », chaque champ changé marqué « Modifiée ».
+16. **Visibilité avant validation** (Q41) : aucune ; la pose publiée reste inchangée, même pour son contributeur.
+17. **Historique des versions** (Q40) : pas d'historique consultable ; la proposition garde la valeur d'avant pour la traçabilité. Pas de mention « modifiée le » dans le catalogue (Q42).
+18. Hors périmètre : Q46, Q49 ; définitions concrètes des niveaux de difficulté (Q52, non bloquant, reste ouverte).
+
+**Libellés du site** (ux-expert, tutoiement) : « Tu n'as rien modifié. Change au moins une valeur pour proposer une modification. » ; « Une modification de cette pose est déjà en attente de validation. Tu pourras en proposer une autre une fois qu'elle aura été traitée. » ; « Tu as déjà proposé une modification de cette pose. Elle est en attente de validation. » ; « Cette pose n'est plus dans le catalogue. » ; « Cette pose a changé pendant que tu la modifiais. Ses nouvelles valeurs sont affichées : vérifie ta modification, puis envoie-la de nouveau. » ; « Merci, ta modification est envoyée. » ; « La pose « Throne » est modifiée dans le catalogue. ». Un nom déjà pris est signalé sous le champ du nom.
+
+**Règles et exemples**
+- **R1. La modification d'un utilisateur est en attente de validation et ne change pas la pose publiée.**
+  - Alice propose de passer la difficulté flyer de Throne d'intermédiaire à découverte : la proposition est en attente, et le catalogue présente toujours intermédiaire, même à Alice.
+- **R2. La modification d'un validateur ou d'un administrateur est publiée directement.**
+  - Bruno, puis Paul : le catalogue présente aussitôt découverte.
+- **R3. Seule une personne connectée propose une modification.**
+  - Un visiteur : il faut être connecté. Un compte supprimé : comme une session expirée.
+- **R4. Seule une pose publiée peut être modifiée.**
+  - Une pose inconnue : introuvable.
+- **R5. Une modification change au moins un champ ; les autres gardent leur valeur.**
+  - « Hand-to-Hnad (L-base) » → « Hand-to-Hand (L-base) », difficulté base, indicateur « peut terminer un flow » : seul ce champ change.
+  - Une valeur identique, ou « Throne » entouré d'espaces : la modification ne change rien. « throne » → « Throne » est une modification.
+- **R6. Les valeurs proposées respectent les règles de contenu d'une pose.**
+  - Nom vide, « --- », 61 caractères, difficulté « expert » : irrecevable.
+- **R7. Un nom modifié ne peut pas être celui d'une autre pose du catalogue ni d'une proposition en attente.**
+  - « Thron » → « throne » alors que Throne est publiée ; « Thron » → « Throne » alors que Chloé a proposé « Throne ».
+- **R8. Le nom proposé par une modification en attente est réservé ; l'ancien nom est libéré après un renommage accepté.**
+  - Chloé ne peut pas proposer « Throne » ; après l'acceptation, elle peut proposer « Thron ».
+- **R9. Une seule modification en attente par pose, pour tous.**
+  - Chloé, puis Bruno, après Alice : irrecevable. Après le refus de celle d'Alice, Chloé peut en proposer une.
+- **R10. Une modification commencée sur une pose qui a changé entre-temps est irrecevable.**
+  - Alice commence, Bruno publie directement une modification de la difficulté base, Alice envoie : irrecevable.
+- **R11. Message de modification facultatif** : conservé, espaces superflus retirés, fait seulement d'espaces = aucun message, 500 caractères acceptés, 501 irrecevable.
+- **R12. La file de validation présente chaque modification avec « valeur actuelle → valeur proposée » des seuls champs modifiés**, le contributeur, la date et le message ; mêlée aux propositions de pose, la plus ancienne d'abord (Star le 10, Throne le 12) ; comptée dans le nombre en attente (2) ; maintenue pour un compte supprimé.
+- **R13. Seul un validateur ou un administrateur décide** (story 4).
+- **R14. Accepter révise la pose publiée** : Thron renommée Throne, le catalogue présente Bird et Throne ; la proposition garde la valeur d'avant, le contributeur, le validateur et la date.
+- **R15. Acceptation avec ajustements** : flyer proposée intermédiaire, retenue découverte ; ajuster un champ non modifié est permis ; une modification retenue identique à la pose (flyer ramenée à avancé) rend l'acceptation impossible.
+- **R16. Un nom pris entre-temps dans le catalogue empêche l'acceptation.**
+- **R17. Refuser laisse la pose inchangée et garde le motif obligatoire.**
+  - « Bird » → « High Bird » refusée avec le motif « High Bird est une autre pose : propose-la comme nouvelle pose. » (charte de validation).
+- **R18. Une modification déjà traitée ne peut plus être décidée** (story 4).
+- **R19. « Mes propositions »** : valeur d'avant figée et valeur proposée ; nom au moment de la proposition (« Thron » après le renommage) ; deux blocs pour une acceptation avec ajustements (flyer avancé → découverte ; intermédiaire → découverte) ; motif d'un refus.
+- **R20. Sur le site** :
+  - **accès** : lien sur chaque carte pour une personne connectée, jamais pour un visiteur ; formulaire prérempli ; accès direct d'un visiteur → connexion, puis retour au formulaire de la même pose ; pose introuvable signalée ;
+  - **déjà en attente** : signalé à l'ouverture, « la tienne » avec un lien vers « Mes propositions » ;
+  - **après l'envoi** : « Merci, ta modification est envoyée. » ; un validateur voit d'abord le récapitulatif « actuellement → nouveau », puis « La pose « Throne » est modifiée dans le catalogue. » ;
+  - **erreurs** : modification qui ne change rien signalée avant l'envoi ; nom déjà pris relayé sous le champ ; pose changée entre-temps (message, nouvelles valeurs, saisie gardée) ;
+  - **incidents** : AcroFunJam injoignable, session expirée (saisie conservée, retrouvée après la reconnexion sur le formulaire de la même pose) ;
+  - **validateur** : carte « Modification de <nom> » avec « actuel → proposé », acceptation annoncée « modifiée dans le catalogue » ;
+  - **« Mes propositions »** : la modification en attente, « avant → proposé ».
+
+**Ordre d'implémentation conseillé**
+1. API : R1, R3, R4 (proposer, en attente, pose inchangée, visiteur, pose introuvable), puis R5 (au moins un champ, modification identique).
+2. API : R6, R7, R8 (contenu, unicité et réservation du nom), R9 (une seule en attente), R10 (contrôle de version), R11 (message).
+3. API : R12 (file, ordre, nombre, compte supprimé), R13, R14 (accepter : commande `RevisePose` du Catalogue), R17, R18 (refus, déjà traitée).
+4. API : R2 (publication directe), R15, R16 (ajustements, nom pris entre-temps), R8 (ancien nom libéré).
+5. API : R19 (« Mes propositions »).
+6. Site : accès et formulaire prérempli, déjà en attente, envoi et récapitulatif du validateur, erreurs, pose changée, incidents, file de validation, « Mes propositions ».
+
+**Livraison** : étape A (API, 51 scénarios @api) puis **étape B (site), livrée le 2026-11-13** : les 21 scénarios @web passent (catalogue, formulaire `/poses/:id/proposer-une-modification`, récapitulatif du validateur, file de validation, « Mes propositions »). Le site lit « Mes propositions » à `GET /contribution/my-proposals` ; l'ancien `GET /contribution/my-pose-proposals` est supprimé de l'API. « Déjà en attente » est lu à l'ouverture du formulaire par `GET /contribution/pose-revision-proposals/pending?poseId=…`. Libellés validés par l'ux-expert : `docs/design/ecrans/6-proposer-une-modification.md` et les fiches de composants citées.
+
+**Points à revoir plus tard** : plusieurs modifications en attente d'une même pose ; retirer une modification en attente ; alias (qui rendraient la charte de validation sur les renommages obsolète).
+
 ### Découpage des stories suivantes (décidé le 2026-11-02)
 1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.
 2. **Proposer une pose** (Contribution) : reprend les règles de contenu de `specs/features/catalogue/publier-une-pose.feature` (brouillon) ; publication directe pour un validateur ou un administrateur.
@@ -432,8 +515,11 @@ Le marqueur **[bloquant]** signale une question à trancher avant la story conce
 - Peut-on générer un flow pour **un seul** pratiquant restreint à son répertoire, sans partenaire désigné ?
 
 ### Contribution et validation
-- Une modification est-elle visible (par son auteur, par tous) avant validation ?
-- Faut-il un historique des versions d'un élément ?
+- ~~Une modification est-elle visible (par son auteur, par tous) avant validation ?~~ Tranché (story 6, 2026-11-12) : non, la pose publiée reste inchangée jusqu'à l'acceptation, même pour son contributeur.
+- ~~Faut-il un historique des versions d'un élément ?~~ Tranché (story 6, 2026-11-12) : pas d'historique consultable ; la proposition de modification garde la valeur d'avant pour la traçabilité.
+- Plusieurs modifications en attente d'une même pose : une seule pour l'instant (story 6), règle à revoir peut-être plus tard.
+- ~~Que deviennent les propositions en attente d'un compte supprimé (Q11) ?~~ Tranché (story 6, 2026-11-12) : elles restent dans la file de validation, de pose comme de modification ; un validateur les refuse.
+- Définitions concrètes des niveaux de difficulté (Q52) : à rédiger avec l'expert acroyoga, non bloquant.
 - ~~Qui devient validateur ? Faut-il distinguer validateur et administrateur ?~~ Tranché : un administrateur attribue les rôles ; validateur et administrateur sont distincts.
 - ~~Un validateur peut-il accepter sa propre proposition ?~~ Tranché : sa proposition est publiée directement, sans validation (idem pour un administrateur).
 - Peut-on proposer une transition vers une pose elle-même encore en attente de validation ? Faut-il des propositions groupées ?

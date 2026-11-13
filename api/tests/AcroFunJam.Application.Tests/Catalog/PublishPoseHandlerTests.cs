@@ -14,6 +14,12 @@ internal sealed class FakePoseRepository(params string[] publishedNames) : IPose
 
     public void Add(Pose pose) => Added.Add(pose);
 
+    public Task<Pose?> GetById(PoseId id, CancellationToken ct) => Task.FromResult(Added.SingleOrDefault(p => p.Id == id));
+
+    public List<Pose> Updated { get; } = [];
+
+    public void Update(Pose pose) => Updated.Add(pose);
+
     public Task<bool> IsNameTaken(PoseNameKey key, CancellationToken ct) =>
         Task.FromResult(publishedNames.Any(n => PoseName.Create(n).Value!.Key == key) || Added.Any(p => p.Name.Key == key));
 }

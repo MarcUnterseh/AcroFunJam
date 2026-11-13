@@ -8,19 +8,22 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AcroFunJam.Api.Tests.Contribution;
 
-/// <summary>GET /contribution/my-pose-proposals (story 5, ADR 0023), on the real Api and a real PostgreSQL.</summary>
+/// <summary>
+/// GET /contribution/my-proposals (story 5, ADR 0023; pose proposals and revisions together since story 6, ADR 0027): the pose
+/// proposals of the requester, on the real Api and a real PostgreSQL.
+/// </summary>
 [Trait("Category", "Integration")]
-public sealed class MyPoseProposalsEndpointTests(ApiWithDatabase api) : IClassFixture<ApiWithDatabase>
+public sealed class MyProposalsEndpointTests(ApiWithDatabase api) : IClassFixture<ApiWithDatabase>
 {
-    private static readonly Uri MyPoseProposals = new("/contribution/my-pose-proposals", UriKind.Relative);
+    private static readonly Uri MyProposalsUri = new("/contribution/my-proposals", UriKind.Relative);
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     [Fact]
-    public async Task GetMyPoseProposals_Should_Return401_When_TheCallerIsAVisitor()
+    public async Task GetMyProposals_Should_Return401_When_TheCallerIsAVisitor()
     {
         using var visitor = api.CreateBrowserClient();
 
-        var response = await visitor.GetAsync(MyPoseProposals, Ct);
+        var response = await visitor.GetAsync(MyProposalsUri, Ct);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
         response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
@@ -28,7 +31,7 @@ public sealed class MyPoseProposalsEndpointTests(ApiWithDatabase api) : IClassFi
 
     /// <summary>Story 3: a deleted account is handled as an expired session.</summary>
     [Fact]
-    public async Task GetMyPoseProposals_Should_Return401AccountDeleted_When_TheAccountWasDeletedSinceSignIn()
+    public async Task GetMyProposals_Should_Return401AccountDeleted_When_TheAccountWasDeletedSinceSignIn()
     {
         var (alice, email) = await api.SignedIn(Role.User);
         using var _ = alice;
@@ -37,7 +40,7 @@ public sealed class MyPoseProposalsEndpointTests(ApiWithDatabase api) : IClassFi
             await scope.ServiceProvider.GetRequiredService<AcroFunJamDbContext>().Users.Where(u => u.Email == email).ExecuteDeleteAsync(Ct);
         }
 
-        var response = await alice.GetAsync(MyPoseProposals, Ct);
+        var response = await alice.GetAsync(MyProposalsUri, Ct);
 
         await response.ShouldBeAProblem(HttpStatusCode.Unauthorized, "identity.account-deleted");
     }
@@ -47,18 +50,18 @@ public sealed class MyPoseProposalsEndpointTests(ApiWithDatabase api) : IClassFi
     [InlineData("user")]
     [InlineData("validator")]
     [InlineData("administrator")]
-    public async Task GetMyPoseProposals_Should_Return200ForEveryRole_When_SignedIn(string role)
+    public async Task GetMyProposals_Should_Return200ForEveryRole_When_SignedIn(string role)
     {
         var (someone, _) = await api.SignedIn(Role.FromCode(role).Value!);
         using var _ = someone;
 
-        var response = await someone.GetAsync(MyPoseProposals, Ct);
+        var response = await someone.GetAsync(MyProposalsUri, Ct);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK, await response.Content.ReadAsStringAsync(Ct));
     }
 
     [Fact]
-    public async Task GetMyPoseProposals_Should_ReturnAnEmptyList_When_NothingWasProposed()
+    public async Task GetMyProposals_Should_ReturnAnEmptyList_When_NothingWasProposed()
     {
         var (alice, _) = await api.SignedIn(Role.User);
         using var _ = alice;
@@ -69,7 +72,7 @@ public sealed class MyPoseProposalsEndpointTests(ApiWithDatabase api) : IClassFi
     }
 
     [Fact]
-    public async Task GetMyPoseProposals_Should_ReturnNullDecisionDateAdjustmentsMessageAndReason_When_Pending()
+    public async Task GetMyProposals_Should_ReturnNullDecisionDateAdjustmentsMessageAndReason_When_Pending()
     {
         var (alice, _) = await api.SignedIn(Role.User);
         using var _ = alice;
@@ -78,6 +81,7 @@ public sealed class MyPoseProposalsEndpointTests(ApiWithDatabase api) : IClassFi
         var proposal = (await MyProposals(alice)).ShouldHaveSingleItem();
 
         proposal.ShouldSatisfyAllConditions(
+            () => proposal.GetProperty("kind").GetString().ShouldBe("pose-proposal"),
             () => proposal.GetProperty("id").GetGuid().ShouldNotBe(Guid.Empty),
             () => proposal.GetProperty("status").GetString().ShouldBe("pending"),
             () => proposal.GetProperty("name").GetString().ShouldBe(name),
@@ -93,7 +97,7 @@ public sealed class MyPoseProposalsEndpointTests(ApiWithDatabase api) : IClassFi
     }
 
     [Fact]
-    public async Task GetMyPoseProposals_Should_ReturnTheRetainedPoseAndOnlyTheAdjustedFields_When_AcceptedWithAdjustments()
+    public async Task GetMyProposals_Should_ReturnTheRetainedPoseAndOnlyTheAdjustedFields_When_AcceptedWithAdjustments()
     {
         var (alice, _) = await api.SignedIn(Role.User);
         using var _ = alice;
@@ -126,7 +130,7 @@ public sealed class MyPoseProposalsEndpointTests(ApiWithDatabase api) : IClassFi
     }
 
     [Fact]
-    public async Task GetMyPoseProposals_Should_ReturnEachAdjustedFieldInItsMember_When_EveryFieldWasAdjusted()
+    public async Task GetMyProposals_Should_ReturnEachAdjustedFieldInItsMember_When_EveryFieldWasAdjusted()
     {
         var (alice, _) = await api.SignedIn(Role.User);
         using var _ = alice;
@@ -172,7 +176,7 @@ public sealed class MyPoseProposalsEndpointTests(ApiWithDatabase api) : IClassFi
     }
 
     [Fact]
-    public async Task GetMyPoseProposals_Should_ReturnTheReasonAndTheDecisionDate_When_Rejected()
+    public async Task GetMyProposals_Should_ReturnTheReasonAndTheDecisionDate_When_Rejected()
     {
         var (alice, _, _) = await ARejectedProposal("Doublon de Bird, déjà au catalogue.");
         using var _ = alice;
@@ -188,7 +192,7 @@ public sealed class MyPoseProposalsEndpointTests(ApiWithDatabase api) : IClassFi
     }
 
     [Fact]
-    public async Task GetMyPoseProposals_Should_ReturnPublishedDirectlyWithoutDecisionDate_When_AValidatorProposed()
+    public async Task GetMyProposals_Should_ReturnPublishedDirectlyWithoutDecisionDate_When_AValidatorProposed()
     {
         var (bruno, _) = await api.SignedIn(Role.Validator);
         using var _ = bruno;
@@ -205,7 +209,7 @@ public sealed class MyPoseProposalsEndpointTests(ApiWithDatabase api) : IClassFi
 
     /// <summary>Q12: neither the address nor the identifier of the validator, nor any member beyond the contract.</summary>
     [Fact]
-    public async Task GetMyPoseProposals_Should_NeverMentionTheValidator_When_Decided()
+    public async Task GetMyProposals_Should_NeverMentionTheValidator_When_Decided()
     {
         var (alice, brunoEmail, _) = await ARejectedProposal("Doublon de Bird, déjà au catalogue.");
         using var _ = alice;
@@ -221,8 +225,8 @@ public sealed class MyPoseProposalsEndpointTests(ApiWithDatabase api) : IClassFi
         proposal.ShouldSatisfyAllConditions(
             () => proposal.EnumerateObject().Select(member => member.Name).ShouldBe(
                 [
-                    "id", "status", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "submittedAt", "decidedAt",
-                    "adjustments", "message", "reason",
+                    "kind", "id", "status", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "submittedAt",
+                    "decidedAt", "adjustments", "message", "reason",
                 ],
                 ignoreOrder: true),
             () => json.ShouldNotContain(brunoEmail, Case.Insensitive),
@@ -246,7 +250,7 @@ public sealed class MyPoseProposalsEndpointTests(ApiWithDatabase api) : IClassFi
 
     private static async Task<IReadOnlyList<JsonElement>> MyProposals(HttpClient contributor)
     {
-        var response = await contributor.GetAsync(MyPoseProposals, Ct);
+        var response = await contributor.GetAsync(MyProposalsUri, Ct);
         response.StatusCode.ShouldBe(HttpStatusCode.OK, await response.Content.ReadAsStringAsync(Ct));
         return [.. (await response.Content.ReadFromJsonAsync<JsonElement>(Ct)).GetProperty("proposals").EnumerateArray()];
     }

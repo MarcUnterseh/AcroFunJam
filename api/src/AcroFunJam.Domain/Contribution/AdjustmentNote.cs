@@ -18,9 +18,9 @@ public sealed record AdjustmentNote
     /// <summary>Without superfluous spaces (a line break counts as a space); a message made only of spaces is no message.</summary>
     public static Result<AdjustmentNote?> Create(string? raw)
     {
-        var note = ValidatorText.Normalize(raw);
+        var note = ProposalText.Normalize(raw);
         if (note.Length == 0) return Result<AdjustmentNote?>.Success(null);
-        if (ValidatorText.IsLongerThan(note, MaxLength)) return ContributionErrors.AdjustmentNoteTooLong;
+        if (ProposalText.IsLongerThan(note, MaxLength)) return ContributionErrors.AdjustmentNoteTooLong;
         return Result<AdjustmentNote?>.Success(new AdjustmentNote(note));
     }
 }

@@ -35,6 +35,27 @@ public static class ContributionErrors
     public static readonly Error AdjustmentNoteTooLong =
         new("contribution.adjustment-note-too-long", $"Le message d'ajustement ne doit pas dépasser {AdjustmentNote.MaxLength} caractères.");
 
+    public static readonly Error PoseNotFound =
+        new("contribution.pose-not-found", "Cette pose n'est pas dans le catalogue.");
+
+    public static readonly Error RevisionChangesNothing =
+        new("contribution.revision-changes-nothing", "La modification ne change rien à la pose.");
+
+    public static readonly Error PoseRevisionAlreadyPending =
+        new("contribution.pose-revision-already-pending", "Une modification de cette pose est déjà en attente de validation.");
+
+    public static readonly Error RevisionMessageTooLong =
+        new("contribution.revision-message-too-long", $"Le message de modification ne doit pas dépasser {RevisionMessage.MaxLength} caractères.");
+
+    public static readonly Error PoseVersionRequired =
+        new("contribution.pose-version-required", "La version de la pose lue au début de la modification est obligatoire.");
+
+    public static readonly Error RetainedRevisionChangesNothing =
+        new("contribution.retained-revision-changes-nothing", "Avec ces ajustements, la modification ne change plus rien à la pose.");
+
+    public static readonly Error PoseChangedSinceRevisionStarted =
+        new("contribution.pose-changed-since-revision-started", "Cette pose a changé depuis le début de la modification.");
+
     public static readonly Error AdjustmentNoteWithoutAdjustment =
         new("contribution.adjustment-note-without-adjustment", "Un message n'accompagne qu'une acceptation avec ajustements.");
 }

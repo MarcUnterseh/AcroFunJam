@@ -7,8 +7,9 @@ namespace AcroFunJam.Application.Contribution.AcceptPoseProposal;
 internal sealed class AcceptPoseProposalHandler(
     IValidators validators,
     IPoseProposalRepository proposals,
+    IPoseRevisionProposalRepository revisions,
     ICatalogPoseNames catalogPoseNames,
-    IPoseNameReservation nameReservation,
+    IPoseReservation nameReservation,
     ICatalogPublisher catalogPublisher,
     IUnitOfWork unitOfWork,
     TimeProvider clock) : ICommandHandler<AcceptPoseProposal, DecidedPoseProposalDto>
@@ -39,7 +40,8 @@ internal sealed class AcceptPoseProposalHandler(
             if (published.IsFailure) return published.Error!;
             var availability = NameAvailability.From(
                 publishedInCatalog: published.Value,
-                pendingProposal: await proposals.ExistsOtherPendingWithNameKey(key, proposal.Id, transactionCt));
+                pendingProposal: await proposals.ExistsOtherPendingWithNameKey(key, proposal.Id, transactionCt)
+                    || await revisions.ExistsPendingWithReservedNameKey(key, transactionCt));
 
             var accepted = proposal.Accept(validator, retained, command.Note, availability, clock.GetUtcNow());
             if (accepted.IsFailure) return accepted.Error!;

@@ -7,4 +7,7 @@ public static class ContributionConcurrencyConflicts
 {
     public static readonly ConcurrencyConflictError PoseProposalDecided =
         new(typeof(PoseProposalRecord), ContributionErrors.ProposalAlreadyDecided);
+
+    public static readonly ConcurrencyConflictError PoseRevisionProposalDecided =
+        new(typeof(PoseRevisionProposalRecord), ContributionErrors.ProposalAlreadyDecided);
 }

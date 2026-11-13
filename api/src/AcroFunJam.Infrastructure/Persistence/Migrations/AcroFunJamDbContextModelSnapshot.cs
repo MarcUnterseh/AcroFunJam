@@ -65,6 +65,11 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("source_proposal_id");
 
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
                     b.HasKey("Id");
 
                     b.HasIndex("NameKey")
@@ -80,6 +85,8 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_poses_name_key", "name_key <> ''");
 
                             t.HasCheckConstraint("ck_poses_name_length", "char_length(name) <= 60");
+
+                            t.HasCheckConstraint("ck_poses_version", "version >= 1");
                         });
                 });
 
@@ -221,6 +228,190 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_pose_proposals_retained_pose", "(status = 'accepted') = (retained_name IS NOT NULL) AND (status = 'accepted') = (retained_base_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_flyer_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_can_start_flow IS NOT NULL) AND (status = 'accepted') = (retained_can_end_flow IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_pose_proposals_status", "status IN ('pending', 'accepted', 'rejected')");
+                        });
+                });
+
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Contribution.PoseRevisionProposalRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AdjustmentNote")
+                        .HasColumnType("text")
+                        .HasColumnName("adjustment_note");
+
+                    b.Property<string>("BaseDifficulty")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("base_difficulty");
+
+                    b.Property<int>("BaseVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("base_version");
+
+                    b.Property<bool>("CanEndFlow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("can_end_flow");
+
+                    b.Property<bool>("CanStartFlow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("can_start_flow");
+
+                    b.Property<Guid>("ContributorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("contributor_id");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("decided_at");
+
+                    b.Property<Guid?>("DecidedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("decided_by");
+
+                    b.Property<string>("FlyerDifficulty")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("flyer_difficulty");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("text")
+                        .HasColumnName("message");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("PoseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("pose_id");
+
+                    b.Property<string>("PriorBaseDifficulty")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("prior_base_difficulty");
+
+                    b.Property<bool>("PriorCanEndFlow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("prior_can_end_flow");
+
+                    b.Property<bool>("PriorCanStartFlow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("prior_can_start_flow");
+
+                    b.Property<string>("PriorFlyerDifficulty")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("prior_flyer_difficulty");
+
+                    b.Property<string>("PriorName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("prior_name");
+
+                    b.Property<bool>("PublishedDirectly")
+                        .HasColumnType("boolean")
+                        .HasColumnName("published_directly");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("text")
+                        .HasColumnName("rejection_reason");
+
+                    b.Property<string>("ReservedNameKey")
+                        .HasColumnType("text")
+                        .HasColumnName("reserved_name_key");
+
+                    b.Property<string>("RetainedBaseDifficulty")
+                        .HasColumnType("text")
+                        .HasColumnName("retained_base_difficulty");
+
+                    b.Property<bool?>("RetainedCanEndFlow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("retained_can_end_flow");
+
+                    b.Property<bool?>("RetainedCanStartFlow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("retained_can_start_flow");
+
+                    b.Property<string>("RetainedFlyerDifficulty")
+                        .HasColumnType("text")
+                        .HasColumnName("retained_flyer_difficulty");
+
+                    b.Property<string>("RetainedName")
+                        .HasColumnType("text")
+                        .HasColumnName("retained_name");
+
+                    b.Property<string>("Status")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContributorId")
+                        .HasDatabaseName("ix_pose_revision_proposals_contributor_id");
+
+                    b.HasIndex("PoseId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_pose_revision_proposals_pending_pose_id")
+                        .HasFilter("status = 'pending'");
+
+                    b.HasIndex("ReservedNameKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_pose_revision_proposals_pending_reserved_name_key")
+                        .HasFilter("status = 'pending'");
+
+                    b.ToTable("pose_revision_proposals", "contribution", t =>
+                        {
+                            t.HasCheckConstraint("ck_pose_revision_proposals_adjustment_note", "adjustment_note IS NULL OR status = 'accepted'");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_adjustment_note_length", "char_length(adjustment_note) <= 500");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_base_difficulty", "base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_base_version", "base_version >= 1");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_decision", "(status = 'pending') = (decided_by IS NULL) AND (status = 'pending') = (decided_at IS NULL)");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_flyer_difficulty", "flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_message_length", "char_length(message) <= 500");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_name_length", "char_length(name) <= 60");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_prior_base_difficulty", "prior_base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_prior_flyer_difficulty", "prior_flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_prior_name_length", "char_length(prior_name) <= 60");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_published_directly", "NOT published_directly OR (status = 'accepted' AND decided_by = contributor_id AND decided_at = submitted_at AND adjustment_note IS NULL AND (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow) IS NOT DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow))");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_rejection_reason", "(status = 'rejected') = (rejection_reason IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_rejection_reason_length", "char_length(rejection_reason) <= 500");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_reserved_name_key", "reserved_name_key IS NULL OR reserved_name_key <> ''");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_retained_base_difficulty", "retained_base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_retained_changes_the_pose", "status <> 'accepted' OR (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow) IS DISTINCT FROM (prior_name, prior_base_difficulty, prior_flyer_difficulty, prior_can_start_flow, prior_can_end_flow)");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_retained_flyer_difficulty", "retained_flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_retained_name_length", "char_length(retained_name) <= 60");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_retained_pose", "(status = 'accepted') = (retained_name IS NOT NULL) AND (status = 'accepted') = (retained_base_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_flyer_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_can_start_flow IS NOT NULL) AND (status = 'accepted') = (retained_can_end_flow IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_pose_revision_proposals_status", "status IN ('pending', 'accepted', 'rejected')");
                         });
                 });
 

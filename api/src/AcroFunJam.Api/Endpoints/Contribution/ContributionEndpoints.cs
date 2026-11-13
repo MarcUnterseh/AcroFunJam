@@ -7,7 +7,7 @@ using AcroFunJam.Application.Common;
 using AcroFunJam.Application.Contribution;
 using AcroFunJam.Application.Contribution.AcceptPoseProposal;
 using AcroFunJam.Application.Contribution.CountPendingPoseProposals;
-using AcroFunJam.Application.Contribution.GetMyPoseProposals;
+using AcroFunJam.Application.Contribution.GetMyProposals;
 using AcroFunJam.Application.Contribution.GetPendingPoseProposals;
 using AcroFunJam.Application.Contribution.ProposePose;
 using AcroFunJam.Application.Contribution.RejectPoseProposal;
@@ -63,24 +63,16 @@ public static class ContributionEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
-        contribution.MapGet("/my-pose-proposals", GetMyPoseProposals)
-            .WithName("GetMyPoseProposals")
+        // Pose proposals and revision proposals together (ADR 0027): replaces /my-pose-proposals of story 5.
+        contribution.MapGet("/my-proposals", GetMyProposals)
+            .WithName("GetMyProposals")
             .RequireAuthorization(Capabilities.CanPropose)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden);
 
-        return app;
-    }
+        contribution.MapPoseRevisionEndpoints();
 
-    /// <summary>The endpoint only translates: what the contributor sees is decided by the domain (MyPoseProposal, ADR 0023).</summary>
-    private static async Task<Results<Ok<MyPoseProposalsResponse>, ProblemHttpResult>> GetMyPoseProposals(
-        ClaimsPrincipal contributor,
-        IQueryHandler<GetMyPoseProposals, IReadOnlyList<MyPoseProposal>> handler,
-        CancellationToken ct)
-    {
-        var result = await handler.Handle(new GetMyPoseProposals(ContributorOf(contributor)), ct);
-        if (result.IsFailure) return result.Error!.ToProblem();
-        return TypedResults.Ok(new MyPoseProposalsResponse([.. result.Value!.Select(ToResponse)]));
+        return app;
     }
 
     private static MyPoseProposalResponse ToResponse(MyPoseProposal proposal) =>
@@ -98,8 +90,26 @@ public static class ContributionEndpoints
             proposal.Note?.Value,
             proposal.Reason?.Value);
 
+    /// <summary>Each kind of proposal with its own shape, told apart by <c>kind</c> (ADR 0027).</summary>
+    private static async Task<Results<Ok<MyProposalsResponse>, ProblemHttpResult>> GetMyProposals(
+        ClaimsPrincipal contributor,
+        IQueryHandler<GetMyProposals, IReadOnlyList<IMyProposal>> handler,
+        CancellationToken ct)
+    {
+        var result = await handler.Handle(new GetMyProposals(ContributorOf(contributor)), ct);
+        if (result.IsFailure) return result.Error!.ToProblem();
+        return TypedResults.Ok(new MyProposalsResponse([.. result.Value!.Select(ToResponse)]));
+    }
+
+    private static MyProposalResponse ToResponse(IMyProposal proposal) => proposal switch
+    {
+        MyPoseProposal pose => ToResponse(pose),
+        MyPoseRevision revision => PoseRevisionEndpoints.ToResponse(revision),
+        _ => throw new UnreachableException($"Unknown kind of proposal: {proposal.GetType().Name}."),
+    };
+
     /// <summary>Each adjusted field in its member, with both values; null when nothing was adjusted.</summary>
-    private static PoseAdjustmentsResponse? ToResponse(IReadOnlyList<PoseFieldAdjustment> adjustments) =>
+    internal static PoseAdjustmentsResponse? ToResponse(IReadOnlyList<PoseFieldAdjustment> adjustments) =>
         adjustments.Count == 0 ? null : adjustments.Aggregate(new PoseAdjustmentsResponse(null, null, null, null, null), Adjusted);
 
     private static PoseAdjustmentsResponse Adjusted(PoseAdjustmentsResponse response, PoseFieldAdjustment adjustment) => adjustment switch
@@ -137,7 +147,7 @@ public static class ContributionEndpoints
 
     private static async Task<Results<Ok<ValidationQueueResponse>, ProblemHttpResult>> GetValidationQueue(
         ClaimsPrincipal validator,
-        IQueryHandler<GetPendingPoseProposals, IReadOnlyList<PendingPoseProposalDto>> handler,
+        IQueryHandler<GetPendingPoseProposals, IReadOnlyList<PendingProposalDto>> handler,
         CancellationToken ct)
     {
         var result = await handler.Handle(new GetPendingPoseProposals(ValidatorOf(validator)), ct);
@@ -203,7 +213,15 @@ public static class ContributionEndpoints
         return TypedResults.Ok(new RejectedPoseProposalResponse(result.Value!.Id.Value, ProposalStatusCodes.From(result.Value.Status)));
     }
 
-    private static ValidatorId ValidatorOf(ClaimsPrincipal principal) => new(AccountIdOf(principal));
+    internal static ValidatorId ValidatorOf(ClaimsPrincipal principal) => new(AccountIdOf(principal));
+
+    /// <summary>Each kind of proposal with its own shape, told apart by <c>kind</c> (ADR 0027).</summary>
+    private static PendingProposalResponse ToResponse(PendingProposalDto proposal) => proposal switch
+    {
+        PendingPoseProposalDto pose => ToResponse(pose),
+        PendingPoseRevisionDto revision => PoseRevisionEndpoints.ToResponse(revision),
+        _ => throw new UnreachableException($"Unknown kind of pending proposal: {proposal.GetType().Name}."),
+    };
 
     private static PendingPoseProposalResponse ToResponse(PendingPoseProposalDto proposal) =>
         new(
@@ -216,7 +234,7 @@ public static class ContributionEndpoints
             new ProposalContributorResponse(proposal.ContributorEmail, proposal.IsYou),
             proposal.SubmittedAt);
 
-    private static ContributorId ContributorOf(ClaimsPrincipal principal) => new(AccountIdOf(principal));
+    internal static ContributorId ContributorOf(ClaimsPrincipal principal) => new(AccountIdOf(principal));
 
     /// <summary>Contributor and validator identifiers carry the value of the account identifier (ADR 0022).</summary>
     private static Guid AccountIdOf(ClaimsPrincipal principal) =>
@@ -250,7 +268,16 @@ public sealed record PoseProposalResponse(
     bool CanEndFlow);
 
 /// <summary>The validation queue: pending proposals, the oldest first (ADR 0007: lists are wrapped).</summary>
-public sealed record ValidationQueueResponse(IReadOnlyList<PendingPoseProposalResponse> Proposals);
+public sealed record ValidationQueueResponse(IReadOnlyList<PendingProposalResponse> Proposals);
+
+/// <summary>
+/// A proposal pending validation, of a kind told by <c>kind</c> (ADR 0027): <c>pose-proposal</c> or <c>pose-revision</c>. A
+/// client treats an unknown kind as « site à mettre à jour ».
+/// </summary>
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
+[JsonDerivedType(typeof(PendingPoseProposalResponse), "pose-proposal")]
+[JsonDerivedType(typeof(PendingPoseRevisionResponse), "pose-revision")]
+public abstract record PendingProposalResponse;
 
 /// <summary>A proposal pending validation: the proposed pose, its contributor and when it was submitted.</summary>
 public sealed record PendingPoseProposalResponse(
@@ -261,7 +288,7 @@ public sealed record PendingPoseProposalResponse(
     bool CanStartFlow,
     bool CanEndFlow,
     ProposalContributorResponse Contributor,
-    DateTimeOffset SubmittedAt);
+    DateTimeOffset SubmittedAt) : PendingProposalResponse;
 
 /// <summary>
 /// The acceptance of a proposal, with the values the validator adjusts (story 4, step B): each field optional, absent or
@@ -355,8 +382,17 @@ public static class MyProposalStatusCodes
     };
 }
 
-/// <summary>« Mes propositions »: the proposals of the requester, the most recently submitted first (ADR 0007: lists are wrapped).</summary>
-public sealed record MyPoseProposalsResponse(IReadOnlyList<MyPoseProposalResponse> Proposals);
+/// <summary>« Mes propositions »: pose proposals and revision proposals together, the most recently submitted first (ADR 0027).</summary>
+public sealed record MyProposalsResponse(IReadOnlyList<MyProposalResponse> Proposals);
+
+/// <summary>
+/// One of their proposals, of a kind told by <c>kind</c> (ADR 0027): <c>pose-proposal</c> or <c>pose-revision</c>. A client treats
+/// an unknown kind as « site à mettre à jour ».
+/// </summary>
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
+[JsonDerivedType(typeof(MyPoseProposalResponse), "pose-proposal")]
+[JsonDerivedType(typeof(MyPoseRevisionResponse), "pose-revision")]
+public abstract record MyProposalResponse;
 
 /// <summary>
 /// One of their proposals, as its contributor sees it: the presented pose (the retained pose once accepted), its status, when
@@ -375,7 +411,7 @@ public sealed record MyPoseProposalResponse(
     DateTimeOffset? DecidedAt,
     PoseAdjustmentsResponse? Adjustments,
     string? Message,
-    string? Reason);
+    string? Reason) : MyProposalResponse;
 
 /// <summary>The fields a validator adjusted, each with its proposed and retained values; null when not adjusted.</summary>
 public sealed record PoseAdjustmentsResponse(

@@ -22,4 +22,7 @@ public sealed class PoseRecord
     public Guid? SourceProposalId { get; set; }
 
     public DateTimeOffset PublishedAt { get; set; }
+
+    /// <summary>Version of the pose, 1 at publication, incremented at each revision (ADR 0024).</summary>
+    public int Version { get; set; }
 }

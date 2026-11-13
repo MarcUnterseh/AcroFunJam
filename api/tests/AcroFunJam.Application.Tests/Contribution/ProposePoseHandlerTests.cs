@@ -18,7 +18,7 @@ public sealed class ProposePoseHandlerTests
     private readonly FakeCatalogPoseNames _catalogNames;
     private readonly FakePoseProposalRepository _proposals;
     private readonly FakeCatalogPublisher _publisher;
-    private readonly FakePoseNameReservation _reservation = new();
+    private readonly FakePoseReservation _reservation = new();
     private readonly FakeUnitOfWork _unitOfWork;
     private readonly List<bool> _savesInReservation = [];
 
@@ -30,8 +30,10 @@ public sealed class ProposePoseHandlerTests
         _unitOfWork = new FakeUnitOfWork { OnSave = () => _savesInReservation.Add(_reservation.IsHeld) };
     }
 
+    private readonly FakePoseRevisionProposalRepository _revisions = new();
+
     private ProposePoseHandler Handler() =>
-        new(_contributors, _catalogNames, _proposals, _publisher, _reservation, _unitOfWork, new FixedTimeProvider(Now));
+        new(_contributors, _catalogNames, _proposals, _revisions, _publisher, _reservation, _unitOfWork, new FixedTimeProvider(Now));
 
     private static readonly Contributor Bruno = new(new ContributorId(Guid.NewGuid()), IsValidator: true);
 
@@ -39,7 +41,7 @@ public sealed class ProposePoseHandlerTests
     public async Task Handle_Should_PublishAndAddAnAcceptedProposal_When_AValidatorProposes()
     {
         var handler = new ProposePoseHandler(
-            new FakeContributors(Bruno), _catalogNames, _proposals, _publisher, _reservation, _unitOfWork, new FixedTimeProvider(Now));
+            new FakeContributors(Bruno), _catalogNames, _proposals, _revisions, _publisher, _reservation, _unitOfWork, new FixedTimeProvider(Now));
 
         var result = await handler.Handle(new ProposePose(Bruno.Id, Throne), Ct);
 
@@ -56,7 +58,7 @@ public sealed class ProposePoseHandlerTests
     {
         var refusal = new AcroFunJam.Domain.Common.Error("contribution.pose-name-already-in-catalog", "Pris.");
         var handler = new ProposePoseHandler(
-            new FakeContributors(Bruno), _catalogNames, _proposals, new FakeCatalogPublisher(refusal), _reservation, _unitOfWork, new FixedTimeProvider(Now));
+            new FakeContributors(Bruno), _catalogNames, _proposals, _revisions, new FakeCatalogPublisher(refusal), _reservation, _unitOfWork, new FixedTimeProvider(Now));
 
         var result = await handler.Handle(new ProposePose(Bruno.Id, Throne), Ct);
 
@@ -85,7 +87,7 @@ public sealed class ProposePoseHandlerTests
     public async Task Handle_Should_FailWithoutAddingAnything_When_APublishedPoseHasTheNameKey()
     {
         var handler = new ProposePoseHandler(
-            _contributors, new FakeCatalogPoseNames("High Bird"), _proposals, _publisher, _reservation, _unitOfWork, new FixedTimeProvider(Now));
+            _contributors, new FakeCatalogPoseNames("High Bird"), _proposals, _revisions, _publisher, _reservation, _unitOfWork, new FixedTimeProvider(Now));
         var highBird = ProposedPose.Create("high-bird", "beginner", "discovery", true, true).Value!;
 
         var result = await handler.Handle(new ProposePose(Alice.Id, highBird), Ct);
@@ -101,7 +103,7 @@ public sealed class ProposePoseHandlerTests
     {
         var proposals = new FakePoseProposalRepository("Throne");
         var handler = new ProposePoseHandler(
-            _contributors, _catalogNames, proposals, _publisher, _reservation, _unitOfWork, new FixedTimeProvider(Now));
+            _contributors, _catalogNames, proposals, _revisions, _publisher, _reservation, _unitOfWork, new FixedTimeProvider(Now));
         var throne = ProposedPose.Create("throne", "beginner", "discovery", true, true).Value!;
 
         var result = await handler.Handle(new ProposePose(Alice.Id, throne), Ct);
@@ -142,7 +144,7 @@ public sealed class ProposePoseHandlerTests
     public async Task Handle_Should_PublishInsideTheReservation_When_AValidatorProposes()
     {
         var handler = new ProposePoseHandler(
-            new FakeContributors(Bruno), _catalogNames, _proposals, _publisher, _reservation, _unitOfWork, new FixedTimeProvider(Now));
+            new FakeContributors(Bruno), _catalogNames, _proposals, _revisions, _publisher, _reservation, _unitOfWork, new FixedTimeProvider(Now));
 
         await handler.Handle(new ProposePose(Bruno.Id, Throne), Ct);
 
@@ -156,7 +158,7 @@ public sealed class ProposePoseHandlerTests
     {
         var failure = new AcroFunJam.Domain.Common.Error("catalog.unavailable", "Indisponible.");
         var handler = new ProposePoseHandler(
-            _contributors, new FakeCatalogPoseNames { Failure = failure }, _proposals, _publisher, _reservation, _unitOfWork, new FixedTimeProvider(Now));
+            _contributors, new FakeCatalogPoseNames { Failure = failure }, _proposals, _revisions, _publisher, _reservation, _unitOfWork, new FixedTimeProvider(Now));
 
         var result = await handler.Handle(new ProposePose(Alice.Id, Throne), Ct);
 
@@ -168,7 +170,7 @@ public sealed class ProposePoseHandlerTests
     public async Task Handle_Should_ReturnTheSaveError_When_TheDatabaseRejectsTheName()
     {
         var handler = new ProposePoseHandler(
-            _contributors, _catalogNames, _proposals, _publisher, _reservation,
+            _contributors, _catalogNames, _proposals, _revisions, _publisher, _reservation,
             new FakeUnitOfWork(ContributionErrors.PoseNameAlreadyPending), new FixedTimeProvider(Now));
 
         var result = await handler.Handle(new ProposePose(Alice.Id, Throne), Ct);
@@ -186,5 +188,17 @@ public sealed class ProposePoseHandlerTests
         result.Error.ShouldBe(ContributionErrors.UnknownContributor);
         _proposals.Added.ShouldBeEmpty();
         _unitOfWork.Saves.ShouldBe(0);
+    }
+
+    /// <summary>A name proposed by a pending revision is reserved (story 6, ADR 0025).</summary>
+    [Fact]
+    public async Task Handle_Should_FailWithPoseNameAlreadyPending_When_APendingRevisionReservesTheName()
+    {
+        _revisions.PendingReservedNames.Add("Throne");
+
+        var result = await Handler().Handle(new ProposePose(Alice.Id, Throne), Ct);
+
+        result.Error.ShouldBe(ContributionErrors.PoseNameAlreadyPending);
+        _proposals.Added.ShouldBeEmpty();
     }
 }
