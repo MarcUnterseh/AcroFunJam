@@ -1,4 +1,4 @@
-import { colors, radius, sizes, spacing, typography } from './index.ts';
+import { colors, colorsDark, radius, sizes, sky, skyDark, spacing, typography } from './index.ts';
 
 const kebab = (name: string): string => name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 
@@ -15,21 +15,34 @@ const rem = (value: string | number) => `${Number(value) / 16}rem`;
 
 const pixels = (value: string | number) => (typeof value === 'number' ? px(value) : value);
 
+const indent = (lines: readonly string[]) => lines.map((line) => `  ${line}`);
+
 /**
  * The design tokens as CSS custom properties (ADR 0012): `--afj-<group>-<name>`, lengths in pixels.
- * The web site generates a stylesheet from it; its CSS only uses these variables.
+ * The web site generates a stylesheet from it; its CSS only uses these variables. The dark theme (ADR 0031)
+ * redefines the colours and the sky under `prefers-color-scheme: dark`: the site follows the system.
  */
 export const toCssVariables = (): string =>
   [
     ':root {',
+    '  color-scheme: light dark;',
     ...declarations('color', colors),
+    ...declarations('sky', sky),
     ...declarations('spacing', spacing, pixels),
     ...declarations('radius', radius, pixels),
     ...declarations('size', sizes, pixels),
     `  --afj-font-family: ${typography.fontFamilyWeb};`,
+    `  --afj-font-family-display: ${typography.fontFamilyDisplayWeb};`,
     ...declarations('font-size', typography.size, rem),
     ...declarations('font-weight', typography.weight),
     ...declarations('line-height', typography.lineHeight),
+    '}',
+    '',
+    '@media (prefers-color-scheme: dark) {',
+    '  :root {',
+    ...indent(declarations('color', colorsDark)),
+    ...indent(declarations('sky', skyDark)),
+    '  }',
     '}',
     '',
   ].join('\n');

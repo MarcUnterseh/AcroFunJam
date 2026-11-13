@@ -32,3 +32,4 @@
 | [0028](0028-transition-publiee-et-proposition-de-transition.md) | Transition publiée (agrégat `Transition` du Catalogue) et proposition de transition (agrégat distinct, `TransitionAcceptance`, noyau partagé étendu) | accepté |
 | [0029](0029-place-d-une-transition-et-reservation-par-couple.md) | Place d'une transition : unicité par couple orienté, réservation par couple, deux index partiels | accepté |
 | [0030](0030-page-d-une-pose-et-contrat-http-des-transitions.md) | Page d'une pose (`GET /catalog/poses/{id}` enrichi) et contrat HTTP des transitions | accepté |
+| [0031](0031-direction-visuelle-soleil-et-lune.md) | Direction visuelle « Soleil et Lune », thème sombre tokenisé (suit le système), polices auto-hébergées | accepté |

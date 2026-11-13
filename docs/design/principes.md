@@ -1,222 +1,165 @@
-# Principes visuels d'AcroFunJam
+# Principes visuels d'AcroFunJam : « Soleil et Lune »
 
-**Statut : proposition du 2026-11-03, à valider par le porteur du produit.** Seule source des valeurs : `front/packages/ui-tokens/src/index.ts`. Ce document explique les rôles et les choix ; il ne duplique pas les valeurs qu'en illustration.
+**Statut : accepté le 2026-11-13 ([ADR 0031](../adr/0031-direction-visuelle-soleil-et-lune.md)).** Seule source des valeurs : `front/packages/ui-tokens/src/index.ts`. Ce document explique les rôles et les choix ; il ne duplique les valeurs que pour les rendre lisibles. Référence visuelle : `maquettes/soleil-lune/` (maquette et captures clair / sombre).
 
 ## Intention
 
-AcroFunJam sert des pratiquants d'acroyoga, souvent sur téléphone, parfois **en séance** : écran tenu à bout de bras ou posé au sol, lumière extérieure, mains occupées, attention partagée avec le partenaire. L'interface doit donc être :
+L'acroyoga mêle une pratique **solaire** (acrobatique : l'élan, le vol) et une pratique **lunaire** (thérapeutique : le calme, l'écoute). Le thème clair est **l'aube**, le thème sombre **la nuit** ; il suit le réglage du système (`prefers-color-scheme` sur le web, `useColorScheme` sur le mobile), sans bascule dans le produit.
 
-- **lisible d'abord** : texte foncé sur fond clair, tailles généreuses, contrastes AA au minimum ;
-- **chaleureuse et humaine** : une seule couleur d'accent, terre cuite, qui évoque le soleil des jams en extérieur et le contact entre partenaires ;
-- **stable et digne de confiance** : peu d'éléments, des alignements nets, aucun déplacement brutal de mise en page (la confiance entre base et flyer passe aussi par une interface qui ne surprend pas) ;
-- **équilibrée** : marges symétriques, une colonne centrale, une hiérarchie typographique à trois niveaux.
+L'interface reste au service des pratiquants, souvent sur téléphone, parfois en séance (écran posé sur le tapis, lumière extérieure) :
 
-Le mouvement s'exprime par la sobriété du rythme (espacements réguliers) plutôt que par des animations : aucune animation n'est nécessaire dans la story 2b.
+- **lisible d'abord** : contrastes AA vérifiés par un test, rien sous 14 px, cibles de 44 px ;
+- **les rôles se reconnaissent partout** : la base porte la couleur de la terre, le flyer celle du ciel ;
+- **la difficulté se lit comme le ciel** : en phases de lune ;
+- **un seul moment spectaculaire** : l'en-tête de la page d'une pose ; tout le reste est sobre, en particulier la file de validation, qui est un écran de travail.
 
-## Palette
+## Palettes
 
-Une couleur d'accent (primaire), des neutres, et trois couleurs de retour (danger, succès, info), chacune avec une surface claire associée. Les noms sont des **rôles**.
+Les noms sont des **rôles**. Mêmes clés en clair (`colors`) et en sombre (`colorsDark`).
 
-| Rôle (token `colors.*`) | Valeur | Usage |
-|---|---|---|
-| `primary` | `#C2410C` terre cuite | bouton principal, liens |
-| `primaryHover` | `#9A3412` | survol du primaire |
-| `primaryActive` | `#7C2D12` | primaire pressé |
-| `primaryContrast` | `#FFFFFF` | texte sur primaire |
-| `background` | `#FFFFFF` | fond de page |
-| `surface` | `#F8F9FA` | en-tête, carte de formulaire (grand écran) |
-| `surfaceHover` | `#F1F3F5` | survol d'un contrôle neutre |
-| `text` | `#212529` | texte courant, titres |
-| `textMuted` | `#5C636A` | aide sous un champ, adresse dans l'en-tête |
-| `border` | `#868E96` | contour des **contrôles** (champs, bouton secondaire) |
-| `divider` | `#DEE2E6` | séparateurs **décoratifs** uniquement |
-| `focus` | `#1864AB` | anneau de focus clavier |
-| `danger` / `dangerSurface` | `#C92A2A` / `#FFF5F5` | erreurs |
-| `success` / `successSurface` | `#237032` / `#EBFBEE` | confirmations |
-| `info` / `infoSurface` | `#1864AB` / `#E7F5FF` | informations (session expirée) |
-| `disabledSurface` | `#E9ECEF` | fond d'un contrôle désactivé |
-| `selected` | `#9A3412` brun terre cuite | bordure 2 px et radio d'un **choix coché** (tuile radio), story 3 |
-| `selectedSurface` | `#FFF4E6` | fond d'un choix coché, story 3 |
-| `badge` | `#343A40` gris anthracite | fond de la pastille de compteur (en-tête), story 4 |
-| `badgeContrast` | `#FFFFFF` | chiffres de la pastille, story 4 |
-
-### Story 7 (proposition du 2026-11-13) : aucun nouveau token
-
-- Carte cliquable du catalogue : contour `border` (3,3:1, la carte devient un contrôle), nom en `text` souligné en permanence (pas en `primary`, pour ne pas multiplier la terre cuite dans la grille), survol `surfaceHover`, anneau `focus` autour de la carte (`composants/carte-pose.md`).
-- Page d'une pose : même colonne que les pages de suivi (≈ 690 px, `formWideMaxWidth`), transitions en **liste plate** à filets `divider`, sans carte par transition (`composants/element-transition.md`).
-- Transition sans nom : « Throne → Bird » avec l'icône flèche existante en `textMuted`, décorative ; le nom accessible porte le sens.
-- Liste déroulante native stylée comme un champ (`composants/champ.md`).
-- Nouveaux couples vérifiés : `textMuted` sur `surfaceHover` 5,5:1 ; `textMuted` sur `divider` 4,7:1 ; `primary` sur `divider` **4,0:1** (insuffisant : aucun lien `primary` sur fond `divider`, d'où une carte pressée identique à la carte survolée).
-
-### Thème sombre (proposition de la story 7, non tokenisé)
-
-Le mode sombre reste **hors périmètre** des écrans livrés. La maquette `maquettes/7-page-pose-et-transition.html` en propose une première palette, pour juger si l'identité tient. Si elle est retenue, elle deviendra un second jeu de couleurs dans `@acrofunjam/ui-tokens` (mêmes rôles, par exemple `colorsDark`) et `toCssVariables()` produira une redéfinition sous `prefers-color-scheme: dark` : décision structurante, à valider (ADR).
-
-| Rôle | Clair | Sombre proposé | Contrastes vérifiés (sombre) |
+| Rôle | Aube (clair) | Nuit (sombre) | Usage |
 |---|---|---|---|
-| `background` / `surface` / `surfaceHover` | `#FFFFFF` / `#F8F9FA` / `#F1F3F5` | `#121417` / `#1C1F24` / `#262A30` | — |
-| `text` | `#212529` | `#E9ECEF` | 15,6 / 13,9 / 12,2:1 sur les trois fonds |
-| `textMuted` | `#5C636A` | `#ADB5BD` | 8,9 / 8,0 / 6,9:1 |
-| `border` | `#868E96` | `#7D8590` | 4,9 / 4,4 / 3,9:1 |
-| `divider` | `#DEE2E6` | `#343A40` | décoratif |
-| `primary` / `primaryHover` / `primaryActive` | `#C2410C` / `#9A3412` / `#7C2D12` | `#F2804A` / `#F79B6C` / `#FAB48E` | `primary` : 7,0 / 6,3 / 5,5:1 sur les trois fonds ; s'éclaircit au survol (sur fond sombre, « plus marqué » = plus clair) |
-| `primaryContrast` | `#FFFFFF` | `#121417` | 7,0:1 sur `primary` sombre ; texte **sombre** sur le bouton (un blanc sur une terre cuite assez claire pour les liens sur fond sombre tomberait sous 3:1) |
-| `focus` / `info` | `#1864AB` | `#74C0FC` | 9,4 / 8,4:1 sur `background` / `surface` |
-| `infoSurface` | `#E7F5FF` | `#0F2A40` | `text` 12,4:1, `info` 7,5:1 |
-| `danger` / `dangerSurface` | `#C92A2A` / `#FFF5F5` | `#FF8787` / `#3A1618` | `danger` 8,0:1 sur `background`, 6,9:1 sur `dangerSurface` |
-| `success` / `successSurface` | `#237032` / `#EBFBEE` | `#69DB7C` / `#0F2E1A` | `success` 8,4:1 sur `successSurface`, 9,5:1 sur `surface` |
-| `selected` / `selectedSurface` | `#9A3412` / `#FFF4E6` | `#F79B6C` / `#3A2416` | `text` 12,3:1 et `selected` 6,8:1 sur `selectedSurface` |
-| `disabledSurface` | `#E9ECEF` | `#2B3035` | `textMuted` ≥ 6:1 |
-| `badge` / `badgeContrast` | `#343A40` / `#FFFFFF` | `#DEE2E6` / `#212529` | 11,8:1 (pastille claire sur en-tête sombre : 12,7:1) |
+| `background` | `#F5F2FA` brume | `#110F24` | fond de page |
+| `surface` | `#FFFFFF` | `#1A1733` | cartes, panneaux de formulaire |
+| `surfaceHover` / `disabledSurface` | `#EDE8F7` | `#252148` | survol neutre, boutons discrets de l'en-tête, « Non » d'une borne de flow |
+| `text` / `badge` | `#211C3B` nuit | `#ECE8F8` | texte, titres ; fond de la pastille de compteur |
+| `textMuted` | `#5B5577` | `#ABA4C8` | texte secondaire |
+| `border` | `#8F87A8` | `#6F6896` | contour des **contrôles** |
+| `divider` | `#DCD5EA` | `#322D57` | séparateurs et contours **décoratifs** |
+| `primary` / `primaryHover` / `primaryActive` | `#5B3FC4` / `#47309F` / `#38267E` crépuscule | `#B6A6FF` / `#CDC2FF` / `#E0D9FF` | action principale, liens |
+| `primaryContrast` / `badgeContrast` | `#FFFFFF` | `#15122B` | texte sur le primaire, chiffres de la pastille |
+| `focus` / `info` | `#1D69AE` | `#8FC1F3` | anneau de focus, information |
+| `infoSurface` | `#DFEAFA` | `#13283F` | bandeaux d'information |
+| `danger` / `dangerSurface` | `#B42318` / `#FDECEA` | `#FF9C8F` / `#3A1714` | erreurs (jamais en fond plein) |
+| `success` / `successSurface` | `#2C6A4C` / `#DCEFE3` | `#82CDA2` / `#163024` | confirmations |
+| `selected` / `selectedSurface` | `#47309F` / `#EBE5FB` | `#CDC2FF` / `#2A2456` | choix coché d'un groupe neutre (Oui / Non), étiquette « Modifiée » : famille du primaire |
+| `base` / `baseSurface` | `#2C6A4C` / `#DCEFE3` terre | `#82CDA2` / `#163024` | rôle **Base** |
+| `flyer` / `flyerSurface` | `#1D69AE` / `#DFEAFA` ciel | `#8FC1F3` / `#13283F` | rôle **Flyer** |
+| `sun` | `#E8961E` | `#F5C15A` | **décoratif seulement** : logo, astre, éclat du succès |
+| `sunStrong` | `#A15C00` | `#F5C15A` | icônes porteuses de sens : bornes de flow, trajectoires, note de sécurité |
+| `sunSurface` | `#FFEBC4` | `#3A2E14` | note de sécurité (« spotter »), avatar, « Oui » d'une borne de flow |
+| `skyText` | `#211C3B` | `#F3F0FF` | texte sur le ciel de la page d'une pose |
 
-Règles inchangées : terre cuite pour l'action et les liens seulement, danger jamais en fond plein, focus bleu.
+Le ciel (`sky` / `skyDark`) : dégradé (aube : `#FFE1A0` → `#FBC0A4` → `#D3C1F1` → `#A797E6` ; nuit : `#2E2670` → `#211C55` → `#151233`), astre (soleil / lune en dégradé radial), halo et opacité du grain. Ce sont les seules couleurs écrites hors palette ; le mobile peut les ignorer.
 
-### Story 6 (proposition du 2026-11-12) : aucun nouveau token
+## Rôles codés par la couleur, le mot toujours écrit
 
-- Lien « Proposer une modification » des cartes du catalogue : lien **textuel** `primary` souligné sur `surface` (4,9:1 ; survol `primaryHover` 6,9:1, pressé `primaryActive` 8,9:1), zone de 44 px (`composants/carte-pose.md`).
-- « Avant → après » d'une modification : même liste que le récapitulatif des ajustements (barré + flèche + graisse, `textMuted` / `text`), un seul code visuel pour toute comparaison de valeurs (`composants/recapitulatif-modification.md`).
-- Étiquette « Modifiée » : `selectedSurface` + bordure `selected` + texte `text` (14,2:1), la famille « ton choix » des tuiles cochées ; le mot porte l'information (`composants/etiquette-modifiee.md`).
-- Une modification se distingue d'une proposition de pose par le **texte** du titre (« Modification de » en graisse normale, nom en gras), sans couleur ni badge.
-- Nouveaux couples vérifiés : `primaryHover` / `primaryActive` sur `surface` 6,9:1 / 8,9:1 ; `selected` sur `selectedSurface` 6,7:1 (déjà listé) ; `focus` sur `infoSurface` 5,5:1.
+- **Pastille de rôle** (`composants/pastille-role.md`) : l'étiquette « Base » (terre) ou « Flyer » (ciel), la phase de lune, le niveau en toutes lettres. Sur les cartes de pose, la page d'une pose, les transitions, la file de validation, « Mes propositions ».
+- **Tuiles de difficulté** : cochée = fond et bordure 2 px de la couleur du rôle du groupe ; un point de la couleur du rôle devant la légende.
+- La couleur n'est **jamais seule** : le mot « Base » / « Flyer » est écrit, le niveau aussi ; la bordure épaissie marque le choix.
 
-### Story 5 (proposition du 2026-11-09) : aucun nouveau token
+## Difficulté en phases de lune
 
-- Statut d'une proposition (`composants/statut-proposition.md`) : icône colorée + mot en semi-gras, **sans surface colorée** (un état durable n'est ni une alerte ni un compte rendu). Tons : succès (`success`) pour acceptée, acceptée avec ajustements et publiée directement ; information (`info`) pour refusée, jamais `danger` ; neutre (`textMuted`) pour en attente et statut inconnu. Contrastes des icônes sur `surface` : 5,8:1 pour les trois.
-- `success` sur `surface` : **5,8:1** (nouveau couple vérifié, l'icône était jusqu'ici sur `successSurface` ou `background`).
+| Niveau | Phase |
+|---|---|
+| Découverte | croissant |
+| Débutant | demi-lune |
+| Intermédiaire | gibbeuse |
+| Avancé | pleine lune |
 
-### Ajouts de la story 4 (proposition du 2026-11-04)
+Les phases sont décoratives (`aria-hidden`), toujours à côté du niveau écrit ; une différence de **forme**, jamais une couleur par niveau (la couleur est celle du rôle). Composant `DifficultyMoon`, `composants/legende-echelle.md`.
 
-- `badge` / `badgeContrast` : la pastille du nombre de propositions à valider est **neutre et sombre**. Ni terre cuite (réservé à l'action principale), ni rouge (des propositions en attente ne sont pas une urgence, et l'`ux-expert` veut éviter toute pression à accepter). Le chiffre porte l'information ; le contraste sombre / clair suffit à attirer l'œil.
-- `radius.pill` (9999) : extrémités entièrement arrondies, pour une pastille qui s'allonge de « 3 » à « 99+ ».
-- `sizes.badge` (24) : hauteur et largeur minimales de la pastille ; un chiffre seul tient dans un disque.
-- Pas de nouvelle couleur pour le récapitulatif « proposé → retenu » : barré + flèche + graisse, avec `textMuted` / `text` (`composants/recapitulatif-ajustements.md`).
-- Refus d'une proposition : jamais `danger` (ni bouton rouge, ni compte rendu rouge) ; le compte rendu d'un refus est en variante **information**.
+## Bornes de flow
 
-### Ajouts de la story 3 (proposition du 2026-11-03)
+« Peut commencer un flow » : **lever** de soleil ; « Peut terminer un flow » : **coucher**, en `sunStrong`, suivis de « Oui » dans une petite pilule `sunSurface`. Quand c'est « Non » : la question barrée, en `textMuted`, et « Non » écrit dans une pilule `surfaceHover`. Les libellés validés ne changent pas ; le barré et la couleur ne sont que des renforts.
 
-- `selected` / `selectedSurface` : l'état coché d'une tuile reste dans l'identité (terre cuite) sans être confondu avec `danger` : `selected` est nettement plus sombre (luminance 0,094 contre 0,142) et plus brun que rouge. Même valeur que `primaryHover` aujourd'hui, mais rôle distinct : l'un peut évoluer sans l'autre.
-- Aucune couleur par niveau de difficulté (ni vert, ni orange, ni rouge) : la difficulté est écrite en toutes lettres, avec une échelle à points de forme (pleins / vides) en renfort décoratif.
-- Les cartes du catalogue réutilisent `surface` et `divider` : pas de nouvelle surface.
+## Formes et rayons
 
-### Ajustements par rapport aux tokens initiaux
+Rayons différents selon la hiérarchie (`radius.*`) : `sm` 10 (petites zones dans une carte : récapitulatifs), `md` 16 (champs, tuiles, éléments de transition, alertes, note de sécurité), `lg` 26 (cartes de pose, cartes de proposition, panneaux, en-tête du ciel), `pill` (boutons, pastilles de rôle, pastille de compteur, étiquette « Modifiée », avatar).
 
-| Token | Avant | Après | Raison |
-|---|---|---|---|
-| `primary` | `#E8590C` | `#C2410C` | blanc sur `#E8590C` = **3,6:1**, insuffisant pour le libellé d'un bouton (16 px) |
-| `textMuted` | `#6C757D` | `#5C636A` | `#6C757D` sur `surface` = **4,45:1**, juste sous le seuil (en-tête sur `surface`) |
-| `success` | `#2B8A3E` | `#237032` | `#2B8A3E` sur blanc = **4,4:1** |
-
-Aucun de ces trois tokens n'était utilisé par le code ; `background` et `text` (utilisés par le mobile) sont inchangés.
-
-### Contrastes vérifiés (formule de luminance relative WCAG 2.x)
-
-Texte (seuil 4,5:1) :
-
-| Texte | Fond | Ratio |
-|---|---|---|
-| `text` | `background` | 15,4:1 |
-| `text` | `surface` | 14,6:1 |
-| `text` | `surfaceHover` | 13,9:1 |
-| `text` | `divider` (bouton secondaire pressé) | 11,9:1 |
-| `text` | `dangerSurface` / `infoSurface` | 14,4:1 / 13,9:1 |
-| `textMuted` | `background` | 6,1:1 |
-| `textMuted` | `surface` | 5,8:1 |
-| `textMuted` | `disabledSurface` | 5,1:1 |
-| `primaryContrast` | `primary` / `primaryHover` / `primaryActive` | 5,2:1 / 7,3:1 / 9,4:1 |
-| `primary` (lien) | `background` / `surface` / `surfaceHover` | 5,2:1 / 4,9:1 / 4,65:1 |
-| `primaryHover` (lien survolé) | `background` | 7,3:1 |
-| `danger` | `background` / `surface` / `dangerSurface` | 5,5:1 / 5,2:1 / 5,1:1 |
-| `success` | `background` / `successSurface` | 6,1:1 / 5,7:1 |
-| `info` | `background` / `surface` / `infoSurface` | 6,1:1 / 5,8:1 / 5,5:1 |
-| `text` | `selectedSurface` / `successSurface` | 14,2:1 / 14,4:1 |
-| `textMuted` | `successSurface` / `infoSurface` / `selectedSurface` | 5,7:1 / 5,5:1 / 5,6:1 |
-
-Composants et éléments graphiques (seuil 3:1) :
-
-| Élément | Fond adjacent | Ratio |
-|---|---|---|
-| `border` (contour de champ) | `background` / `surface` | 3,3:1 / 3,2:1 |
-| `danger` (contour d'un champ invalide) | `background` | 5,5:1 |
-| `focus` (anneau, toujours séparé du composant par un écart de fond) | `background` / `surface` | 6,1:1 / 5,8:1 |
-| `primary` (fond de bouton) | `background` | 5,2:1 |
-| `selected` (bordure de tuile cochée, radio) | `background` / `surface` / `selectedSurface` | 7,3:1 / 6,9:1 / 6,7:1 |
-| `border` (tuile au repos, point vide de l'échelle, bouton « Réessayer ») | `background` / `surface` / `dangerSurface` | 3,3:1 / 3,2:1 / 3,1:1 |
-| `success` (icône du panneau de succès) | `successSurface` | 5,7:1 |
-| `success` / `info` / `textMuted` (icône du statut d'une proposition, story 5) | `surface` | 5,8:1 / 5,8:1 / 5,8:1 |
-| `text` (point plein de l'échelle) | `surface` | 14,6:1 |
-| `badge` (forme de la pastille) | `surface` / `surfaceHover` / `divider` (états du lien de l'en-tête) | 10,9:1 / 10,4:1 / 8,8:1 |
-| `textMuted` (flèche et barré du récapitulatif) | `background` | 6,1:1 |
-
-Texte, story 4 : `badgeContrast` sur `badge` **11,5:1** ; valeur proposée barrée `textMuted` sur `background` 6,1:1 ; valeur retenue `text` sur `background` 15,4:1.
-
-`divider` (1,3:1 sur blanc) est réservé aux séparateurs décoratifs ; il ne délimite jamais un contrôle.
-
-### Règles d'usage
-
-- **Une seule couleur d'accent.** Le primaire signale *l'action principale* d'un écran (un seul bouton primaire par formulaire) et les liens.
-- **Jamais la couleur seule** : une erreur = icône + texte + contour épaissi ; un lien = couleur + soulignement ; un état actif = forme ou texte qui change.
-- **Primaire et danger sont proches** (deux teintes chaudes). Pour ne pas les confondre : le danger n'apparaît jamais en fond plein (seulement en texte, icône, contour et barre d'accent sur `dangerSurface`), toujours accompagné de l'icône d'erreur ; le primaire n'apparaît jamais sur `dangerSurface`.
-- **Focus distinct du survol** : le survol change la teinte de fond ; le focus ajoute un anneau bleu (`focus`) de `sizes.focusRingWidth` (3 px) décalé de `sizes.focusRingOffset` (2 px). Le bleu, absent du reste de l'interface hors bandeaux d'info, rend le focus repérable sur tous les composants, primaire compris.
-
-## Typographie
-
-**Choix : police système** (`typography.fontFamilyWeb` sur le web, `typography.fontFamily = 'System'` sur mobile).
-
-Justification :
-- aucun téléchargement : affichage immédiat sur un réseau mobile faible (salle, parc), pas de saut de texte au chargement ;
-- aucune requête vers un tiers (pas de Google Fonts, rien à déclarer au titre du RGPD) ;
-- polices conçues pour l'écran de chaque plateforme (San Francisco, Segoe UI, Roboto), avec de bons chiffres et accents ;
-- même rendu d'intention sur le web et l'app native.
-
-Alternative si l'on veut une identité plus marquée : **Atkinson Hyperlegible** (licence OFL, conçue pour la lisibilité par le Braille Institute), auto-hébergée, uniquement pour les titres. Voir les questions.
-
-### Échelle
-
-| Niveau | Token taille | Graisse | Interligne | Usage |
-|---|---|---|---|---|
-| Titre de page (`h1`) | `size.xl` (28) | `bold` | `tight` (1,25) | un par page |
-| Titre de bloc / marque | `size.lg` (20) | `bold` | `tight` | titre de la zone d'alerte, nom « AcroFunJam » |
-| Texte courant, champs, boutons | `size.md` (16) | `regular` / `semibold` (libellés, boutons) | `normal` (1,5) | tout le reste |
-| Texte secondaire | `size.sm` (14) | `regular` | `normal` | aide sous un champ, adresse de l'en-tête |
-
-Rien en dessous de 14 px. Les champs restent à 16 px (évite le zoom automatique d'iOS Safari). Tailles en `rem` côté web (16 px = 1 rem) pour suivre le réglage de taille de texte du navigateur.
-
-## Espacements, rayons, tailles
-
-- **Espacements** (`spacing.*`, base 4) : `xs` 4, `sm` 8, `md` 16, `lg` 24, `xl` 32, `xxl` 48 (ajout). Règle : `xs` entre une icône et son texte, `sm` entre un libellé et son champ, `md` entre les champs et entre éléments d'un même groupe, `lg` entre blocs et pour les marges de page en mobile, `xl`/`xxl` pour l'air autour du contenu en grand écran.
-- **Rayons** (`radius.*`) : `sm` 4 (anneau de focus des liens, petites étiquettes), `md` 8 (champs, boutons, alertes, bandeaux), `lg` 16 (carte de formulaire en grand écran), `pill` (pastille de compteur, story 4). Les formes arrondies mais nettes évoquent la souplesse sans infantiliser.
-- **Tailles** (`sizes.*`, ajout) : cible tactile minimale `touchTarget` 44 ; hauteur de champ et de bouton `control` 48 ; bordures `borderWidth` 1 / `borderWidthStrong` 2 ; barre d'accent `accentBar` 4 ; icônes `icon` 20 ; colonnes `formMaxWidth` 400 et `contentMaxWidth` 1040. Story 3 : colonne `formWideMaxWidth` 640 (formulaire à tuiles), largeur mini d'une tuile `tileMinWidth` 152, icône de panneau `iconLarge` 32, point de l'échelle de difficulté `scaleDot` 8. Story 4 : pastille de compteur `badge` 24 ; `formWideMaxWidth` sert aussi de largeur de contenu des cartes de proposition.
-- **Grille du catalogue** : 1 colonne, puis 2 à partir de `breakpoints.md`, 3 à partir de `breakpoints.lg` ; écarts `spacing.md` (mobile) et `spacing.lg`. Le nombre de colonnes n'est pas un token (structure, pas une valeur visuelle).
-- **Points de rupture** (`breakpoints.*`, ajout) : `md` 640, `lg` 1024. Mobile d'abord : styles de base pour < 640 px.
+Boutons en pilule : primaire plein, secondaire à contour `border`, discret (fond `surfaceHover`, sans contour) dans l'en-tête. Hauteurs : 44 px minimum, 48 px pour les actions principales.
 
 ## Icônes
 
-Mises en œuvre en 2b : erreur (cercle + point d'exclamation), information (cercle + « i ») ; le bouton du mot de passe est en texte seul (pas d'œil). Story 3 : **coche** et **tiret** (valeurs Oui / Non des cartes, `sizes.icon`), **plus** (lien « Proposer une pose »), **succès** (cercle + coche, `sizes.iconLarge`). Story 4 : **flèche vers la droite** (récapitulatif « proposé → retenu »), succès en `sizes.icon` (compte rendu de décision) ; aucune icône sur les boutons de décision (poids égal). Story 5 : **horloge** (proposition en attente, `composants/statut-proposition.md`), même cadran que erreur et information ; le lien « Mes propositions » est sans icône. Story 7 : **chevron gauche** (lien de retour « Catalogue »), **chevron bas** (liste déroulante) ; la **flèche** existante sert aussi au libellé « Throne → Bird ». SVG en ligne dessinés dans le dépôt (trait 2 px sur une grille de 20, `currentColor`, `aria-hidden="true"` car toujours accompagnés d'un texte), **sans bibliothèque d'icônes** (une bibliothèque demanderait un ADR).
+Dessinées dans le dépôt (`Icon.tsx`, `currentColor`, `aria-hidden`) : erreur, information, coche, tiret, plus, flèche, horloge, chevrons, et pour cette direction **lever** / **coucher** (bornes de flow), **trajectoire** en pointillés (une transition est un vol), **boucle** (washing machine), **spot** (note de sécurité), **éclat** de soleil (succès). Le logo : un demi-cercle de terre qui porte un soleil (`Logo.tsx`). Les **glyphes de pose** ne sont pas livrés : un emplacement est réservé sur la carte.
 
-## Mouvement
+## Typographie
 
-Pas d'animation dans les stories 2b, 3 et 4 (ni apparition du panneau de succès, ni coche animée, ni dépliement animé des zones de décision, ni changement animé de la pastille). Les transitions de couleur au survol, si on en met, durent au plus 150 ms et sont supprimées sous `prefers-reduced-motion: reduce`. Aucun indicateur qui clignote ou tourne en boucle sans respecter ce réglage.
+Deux familles **auto-hébergées** (licence OFL, aucune requête vers un tiers) :
 
-## Traduction des tokens côté web (ADR 0012, implémentée)
+- **Unbounded** (affichage : titres, noms de poses, nom de la marque) : 500, 600, 700 ; pile de repli `"Trebuchet MS", "Segoe UI", system-ui, sans-serif` ;
+- **Figtree** (texte) : 400, 600, 700 ; pile de repli `system-ui, -apple-system, "Segoe UI", Roboto, …`.
 
-Variables CSS générées depuis les tokens, consommées par du CSS simple.
+Web : `@fontsource/unbounded`, `@fontsource/figtree` (servies par le site, `font-display: swap`). Mobile : `expo-font` avec `@expo-google-fonts/*` (fichiers embarqués dans l'app), une famille par graisse (`typography.fontFamilies`).
 
-1. `toCssVariables()` (`front/packages/ui-tokens/src/css-variables.ts`) produit `:root { … }` avec les noms `--afj-<groupe>-<nom>` en kebab-case : `--afj-color-*`, `--afj-spacing-*`, `--afj-radius-*`, `--afj-size-*` (objet `sizes`), `--afj-font-family`, `--afj-font-size-*`, `--afj-font-weight-*`, `--afj-line-height-*` (sans unité).
-2. Le site l'importe via `virtual:tokens.css` avant `index.css`, qui n'utilise que `var(--afj-…)` ; stylelint interdit couleurs et longueurs en dur.
-3. Unités : aujourd'hui toutes les longueurs sont en `px`. **Cible recommandée** : `--afj-font-size-*` en `rem` (valeur / 16) pour suivre la taille de texte choisie dans le navigateur ; bordures, anneau de focus, barre d'accent et rayons restent en `px`.
-4. Les points de rupture (`breakpoints.*`) ne sont pas exportés : une variable CSS n'est pas utilisable dans une media query. Le CSS écrit `40em` (= `breakpoints.md` / 16) ; garder les deux alignés (test ou commentaire).
+| Niveau | Taille | Famille, graisse |
+|---|---|---|
+| Nom d'une pose sous le ciel | `xxl` 40 → `display` 64 (≥ 40em) → `displayLarge` 96 (≥ 64em) | Unbounded 700, interlettrage −0,04em |
+| Titre du catalogue | `xl` 28 → `xxl` 40 (≥ 40em) | Unbounded 600 |
+| Titre de page (`h1`) | `xl` 28 | Unbounded 600 |
+| Nom sur une carte, titre de section | `lg` 20 | Unbounded 600 / 500 |
+| Texte, champs, boutons | `md` 16 | Figtree 400 / 600 |
+| Texte secondaire | `sm` 14 | Figtree |
+| Étiquette d'une pastille de rôle | `xs` 12 | Figtree 700 (seule exception sous 14 px : un mot répété, toujours lisible à côté du niveau en 14 px) |
 
-Pourquoi : le site garde du CSS standard (`:hover`, `:focus-visible`, media queries, `prefers-reduced-motion`), sans CSS-in-JS ; le mobile continue d'importer les objets dans `StyleSheet.create`.
+Tailles en `rem` côté web.
 
-## Décisions (validées le 2026-11-03)
+## Le moment spectaculaire : l'en-tête de la page d'une pose
 
-1. **Couleur principale** : terre cuite `#C2410C`.
-2. **Police** : police système.
-3. **Ton** : **tutoiement**, plus proche de l'esprit « jam » (« Saisis ton adresse e-mail. », « Vérifie-les et réessaie. »).
-4. **Accord en genre** : tournures épicènes (« Connexion réussie avec l'adresse… », « Compte connecté : … »), ni point médian ni masculin générique.
-5. **Marque** : logo textuel « AcroFunJam » seul pour l'instant.
-6. **Tokens côté web** : variables CSS générées depuis `@acrofunjam/ui-tokens` (ADR 0012).
+Le nom de la pose en très grand sous un **ciel** en dégradé ; l'**astre** (soleil à l'aube, lune la nuit) se lève au chargement ; un **grain** léger ; un **horizon** ondulé ferme le ciel. Le lien « Catalogue », le nom, les pastilles de rôle et les bornes de flow sont sur le ciel, en `skyText`.
 
-## Hors périmètre pour l'instant
+- Le texte ne passe **jamais sur l'astre** : sur téléphone, l'astre reste dans le coin supérieur droit, au-dessus du titre ; sur grand écran (≥ 64em), le texte s'arrête avant lui.
+- `skyText` est vérifié contre **chaque arrêt** du dégradé (≥ 6,3:1 à l'aube, ≥ 11,5:1 la nuit) ; l'anneau de focus prend la couleur `skyText` sur le ciel.
+- **Mouvement réduit** : sous `prefers-reduced-motion: reduce`, l'astre est en place, sans animation.
+- **Couleurs forcées** : ciel, astre, grain et horizon disparaissent ; le bloc garde un contour `CanvasText`, les liens `LinkText`.
 
-Mode sombre, logo, illustrations, photos des poses (emplacement de vignette prévu dans `composants/carte-pose.md`, non implémenté). Les tokens nommés par rôle permettront d'ajouter un thème sombre sans toucher aux écrans.
+Ailleurs, aucune animation : seul le survol change des teintes et l'ombre d'une carte.
+
+## Contrastes (recalculés par `front/packages/ui-tokens/src/contrast.test.ts`)
+
+Texte (seuil 4,5:1) :
+
+| Texte | Fond | Aube | Nuit |
+|---|---|---|---|
+| `text` | `background` / `surface` / `surfaceHover` | 14,7 / 16,2 / 13,5 | 15,6 / 14,4 / 12,6 |
+| `textMuted` | `background` / `surface` / `surfaceHover` | 6,3 / 7,0 / 5,8 | 7,9 / 7,3 / 6,4 |
+| `textMuted` | `sunSurface` | 6,0 | **5,6** |
+| `primaryContrast` | `primary` / `primaryHover` / `primaryActive` | 7,1 / 9,6 / 12,0 | 8,6 / 11,1 / 13,5 |
+| `primary` (lien) | `background` / `surface` | 6,4 / 7,1 | 8,9 / 8,1 |
+| `base` | `baseSurface` | 5,4 | 7,6 |
+| `flyer` | `flyerSurface` | **4,7** | 7,9 |
+| `surface` (étiquette) | `base` / `flyer` | 6,4 / 5,7 | 9,2 / 9,1 |
+| `text` | `baseSurface` / `flyerSurface` / `sunSurface` / `selectedSurface` | 13,5 / 13,4 / 13,9 / 13,2 | 11,8 / 12,5 / 11,1 / 11,8 |
+| `danger` | `background` / `dangerSurface` | 5,9 / 5,8 | 9,3 / 7,9 |
+| `success` / `info` | `successSurface` / `infoSurface` | 5,4 / **4,7** | 7,6 / 7,9 |
+| `badgeContrast` | `badge` | 16,2 | 15,1 |
+| `skyText` | chaque arrêt du ciel | 12,8 / 10,2 / 9,8 / 6,4 | 11,5 / 13,7 / 16,1 |
+
+Contrôles et icônes porteuses de sens (seuil 3:1) :
+
+| Élément | Fond | Aube | Nuit |
+|---|---|---|---|
+| `border` | `background` / `surface` | **3,06** / 3,4 | 3,7 / **3,4** |
+| `focus` | `background` / `surface` | 5,2 / 5,7 | 9,9 / 9,1 |
+| `sunStrong` | `background` / `surface` / `sunSurface` | 4,7 / 5,2 / 4,4 | 11,3 / 10,4 / 8,0 |
+| `selected` | `selectedSurface` | 7,8 | 8,6 |
+| `base` / `flyer` | `surface` | 6,4 / 5,7 | 9,2 / 9,1 |
+
+`sun` à l'aube (2,2:1 sur `background`) est **décoratif** : jamais du texte ni une icône porteuse de sens (le test le vérifie). `divider` ne délimite jamais un contrôle.
+
+## Règles d'usage
+
+- **Une seule action principale** par écran (bouton primaire plein) ; les autres en secondaire.
+- **Jamais la couleur seule** : rôle écrit, niveau écrit, « Oui » / « Non » écrits, erreur = icône + texte + contour épaissi, choix coché = bordure 2 px.
+- **Danger jamais en fond plein** ; un refus de proposition n'est jamais en `danger`.
+- **Focus distinct du survol** : anneau `focus` de 3 px décalé de 2 px, autour de la carte entière pour une carte cliquable, autour de la tuile pour une tuile.
+- **Couleurs forcées** : pastilles, notes et cartes gardent un contour ; les décorations disparaissent.
+
+## Espacements, tailles, points de rupture
+
+Espacements (`spacing.*`, base 4) inchangés. Tailles (`sizes.*`) : cible 44, contrôle 48, phases de lune 18 (texte) / 24 (tuile), trajectoire 46 × 20, avatar 36, logo 30, astre 180 / 300, horizon 26, éclat 54, emplacement de glyphe 52. Points de rupture : `md` 640 (40em), `lg` 1024 (64em). Catalogue : 1, 2 puis 3 colonnes ; page d'une pose : sections côte à côte à partir de 64em.
+
+## Traduction côté web (ADR 0012)
+
+`toCssVariables()` produit `:root { … }` (`--afj-color-*`, `--afj-sky-*`, `--afj-spacing-*`, `--afj-radius-*`, `--afj-size-*`, `--afj-font-*`), puis la redéfinition des couleurs et du ciel sous `@media (prefers-color-scheme: dark)`. Le CSS du site n'utilise que ces variables (stylelint interdit couleurs et longueurs en dur).
+
+## Décisions
+
+1. Direction « Soleil et Lune » (ADR 0031), remplace la terre cuite et la police système (décisions du 2026-11-03).
+2. Ton : **tutoiement** ; tournures épicènes (inchangé).
+3. Marque : logo (terre qui porte un soleil) + « AcroFunJam » en Unbounded.
+4. Thème : suit le système, pas de bascule dans le produit.
+
+## Hors périmètre
+
+Glyphes des poses (emplacement réservé), photos, illustrations.

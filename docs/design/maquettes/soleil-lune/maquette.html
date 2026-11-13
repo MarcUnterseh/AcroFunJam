@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AcroFunJam Soleil et Lune</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Unbounded:wght@400;500;600;700&display=swap">
+<style>
+/* Direction « Soleil & Lune » : le thème clair est l'aube (pratique solaire), le thème sombre la nuit (pratique lunaire).
+   Base = terre (vert), Flyer = ciel (bleu). Difficulté = phases de lune. Une seule audace : le ciel en tête de page pose. */
+:root {
+  --bg: #F5F2FA;
+  --surface: #FFFFFF;
+  --surface-2: #EDE8F7;
+  --ink: #211C3B;
+  --muted: #5B5577;
+  --line: #DCD5EA;
+  --line-strong: #8F87A8;
+  --primary: #5B3FC4;
+  --primary-hover: #47309F;
+  --primary-contrast: #FFFFFF;
+  --sun: #E8961E;
+  --sun-soft: #FFEBC4;
+  --sun-strong: #A15C00;
+  --base: #2C6A4C;
+  --base-soft: #DCEFE3;
+  --flyer: #1D69AE;
+  --flyer-soft: #DFEAFA;
+  --focus: #1D69AE;
+  --danger: #B42318;
+  --danger-soft: #FDECEA;
+  --success: #2C6A4C;
+  --success-soft: #DCEFE3;
+  --sky: linear-gradient(172deg, #FFE1A0 0%, #FBC0A4 36%, #D3C1F1 72%, #A797E6 100%);
+  --sky-ink: #211C3B;
+  --orb: radial-gradient(circle at 50% 50%, #FFF6D8 0%, #FFD36B 38%, #F6A43A 70%, rgba(246,164,58,0) 71%);
+  --orb-glow: rgba(255, 196, 92, .55);
+  --grain-opacity: .18;
+
+  --font-display: "Unbounded", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 26px;
+  --r-pill: 999px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #110F24; --surface: #1A1733; --surface-2: #252148; --ink: #ECE8F8; --muted: #ABA4C8;
+    --line: #322D57; --line-strong: #6F6896; --primary: #B6A6FF; --primary-hover: #CDC2FF; --primary-contrast: #15122B;
+    --sun: #F5C15A; --sun-soft: #3A2E14; --sun-strong: #F5C15A; --base: #82CDA2; --base-soft: #163024; --flyer: #8FC1F3; --flyer-soft: #13283F;
+    --focus: #8FC1F3; --danger: #FF9C8F; --danger-soft: #3A1714; --success: #82CDA2; --success-soft: #163024;
+    --sky: linear-gradient(172deg, #2E2670 0%, #211C55 45%, #151233 100%);
+    --sky-ink: #F3F0FF;
+    --orb: radial-gradient(circle at 42% 40%, #FFFDF2 0%, #EDE6CF 45%, #CFC6AC 70%, rgba(207,198,172,0) 71%);
+    --orb-glow: rgba(220, 214, 255, .28);
+    --grain-opacity: .12;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #110F24; --surface: #1A1733; --surface-2: #252148; --ink: #ECE8F8; --muted: #ABA4C8;
+  --line: #322D57; --line-strong: #6F6896; --primary: #B6A6FF; --primary-hover: #CDC2FF; --primary-contrast: #15122B;
+  --sun: #F5C15A; --sun-soft: #3A2E14; --sun-strong: #F5C15A; --base: #82CDA2; --base-soft: #163024; --flyer: #8FC1F3; --flyer-soft: #13283F;
+  --focus: #8FC1F3; --danger: #FF9C8F; --danger-soft: #3A1714; --success: #82CDA2; --success-soft: #163024;
+  --sky: linear-gradient(172deg, #2E2670 0%, #211C55 45%, #151233 100%);
+  --sky-ink: #F3F0FF;
+  --orb: radial-gradient(circle at 42% 40%, #FFFDF2 0%, #EDE6CF 45%, #CFC6AC 70%, rgba(207,198,172,0) 71%);
+  --orb-glow: rgba(220, 214, 255, .28);
+  --grain-opacity: .12;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--bg);
+}
+a { color: var(--primary); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.icon { width: 20px; height: 20px; flex-shrink: 0; }
+h1, h2, h3 { text-wrap: balance; }
+
+/* ---------- Habillage de la maquette ---------- */
+.mq { max-width: 1280px; margin: 0 auto; display: grid; gap: 64px; }
+.mq-intro { display: grid; gap: 20px; max-width: 760px; }
+.mq-intro h1 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.1; letter-spacing: -0.01em; }
+.mq-intro p { margin: 0; color: var(--muted); max-width: 64ch; }
+.theme-switch { display: inline-flex; gap: 4px; padding: 4px; background: var(--surface-2); border-radius: var(--r-pill); width: fit-content; }
+.theme-switch button {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border: 0; border-radius: var(--r-pill);
+  font: 600 15px/1 var(--font-body); color: var(--muted); background: transparent; cursor: pointer;
+}
+.theme-switch button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(33,28,59,.12); }
+
+.mq-section { display: grid; gap: 20px; }
+.mq-section > header { display: grid; gap: 6px; max-width: 72ch; }
+.mq-section > header h2 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 1.35rem; line-height: 1.2; }
+.mq-section > header p { margin: 0; color: var(--muted); font-size: 15px; }
+.mq-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 28px; }
+.mq-frame { margin: 0; min-width: 0; display: grid; gap: 8px; }
+.mq-frame--mobile { flex: 0 1 360px; width: 360px; max-width: 100%; }
+.mq-frame--wide { flex: 1 1 620px; max-width: 900px; }
+.mq-frame figcaption { font-size: 14px; font-weight: 600; color: var(--muted); }
+.mq-screen { container: screen / inline-size; overflow: hidden; background: var(--bg); border: 1px solid var(--line); border-radius: 22px; }
+
+/* ---------- Planche d'ambiance ---------- */
+.board { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+.board__tile { min-width: 0; padding: 22px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); display: grid; gap: 14px; align-content: start; }
+.board__tile h3 { margin: 0; font-size: 15px; font-weight: 700; }
+.board__tile p { margin: 0; color: var(--muted); font-size: 14px; }
+.swatches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.swatch { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+.swatch i { display: block; height: 44px; border-radius: 12px; border: 1px solid var(--line); }
+.specimen-display { font-family: var(--font-display); font-weight: 600; font-size: 2.1rem; line-height: 1; letter-spacing: -0.01em; }
+.specimen-body { font-size: 15px; }
+.scale-demo { display: grid; gap: 10px; }
+.scale-demo li { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
+.scale-demo ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.sky-chip { height: 64px; border-radius: var(--r-md); background: var(--sky); position: relative; overflow: hidden; }
+.sky-chip::after { content: ""; position: absolute; width: 46px; height: 46px; right: 22px; top: 10px; background: var(--orb); border-radius: 50%; box-shadow: 0 0 30px 6px var(--orb-glow); }
+
+/* ---------- En-tête du site ---------- */
+.site-header { display: flex; align-items: center; flex-wrap: nowrap; gap: 8px 16px; padding: 12px 16px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: var(--ink); text-decoration: none; font-family: var(--font-display); font-weight: 600; font-size: 17px; letter-spacing: -0.01em; }
+.brand svg { width: 30px; height: 30px; }
+.account { margin-left: auto; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.account__avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--sun-soft); color: var(--ink); font-weight: 700; font-size: 14px; }
+.account .btn { min-height: 44px; padding: 0 14px; font-size: 14px; white-space: nowrap; }
+.account__email { font-size: 14px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: none; }
+
+.main { padding: 8px 16px 28px; display: grid; gap: 24px; }
+
+/* ---------- Boutons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px;
+  border-radius: var(--r-pill); font: 600 16px/1.2 var(--font-body); text-decoration: none; cursor: pointer; text-align: center;
+  border: 1.5px solid transparent;
+}
+.btn--primary { background: var(--primary); color: var(--primary-contrast); }
+.btn--ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+.btn--quiet { background: var(--surface-2); color: var(--ink); }
+.btn--danger { background: transparent; color: var(--danger); border-color: var(--danger); }
+.btn--block { width: 100%; }
+@media (hover: hover) {
+  .btn--primary:hover { background: var(--primary-hover); }
+  .btn--ghost:hover, .btn--quiet:hover { border-color: var(--ink); }
+}
+
+/* ---------- Échelle lunaire et rôles ---------- */
+.moon { width: 18px; height: 18px; flex-shrink: 0; }
+.role { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 6px; border-radius: var(--r-pill); font-size: 14px; font-weight: 600; white-space: nowrap; }
+.role__tag { padding: 2px 8px; border-radius: var(--r-pill); font-size: 12px; font-weight: 700; color: var(--surface); }
+.role--base { background: var(--base-soft); color: var(--base); }
+.role--base .role__tag { background: var(--base); }
+.role--flyer { background: var(--flyer-soft); color: var(--flyer); }
+.role--flyer .role__tag { background: var(--flyer); }
+.role span:last-child { color: var(--ink); }
+
+.legend { display: grid; gap: 8px; font-size: 14px; color: var(--muted); }
+.legend ol { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--ink); }
+.legend li { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.legend p { margin: 0; }
+
+.flow { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; color: var(--muted); }
+.flow span { display: inline-flex; align-items: center; gap: 6px; }
+.flow .yes { color: var(--ink); font-weight: 600; }
+.flow .yes .icon { color: var(--sun-strong); }
+.flow .no { text-decoration: line-through; text-decoration-color: var(--line-strong); }
+
+/* ---------- Catalogue ---------- */
+.page-head { display: grid; gap: 16px; }
+.page-head h1 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: clamp(1.9rem, 9cqi, 3.2rem); line-height: 1; letter-spacing: -0.02em; }
+.page-head__actions { display: grid; gap: 10px; }
+.count { margin: 0; color: var(--muted); }
+.grid { margin: 0; padding: 0; list-style: none; display: grid; gap: 14px; }
+.pose-card {
+  position: relative; display: grid; gap: 14px; padding: 20px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--r-lg);
+}
+.pose-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.pose-card h2 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; line-height: 1.1; letter-spacing: -0.01em; }
+.pose-card h2 a { color: var(--ink); text-decoration: none; }
+.pose-card h2 a::after { content: ""; position: absolute; inset: 0; border-radius: var(--r-lg); }
+.pose-card h2 a:focus-visible { outline: none; }
+.pose-card:has(h2 a:focus-visible), .pose-card.is-focus { outline: 3px solid var(--focus); outline-offset: 2px; }
+.pose-card__glyph { width: 52px; height: 52px; color: var(--muted); flex-shrink: 0; }
+.pose-card__roles { display: flex; flex-wrap: wrap; gap: 6px; }
+.pose-card__edit { position: relative; z-index: 1; justify-self: start; display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; }
+.pose-card.is-hover, .pose-card:hover { border-color: var(--line-strong); background: linear-gradient(var(--surface), var(--surface)) padding-box; box-shadow: 0 10px 30px -18px var(--primary); }
+
+/* ---------- Page pose ---------- */
+.hero {
+  position: relative; overflow: hidden; isolation: isolate; color: var(--sky-ink);
+  background: var(--sky); padding: 16px 16px 26px; display: grid; gap: 14px;
+}
+.hero::before { /* l'astre : soleil le jour, lune la nuit */
+  content: ""; position: absolute; z-index: -1; width: 180px; height: 180px; right: -30px; top: 30px; border-radius: 50%;
+  background: var(--orb); box-shadow: 0 0 80px 30px var(--orb-glow);
+  animation: rise 1.6s cubic-bezier(.2,.7,.2,1) both;
+}
+.hero::after { /* grain */
+  content: ""; position: absolute; inset: 0; z-index: -1; opacity: var(--grain-opacity); mix-blend-mode: overlay; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@keyframes rise { from { transform: translateY(70px); opacity: .2; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .hero::before { animation: none; } }
+.hero .site-header { padding: 0; }
+.hero .brand, .hero .back { color: var(--sky-ink); }
+.back { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; font-weight: 600; font-size: 15px; text-decoration: none; width: fit-content; }
+.back:hover { text-decoration: underline; }
+.hero h1 { margin: 6px 0 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(3.2rem, 22cqi, 8rem); line-height: .9; letter-spacing: -0.04em; }
+.hero__horizon { position: absolute; left: 0; right: 0; bottom: 0; height: 26px; z-index: -1; color: var(--bg); }
+.hero__roles { display: flex; flex-wrap: wrap; gap: 8px; }
+.hero__roles .role { background: color-mix(in srgb, var(--surface) 82%, transparent); backdrop-filter: blur(6px); }
+.hero .flow { color: color-mix(in srgb, var(--sky-ink) 72%, transparent); }
+.hero .flow .yes { color: var(--sky-ink); }
+
+.pose-body { padding: 4px 16px 28px; display: grid; gap: 28px; }
+.pose-actions { display: grid; gap: 10px; }
+.note { display: flex; gap: 12px; padding: 14px 16px; border-radius: var(--r-md); background: var(--sun-soft); font-size: 14px; }
+.note .icon { color: var(--sun-strong); margin-top: 2px; }
+.note p { margin: 0; }
+
+.tr-section { display: grid; gap: 12px; }
+.tr-section h2 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 1.15rem; line-height: 1.2; }
+.tr-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.tr { display: grid; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); }
+.tr__head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.tr__name { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 1rem; }
+.arc { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 15px; }
+.arc svg { width: 46px; height: 20px; color: var(--sun-strong); }
+.arc a { color: var(--ink); text-underline-offset: 3px; }
+.tr__kind { font-size: 13px; font-weight: 600; color: var(--muted); padding: 2px 10px; border: 1px solid var(--line); border-radius: var(--r-pill); }
+.tr__roles { display: flex; flex-wrap: wrap; gap: 6px; }
+.tr__desc { margin: 0; color: var(--muted); font-size: 15px; white-space: pre-line; }
+
+/* ---------- Formulaire ---------- */
+.form-page { display: grid; gap: 22px; }
+.form-page h1 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: clamp(1.7rem, 7cqi, 2.4rem); line-height: 1.05; letter-spacing: -0.02em; }
+.form-page__intro { margin: -10px 0 0; color: var(--muted); }
+.form { display: grid; gap: 22px; }
+.route { display: grid; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); }
+.route__arc { width: 100%; height: 34px; color: var(--sun-strong); }
+.field { display: grid; gap: 6px; min-width: 0; }
+.field label, .field legend { font-weight: 600; padding: 0; }
+.field input, .field select, .field textarea {
+  width: 100%; min-height: 50px; padding: 0 16px; font: inherit; color: var(--ink); background: var(--surface);
+  border: 1.5px solid var(--line-strong); border-radius: var(--r-md);
+}
+.route .field select { background: var(--bg); }
+.field textarea { padding: 12px 16px; resize: vertical; }
+.field__help { margin: 0; font-size: 14px; color: var(--muted); }
+.field [aria-invalid="true"] { border-color: var(--danger); border-width: 2px; }
+.field__error { margin: 0; display: flex; gap: 6px; align-items: center; font-size: 14px; font-weight: 600; color: var(--danger); }
+
+fieldset.field { border: 0; margin: 0; padding: 0; }
+.phases { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 4px; }
+.phase {
+  display: grid; justify-items: center; gap: 6px; padding: 12px 6px; min-height: 76px; text-align: center; cursor: pointer;
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--r-md); font-size: 14px; font-weight: 600;
+}
+.phase input { position: absolute; opacity: 0; pointer-events: none; }
+.phase .moon { width: 24px; height: 24px; color: var(--muted); }
+.phase:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+.phases--base .phase:has(input:checked) { background: var(--base-soft); border: 2px solid var(--base); color: var(--base); }
+.phases--base .phase:has(input:checked) .moon { color: var(--base); }
+.phases--flyer .phase:has(input:checked) { background: var(--flyer-soft); border: 2px solid var(--flyer); color: var(--flyer); }
+.phases--flyer .phase:has(input:checked) .moon { color: var(--flyer); }
+.legend-role { display: inline-flex; align-items: center; gap: 8px; }
+.form-actions { display: grid; gap: 10px; }
+
+/* ---------- Validation, succès ---------- */
+.queue { display: grid; gap: 14px; }
+.queue h1 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: clamp(1.7rem, 6cqi, 2.4rem); line-height: 1.05; letter-spacing: -0.02em; }
+.queue > p { margin: 0; color: var(--muted); }
+.proposal { display: grid; gap: 14px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); }
+.proposal h2 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 1.15rem; line-height: 1.3; }
+.proposal__by { margin: 0; font-size: 14px; color: var(--muted); }
+.proposal__by strong { color: var(--ink); }
+.proposal__desc { margin: 0; padding: 12px 14px; background: var(--surface-2); border-radius: var(--r-sm); font-size: 15px; }
+.proposal__desc b { display: block; font-size: 13px; color: var(--muted); }
+.proposal__actions { display: grid; gap: 8px; padding-top: 14px; border-top: 1px dashed var(--line); }
+
+.success { position: relative; overflow: hidden; display: grid; gap: 10px; padding: 24px; border-radius: var(--r-lg); background: var(--success-soft); }
+.success svg.burst { width: 54px; height: 54px; color: var(--sun); }
+.success h2 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 1.35rem; line-height: 1.15; }
+.success p { margin: 0; }
+.success__actions { display: grid; gap: 10px; margin-top: 8px; }
+
+/* ---------- Grand écran (par cadre) ---------- */
+@container screen (width >= 40em) {
+  .site-header { padding: 16px 28px; }
+  .account__email { display: block; }
+  .main { padding: 8px 28px 36px; }
+  .page-head { grid-template-columns: 1fr auto; align-items: end; }
+  .page-head__actions { grid-auto-flow: column; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .hero { padding: 20px 28px 44px; gap: 18px; }
+  .hero::before { width: 300px; height: 300px; right: 6%; top: 18px; }
+  .pose-body { padding: 8px 28px 36px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; column-gap: 28px; }
+  .pose-actions, .note { grid-column: 1 / -1; }
+  .pose-actions { grid-auto-flow: column; justify-content: start; }
+  .form-actions, .success__actions { grid-auto-flow: column; justify-content: start; }
+  .phases { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .proposal__actions { grid-auto-flow: column; justify-content: start; }
+}
+@container screen (width >= 52em) {
+  .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (forced-colors: active) {
+  .pose-card, .tr, .phase, .proposal { border-color: CanvasText; }
+  .hero::before, .hero::after { display: none; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- Phases de lune : échelle de difficulté -->
+    <symbol id="m1" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16a4.5 8 0 0 0 0-16z" fill="currentColor"/></symbol>
+    <symbol id="m2" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor"/></symbol>
+    <symbol id="m3" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16a4.5 8 0 0 1 0-16z" fill="currentColor"/></symbol>
+    <symbol id="m4" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="currentColor" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <!-- Lever : peut ouvrir un flow ; coucher : peut clore un flow -->
+    <symbol id="i-rise" viewBox="0 0 20 20"><path d="M4 14a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 2v5M7.5 4.5 10 2l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-set" viewBox="0 0 20 20"><path d="M4 14a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 2v5M7.5 4.5 10 7l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <!-- Trajectoire : la transition est un vol -->
+    <symbol id="i-arc" viewBox="0 0 46 20"><path d="M3 17C12 2 32 2 41 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 4.5"/><path d="M36 14.5l5 1 .5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-loop" viewBox="0 0 46 20"><path d="M8 15c-6-2-5-12 3-12s14 10 24 10c6 0 7-8 1-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 4.5"/><path d="M33.5 1.5 37 4l-3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 20 20"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-back" viewBox="0 0 20 20"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-spot" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 6v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="14" r="1.2" fill="currentColor"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4" fill="currentColor"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 1.5v2M10 16.5v2M1.5 10h2M16.5 10h2M4 4l1.4 1.4M14.6 14.6 16 16M4 16l1.4-1.4M14.6 5.4 16 4"/></g></symbol>
+    <symbol id="i-moon" viewBox="0 0 20 20"><path d="M15.5 13.2A7 7 0 0 1 7 3.6a7 7 0 1 0 8.5 9.6z" fill="currentColor"/></symbol>
+    <!-- Marque : la base (terre) porte le flyer (astre) -->
+    <symbol id="logo" viewBox="0 0 32 32"><path d="M3 27a13 13 0 0 1 26 0z" fill="var(--base)"/><circle cx="16" cy="8.5" r="6" fill="var(--sun)"/></symbol>
+    <!-- Glyphes de pose (figuratifs simplifiés : base en vert, flyer en bleu) -->
+    <symbol id="g-bird" viewBox="0 0 52 52"><path d="M6 44h40" stroke="var(--line-strong)" stroke-width="2" stroke-linecap="round"/><path d="M12 42h16M26 42V22" stroke="var(--base)" stroke-width="3.5" stroke-linecap="round"/><circle cx="9" cy="41" r="3.5" fill="var(--base)"/><path d="M14 20h28M14 20l-4 5M42 20l4 5" stroke="var(--flyer)" stroke-width="3.5" stroke-linecap="round"/><circle cx="10" cy="15" r="3.5" fill="var(--flyer)"/></symbol>
+    <symbol id="g-throne" viewBox="0 0 52 52"><path d="M6 44h40" stroke="var(--line-strong)" stroke-width="2" stroke-linecap="round"/><path d="M12 42h14M26 42V26" stroke="var(--base)" stroke-width="3.5" stroke-linecap="round"/><circle cx="9" cy="41" r="3.5" fill="var(--base)"/><path d="M26 24V10M26 24l8 8" stroke="var(--flyer)" stroke-width="3.5" stroke-linecap="round"/><circle cx="26" cy="5" r="3.5" fill="var(--flyer)"/></symbol>
+    <symbol id="g-star" viewBox="0 0 52 52"><path d="M6 46h40" stroke="var(--line-strong)" stroke-width="2" stroke-linecap="round"/><path d="M20 44l2-14h6l2 14M25 30V18M25 22l4-6" stroke="var(--base)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="25" cy="13" r="3.5" fill="var(--base)"/><path d="M30 14l12-8M30 14l10 8M33 12l-4-7" stroke="var(--flyer)" stroke-width="3.5" stroke-linecap="round"/><circle cx="45" cy="4.5" r="3" fill="var(--flyer)"/></symbol>
+    <symbol id="i-burst" viewBox="0 0 54 54"><circle cx="27" cy="27" r="10" fill="currentColor"/><g stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M27 4v7M27 43v7M4 27h7M43 27h7M10.7 10.7l5 5M38.3 38.3l5 5M10.7 43.3l5-5M38.3 15.7l5-5"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="mq">
+  <header class="mq-intro">
+    <h1>AcroFunJam, direction Soleil et Lune</h1>
+    <p>Proposition de nouvelle identité pour remplacer le style « Bootstrap ». L'acroyoga mêle une pratique solaire, acrobatique, et une pratique lunaire, thérapeutique : le thème clair devient l'aube, le thème sombre la nuit. La base porte la couleur de la terre, le flyer celle du ciel, et la difficulté se lit en phases de lune.</p>
+    <div class="theme-switch" role="group" aria-label="Thème de la maquette">
+      <button type="button" data-set-theme="light" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg>Soleil</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg>Lune</button>
+    </div>
+  </header>
+
+  <!-- ============ Planche ============ -->
+  <section class="mq-section" aria-labelledby="s-board">
+    <header>
+      <h2 id="s-board">Le système en un coup d'œil</h2>
+      <p>Les rôles ont chacun leur couleur, partout : cartes, transitions, formulaire. Les icônes de flow reprennent le lever et le coucher du soleil.</p>
+    </header>
+    <div class="board">
+      <div class="board__tile">
+        <h3>Couleurs</h3>
+        <div class="swatches">
+          <div class="swatch"><i style="background:var(--base)"></i>Terre, base</div>
+          <div class="swatch"><i style="background:var(--flyer)"></i>Ciel, flyer</div>
+          <div class="swatch"><i style="background:var(--sun)"></i>Soleil</div>
+          <div class="swatch"><i style="background:var(--primary)"></i>Crépuscule</div>
+          <div class="swatch"><i style="background:var(--bg)"></i>Brume</div>
+          <div class="swatch"><i style="background:var(--ink)"></i>Nuit</div>
+        </div>
+        <div class="sky-chip" aria-hidden="true"></div>
+      </div>
+      <div class="board__tile">
+        <h3>Typographie</h3>
+        <div class="specimen-display">Ninja Star</div>
+        <p class="specimen-body">Unbounded pour les noms de poses : large, ronde, pleine d'élan. Figtree pour le texte courant, lisible dès 14 px sur un téléphone posé sur le tapis.</p>
+      </div>
+      <div class="board__tile scale-demo">
+        <h3>Difficulté en phases de lune</h3>
+        <ol>
+          <li><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</li>
+          <li><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</li>
+          <li><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</li>
+          <li><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</li>
+        </ol>
+        <div class="flow"><span class="yes"><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg>Ouvre un flow</span><span class="yes"><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg>Clôt un flow</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Catalogue ============ -->
+  <section class="mq-section" aria-labelledby="s-cat">
+    <header>
+      <h2 id="s-cat">Catalogue des poses</h2>
+      <p>Chaque carte montre un glyphe de la pose, les deux rôles avec leur phase et les bornes de flow. Star est survolée, Throne a le focus clavier.</p>
+    </header>
+    <div class="mq-row">
+      <figure class="mq-frame mq-frame--wide">
+        <figcaption>Grand écran, personne connectée</figcaption>
+        <div class="mq-screen">
+          <div class="site-header">
+            <a class="brand" href="#"><svg aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+            <div class="account"><span class="account__email">alice@example.org</span><span class="account__avatar" aria-hidden="true">A</span><button type="button" class="btn btn--quiet">Se déconnecter</button></div>
+          </div>
+          <div class="main">
+            <div class="page-head">
+              <div>
+                <h1>Les poses</h1>
+                <p class="count">3 poses, par ordre alphabétique</p>
+              </div>
+              <div class="page-head__actions">
+                <a class="btn btn--primary" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Proposer une pose</a>
+                <a class="btn btn--ghost" href="#">Mes propositions</a>
+              </div>
+            </div>
+            <div class="legend">
+              <ol aria-label="Niveaux de difficulté, du plus accessible au plus exigeant">
+                <li><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</li>
+                <li><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</li>
+                <li><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</li>
+                <li><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</li>
+              </ol>
+              <p>Tu restes juge de tes limites : pratique à ton niveau et prévois un spotter quand tu en as besoin.</p>
+            </div>
+            <ul class="grid" role="list">
+              <li class="pose-card">
+                <div class="pose-card__top"><h2><a href="#">Bird</a></h2><svg class="pose-card__glyph" aria-hidden="true"><use href="#g-bird"/></svg></div>
+                <div class="pose-card__roles">
+                  <span class="role role--base"><span class="role__tag">Base</span><svg class="moon" aria-hidden="true"><use href="#m1"/></svg><span>Découverte</span></span>
+                  <span class="role role--flyer"><span class="role__tag">Flyer</span><svg class="moon" aria-hidden="true"><use href="#m1"/></svg><span>Découverte</span></span>
+                </div>
+                <div class="flow"><span class="yes"><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg>Ouvre un flow</span><span class="yes"><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg>Clôt un flow</span></div>
+                <a class="pose-card__edit" href="#">Proposer une modification<span class="vh"> de Bird</span></a>
+              </li>
+              <li class="pose-card is-hover">
+                <div class="pose-card__top"><h2><a href="#">Star</a></h2><svg class="pose-card__glyph" aria-hidden="true"><use href="#g-star"/></svg></div>
+                <div class="pose-card__roles">
+                  <span class="role role--base"><span class="role__tag">Base</span><svg class="moon" aria-hidden="true"><use href="#m3"/></svg><span>Intermédiaire</span></span>
+                  <span class="role role--flyer"><span class="role__tag">Flyer</span><svg class="moon" aria-hidden="true"><use href="#m3"/></svg><span>Intermédiaire</span></span>
+                </div>
+                <div class="flow"><span class="no">Ouvre un flow</span><span class="no">Clôt un flow</span></div>
+                <a class="pose-card__edit" href="#">Proposer une modification<span class="vh"> de Star</span></a>
+              </li>
+              <li class="pose-card is-focus">
+                <div class="pose-card__top"><h2><a href="#">Throne</a></h2><svg class="pose-card__glyph" aria-hidden="true"><use href="#g-throne"/></svg></div>
+                <div class="pose-card__roles">
+                  <span class="role role--base"><span class="role__tag">Base</span><svg class="moon" aria-hidden="true"><use href="#m2"/></svg><span>Débutant</span></span>
+                  <span class="role role--flyer"><span class="role__tag">Flyer</span><svg class="moon" aria-hidden="true"><use href="#m1"/></svg><span>Découverte</span></span>
+                </div>
+                <div class="flow"><span class="yes"><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg>Ouvre un flow</span><span class="yes"><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg>Clôt un flow</span></div>
+                <a class="pose-card__edit" href="#">Proposer une modification<span class="vh"> de Throne</span></a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="mq-frame mq-frame--mobile">
+        <figcaption>Téléphone, personne connectée</figcaption>
+        <div class="mq-screen">
+          <div class="site-header">
+            <a class="brand" href="#"><svg aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+            <div class="account"><span class="account__avatar" aria-hidden="true">A</span><button type="button" class="btn btn--quiet">Se déconnecter</button></div>
+          </div>
+          <div class="main">
+            <div class="page-head">
+              <div><h1>Les poses</h1><p class="count">3 poses, par ordre alphabétique</p></div>
+              <div class="page-head__actions">
+                <a class="btn btn--primary" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Proposer une pose</a>
+                <a class="btn btn--ghost" href="#">Mes propositions</a>
+              </div>
+            </div>
+            <ul class="grid" role="list">
+              <li class="pose-card">
+                <div class="pose-card__top"><h2><a href="#">Throne</a></h2><svg class="pose-card__glyph" aria-hidden="true"><use href="#g-throne"/></svg></div>
+                <div class="pose-card__roles">
+                  <span class="role role--base"><span class="role__tag">Base</span><svg class="moon" aria-hidden="true"><use href="#m2"/></svg><span>Débutant</span></span>
+                  <span class="role role--flyer"><span class="role__tag">Flyer</span><svg class="moon" aria-hidden="true"><use href="#m1"/></svg><span>Découverte</span></span>
+                </div>
+                <div class="flow"><span class="yes"><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg>Ouvre un flow</span><span class="yes"><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg>Clôt un flow</span></div>
+                <a class="pose-card__edit" href="#">Proposer une modification<span class="vh"> de Throne</span></a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ Page pose ============ -->
+  <section class="mq-section" aria-labelledby="s-pose">
+    <header>
+      <h2 id="s-pose">Page d'une pose</h2>
+      <p>Le seul moment spectaculaire du site : le nom de la pose sous un ciel d'aube, avec le soleil qui se lève au chargement. En thème Lune, le ciel passe à la nuit et le soleil devient la lune. Les transitions s'affichent comme des trajectoires.</p>
+    </header>
+    <div class="mq-row">
+      <figure class="mq-frame mq-frame--mobile">
+        <figcaption>Téléphone, personne connectée</figcaption>
+        <div class="mq-screen">
+          <div class="hero">
+            <div class="site-header">
+              <a class="brand" href="#"><svg aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+              <div class="account"><span class="account__avatar" aria-hidden="true">A</span></div>
+            </div>
+            <a class="back" href="#s-cat"><svg class="icon" aria-hidden="true"><use href="#i-back"/></svg>Catalogue</a>
+            <h1>Star</h1>
+            <div class="hero__roles">
+              <span class="role role--base"><span class="role__tag">Base</span><svg class="moon" aria-hidden="true"><use href="#m3"/></svg><span>Intermédiaire</span></span>
+              <span class="role role--flyer"><span class="role__tag">Flyer</span><svg class="moon" aria-hidden="true"><use href="#m3"/></svg><span>Intermédiaire</span></span>
+            </div>
+            <div class="flow"><span class="no">Ouvre un flow</span><span class="no">Clôt un flow</span></div>
+            <svg class="hero__horizon" viewBox="0 0 360 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 26V14C80 2 150 0 200 6s110 14 160 4V26z" fill="currentColor"/></svg>
+          </div>
+          <div class="pose-body">
+            <div class="pose-actions">
+              <a class="btn btn--primary btn--block" href="#s-form"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Proposer une transition depuis Star</a>
+              <a class="btn btn--ghost btn--block" href="#">Proposer une modification</a>
+            </div>
+            <div class="note"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><p>Les chutes arrivent surtout pendant les transitions : apprends-les avec un spotter.</p></div>
+            <section class="tr-section" aria-labelledby="m-from">
+              <h2 id="m-from">Depuis Star</h2>
+              <ul class="tr-list" role="list">
+                <li class="tr">
+                  <div class="tr__head"><h3 class="tr__name vh">de Star vers Bird</h3><span class="arc" aria-hidden="true">Star<svg><use href="#i-arc"/></svg><a href="#">Bird</a></span></div>
+                  <div class="tr__roles">
+                    <span class="role role--base"><span class="role__tag">Base</span><svg class="moon" aria-hidden="true"><use href="#m3"/></svg><span>Intermédiaire</span></span>
+                    <span class="role role--flyer"><span class="role__tag">Flyer</span><svg class="moon" aria-hidden="true"><use href="#m3"/></svg><span>Intermédiaire</span></span>
+                  </div>
+                  <p class="tr__desc">Passe par Throne sans s'arrêter.</p>
+                </li>
+                <li class="tr">
+                  <div class="tr__head"><h3 class="tr__name">Ninja Star</h3><span class="tr__kind">Washing machine</span></div>
+                  <span class="arc" aria-hidden="true">Star<svg><use href="#i-loop"/></svg>Star</span>
+                  <div class="tr__roles">
+                    <span class="role role--base"><span class="role__tag">Base</span><svg class="moon" aria-hidden="true"><use href="#m4"/></svg><span>Avancé</span></span>
+                    <span class="role role--flyer"><span class="role__tag">Flyer</span><svg class="moon" aria-hidden="true"><use href="#m4"/></svg><span>Avancé</span></span>
+                  </div>
+                  <p class="tr__desc">Rotation continue par les mains.
+Vidéo : https://example.org/ninja-star</p>
+                </li>
+              </ul>
+            </section>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="mq-frame mq-frame--wide">
+        <figcaption>Grand écran, validateur connecté</figcaption>
+        <div class="mq-screen">
+          <div class="hero">
+            <div class="site-header">
+              <a class="brand" href="#"><svg aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+              <div class="account"><span class="account__avatar" aria-hidden="true">V</span></div>
+            </div>
+            <a class="back" href="#s-cat"><svg class="icon" aria-hidden="true"><use href="#i-back"/></svg>Catalogue</a>
+            <h1>Star</h1>
+            <div class="hero__roles">
+              <span class="role role--base"><span class="role__tag">Base</span><svg class="moon" aria-hidden="true"><use href="#m3"/></svg><span>Intermédiaire</span></span>
+              <span class="role role--flyer"><span class="role__tag">Flyer</span><svg class="moon" aria-hidden="true"><use href="#m3"/></svg><span>Intermédiaire</span></span>
+            </div>
+            <div class="flow"><span class="no">Ouvre un flow</span><span class="no">Clôt un flow</span></div>
+            <svg class="hero__horizon" viewBox="0 0 900 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 26V16C200 2 380 0 520 6s260 14 380 2V26z" fill="currentColor"/></svg>
+          </div>
+          <div class="pose-body">
+            <div class="pose-actions">
+              <a class="btn btn--primary" href="#s-form"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Proposer une transition depuis Star</a>
+              <a class="btn btn--ghost" href="#">Proposer une modification</a>
+            </div>
+            <section class="tr-section" aria-labelledby="w-from">
+              <h2 id="w-from">Depuis Star</h2>
+              <ul class="tr-list" role="list">
+                <li class="tr">
+                  <div class="tr__head"><h3 class="tr__name vh">de Star vers Bird</h3><span class="arc" aria-hidden="true">Star<svg><use href="#i-arc"/></svg><a href="#">Bird</a></span></div>
+                  <div class="tr__roles">
+                    <span class="role role--base"><span class="role__tag">Base</span><svg class="moon" aria-hidden="true"><use href="#m3"/></svg><span>Intermédiaire</span></span>
+                    <span class="role role--flyer"><span class="role__tag">Flyer</span><svg class="moon" aria-hidden="true"><use href="#m3"/></svg><span>Intermédiaire</span></span>
+                  </div>
+                  <p class="tr__desc">Passe par Throne sans s'arrêter.</p>
+                </li>
+                <li class="tr">
+                  <div class="tr__head"><h3 class="tr__name vh">de Star vers Throne</h3><span class="arc" aria-hidden="true">Star<svg><use href="#i-arc"/></svg><a href="#">Throne</a></span></div>
+                  <div class="tr__roles">
+                    <span class="role role--base"><span class="role__tag">Base</span><svg class="moon" aria-hidden="true"><use href="#m2"/></svg><span>Débutant</span></span>
+                    <span class="role role--flyer"><span class="role__tag">Flyer</span><svg class="moon" aria-hidden="true"><use href="#m2"/></svg><span>Débutant</span></span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+            <section class="tr-section" aria-labelledby="w-to">
+              <h2 id="w-to">Vers Star</h2>
+              <ul class="tr-list" role="list">
+                <li class="tr">
+                  <div class="tr__head"><h3 class="tr__name">Ninja Star</h3><span class="tr__kind">Washing machine</span></div>
+                  <span class="arc" aria-hidden="true">Star<svg><use href="#i-loop"/></svg>Star</span>
+                  <div class="tr__roles">
+                    <span class="role role--base"><span class="role__tag">Base</span><svg class="moon" aria-hidden="true"><use href="#m4"/></svg><span>Avancé</span></span>
+                    <span class="role role--flyer"><span class="role__tag">Flyer</span><svg class="moon" aria-hidden="true"><use href="#m4"/></svg><span>Avancé</span></span>
+                  </div>
+                </li>
+                <li class="tr">
+                  <div class="tr__head"><h3 class="tr__name vh">de Throne vers Star</h3><span class="arc" aria-hidden="true"><a href="#">Throne</a><svg><use href="#i-arc"/></svg>Star</span></div>
+                  <div class="tr__roles">
+                    <span class="role role--base"><span class="role__tag">Base</span><svg class="moon" aria-hidden="true"><use href="#m3"/></svg><span>Intermédiaire</span></span>
+                    <span class="role role--flyer"><span class="role__tag">Flyer</span><svg class="moon" aria-hidden="true"><use href="#m2"/></svg><span>Débutant</span></span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+          </div>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ Formulaire ============ -->
+  <section class="mq-section" aria-labelledby="s-form">
+    <header>
+      <h2 id="s-form">Proposer une transition</h2>
+      <p>Départ et arrivée sont reliés par la trajectoire. La difficulté se choisit en touchant une phase de lune, dans la couleur du rôle. Le cadre de droite montre les erreurs à l'envoi.</p>
+    </header>
+    <div class="mq-row">
+      <figure class="mq-frame mq-frame--mobile">
+        <figcaption>Téléphone, saisie en cours</figcaption>
+        <div class="mq-screen">
+          <div class="site-header">
+            <a class="brand" href="#"><svg aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+            <div class="account"><span class="account__avatar" aria-hidden="true">A</span></div>
+          </div>
+          <div class="main">
+            <div class="form-page">
+              <h1>Proposer une transition</h1>
+              <p class="form-page__intro">Le nom et la description sont facultatifs ; les autres champs sont obligatoires.</p>
+              <form class="form" action="#" onsubmit="return false">
+                <div class="route">
+                  <div class="field"><label for="f1-from">Pose de départ</label><select id="f1-from"><option>Bird</option><option selected>Star</option><option>Throne</option></select></div>
+                  <svg class="route__arc" viewBox="0 0 46 20" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><use href="#i-arc"/></svg>
+                  <div class="field"><label for="f1-to">Pose d'arrivée</label><select id="f1-to"><option>Choisis une pose</option><option selected>Bird</option><option>Throne</option></select></div>
+                </div>
+                <div class="field">
+                  <label for="f1-name">Nom de la transition (facultatif)</label>
+                  <input id="f1-name" type="text" aria-describedby="f1-name-help">
+                  <p class="field__help" id="f1-name-help">Son nom d'usage, par exemple Ninja Star. Sans nom, elle se présentera par ses poses : Star → Bird.</p>
+                </div>
+                <fieldset class="field">
+                  <legend><span class="legend-role"><span class="role role--base"><span class="role__tag">Base</span></span>Difficulté pour la base</span></legend>
+                  <div class="phases phases--base">
+                    <label class="phase"><input type="radio" name="f1-b"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</label>
+                    <label class="phase"><input type="radio" name="f1-b"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</label>
+                    <label class="phase"><input type="radio" name="f1-b" checked><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</label>
+                    <label class="phase"><input type="radio" name="f1-b"><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</label>
+                  </div>
+                </fieldset>
+                <fieldset class="field">
+                  <legend><span class="legend-role"><span class="role role--flyer"><span class="role__tag">Flyer</span></span>Difficulté pour le flyer</span></legend>
+                  <div class="phases phases--flyer">
+                    <label class="phase"><input type="radio" name="f1-f"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</label>
+                    <label class="phase"><input type="radio" name="f1-f" checked><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</label>
+                    <label class="phase"><input type="radio" name="f1-f"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</label>
+                    <label class="phase"><input type="radio" name="f1-f"><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</label>
+                  </div>
+                </fieldset>
+                <div class="field">
+                  <label for="f1-desc">Description (facultative)</label>
+                  <textarea id="f1-desc" rows="3" aria-describedby="f1-desc-help"></textarea>
+                  <p class="field__help" id="f1-desc-help">Position de passage, appuis, lien vers une vidéo. 500 caractères au maximum.</p>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn--primary">Proposer la transition</button>
+                  <a class="btn btn--ghost" href="#s-pose">Annuler</a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="mq-frame mq-frame--wide">
+        <figcaption>Grand écran, erreurs à l'envoi</figcaption>
+        <div class="mq-screen">
+          <div class="site-header">
+            <a class="brand" href="#"><svg aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+            <div class="account"><span class="account__email">alice@example.org</span><span class="account__avatar" aria-hidden="true">A</span></div>
+          </div>
+          <div class="main">
+            <div class="form-page" style="max-width:640px">
+              <h1>Proposer une transition</h1>
+              <form class="form" action="#" onsubmit="return false">
+                <div class="route">
+                  <div class="field"><label for="f2-from">Pose de départ</label><select id="f2-from"><option selected>Throne</option></select></div>
+                  <svg class="route__arc" viewBox="0 0 46 20" aria-hidden="true"><use href="#i-arc"/></svg>
+                  <div class="field">
+                    <label for="f2-to">Pose d'arrivée</label>
+                    <select id="f2-to" aria-invalid="true" aria-describedby="f2-to-err"><option selected>Choisis une pose</option></select>
+                    <p class="field__error" id="f2-to-err"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg>Choisis la pose d'arrivée.</p>
+                  </div>
+                </div>
+                <fieldset class="field">
+                  <legend><span class="legend-role"><span class="role role--base"><span class="role__tag">Base</span></span>Difficulté pour la base</span></legend>
+                  <p class="field__error"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg>Choisis la difficulté pour la base.</p>
+                  <div class="phases phases--base">
+                    <label class="phase"><input type="radio" name="f2-b"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</label>
+                    <label class="phase"><input type="radio" name="f2-b"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</label>
+                    <label class="phase"><input type="radio" name="f2-b"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</label>
+                    <label class="phase"><input type="radio" name="f2-b"><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</label>
+                  </div>
+                </fieldset>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn--primary">Proposer la transition</button>
+                  <a class="btn btn--ghost" href="#s-pose">Annuler</a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ Validation et succès ============ -->
+  <section class="mq-section" aria-labelledby="s-valid">
+    <header>
+      <h2 id="s-valid">Validation et confirmation</h2>
+      <p>La file de validation reste sobre : c'est un écran de travail. La confirmation d'envoi a droit à un petit soleil.</p>
+    </header>
+    <div class="mq-row">
+      <figure class="mq-frame mq-frame--wide">
+        <figcaption>Grand écran, file de validation</figcaption>
+        <div class="mq-screen">
+          <div class="main" style="padding-top:28px">
+            <div class="queue">
+              <h1>Propositions à valider</h1>
+              <p>2 propositions en attente, de la plus ancienne à la plus récente</p>
+              <article class="proposal" aria-labelledby="c1">
+                <h2 id="c1">Transition Ninja Star, de Star vers Star</h2>
+                <p class="proposal__by">Proposée par <strong>alice@example.org</strong> le <time datetime="2026-11-14">14 novembre 2026</time></p>
+                <div class="tr__roles">
+                  <span class="role role--base"><span class="role__tag">Base</span><svg class="moon" aria-hidden="true"><use href="#m4"/></svg><span>Avancé</span></span>
+                  <span class="role role--flyer"><span class="role__tag">Flyer</span><svg class="moon" aria-hidden="true"><use href="#m4"/></svg><span>Avancé</span></span>
+                </div>
+                <p class="proposal__desc"><b>Description</b>Vidéo : https://example.org/ninja-star</p>
+                <div class="proposal__actions">
+                  <button type="button" class="btn btn--primary">Accepter et publier</button>
+                  <button type="button" class="btn btn--ghost">Ajuster avant de publier</button>
+                  <button type="button" class="btn btn--danger">Refuser</button>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="mq-frame mq-frame--mobile">
+        <figcaption>Téléphone, proposition envoyée</figcaption>
+        <div class="mq-screen">
+          <div class="main" style="padding-top:20px">
+            <div class="success" role="status">
+              <svg class="burst" aria-hidden="true"><use href="#i-burst"/></svg>
+              <h2>Transition proposée</h2>
+              <p>Star → Bird attend la relecture d'un validateur. Tu la retrouves dans « Mes propositions ».</p>
+              <div class="success__actions">
+                <a class="btn btn--primary" href="#">Voir mes propositions</a>
+                <a class="btn btn--ghost" href="#">Retour à Star</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </figure>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var buttons = document.querySelectorAll('[data-set-theme]');
+  function current() {
+    var t = root.getAttribute('data-theme');
+    if (t) return t;
+    return window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  function sync() { var c = current(); buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.setTheme === c)); }); }
+  buttons.forEach(function (b) { b.addEventListener('click', function () { root.setAttribute('data-theme', b.dataset.setTheme); sync(); }); });
+  sync();
+})();
+</script>
+</body>
+</html>
