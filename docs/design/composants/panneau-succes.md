@@ -1,5 +1,7 @@
 # Panneau de succès
 
+> **Direction « Soleil et Lune »** ([ADR 0031](../../adr/0031-direction-visuelle-soleil-et-lune.md)) : Fond `successSurface` sans barre, rayon `lg` ; **éclat de soleil** (54 px, `sun`, décoratif) à la place de l'icône cercle-coche ; titre en Unbounded 600. Libellés et actions inchangés. La file de validation et ses comptes rendus restent sobres. Ce qui suit reste valable pour la structure, les libellés et l'accessibilité ; les valeurs visuelles sont celles de `principes.md`.
+
 Remplace un formulaire envoyé avec succès : il dit ce que devient l'envoi, puis propose la suite. Usage en story 3 : après « Proposer la pose ». Version compacte pour une décision dans une liste : `compte-rendu-decision.md` (story 4).
 
 ## Structure

@@ -1,6 +1,7 @@
 import { catalogLabels, difficultyLevelName, difficultyScale } from '@acrofunjam/core';
 import { useId } from 'react';
-import { DifficultyDots } from './DifficultyDots';
+import { Icon } from '../layout/Icon';
+import { DifficultyMoon } from './DifficultyMoon';
 
 /**
  * Legend of the difficulty scale, then the responsibility warning (docs/design/composants/legende-echelle.md).
@@ -9,7 +10,12 @@ import { DifficultyDots } from './DifficultyDots';
  */
 export function DifficultyLegend({
   warning = catalogLabels.responsibilityWarning,
-}: { readonly warning?: string } = {}) {
+  safetyNote = false,
+}: {
+  readonly warning?: string;
+  /** The page of a pose: the warning becomes the safety note (« spotter »), on the sun surface with its icon. */
+  readonly safetyNote?: boolean;
+} = {}) {
   const introduction = useId();
   return (
     <div className="difficulty-legend">
@@ -20,12 +26,19 @@ export function DifficultyLegend({
       <ol className="difficulty-legend__levels" role="list" aria-labelledby={introduction}>
         {difficultyScale.map((level) => (
           <li key={level} className="difficulty-legend__level">
-            <DifficultyDots level={level} />
+            <DifficultyMoon level={level} />
             {difficultyLevelName(level)}
           </li>
         ))}
       </ol>
-      <p className="difficulty-legend__warning">{warning}</p>
+      {safetyNote ? (
+        <p className="safety-note">
+          <Icon name="spot" />
+          <span>{warning}</span>
+        </p>
+      ) : (
+        <p className="difficulty-legend__warning">{warning}</p>
+      )}
     </div>
   );
 }

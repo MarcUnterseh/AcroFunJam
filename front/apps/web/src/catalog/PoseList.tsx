@@ -9,24 +9,54 @@ import {
 import { Link } from 'react-router';
 import { Icon } from '../layout/Icon';
 import { posePath, revisionPath } from '../paths';
-import { DifficultyDots } from './DifficultyDots';
+import { DifficultyMoon } from './DifficultyMoon';
 
-function Difficulty({ level }: { readonly level: DifficultyLevel }) {
+/**
+ * Role pill (docs/design/composants/pastille-role.md): « Base » in the colour of the earth, « Flyer » in the colour of
+ * the sky, then the moon phase and the level written in full. A term and its value of a description list: read
+ * « Base : Intermédiaire ».
+ */
+function RolePill({
+  role,
+  label,
+  level,
+}: {
+  readonly role: 'base' | 'flyer';
+  readonly label: string;
+  readonly level: DifficultyLevel;
+}) {
   return (
-    <>
-      {difficultyLevelName(level)}
-      <DifficultyDots level={level} />
-    </>
+    <div className={`role-pill role-pill--${role}`}>
+      <dt className="role-pill__tag">{label}</dt>
+      <dd className="role-pill__level">
+        <DifficultyMoon level={level} />
+        {difficultyLevelName(level)}
+      </dd>
+    </div>
   );
 }
 
-/** Yes / No is carried by the word and the icon (tick / dash); the muted colour of "Non" is only a reinforcement. */
-function FlowBoundary({ possible }: { readonly possible: boolean }) {
+/**
+ * A flow boundary (principes.md, « Bornes de flow »): a sunrise or a sunset when possible, the question struck
+ * through and muted when not; « Oui » / « Non » always written, colour and strike are only reinforcements.
+ */
+function FlowBoundary({
+  label,
+  icon,
+  possible,
+}: {
+  readonly label: string;
+  readonly icon: 'rise' | 'set';
+  readonly possible: boolean;
+}) {
   return (
-    <span className={`flow-boundary${possible ? '' : ' flow-boundary--no'}`}>
-      <Icon name={possible ? 'check' : 'dash'} />
-      {flowBoundaryAnswer(possible)}
-    </span>
+    <div className={`flow-boundary flow-boundary--${possible ? 'yes' : 'no'}`}>
+      <dt>
+        <Icon name={icon} />
+        <span className="flow-boundary__question">{label}</span>
+      </dt>
+      <dd>{flowBoundaryAnswer(possible)}</dd>
+    </div>
   );
 }
 
@@ -39,18 +69,8 @@ type PoseCharacteristics = Pick<
 function DifficultyRows({ difficulties }: { readonly difficulties: Difficulties }) {
   return (
     <>
-      <div className="pose-card__row">
-        <dt>{catalogLabels.base}</dt>
-        <dd>
-          <Difficulty level={difficulties.baseDifficulty} />
-        </dd>
-      </div>
-      <div className="pose-card__row">
-        <dt>{catalogLabels.flyer}</dt>
-        <dd>
-          <Difficulty level={difficulties.flyerDifficulty} />
-        </dd>
-      </div>
+      <RolePill role="base" label={catalogLabels.base} level={difficulties.baseDifficulty} />
+      <RolePill role="flyer" label={catalogLabels.flyer} level={difficulties.flyerDifficulty} />
     </>
   );
 }
@@ -58,8 +78,8 @@ function DifficultyRows({ difficulties }: { readonly difficulties: Difficulties 
 type Difficulties = Pick<PoseSummary, 'baseDifficulty' | 'flyerDifficulty'>;
 
 /**
- * The two difficulties of a transition (element-transition.md, carte-transition.md): the rows « Base » / « Flyer » of
- * a pose card, unchanged, side by side from 40em of container.
+ * The two difficulties of a transition (element-transition.md, carte-transition.md): the role pills of a pose card,
+ * unchanged.
  */
 export function DifficultyDetails({ difficulties }: { readonly difficulties: Difficulties }) {
   return (
@@ -77,18 +97,12 @@ export function DifficultyDetails({ difficulties }: { readonly difficulties: Dif
 export function PoseDetails({ pose }: { readonly pose: PoseCharacteristics }) {
   return (
     <dl className="pose-card__details">
-      <DifficultyRows difficulties={pose} />
-      <div className="pose-card__row pose-card__row--first-boundary">
-        <dt>{catalogLabels.canStartFlow}</dt>
-        <dd>
-          <FlowBoundary possible={pose.canStartFlow} />
-        </dd>
+      <div className="pose-card__roles">
+        <DifficultyRows difficulties={pose} />
       </div>
-      <div className="pose-card__row">
-        <dt>{catalogLabels.canEndFlow}</dt>
-        <dd>
-          <FlowBoundary possible={pose.canEndFlow} />
-        </dd>
+      <div className="pose-card__flow">
+        <FlowBoundary label={catalogLabels.canStartFlow} icon="rise" possible={pose.canStartFlow} />
+        <FlowBoundary label={catalogLabels.canEndFlow} icon="set" possible={pose.canEndFlow} />
       </div>
     </dl>
   );
@@ -103,11 +117,15 @@ export function PoseDetails({ pose }: { readonly pose: PoseCharacteristics }) {
 function PoseCard({ pose, revisable }: { readonly pose: PoseSummary; readonly revisable: boolean }) {
   return (
     <li className={`pose-card pose-card--linked${revisable ? ' pose-card--revisable' : ''}`}>
-      <h2 className="pose-card__name">
-        <Link to={posePath(pose.id)} className="pose-card__link">
-          {pose.name}
-        </Link>
-      </h2>
+      {/* The top row keeps a slot for the glyph of the pose (carte-pose.md, « Glyphe »), drawn later: a decorative
+          <svg className="pose-card__glyph" aria-hidden="true"> after the title, nothing else to change. */}
+      <div className="pose-card__top">
+        <h2 className="pose-card__name">
+          <Link to={posePath(pose.id)} className="pose-card__link">
+            {pose.name}
+          </Link>
+        </h2>
+      </div>
       <PoseDetails pose={pose} />
       {revisable && (
         <p className="pose-card__revision">

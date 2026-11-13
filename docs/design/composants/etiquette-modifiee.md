@@ -1,5 +1,7 @@
 # Étiquette « Modifiée »
 
+> **Direction « Soleil et Lune »** ([ADR 0031](../../adr/0031-direction-visuelle-soleil-et-lune.md)) : Étiquette en pilule (`radius.pill`), `selectedSurface` + bordure `selected` (famille du primaire). Ce qui suit reste valable pour la structure, les libellés et l'accessibilité ; les valeurs visuelles sont celles de `principes.md`.
+
 Story 6. Dans le formulaire « Proposer une modification », signale **par un mot** chaque champ dont la valeur saisie diffère de la valeur actuelle de la pose. Elle permet de repérer d'un coup d'œil ce qui sera proposé, sans compter sur la couleur. Écran : `../ecrans/6-proposer-une-modification.md`.
 
 ## Structure

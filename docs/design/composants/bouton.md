@@ -1,5 +1,7 @@
 # Bouton
 
+> **Direction « Soleil et Lune »** ([ADR 0031](../../adr/0031-direction-visuelle-soleil-et-lune.md)) : Boutons en **pilule** (`radius.pill`). Primaire : fond `primary`, texte `primaryContrast` (48 px pour une action principale). Secondaire : fond transparent, contour `border` 1 px, survol `surfaceHover` et contour `text`. Discret (en-tête) : la même classe secondaire, fond `surfaceHover` sans contour. Pas de variante danger (un refus n'est jamais rouge). Cibles 44 / 48 px inchangées. Ce qui suit reste valable pour la structure, les libellés et l'accessibilité ; les valeurs visuelles sont celles de `principes.md`.
+
 Élément `<button>` (action) ou `<a>` stylé en bouton (navigation : « Se connecter », « S'inscrire » de l'en-tête ; « Proposer une pose », voir `lien-bouton.md`). Le rôle sémantique suit la nature de l'action, pas l'apparence.
 
 ## Structure

@@ -68,7 +68,10 @@ function BackLink() {
   );
 }
 
-/** « Throne → Bird », read « de Throne vers Bird »: the arrow and the names hidden from assistive technologies. */
+/**
+ * « Throne ⤳ Bird », read « de Throne vers Bird »: the dotted trajectory (a loop for a washing machine) and the names
+ * hidden from assistive technologies.
+ */
 function UnnamedTitle({ from, to }: { readonly from: string; readonly to: string }) {
   const { shown, spoken } = unnamedTransitionLabel({ from, to });
   return (
@@ -76,7 +79,7 @@ function UnnamedTitle({ from, to }: { readonly from: string; readonly to: string
       <span className="visually-hidden">{spoken}</span>
       <span className="transition__poses" aria-hidden="true">
         <span>{shown[0]}</span>
-        <Icon name="arrow" />
+        <Icon name={from === to ? 'loop' : 'trajectory'} />
         <span>{shown[1]}</span>
       </span>
     </>
@@ -99,15 +102,18 @@ function TransitionItem({
 }) {
   const other = transition.otherPose;
   const [from, to] = direction === 'from' ? [page.name, other.name] : [other.name, page.name];
+  const samePose = isSamePose(page, transition);
   return (
     <li className="transition">
       <h3 className="transition__title">{transition.name ?? <UnnamedTitle from={from} to={to} />}</h3>
       <p className="transition__other-pose">
         <span>{otherPoseLead(direction)}</span>
+        {/* A named washing machine shows its loop here: its title does not draw it. */}
+        {transition.name && samePose && <Icon name="loop" />}
         <Link to={posePath(other.id)} className="transition__other-pose-link">
           {other.name}
         </Link>
-        {isSamePose(page, transition) && <span>{posePageLabels.samePose}</span>}
+        {samePose && <span>{posePageLabels.samePose}</span>}
       </p>
       <DifficultyDetails difficulties={transition} />
       {transition.description && <p className="transition__description">{transition.description}</p>}
@@ -144,31 +150,53 @@ function TransitionSection({
   );
 }
 
-/** The pose, its characteristics, the scale and the warning, then its two sections of transitions. */
+/** The wavy horizon closing the sky, in the colour of the page: decorative. */
+function Horizon() {
+  return (
+    <svg
+      className="pose-hero__horizon"
+      viewBox="0 0 900 26"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M0 26V16C200 2 380 0 520 6s260 14 380 2V26z" />
+    </svg>
+  );
+}
+
+/**
+ * The pose, its characteristics, the scale and the warning, then its two sections of transitions. The header of the
+ * page is the only spectacular moment of the site (principes.md): the name under a sky, a rising orb, a horizon.
+ */
 function LoadedPage({ page, canProposeHere }: { readonly page: PosePage; readonly canProposeHere: boolean }) {
   return (
     <>
-      <h1 tabIndex={-1} className="pose-page__title">
-        {page.name}
-      </h1>
-      {/* Only for a person who may propose: absent otherwise, without any space kept for them. */}
-      {canProposeHere && (
-        <div className="pose-page__actions">
-          <Link to={transitionProposalPath(page.id)} className="button button--primary link-button">
-            <Icon name="plus" />
-            {proposeTransitionFromLabel(page.name)}
-          </Link>
-          <Link to={revisionPath(page.id)} className="button button--secondary link-button">
-            {posePageLabels.proposeRevision}
-          </Link>
-        </div>
-      )}
-      <div className="pose-page__panel">
+      <div className="pose-hero">
+        <BackLink />
+        <h1 tabIndex={-1} className="pose-page__title">
+          {page.name}
+        </h1>
         <PoseDetails pose={page} />
+        <Horizon />
       </div>
-      <DifficultyLegend warning={posePageLabels.responsibilityWarning} />
-      <TransitionSection page={page} direction="from" />
-      <TransitionSection page={page} direction="to" />
+      <div className="pose-page__body">
+        {/* Only for a person who may propose: absent otherwise, without any space kept for them. */}
+        {canProposeHere && (
+          <div className="pose-page__actions">
+            <Link to={transitionProposalPath(page.id)} className="button button--primary link-button">
+              <Icon name="plus" />
+              {proposeTransitionFromLabel(page.name)}
+            </Link>
+            <Link to={revisionPath(page.id)} className="button button--secondary link-button">
+              {posePageLabels.proposeRevision}
+            </Link>
+          </div>
+        )}
+        <DifficultyLegend warning={posePageLabels.responsibilityWarning} safetyNote />
+        <TransitionSection page={page} direction="from" />
+        <TransitionSection page={page} direction="to" />
+      </div>
     </>
   );
 }
@@ -274,9 +302,10 @@ export function PosePageRoute() {
       </p>
     );
 
+  // Once loaded, the link back sits in the sky of the pose (LoadedPage); always first in the page.
   return (
-    <div className="pose-page">
-      <BackLink />
+    <div className={`pose-page${page ? ' pose-page--loaded' : ''}`}>
+      {!page && <BackLink />}
       {content}
     </div>
   );

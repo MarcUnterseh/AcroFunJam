@@ -1,5 +1,7 @@
 # Champ de formulaire
 
+> **Direction « Soleil et Lune »** ([ADR 0031](../../adr/0031-direction-visuelle-soleil-et-lune.md)) : Champs : fond `surface`, contour `border`, rayon `md` (16 px). Formulaire « Proposer une transition » : la **carte de trajet** regroupe « Pose de départ », la trajectoire en pointillés (`sunStrong`, décorative) et « Pose d'arrivée » (empilés sur téléphone, côte à côte en grand), fond `background`, contour `divider`, rayon `lg`. Ce qui suit reste valable pour la structure, les libellés et l'accessibilité ; les valeurs visuelles sont celles de `principes.md`.
+
 Champ texte avec libellé, aide facultative et message d'erreur. Base du champ mot de passe (`champ-mot-de-passe.md`).
 
 ## Structure (de haut en bas)

@@ -600,6 +600,7 @@ export function RevisionForm({
         />
         <TileRadioGroup
           legend={proposalLabels.baseDifficulty}
+          tone="base"
           tag={tag('baseDifficulty')}
           name="baseDifficulty"
           layout="levels"
@@ -612,6 +613,7 @@ export function RevisionForm({
         />
         <TileRadioGroup
           legend={proposalLabels.flyerDifficulty}
+          tone="flyer"
           tag={tag('flyerDifficulty')}
           name="flyerDifficulty"
           layout="levels"

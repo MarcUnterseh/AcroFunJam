@@ -1,5 +1,7 @@
 # Groupe de tuiles radio
 
+> **Direction « Soleil et Lune »** ([ADR 0031](../../adr/0031-direction-visuelle-soleil-et-lune.md)) : **Phases** (groupes de difficulté, `layout="levels"`) : chaque tuile montre la phase de lune (24 px) au-dessus du niveau, deux tuiles par ligne sur téléphone, quatre en grand ; la radio native couvre toute la tuile, invisible (la tuile est le contrôle). `tone="base" | "flyer"` : cochée = fond `baseSurface` / `flyerSurface` et bordure 2 px `base` / `flyer`, phase et libellé de la couleur du rôle ; un point de la couleur du rôle devant la légende. Groupes Oui / Non : radio visible, cochée en `selected` / `selectedSurface`. Focus : anneau autour de la tuile ; invalide : bordure 2 px `danger` sur toutes les tuiles ; couleurs forcées : bordure `Highlight` pour la tuile cochée. Ce qui suit reste valable pour la structure, les libellés et l'accessibilité ; les valeurs visuelles sont celles de `principes.md`.
+
 Choix unique parmi peu d'options, toutes visibles : « Difficulté base », « Difficulté flyer » (4 niveaux), « Peut-on commencer un flow sur cette pose ? », « Peut-on terminer un flow sur cette pose ? » (Oui / Non). **Radios natifs** dans un `fieldset`, présentés en tuiles ; aucune option présélectionnée dans « Proposer une pose ». Story 4 : les mêmes groupes, **préremplis** avec les valeurs proposées, dans la zone d'ajustement de la carte de proposition (`carte-proposition.md`).
 
 ## Structure

@@ -255,6 +255,7 @@ export function ProposalForm({
         />
         <TileRadioGroup
           legend={proposalLabels.baseDifficulty}
+          tone="base"
           name="baseDifficulty"
           layout="levels"
           options={levels}
@@ -265,6 +266,7 @@ export function ProposalForm({
         />
         <TileRadioGroup
           legend={proposalLabels.flyerDifficulty}
+          tone="flyer"
           name="flyerDifficulty"
           layout="levels"
           options={levels}

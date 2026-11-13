@@ -1,8 +1,15 @@
+import type { DifficultyLevel } from '@acrofunjam/core';
 import { useId, type Ref } from 'react';
+import { DifficultyMoon } from '../catalog/DifficultyMoon';
 import { helpIds, helpsOf, ModifiedTag, type Help } from '../layout/form-controls';
 import { Icon } from '../layout/Icon';
 
-export type TileOption<T extends string> = { readonly value: T; readonly label: string };
+export type TileOption<T extends string> = {
+  readonly value: T;
+  readonly label: string;
+  /** A difficulty level: the tile shows its moon phase above the label (groupe-tuiles-radio.md, « Phases »). */
+  readonly phase?: DifficultyLevel;
+};
 
 type TileRadioGroupProps<T extends string> = {
   readonly legend: string;
@@ -24,6 +31,8 @@ type TileRadioGroupProps<T extends string> = {
   /** Receives the first radio, to give it the focus when the group is the first one in error. */
   readonly firstRadioRef?: Ref<HTMLInputElement> | undefined;
   readonly layout: 'levels' | 'yes-no';
+  /** The role the group is about: a checked tile takes its colour (« Base » earth, « Flyer » sky). */
+  readonly tone?: 'base' | 'flyer' | undefined;
 };
 
 /**
@@ -43,6 +52,7 @@ export function TileRadioGroup<T extends string>({
   tag,
   firstRadioRef,
   layout,
+  tone,
 }: TileRadioGroupProps<T>) {
   const errorId = useId();
   const ownId = useId();
@@ -52,7 +62,10 @@ export function TileRadioGroup<T extends string>({
   const describedBy =
     [tag && tagId, helpId, ...ownHelpIds, error && errorId].filter(Boolean).join(' ') || undefined;
   return (
-    <fieldset className={`tile-group${error ? ' tile-group--invalid' : ''}`} aria-describedby={describedBy}>
+    <fieldset
+      className={`tile-group${tone ? ` tile-group--${tone}` : ''}${error ? ' tile-group--invalid' : ''}`}
+      aria-describedby={describedBy}
+    >
       <legend className={tag ? 'tile-group__legend--tagged' : undefined}>
         {legend}
         {tag && <ModifiedTag id={tagId} text={tag} />}
@@ -72,7 +85,7 @@ export function TileRadioGroup<T extends string>({
       <div className="tile-group__container">
         <div className={`tile-group__tiles tile-group__tiles--${layout}`}>
           {options.map((option, index) => (
-            <label key={option.value} className="tile">
+            <label key={option.value} className={`tile${option.phase ? ' tile--phase' : ''}`}>
               <input
                 ref={index === 0 ? firstRadioRef : undefined}
                 type="radio"
@@ -83,6 +96,7 @@ export function TileRadioGroup<T extends string>({
                 aria-invalid={error ? true : undefined}
                 aria-describedby={describedBy}
               />
+              {option.phase && <DifficultyMoon level={option.phase} />}
               <span>{option.label}</span>
             </label>
           ))}

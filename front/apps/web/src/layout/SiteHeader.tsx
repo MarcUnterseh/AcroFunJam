@@ -3,7 +3,9 @@ import { ValidationNav } from '../contribution/ValidationNav';
 import { Link, NavLink, useLocation } from 'react-router';
 import { returnPathFrom } from '../identity/return-path';
 import { useSession } from '../identity/SessionContext';
+import { accountInitial } from './account-initial';
 import { useAnnounce } from './Announcer';
+import { Logo } from './Logo';
 
 /** Site header (docs/design/composants/en-tete.md): the account area keeps its size in its three states. */
 export function SiteHeader() {
@@ -35,6 +37,7 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="site-header__inner">
         <Link to="/" className="site-header__brand">
+          <Logo />
           AcroFunJam
         </Link>
         <ValidationNav />
@@ -62,6 +65,10 @@ export function SiteHeader() {
               <span className="site-header__email" title={session.email}>
                 <span className="visually-hidden">Compte connecté : </span>
                 {session.email}
+              </span>
+              {/* Decorative: the address stays in the accessible name above, hidden only visually on narrow screens. */}
+              <span className="site-header__avatar" aria-hidden="true">
+                {accountInitial(session.email)}
               </span>
               <button
                 type="button"

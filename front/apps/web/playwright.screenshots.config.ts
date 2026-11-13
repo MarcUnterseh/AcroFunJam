@@ -2,7 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 // Screenshots of the screens of a story, for the design reviews (npm run screenshots): one file per story,
 // e2e/screenshots/story-<n>.screens.ts, the API simulated by network interception as in the e2e. Every screen is taken
-// at 320 px wide and at a desktop width, light theme; the images land in screenshots/story-<n>/ (not versioned).
+// at 320 px wide and at a desktop width, in the light theme (dawn) and the dark theme (night, suffix « -dark »); the
+// images land in screenshots/<file>/ (not versioned).
 // One story only: npm run screenshots -- story-7.
 
 const baseURL = process.env.WEB_BASE_URL ?? 'http://localhost:5173';
@@ -19,6 +20,14 @@ export default defineConfig({
   projects: [
     { name: '320', use: { ...devices['Desktop Chrome'], viewport: { width: 320, height: 720 } } },
     { name: '1280', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } } },
+    {
+      name: '320-dark',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 320, height: 720 }, colorScheme: 'dark' },
+    },
+    {
+      name: '1280-dark',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, colorScheme: 'dark' },
+    },
   ],
   webServer: {
     // As the e2e: a build, served by vite preview; a server already running on the port is reused.

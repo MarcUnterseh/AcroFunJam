@@ -1,5 +1,7 @@
 # Carte « ma proposition »
 
+> **Direction « Soleil et Lune »** ([ADR 0031](../../adr/0031-direction-visuelle-soleil-et-lune.md)) : Même habillage que `carte-proposition.md` (rayon `lg`, pastilles de rôle). Ce qui suit reste valable pour la structure, les libellés et l'accessibilité ; les valeurs visuelles sont celles de `principes.md`.
+
 Une proposition du contributeur dans la page « Mes propositions » (story 5). Lecture seule : aucune action, aucun focus. Elle **reprend le conteneur de `carte-proposition.md`** (story 4) et **la `dl` de `carte-pose.md` sans la modifier**, ajoute le statut (`statut-proposition.md`) et, selon le cas, les détails de la décision. Écran : `../ecrans/5-mes-propositions.md`. Story 6 : une modification proposée est présentée par `carte-ma-modification.md`, qui reprend ce document.
 
 ## Structure

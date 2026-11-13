@@ -166,6 +166,7 @@ export function TransitionProposalCard({
               </p>
               <TileRadioGroup
                 legend={transitionProposalLabels.baseDifficulty}
+                tone="base"
                 name={`${ids.group}-baseDifficulty`}
                 layout="levels"
                 options={levels}
@@ -181,6 +182,7 @@ export function TransitionProposalCard({
               />
               <TileRadioGroup
                 legend={transitionProposalLabels.flyerDifficulty}
+                tone="flyer"
                 name={`${ids.group}-flyerDifficulty`}
                 layout="levels"
                 options={levels}

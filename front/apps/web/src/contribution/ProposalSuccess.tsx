@@ -31,7 +31,7 @@ export function ProposalSuccess({
   return (
     <div className="proposal-success">
       <div className="success-panel">
-        <Icon name="success" />
+        <Icon name="burst" />
         <h2
           ref={title}
           tabIndex={-1}

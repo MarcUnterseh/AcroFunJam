@@ -1,5 +1,7 @@
 # Cartes d'une proposition de transition (file de validation, « Mes propositions »)
 
+> **Direction « Soleil et Lune »** ([ADR 0031](../../adr/0031-direction-visuelle-soleil-et-lune.md)) : Noms des poses du titre en Unbounded 600, mots de liaison en Figtree ; difficultés en pastilles de rôle. Ce qui suit reste valable pour la structure, les libellés et l'accessibilité ; les valeurs visuelles sont celles de `principes.md`.
+
 Story 7. Une proposition de transition dans la file de validation (`/propositions-a-valider`) et dans « Mes propositions » (`/mes-propositions`), mêlée aux propositions de pose et de modification. Ce document ne décrit que les **différences** avec `carte-proposition.md` (file) et `carte-ma-proposition.md` (« Mes propositions ») : conteneur, ligne du contributeur ou de la date, zone de décision, statut, refus, ajustement, alertes et compte rendu en sont repris tels quels. Écran : `../ecrans/7-proposer-une-transition.md`. **Aucun nouveau token.**
 
 ## Titre (`h2`), commun aux deux cartes

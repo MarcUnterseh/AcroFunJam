@@ -1,5 +1,7 @@
 # Élément de transition (page d'une pose)
 
+> **Direction « Soleil et Lune »** ([ADR 0031](../../adr/0031-direction-visuelle-soleil-et-lune.md)) : Chaque transition est une petite carte (`surface`, contour `divider`, rayon `md`). Transition sans nom : « Throne ⤳ Bird » avec la **trajectoire** en pointillés (46 × 20, `sunStrong`), décorative ; nom accessible inchangé « de Throne vers Bird ». Washing machine : la **boucle** à la place de la trajectoire (dans le titre sans nom, ou devant le lien de l'autre pose pour une transition nommée), « (même pose) » toujours écrit. Difficultés en pastilles de rôle ; description en `textMuted`. Ce qui suit reste valable pour la structure, les libellés et l'accessibilité ; les valeurs visuelles sont celles de `principes.md`.
+
 Une transition publiée dans une des deux sections de la page d'une pose (story 7) : « Transitions depuis Throne » ou « Transitions vers Throne ». Écran : `../ecrans/7-proposer-une-transition.md`. Maquette : `../maquettes/7-page-pose-et-transition.html`.
 
 **Liste plate** : pas de carte par transition, pas de compteur. Les éléments sont séparés par des filets décoratifs, sur le fond de la page. Raison : une pose peut avoir une dizaine de transitions ; des cartes encadrées alourdiraient la page et concurrenceraient le panneau des caractéristiques, seule « carte » de l'écran.

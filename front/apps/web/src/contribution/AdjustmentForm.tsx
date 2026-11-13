@@ -64,6 +64,7 @@ export function AdjustmentForm({
       />
       <TileRadioGroup
         legend={proposalLabels.baseDifficulty}
+        tone="base"
         name={`${ids.group}-baseDifficulty`}
         layout="levels"
         options={levels}
@@ -75,6 +76,7 @@ export function AdjustmentForm({
       />
       <TileRadioGroup
         legend={proposalLabels.flyerDifficulty}
+        tone="flyer"
         name={`${ids.group}-flyerDifficulty`}
         layout="levels"
         options={levels}

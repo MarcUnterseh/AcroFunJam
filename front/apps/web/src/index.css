@@ -1,5 +1,7 @@
 /* Only design tokens (virtual:tokens.css, ADR 0012): no colour nor length written here (stylelint).
-   Breakpoint: 40em = breakpoints.md (640) / 16; a CSS variable cannot be used in a media query. */
+   Direction « Soleil et Lune » (ADR 0031, docs/design/principes.md): the tokens switch to the night under
+   prefers-color-scheme: dark, nothing to do here. Breakpoints: 40em = breakpoints.md (640) / 16, 64em =
+   breakpoints.lg; a CSS variable cannot be used in a media query. */
 
 *,
 *::before,
@@ -16,10 +18,21 @@ body {
   background: var(--afj-color-background);
 }
 
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+/* Titles in the display family (Unbounded): wide, round, full of momentum. */
 h1 {
-  font-size: var(--afj-font-size-xl);
-  line-height: var(--afj-line-height-tight);
   margin: 0 0 var(--afj-spacing-lg);
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-xl);
+  font-weight: var(--afj-font-weight-semibold);
+  line-height: var(--afj-line-height-tight);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
 }
 
 a {
@@ -52,7 +65,7 @@ main:focus {
   padding: var(--afj-spacing-sm) var(--afj-spacing-md);
   background: var(--afj-color-background);
   border: var(--afj-size-border-width) solid var(--afj-color-border);
-  border-radius: var(--afj-radius-sm);
+  border-radius: var(--afj-radius-pill);
 }
 
 .skip-link:focus {
@@ -74,7 +87,7 @@ main {
 /* --- Header (docs/design/composants/en-tete.md) ------------------------------------------ */
 
 .site-header {
-  background: var(--afj-color-surface);
+  background: var(--afj-color-background);
   border-bottom: var(--afj-size-border-width) solid var(--afj-color-divider);
 }
 
@@ -96,11 +109,29 @@ main {
 .site-header__brand {
   display: inline-flex;
   align-items: center;
+  gap: var(--afj-spacing-sm);
   min-height: var(--afj-size-touch-target);
-  font-size: var(--afj-font-size-lg);
-  font-weight: var(--afj-font-weight-bold);
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-md);
+  font-weight: var(--afj-font-weight-semibold);
+  letter-spacing: -0.01em;
   color: var(--afj-color-text);
   text-decoration: none;
+}
+
+/* The mark: the base (earth) carries the flyer (sun). Decorative, in the colours of the palette. */
+.logo {
+  inline-size: var(--afj-size-logo);
+  block-size: var(--afj-size-logo);
+  flex-shrink: 0;
+}
+
+.logo__earth {
+  fill: var(--afj-color-base);
+}
+
+.logo__sun {
+  fill: var(--afj-color-sun);
 }
 
 .site-header__contribution {
@@ -121,22 +152,43 @@ main {
   min-height: var(--afj-size-touch-target);
 }
 
+/* Narrow screens: the address is only hidden visually; it stays in the accessible name of the account area. */
 .site-header__email {
-  flex: 1 1 auto;
-  min-width: 0;
-  max-width: var(--afj-size-account-label-max-width);
+  position: absolute;
+  width: 1px;
+  height: 1px;
   overflow: hidden;
-  text-overflow: ellipsis;
+  clip-path: inset(50%);
   white-space: nowrap;
-  text-align: end;
   font-size: var(--afj-font-size-sm);
   color: var(--afj-color-text-muted);
+}
+
+/* The initial of the person, decorative (aria-hidden): the address carries the information. */
+.site-header__avatar {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: var(--afj-size-avatar);
+  block-size: var(--afj-size-avatar);
+  border-radius: 50%;
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-bold);
+  color: var(--afj-color-text);
+  background: var(--afj-color-sun-surface);
 }
 
 .site-header .button {
   flex-shrink: 0;
   width: auto;
   min-height: var(--afj-size-touch-target);
+  font-size: var(--afj-font-size-sm);
+}
+
+/* In the header, the secondary buttons are quiet: a tinted pill, no outline, so that the brand leads. */
+.site-header .button--secondary {
+  background: var(--afj-color-surface-hover);
+  border-color: transparent;
 }
 
 [aria-current='page'] {
@@ -152,8 +204,9 @@ main {
   justify-content: center;
   gap: var(--afj-spacing-xs);
   min-height: var(--afj-size-touch-target);
-  padding: 0 var(--afj-spacing-md);
-  border-radius: var(--afj-radius-md);
+  padding: 0 var(--afj-spacing-lg);
+  border: var(--afj-size-border-width) solid transparent;
+  border-radius: var(--afj-radius-pill);
   font: inherit;
   font-weight: var(--afj-font-weight-semibold);
   white-space: nowrap;
@@ -168,7 +221,6 @@ main {
   min-height: var(--afj-size-control);
   width: 100%;
   white-space: normal;
-  border: none;
   color: var(--afj-color-primary-contrast);
   background: var(--afj-color-primary);
 }
@@ -192,6 +244,7 @@ main {
 
 .identity-page form {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--afj-spacing-md);
 }
 
@@ -218,14 +271,16 @@ main {
   gap: var(--afj-spacing-sm);
 }
 
+/* A percentage width: the field never imposes its intrinsic width (size="20") on a narrow column. */
 .field input {
   flex: 1;
+  width: 100%;
   min-width: 0;
   min-height: var(--afj-size-control);
   padding: 0 var(--afj-spacing-md);
   font: inherit;
   color: var(--afj-color-text);
-  background: var(--afj-color-background);
+  background: var(--afj-color-surface);
   border: var(--afj-size-border-width) solid var(--afj-color-border);
   border-radius: var(--afj-radius-md);
 }
@@ -245,7 +300,7 @@ main {
   color: var(--afj-color-text);
   background: transparent;
   border: var(--afj-size-border-width) solid var(--afj-color-border);
-  border-radius: var(--afj-radius-md);
+  border-radius: var(--afj-radius-pill);
   cursor: pointer;
 }
 
@@ -347,7 +402,7 @@ main {
   color: var(--afj-color-text);
   background: none;
   border: none;
-  border-radius: var(--afj-radius-md);
+  border-radius: var(--afj-radius-pill);
   cursor: pointer;
 }
 
@@ -362,6 +417,8 @@ main {
 
 .page-header h1 {
   margin: 0;
+  font-size: var(--afj-font-size-xl);
+  line-height: var(--afj-line-height-display);
 }
 
 /* Actions of the page header (lien-bouton.md, story 5): stacked, full width, on mobile. */
@@ -403,7 +460,7 @@ main {
   padding: var(--afj-spacing-lg);
   background: var(--afj-color-surface);
   border: var(--afj-size-border-width) solid var(--afj-color-divider);
-  border-radius: var(--afj-radius-md);
+  border-radius: var(--afj-radius-lg);
 }
 
 .catalog-empty p,
@@ -445,32 +502,35 @@ main {
   gap: var(--afj-spacing-xs);
   font-weight: var(--afj-font-weight-semibold);
   white-space: nowrap;
+  color: var(--afj-color-text);
 }
 
 .difficulty-legend__warning {
   margin: var(--afj-spacing-xs) 0 0;
 }
 
-/* Decorative dot scale: filled discs / empty rings, a difference of shape, never a colour per level. */
-.difficulty-dots {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--afj-spacing-xs);
-
-  /* High contrast: the system would erase the backgrounds; CanvasText is applied below instead. */
-  forced-color-adjust: none;
+/* Lunar scale (legende-echelle.md): a phase per level, a difference of shape, never a colour per level. */
+.moon {
+  inline-size: var(--afj-size-moon);
+  block-size: var(--afj-size-moon);
+  flex-shrink: 0;
 }
 
-.difficulty-dots__dot {
-  inline-size: var(--afj-size-scale-dot);
-  block-size: var(--afj-size-scale-dot);
-  border: var(--afj-size-border-width) solid var(--afj-color-border);
-  border-radius: 50%;
+/* Safety note (« spotter », page of a pose): the sun surface, the warning icon in the strong sun. */
+.safety-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--afj-spacing-sm);
+  margin: var(--afj-spacing-md) 0 0;
+  padding: var(--afj-spacing-md);
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text);
+  background: var(--afj-color-sun-surface);
+  border-radius: var(--afj-radius-md);
 }
 
-.difficulty-dots__dot--filled {
-  background: var(--afj-color-text);
-  border-color: var(--afj-color-text);
+.safety-note .icon {
+  color: var(--afj-color-sun-strong);
 }
 
 /* Grid of pose cards (docs/design/composants/carte-pose.md). */
@@ -478,70 +538,168 @@ main {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--afj-spacing-md);
+  align-items: stretch;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .pose-card {
-  padding: var(--afj-spacing-md);
+  padding: var(--afj-spacing-lg);
   background: var(--afj-color-surface);
   border: var(--afj-size-border-width) solid var(--afj-color-divider);
-  border-radius: var(--afj-radius-md);
+  border-radius: var(--afj-radius-lg);
+}
+
+/* The name, then a slot for the glyph of the pose (carte-pose.md, « Glyphe »): drawn later, nothing to change here. */
+.pose-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--afj-spacing-md);
+  margin-bottom: var(--afj-spacing-md);
+}
+
+.pose-card__glyph {
+  inline-size: var(--afj-size-glyph);
+  block-size: var(--afj-size-glyph);
+  flex-shrink: 0;
 }
 
 .pose-card__name {
-  margin: 0 0 var(--afj-spacing-md);
+  margin: 0;
+  min-width: 0;
+  font-family: var(--afj-font-family-display);
   font-size: var(--afj-font-size-lg);
-  font-weight: var(--afj-font-weight-bold);
+  font-weight: var(--afj-font-weight-semibold);
   line-height: var(--afj-line-height-tight);
+  letter-spacing: -0.01em;
   overflow-wrap: anywhere;
 }
 
+/* The characteristics: the role pills, then the flow boundaries. */
 .pose-card__details {
   display: grid;
-  row-gap: var(--afj-spacing-xs);
+  gap: var(--afj-spacing-md);
   margin: 0;
 }
 
-/* Term and value on one line; when space runs out, the value goes under the term, aligned left. */
-.pose-card__row {
+.pose-card__roles,
+.difficulty-details {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  column-gap: var(--afj-spacing-sm);
+  gap: var(--afj-spacing-sm);
 }
 
-.pose-card__row dt {
-  color: var(--afj-color-text-muted);
+.pose-card__flow {
+  display: grid;
+  gap: var(--afj-spacing-xs);
 }
 
-.pose-card__row dd {
+/* Role pill (pastille-role.md): the tag « Base » / « Flyer » in the colour of the role, the phase, the level. */
+.role-pill {
   display: inline-flex;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--afj-spacing-sm);
+  max-width: 100%;
+  padding: var(--afj-spacing-xs) var(--afj-spacing-md) var(--afj-spacing-xs) var(--afj-spacing-xs);
+  border: var(--afj-size-border-width) solid transparent;
+  border-radius: var(--afj-radius-pill);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  line-height: var(--afj-line-height-tight);
+}
+
+.role-pill--base {
+  color: var(--afj-color-base);
+  background: var(--afj-color-base-surface);
+}
+
+.role-pill--flyer {
+  color: var(--afj-color-flyer);
+  background: var(--afj-color-flyer-surface);
+}
+
+.role-pill__tag {
+  padding: 0.125rem var(--afj-spacing-sm);
+  border-radius: var(--afj-radius-pill);
+  font-size: var(--afj-font-size-xs);
+  font-weight: var(--afj-font-weight-bold);
+  color: var(--afj-color-surface);
+}
+
+.role-pill--base .role-pill__tag {
+  background: var(--afj-color-base);
+}
+
+.role-pill--flyer .role-pill__tag {
+  background: var(--afj-color-flyer);
+}
+
+.role-pill__level {
+  display: inline-flex;
   align-items: center;
   gap: var(--afj-spacing-xs);
   margin: 0;
+  min-width: 0;
+  color: var(--afj-color-text);
+  overflow-wrap: anywhere;
+}
+
+.role-pill--base .moon {
+  color: var(--afj-color-base);
+}
+
+.role-pill--flyer .moon {
+  color: var(--afj-color-flyer);
+}
+
+/* Flow boundary: a sunrise / sunset when possible; the question struck through and muted when not. */
+.flow-boundary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--afj-spacing-xs) var(--afj-spacing-sm);
+  font-size: var(--afj-font-size-sm);
+}
+
+.flow-boundary dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--afj-spacing-xs);
+}
+
+.flow-boundary dd {
+  margin: 0;
+  padding: 0 var(--afj-spacing-sm);
+  border-radius: var(--afj-radius-pill);
   font-weight: var(--afj-font-weight-semibold);
 }
 
-/* Decorative separator between the difficulties and the flow boundaries. */
-.pose-card__row--first-boundary {
-  margin-top: calc(var(--afj-spacing-sm) - var(--afj-spacing-xs));
-  padding-top: var(--afj-spacing-sm);
-  border-top: var(--afj-size-border-width) solid var(--afj-color-divider);
+.flow-boundary--yes dt {
+  font-weight: var(--afj-font-weight-semibold);
 }
 
-.flow-boundary {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--afj-spacing-xs);
+.flow-boundary--yes .icon {
+  color: var(--afj-color-sun-strong);
+}
+
+.flow-boundary--yes dd {
+  color: var(--afj-color-text);
+  background: var(--afj-color-sun-surface);
 }
 
 .flow-boundary--no {
   color: var(--afj-color-text-muted);
-  font-weight: var(--afj-font-weight-regular);
+}
+
+.flow-boundary--no .flow-boundary__question {
+  text-decoration: line-through;
+  text-decoration-color: var(--afj-color-border);
+}
+
+.flow-boundary--no dd {
+  background: var(--afj-color-surface-hover);
 }
 
 /* --- Sign-in context line (story 3) ------------------------------------------------------------ */
@@ -564,6 +722,22 @@ main {
 
 .proposal-page h1 {
   margin-bottom: var(--afj-spacing-sm);
+}
+
+/* Route card of a transition (7-proposer-une-transition.md): departure, the dotted trajectory, arrival. */
+.transition-route {
+  display: grid;
+  gap: var(--afj-spacing-sm);
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-background);
+  border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-lg);
+}
+
+.transition-route > .icon {
+  inline-size: 100%;
+  block-size: calc(var(--afj-size-trajectory-height) * 1.7);
+  color: var(--afj-color-sun-strong);
 }
 
 .proposal-page__introduction {
@@ -659,17 +833,59 @@ main {
   gap: var(--afj-spacing-sm);
 }
 
+.tile-group--base legend::before,
+.tile-group--flyer legend::before {
+  content: '';
+  display: inline-block;
+  inline-size: var(--afj-spacing-sm);
+  block-size: var(--afj-spacing-sm);
+  margin-inline-end: var(--afj-spacing-sm);
+  vertical-align: middle;
+  border-radius: 50%;
+}
+
+.tile-group--base legend::before {
+  background: var(--afj-color-base);
+}
+
+.tile-group--flyer legend::before {
+  background: var(--afj-color-flyer);
+}
+
 .tile {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--afj-spacing-sm);
   min-block-size: var(--afj-size-control);
   min-inline-size: 0;
   padding: var(--afj-spacing-xs) var(--afj-spacing-sm);
-  background: var(--afj-color-background);
+  background: var(--afj-color-surface);
   border: var(--afj-size-border-width) solid var(--afj-color-border);
   border-radius: var(--afj-radius-md);
   cursor: pointer;
+}
+
+/* A difficulty tile is a moon phase (groupe-tuiles-radio.md, « Phases »): the phase above the level, centred. */
+.tile--phase {
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--afj-spacing-xs);
+  padding-block: var(--afj-spacing-sm);
+  text-align: center;
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.tile--phase .moon {
+  inline-size: var(--afj-size-moon-large);
+  block-size: var(--afj-size-moon-large);
+  color: var(--afj-color-text-muted);
+}
+
+/* Two phases per line even on a phone: a phase tile is narrow. */
+.tile-group__tiles--levels {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .tile span {
@@ -684,11 +900,41 @@ main {
   accent-color: var(--afj-color-selected);
 }
 
+/* In a phase tile, the native radio covers the whole tile, invisible: the tile is the control (its ring, its border). */
+.tile--phase input {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
 /* The ring goes around the whole tile, which replaces the ring of the radio; without :has, the radio
    keeps its own ring. */
 @supports selector(:has(*)) {
   .tile input:focus-visible {
     outline: none;
+  }
+
+  .tile--phase:has(input:checked) {
+    padding-block: calc(var(--afj-spacing-sm) - var(--afj-size-border-width));
+  }
+
+  .tile-group--base .tile:has(input:checked) {
+    color: var(--afj-color-base);
+    background: var(--afj-color-base-surface);
+    border-color: var(--afj-color-base);
+  }
+
+  .tile-group--flyer .tile:has(input:checked) {
+    color: var(--afj-color-flyer);
+    background: var(--afj-color-flyer-surface);
+    border-color: var(--afj-color-flyer);
+  }
+
+  .tile:has(input:checked) .moon {
+    color: currentcolor;
   }
 
   .tile:has(input:focus-visible) {
@@ -753,22 +999,24 @@ main {
 .success-panel {
   padding: var(--afj-spacing-lg) var(--afj-spacing-md) var(--afj-spacing-lg) var(--afj-spacing-lg);
   background: var(--afj-color-success-surface);
-  border-left: var(--afj-size-accent-bar) solid var(--afj-color-success);
-  border-radius: var(--afj-radius-md);
+  border: var(--afj-size-border-width) solid transparent;
+  border-radius: var(--afj-radius-lg);
 }
 
+/* The sun bursts over the success: decorative, the title says it all. */
 .success-panel .icon {
   display: block;
-  inline-size: var(--afj-size-icon-large);
-  block-size: var(--afj-size-icon-large);
+  inline-size: var(--afj-size-burst);
+  block-size: var(--afj-size-burst);
   margin-bottom: var(--afj-spacing-sm);
-  color: var(--afj-color-success);
+  color: var(--afj-color-sun);
 }
 
 .success-panel__title {
   margin: 0;
+  font-family: var(--afj-font-family-display);
   font-size: var(--afj-font-size-lg);
-  font-weight: var(--afj-font-weight-bold);
+  font-weight: var(--afj-font-weight-semibold);
   line-height: var(--afj-line-height-tight);
   overflow-wrap: anywhere;
 }
@@ -878,13 +1126,14 @@ main {
   padding: var(--afj-spacing-md);
   background: var(--afj-color-surface);
   border: var(--afj-size-border-width) solid var(--afj-color-divider);
-  border-radius: var(--afj-radius-md);
+  border-radius: var(--afj-radius-lg);
 }
 
 .proposal-card__name {
   margin: 0 0 var(--afj-spacing-xs);
+  font-family: var(--afj-font-family-display);
   font-size: var(--afj-font-size-lg);
-  font-weight: var(--afj-font-weight-bold);
+  font-weight: var(--afj-font-weight-medium);
   line-height: var(--afj-line-height-tight);
   overflow-wrap: anywhere;
 }
@@ -907,7 +1156,7 @@ main {
   gap: var(--afj-spacing-md);
   margin-top: var(--afj-spacing-md);
   padding-top: var(--afj-spacing-md);
-  border-top: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-top: var(--afj-size-border-width) dashed var(--afj-color-divider);
 }
 
 /* Decisions of equal weight: stacked, full width, on mobile. */
@@ -958,7 +1207,7 @@ main {
   padding: var(--afj-spacing-sm) var(--afj-spacing-md);
   font: inherit;
   color: var(--afj-color-text);
-  background: var(--afj-color-background);
+  background: var(--afj-color-surface);
   border: var(--afj-size-border-width) solid var(--afj-color-border);
   border-radius: var(--afj-radius-md);
   resize: vertical;
@@ -987,7 +1236,7 @@ main {
   padding: var(--afj-spacing-md);
   background: var(--afj-color-background);
   border: var(--afj-size-border-width) solid var(--afj-color-divider);
-  border-radius: var(--afj-radius-md);
+  border-radius: var(--afj-radius-sm);
 }
 
 .adjustment + .adjustment {
@@ -1204,11 +1453,14 @@ main {
     border-color: Highlight;
   }
 
-  .difficulty-dots__dot {
+  .pose-card,
+  .proposal-card,
+  .transition {
     border-color: CanvasText;
   }
 
-  .difficulty-dots__dot--filled {
+  .tile-group--base legend::before,
+  .tile-group--flyer legend::before {
     background: CanvasText;
   }
 }
@@ -1235,6 +1487,10 @@ main {
     background: var(--afj-color-surface-hover);
   }
 
+  .button--secondary:hover {
+    border-color: var(--afj-color-text);
+  }
+
   /* A field in error keeps its danger border under the pointer. */
   .field input:not([aria-invalid='true']):hover,
   .field textarea:not([aria-invalid='true']):hover {
@@ -1249,6 +1505,16 @@ main {
   .tile:has(input:checked):hover {
     background: var(--afj-color-selected-surface);
     border-color: var(--afj-color-selected);
+  }
+
+  .tile-group--base .tile:has(input:checked):hover {
+    background: var(--afj-color-base-surface);
+    border-color: var(--afj-color-base);
+  }
+
+  .tile-group--flyer .tile:has(input:checked):hover {
+    background: var(--afj-color-flyer-surface);
+    border-color: var(--afj-color-flyer);
   }
 
   .tile-group--invalid .tile:hover {
@@ -1288,14 +1554,13 @@ main {
 }
 
 .pose-card--revisable .pose-card__details {
-  margin-bottom: var(--afj-spacing-sm);
+  margin-bottom: var(--afj-spacing-md);
 }
 
 .pose-card__revision {
   display: flex;
   margin: auto 0 0;
   padding-top: var(--afj-spacing-xs);
-  border-top: var(--afj-size-border-width) solid var(--afj-color-divider);
 }
 
 .pose-card__revision-link {
@@ -1304,6 +1569,8 @@ main {
   display: inline-flex;
   align-items: center;
   min-block-size: var(--afj-size-touch-target);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
   color: var(--afj-color-primary);
   text-decoration: underline;
   text-decoration-thickness: var(--afj-size-border-width);
@@ -1335,7 +1602,7 @@ main {
   color: var(--afj-color-text);
   background: var(--afj-color-selected-surface);
   border: var(--afj-size-border-width) solid var(--afj-color-selected);
-  border-radius: var(--afj-radius-sm);
+  border-radius: var(--afj-radius-pill);
 }
 
 /* The form of a revision: the line of the pose is attached to the title. */
@@ -1404,6 +1671,7 @@ main {
 
 /* Card of a revision (carte-modification.md): « Modification de » in regular weight, the name in bold. */
 .proposal-card__name-prefix {
+  font-family: var(--afj-font-family);
   font-weight: var(--afj-font-weight-regular);
 }
 
@@ -1475,6 +1743,23 @@ main {
   .site-header__account {
     flex-basis: auto;
     margin-inline-start: auto;
+  }
+
+  .site-header__email {
+    position: static;
+    flex: 1 1 auto;
+    width: auto;
+    height: auto;
+    min-width: 0;
+    max-width: var(--afj-size-account-label-max-width);
+    overflow: hidden;
+    clip-path: none;
+    text-overflow: ellipsis;
+    text-align: end;
+  }
+
+  .page-header h1 {
+    font-size: var(--afj-font-size-xxl);
   }
 
   .validation-queue {
@@ -1588,10 +1873,10 @@ main {
   border-color: var(--afj-color-border);
 }
 
+/* The name is the link: no underline at rest, the whole card reacts (border, shadow) and takes the focus ring. */
 .pose-card__link {
   color: var(--afj-color-text);
-  text-decoration: underline;
-  text-decoration-thickness: var(--afj-size-border-width);
+  text-decoration: none;
 }
 
 .pose-card__link:visited {
@@ -1602,7 +1887,7 @@ main {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: var(--afj-radius-md);
+  border-radius: var(--afj-radius-lg);
 }
 
 /* The ring goes around the whole card; without :has(), the link keeps its own ring. */
@@ -1635,11 +1920,15 @@ main {
   border-radius: var(--afj-radius-sm);
 }
 
-/* Page of a pose: the column of the pages of follow-up (≈ 690 px), aligned left. */
+/* Page of a pose, before it is loaded (loading, failure, not found): the column of the pages of follow-up. */
 .pose-page {
   max-width: calc(
     var(--afj-size-form-wide-max-width) + 2 * var(--afj-spacing-lg) + 2 * var(--afj-size-border-width)
   );
+}
+
+.pose-page--loaded {
+  max-width: none;
 }
 
 .pose-page h1 {
@@ -1647,22 +1936,119 @@ main {
   overflow-wrap: anywhere;
 }
 
+/*
+ * The sky of the pose (the only spectacular moment of the site, principes.md): a gradient, the orb that rises at
+ * load (sun at dawn, moon at night), a light grain and a wavy horizon. The text never sits on the orb: on narrow
+ * screens it stays in the corner above the title, on wide screens the text keeps clear of it; the text on the sky is
+ * at least 4.5:1 over the whole gradient (contrast.test.ts).
+ */
+.pose-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  gap: var(--afj-spacing-md);
+  margin-bottom: var(--afj-spacing-lg);
+  padding: var(--afj-spacing-md) var(--afj-spacing-md) calc(var(--afj-size-horizon) + var(--afj-spacing-lg));
+  color: var(--afj-color-sky-text);
+  background: var(--afj-sky-gradient);
+  border-radius: var(--afj-radius-lg);
+}
+
+.pose-hero::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: calc(var(--afj-spacing-md) + var(--afj-size-touch-target) - var(--afj-size-orb));
+  right: calc(var(--afj-size-orb) / -3);
+  width: var(--afj-size-orb);
+  height: var(--afj-size-orb);
+  border-radius: 50%;
+  background: var(--afj-sky-orb);
+  box-shadow: 0 0 5rem 1.875rem var(--afj-sky-orb-glow);
+  animation: orb-rise 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.pose-hero::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  opacity: var(--afj-sky-grain-opacity);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes orb-rise {
+  from {
+    opacity: 0.2;
+    transform: translateY(4.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pose-hero__horizon {
+  position: absolute;
+  z-index: -1;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: var(--afj-size-horizon);
+  fill: var(--afj-color-background);
+}
+
+.pose-hero .back-link,
+.pose-hero .back-link:visited {
+  margin: 0;
+  color: var(--afj-color-sky-text);
+}
+
+/* On the sky, the ring takes the colour of the text: the focus colour is not verified on every stop. */
+.pose-hero :focus-visible {
+  outline-color: var(--afj-color-sky-text);
+}
+
+.pose-page .pose-hero h1 {
+  margin: 0;
+  font-size: var(--afj-font-size-xxl);
+  font-weight: var(--afj-font-weight-bold);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+
+  /* A long name is hyphenated (French) rather than cut anywhere; a word longer than the line still breaks. */
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.pose-hero .flow-boundary--no,
+.pose-hero .flow-boundary--yes .icon {
+  color: var(--afj-color-sky-text);
+}
+
+.pose-hero .flow-boundary--no .flow-boundary__question {
+  text-decoration-color: currentcolor;
+}
+
+.pose-page__body {
+  display: grid;
+  gap: var(--afj-spacing-lg);
+  align-items: start;
+}
+
 .pose-page__actions {
   display: flex;
   flex-direction: column;
   gap: var(--afj-spacing-sm);
-  margin-bottom: var(--afj-spacing-lg);
 }
 
-.pose-page__panel {
-  padding: var(--afj-spacing-md);
-  background: var(--afj-color-surface);
-  border: var(--afj-size-border-width) solid var(--afj-color-divider);
-  border-radius: var(--afj-radius-md);
-}
-
-.pose-page .difficulty-legend {
-  margin-block: var(--afj-spacing-lg) 0;
+.pose-page__body .difficulty-legend {
+  margin: 0;
 }
 
 .pose-page > .form-alert {
@@ -1674,37 +2060,42 @@ main {
 }
 
 .pose-page__section {
-  margin-top: var(--afj-spacing-xl);
+  min-width: 0;
   container-type: inline-size;
 }
 
 .pose-page__section-title {
   margin: 0 0 var(--afj-spacing-sm);
+  font-family: var(--afj-font-family-display);
   font-size: var(--afj-font-size-lg);
-  font-weight: var(--afj-font-weight-bold);
+  font-weight: var(--afj-font-weight-medium);
   line-height: var(--afj-line-height-tight);
   overflow-wrap: anywhere;
 }
 
-/* Transitions of a section (element-transition.md): a flat list, separated by decorative rules. */
+/* Transitions of a section (element-transition.md): a list of small cards. */
 .transition-list {
+  display: grid;
+  gap: var(--afj-spacing-sm);
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: var(--afj-size-border-width) solid var(--afj-color-divider);
 }
 
 .transition {
   display: grid;
-  gap: var(--afj-spacing-xs);
-  padding: var(--afj-spacing-md) 0;
-  border-bottom: var(--afj-size-border-width) solid var(--afj-color-divider);
+  gap: var(--afj-spacing-sm);
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
 }
 
 .transition__title {
   margin: 0;
+  font-family: var(--afj-font-family-display);
   font-size: var(--afj-font-size-md);
-  font-weight: var(--afj-font-weight-bold);
+  font-weight: var(--afj-font-weight-medium);
   line-height: var(--afj-line-height-tight);
   overflow-wrap: anywhere;
 }
@@ -1713,11 +2104,14 @@ main {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--afj-spacing-xs);
+  gap: var(--afj-spacing-xs) var(--afj-spacing-sm);
 }
 
-.transition__poses .icon {
-  color: var(--afj-color-text-muted);
+/* The dotted trajectory (a loop for a washing machine): the strong sun, an icon carrying meaning. */
+.icon--trajectory {
+  inline-size: var(--afj-size-trajectory-width);
+  block-size: var(--afj-size-trajectory-height);
+  color: var(--afj-color-sun-strong);
 }
 
 .transition__other-pose {
@@ -1762,29 +2156,18 @@ main {
 
 /* The description keeps its line breaks (Q105), plain text; a long address breaks anywhere. */
 .transition__description {
-  margin: var(--afj-spacing-xs) 0 0;
+  margin: 0;
+  color: var(--afj-color-text-muted);
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
 
 .transition-list__empty {
   margin: 0;
-  padding: var(--afj-spacing-md) 0;
+  padding: var(--afj-spacing-md);
   color: var(--afj-color-text-muted);
-  border-block: var(--afj-size-border-width) solid var(--afj-color-divider);
-}
-
-/* The two difficulties of a transition side by side, once its container is wide enough. */
-@container (width >= 40em) {
-  /* Each value next to its term; the columns clearly apart, more than a term from its value. */
-  .difficulty-details {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: var(--afj-spacing-xxl);
-  }
-
-  .difficulty-details .pose-card__row {
-    justify-content: flex-start;
-  }
+  border: var(--afj-size-border-width) dashed var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
 }
 
 /* Drop-down list (champ.md, « Variante liste déroulante »): native select, chevron drawn above it. */
@@ -1803,7 +2186,7 @@ main {
   font: inherit;
   text-overflow: ellipsis;
   color: var(--afj-color-text);
-  background: var(--afj-color-background);
+  background: var(--afj-color-surface);
   border: var(--afj-size-border-width) solid var(--afj-color-border);
   border-radius: var(--afj-radius-md);
   appearance: none;
@@ -1838,11 +2221,13 @@ main {
 
 /* Card of a transition proposal (carte-transition.md): the linking words in regular weight, the names in bold. */
 .proposal-card__name--transition {
+  font-family: var(--afj-font-family);
   font-weight: var(--afj-font-weight-regular);
 }
 
 .proposal-card__name--transition strong {
-  font-weight: var(--afj-font-weight-bold);
+  font-family: var(--afj-font-family-display);
+  font-weight: var(--afj-font-weight-semibold);
 }
 
 .transition-description {
@@ -1868,11 +2253,12 @@ main {
 @media (hover: hover) {
   /* The card reacts to the pointer, except over « Proposer une modification », which reacts alone. */
   .pose-card--linked:hover:not(:has(.pose-card__revision-link:hover)) {
-    background: var(--afj-color-surface-hover);
     border-color: var(--afj-color-text);
+    box-shadow: 0 0.625rem 1.875rem -1.125rem var(--afj-color-primary);
   }
 
   .pose-card--linked:hover:not(:has(.pose-card__revision-link:hover)) .pose-card__link {
+    text-decoration: underline;
     text-decoration-thickness: var(--afj-size-border-width-strong);
   }
 
@@ -1902,6 +2288,34 @@ main {
   .transition__other-pose-link {
     color: LinkText;
   }
+
+  /* The sky, its orb, its grain and its horizon are decoration: gone, the text stays on the system canvas. */
+  .pose-hero {
+    border: var(--afj-size-border-width) solid CanvasText;
+  }
+
+  .pose-hero::before,
+  .pose-hero::after,
+  .pose-hero__horizon {
+    display: none;
+  }
+
+  .pose-hero .back-link,
+  .pose-hero .back-link:visited {
+    color: LinkText;
+  }
+
+  .safety-note,
+  .role-pill,
+  .flow-boundary dd {
+    border: var(--afj-size-border-width) solid CanvasText;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pose-hero::before {
+    animation: none;
+  }
 }
 
 @media (width >= 40em) {
@@ -1910,7 +2324,52 @@ main {
     gap: var(--afj-spacing-md);
   }
 
-  .pose-page__panel {
-    padding: var(--afj-spacing-lg);
+  .pose-hero {
+    gap: var(--afj-spacing-lg);
+    padding: var(--afj-spacing-lg) var(--afj-spacing-xl) calc(var(--afj-size-horizon) + var(--afj-spacing-xl));
+  }
+
+  .pose-page .pose-hero h1 {
+    font-size: var(--afj-font-size-display);
+  }
+
+  .transition-route {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: start;
+    column-gap: var(--afj-spacing-md);
+  }
+
+  .transition-route > .icon {
+    inline-size: var(--afj-size-trajectory-width);
+    margin-top: calc(var(--afj-size-control) - var(--afj-spacing-xs));
+  }
+}
+
+/* Wide screens: the big orb rises on the right, the text keeps clear of it; the two sections side by side. */
+@media (width >= 64em) {
+  .pose-hero::before {
+    top: var(--afj-spacing-md);
+    right: 6%;
+    width: var(--afj-size-orb-large);
+    height: var(--afj-size-orb-large);
+  }
+
+  .pose-hero > h1,
+  .pose-hero > .pose-card__details {
+    max-inline-size: calc(100% - var(--afj-size-orb-large) - 10%);
+  }
+
+  .pose-page .pose-hero h1 {
+    font-size: var(--afj-font-size-display-large);
+  }
+
+  .pose-page__body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--afj-spacing-xl);
+  }
+
+  .pose-page__actions,
+  .pose-page__body .difficulty-legend {
+    grid-column: 1 / -1;
   }
 }

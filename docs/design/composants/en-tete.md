@@ -1,5 +1,7 @@
 # En-tête du site
 
+> **Direction « Soleil et Lune »** ([ADR 0031](../../adr/0031-direction-visuelle-soleil-et-lune.md)) : Marque : le **logo** (demi-cercle de terre `base` qui porte un soleil `sun`, décoratif) puis « AcroFunJam » en Unbounded. Fond `background`, filet `divider`. Personne connectée : **avatar** à l'initiale de l'adresse (36 px, `sunSurface`, `aria-hidden`), boutons discrets. Sur écran étroit (< 40em), l'adresse est **masquée visuellement seulement** : elle reste dans le nom accessible de la zone « Compte » (« Compte connecté : … »). Ce qui suit reste valable pour la structure, les libellés et l'accessibilité ; les valeurs visuelles sont celles de `principes.md`.
+
 Élément `<header>` commun à toutes les pages : la marque (lien vers le catalogue), la navigation de contribution (`<nav aria-label="Contribution">`, story 4, validateurs et administrateurs seulement) et la zone de compte (`<nav aria-label="Compte">`). Trois états de session : **en attente**, **visiteur**, **connecté**.
 
 Ordre du DOM (= ordre de tabulation) : marque, navigation de contribution, zone de compte.

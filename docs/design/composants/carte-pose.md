@@ -1,5 +1,7 @@
 # Carte de pose
 
+> **Direction « Soleil et Lune »** ([ADR 0031](../../adr/0031-direction-visuelle-soleil-et-lune.md)) : Rayon `lg` (26 px), fond `surface`, contour `border` ; nom en Unbounded 600, sans soulignement au repos (souligné au survol). Survol : contour `text` et ombre teintée `primary` ; focus : anneau autour de **toute la carte**. Caractéristiques : deux **pastilles de rôle** (`pastille-role.md`) puis les **bornes de flow** (lever / coucher en `sunStrong`, « Non » = question barrée en `textMuted`), mêmes termes et valeurs qu'avant. **Glyphe** : la ligne du haut (`.pose-card__top`) réserve, après le titre, un emplacement de 52 × 52 (`sizes.glyph`) pour un `<svg class="pose-card__glyph" aria-hidden="true">` ; les glyphes ne sont pas encore dessinés, rien n'est affiché. Ce qui suit reste valable pour la structure, les libellés et l'accessibilité ; les valeurs visuelles sont celles de `principes.md`.
+
 Présentation d'une pose publiée dans la grille du catalogue. Remplace le tableau de la story 1. La carte n'est **pas interactive** en story 3 (pas encore de page de détail) ; elle mène à la page de la pose à partir de la story 7 (« Carte cliquable du catalogue »).
 
 Story 7 : la page d'une pose reprend la `dl` sans la modifier (panneau des caractéristiques) ; l'élément de transition (`element-transition.md`) et les cartes de transition (`carte-transition.md`) reprennent ses deux lignes « Base » / « Flyer ».

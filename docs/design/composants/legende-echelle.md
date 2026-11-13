@@ -1,5 +1,7 @@
 # Légende de l'échelle de difficulté
 
+> **Direction « Soleil et Lune »** ([ADR 0031](../../adr/0031-direction-visuelle-soleil-et-lune.md)) : Les 4 points sont remplacés par l'**échelle lunaire** (`DifficultyMoon`) : croissant = Découverte, demi-lune = Débutant, gibbeuse = Intermédiaire, pleine lune = Avancé ; 18 px, `currentColor`, `aria-hidden`, le niveau toujours écrit à côté. Sur la page d'une pose, l'avertissement devient la **note de sécurité** : fond `sunSurface`, icône « spot » en `sunStrong`, rayon `md`. Ce qui suit reste valable pour la structure, les libellés et l'accessibilité ; les valeurs visuelles sont celles de `principes.md`.
+
 Rappel, sur le catalogue, de l'ordre des quatre niveaux, suivi de l'avertissement de responsabilité. Elle apprend aussi à lire l'**échelle décorative à points** des cartes (`carte-pose.md`).
 
 ## Structure

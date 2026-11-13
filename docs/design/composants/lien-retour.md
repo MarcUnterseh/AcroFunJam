@@ -1,5 +1,7 @@
 # Lien de retour
 
+> **Direction « Soleil et Lune »** ([ADR 0031](../../adr/0031-direction-visuelle-soleil-et-lune.md)) : Sur la page d'une pose chargée, le lien « Catalogue » est dans le ciel, en `skyText` ; son anneau de focus prend la couleur `skyText`. Ce qui suit reste valable pour la structure, les libellés et l'accessibilité ; les valeurs visuelles sont celles de `principes.md`.
+
 Lien textuel en tête de page qui ramène à la page parente (story 7 : « Catalogue », en tête de la page d'une pose). Il précède le `h1`.
 
 ```

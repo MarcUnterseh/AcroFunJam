@@ -1,5 +1,7 @@
 # Carte de proposition
 
+> **Direction « Soleil et Lune »** ([ADR 0031](../../adr/0031-direction-visuelle-soleil-et-lune.md)) : Rayon `lg`, nom en Unbounded 500, séparateur des décisions en pointillés `divider` ; caractéristiques en pastilles de rôle et bornes de flow (`carte-pose.md`). L'écran reste sobre : c'est un écran de travail. Ce qui suit reste valable pour la structure, les libellés et l'accessibilité ; les valeurs visuelles sont celles de `principes.md`.
+
 Une proposition en attente de validation dans la page « Propositions à valider » (story 4). Elle **reprend la carte de pose** (`carte-pose.md`) pour que le validateur voie la pose telle qu'elle apparaîtra dans le catalogue, puis ajoute le contributeur, la date et une **zone de décision**. Écran : `../ecrans/4-valider-une-proposition.md`. Son conteneur (fond, contour, rayon, paddings) est repris tel quel par la carte « ma proposition » de la story 5 (`carte-ma-proposition.md`). Story 6 : la carte de modification (`carte-modification.md`) reprend tout ce document (conteneur, contributeur, décision, refus, ajustement, alertes) et n'en décrit que les différences.
 
 ## Structure (repos)

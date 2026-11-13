@@ -68,21 +68,19 @@ describe('PoseList', () => {
     ]);
   });
 
-  it('should hide the decorative dot scales and icons from assistive technologies', () => {
+  it('should hide the decorative moon phases and icons from assistive technologies', () => {
     const { container } = render(<PoseList poses={poses} />);
 
-    const decorations = container.querySelectorAll('.difficulty-dots, svg');
+    const decorations = container.querySelectorAll('.moon, svg');
     expect(decorations.length).toBeGreaterThan(0);
     decorations.forEach((decoration) => expect(decoration).toHaveAttribute('aria-hidden', 'true'));
   });
 
-  it('should draw as many filled dots as the rank of the level', () => {
-    const { container } = render(<PoseList poses={[poses[1]!]} />);
+  it('should draw the moon phase of each level, next to the level written in full', () => {
+    const { container } = render(<PoseList poses={poses} />);
 
-    const filled = [...container.querySelectorAll('.difficulty-dots')].map(
-      (dots) => dots.querySelectorAll('.difficulty-dots__dot--filled').length,
-    );
-    expect(filled).toEqual([3, 4]);
+    const phases = [...container.querySelectorAll('.moon')].map((moon) => moon.getAttribute('data-phase'));
+    expect(phases).toEqual(['half', 'crescent', 'gibbous', 'full']);
   });
 
   it('should lead from the name of a card to the page of the pose, the only link of a visitor', () => {

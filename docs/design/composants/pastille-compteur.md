@@ -1,5 +1,7 @@
 # Pastille de compteur
 
+> **Direction « Soleil et Lune »** ([ADR 0031](../../adr/0031-direction-visuelle-soleil-et-lune.md)) : Inchangée (pilule `badge` / `badgeContrast`), valeurs de la nouvelle palette ; en sombre, pastille claire sur fond sombre. Ce qui suit reste valable pour la structure, les libellés et l'accessibilité ; les valeurs visuelles sont celles de `principes.md`.
+
 Petit nombre accolé à un lien pour dire combien d'éléments attendent la personne. Usage en story 4 : nombre de propositions en attente dans le lien « Propositions à valider » de l'en-tête (`en-tete.md`).
 
 ## Structure

@@ -5,6 +5,7 @@ import type { TileOption } from './TileRadioGroup';
 export const levels: readonly TileOption<DifficultyLevel>[] = difficultyScale.map((level) => ({
   value: level,
   label: difficultyLevelName(level),
+  phase: level,
 }));
 
 export type Answer = 'yes' | 'no';

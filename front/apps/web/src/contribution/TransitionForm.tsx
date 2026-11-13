@@ -405,26 +405,30 @@ export function TransitionForm({
             </FormAlert>
           )
         )}
-        <SelectField
-          ref={refs.fromPoseId}
-          label={transitionProposalLabels.fromPose}
-          name="fromPoseId"
-          emptyOption={transitionProposalLabels.choosePose}
-          options={poseOptions}
-          value={input.fromPoseId}
-          onChange={(event) => change('fromPoseId', event.target.value)}
-          error={errorOf('fromPoseId')}
-        />
-        <SelectField
-          ref={refs.toPoseId}
-          label={transitionProposalLabels.toPose}
-          name="toPoseId"
-          emptyOption={transitionProposalLabels.choosePose}
-          options={poseOptions}
-          value={input.toPoseId}
-          onChange={(event) => change('toPoseId', event.target.value)}
-          error={errorOf('toPoseId')}
-        />
+        {/* The route card (7-proposer-une-transition.md): departure, the dotted trajectory, arrival. */}
+        <div className="transition-route">
+          <SelectField
+            ref={refs.fromPoseId}
+            label={transitionProposalLabels.fromPose}
+            name="fromPoseId"
+            emptyOption={transitionProposalLabels.choosePose}
+            options={poseOptions}
+            value={input.fromPoseId}
+            onChange={(event) => change('fromPoseId', event.target.value)}
+            error={errorOf('fromPoseId')}
+          />
+          <Icon name="trajectory" />
+          <SelectField
+            ref={refs.toPoseId}
+            label={transitionProposalLabels.toPose}
+            name="toPoseId"
+            emptyOption={transitionProposalLabels.choosePose}
+            options={poseOptions}
+            value={input.toPoseId}
+            onChange={(event) => change('toPoseId', event.target.value)}
+            error={errorOf('toPoseId')}
+          />
+        </div>
         <Field
           ref={refs.name}
           label={transitionProposalLabels.name}
@@ -447,6 +451,7 @@ export function TransitionForm({
           </p>
           <TileRadioGroup
             legend={transitionProposalLabels.baseDifficulty}
+            tone="base"
             name="baseDifficulty"
             layout="levels"
             options={levels}
@@ -458,6 +463,7 @@ export function TransitionForm({
           />
           <TileRadioGroup
             legend={transitionProposalLabels.flyerDifficulty}
+            tone="flyer"
             name="flyerDifficulty"
             layout="levels"
             options={levels}
