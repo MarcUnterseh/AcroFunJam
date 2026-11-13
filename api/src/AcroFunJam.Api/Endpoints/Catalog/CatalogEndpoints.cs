@@ -1,4 +1,4 @@
-using AcroFunJam.Application.Catalog.GetPublishedPose;
+using AcroFunJam.Application.Catalog.GetPosePage;
 using AcroFunJam.Application.Catalog.ListPublishedPoses;
 using AcroFunJam.Domain.Catalog;
 using AcroFunJam.Application.Common;
@@ -38,13 +38,16 @@ public static class CatalogEndpoints
         return TypedResults.Ok(new PoseListResponse([.. result.Value!.Select(ToResponse)]));
     }
 
-    /// <summary>A published pose with its version, to start a revision of it (story 6, ADR 0024).</summary>
+    /// <summary>
+    /// The page of a published pose (story 7, ADR 0030): the pose with its version, to start a revision of it (story 6, ADR 0024),
+    /// and its transitions from and to it, in the order of the domain.
+    /// </summary>
     private static async Task<Results<Ok<PublishedPoseResponse>, ProblemHttpResult>> GetPublishedPose(
         Guid id,
-        IQueryHandler<GetPublishedPose, PublishedPoseDetails> handler,
+        IQueryHandler<GetPosePage, PosePage> handler,
         CancellationToken ct)
     {
-        var result = await handler.Handle(new GetPublishedPose(new PoseId(id)), ct);
+        var result = await handler.Handle(new GetPosePage(new PoseId(id)), ct);
         if (result.IsFailure) return result.Error!.ToProblem();
 
         var pose = result.Value!;
@@ -55,8 +58,19 @@ public static class CatalogEndpoints
             DifficultyCodes.From(pose.Difficulty.Flyer),
             pose.Flow.CanStartFlow,
             pose.Flow.CanEndFlow,
-            pose.Version.Value));
+            pose.Version.Value,
+            [.. pose.TransitionsFrom.Select(ToResponse)],
+            [.. pose.TransitionsTo.Select(ToResponse)]));
     }
+
+    private static LinkedTransitionResponse ToResponse(LinkedTransition transition) =>
+        new(
+            transition.Id.Value,
+            new OtherPoseResponse(transition.OtherPose.Value, transition.OtherPoseName.Value),
+            transition.Name?.Value,
+            DifficultyCodes.From(transition.Difficulty.Base),
+            DifficultyCodes.From(transition.Difficulty.Flyer),
+            transition.Description?.Value);
 
     private static PoseSummaryResponse ToResponse(PublishedPoseSummary pose) =>
         new(

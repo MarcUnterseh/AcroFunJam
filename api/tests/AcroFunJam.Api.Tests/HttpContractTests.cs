@@ -96,6 +96,9 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
     [InlineData("/contribution/pose-proposals/{id}/rejection", "post", new[] { "200", "400", "401", "403", "404", "409" })]
     [InlineData("/contribution/my-proposals", "get", new[] { "200", "401", "403" })]
     [InlineData("/contribution/pose-revision-proposals/pending", "get", new[] { "200", "400", "401", "403" })]
+    [InlineData("/contribution/transition-proposals", "post", new[] { "201", "400", "401", "403", "404", "409" })]
+    [InlineData("/contribution/transition-proposals/{id}/acceptance", "post", new[] { "200", "400", "401", "403", "404", "409", "422" })]
+    [InlineData("/contribution/transition-proposals/{id}/rejection", "post", new[] { "200", "400", "401", "403", "404", "409" })]
     public async Task OpenApiDocument_Should_DescribeTheContributionOperations_When_TheyRequireASignedInPerson(
         string path, string method, string[] statuses)
     {
@@ -152,6 +155,53 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
             .ShouldBe(["pending", "accepted", "accepted-with-adjustments", "rejected", "published-directly"], ignoreOrder: true);
         schemas.GetProperty("PoseAdjustmentsResponse").GetProperty("properties").EnumerateObject().Select(p => p.Name)
             .ShouldBe(["name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow"], ignoreOrder: true);
+    }
+
+    /// <summary>Story 7 (ADR 0030): deciding on a transition proposal, and its kind in the queue and in « Mes propositions ».</summary>
+    [Fact]
+    public async Task OpenApiDocument_Should_DescribeTheTransitionProposals_When_TheyAreProposedAndDecided()
+    {
+        using var client = api.CreateClient();
+
+        var document = await client.GetFromJsonAsync<JsonElement>(new Uri("/openapi/v1.json", UriKind.Relative), Ct);
+        var schemas = document.GetProperty("components").GetProperty("schemas");
+        var body = document.GetProperty("paths").GetProperty("/contribution/transition-proposals/{id}/acceptance").GetProperty("post")
+            .GetProperty("requestBody");
+
+        // Without body, or with every field absent, the transition is accepted as proposed; "" removes the name or the description.
+        (body.TryGetProperty("required", out var required) && required.GetBoolean()).ShouldBeFalse();
+        var adjustments = schemas.GetProperty("AcceptTransitionProposalRequest");
+        adjustments.GetProperty("properties").EnumerateObject().Select(p => p.Name)
+            .ShouldBe(["name", "baseDifficulty", "flyerDifficulty", "description", "message"], ignoreOrder: true);
+        adjustments.TryGetProperty("required", out _).ShouldBeFalse("every field may be absent");
+        schemas.GetProperty("PendingProposalResponsePendingTransitionProposalResponse").GetProperty("required").EnumerateArray()
+            .Select(p => p.GetString())
+            .ShouldBe(
+                ["id", "fromPose", "toPose", "name", "baseDifficulty", "flyerDifficulty", "description", "contributor", "submittedAt"], ignoreOrder: true);
+        schemas.GetProperty("MyProposalResponseMyTransitionProposalResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
+            .ShouldBe(
+                [
+                    "id", "status", "fromPose", "toPose", "name", "baseDifficulty", "flyerDifficulty", "description", "submittedAt", "decidedAt",
+                    "adjustments", "message", "reason",
+                ],
+                ignoreOrder: true);
+    }
+
+    /// <summary>Story 7 (ADR 0030): the page of a pose lists its transitions from and to it, always written.</summary>
+    [Fact]
+    public async Task OpenApiDocument_Should_DescribeTheTransitionsOfAPose_When_ItsPageIsRead()
+    {
+        using var client = api.CreateClient();
+
+        var document = await client.GetFromJsonAsync<JsonElement>(new Uri("/openapi/v1.json", UriKind.Relative), Ct);
+        var schemas = document.GetProperty("components").GetProperty("schemas");
+
+        schemas.GetProperty("PublishedPoseResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
+            .ShouldBe(
+                ["id", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "version", "transitionsFrom", "transitionsTo"],
+                ignoreOrder: true);
+        schemas.GetProperty("LinkedTransitionResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
+            .ShouldBe(["id", "otherPose", "name", "baseDifficulty", "flyerDifficulty", "description"], ignoreOrder: true);
     }
 
     /// <summary>Story 6: « Mes propositions » is read at /contribution/my-proposals only, which replaces the endpoint of story 5.</summary>

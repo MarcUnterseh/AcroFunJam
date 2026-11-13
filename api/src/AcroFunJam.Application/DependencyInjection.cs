@@ -1,4 +1,11 @@
-using AcroFunJam.Application.Catalog.GetPublishedPose;
+using AcroFunJam.Application.Catalog.GetPublishedPoseNames;
+using AcroFunJam.Application.Catalog.GetPosePage;
+using AcroFunJam.Application.Catalog.IsTransitionSlotPublished;
+using AcroFunJam.Application.Catalog.PublishTransition;
+using AcroFunJam.Application.Contribution.ProposeTransition;
+using AcroFunJam.Application.Contribution.AcceptTransitionProposal;
+using AcroFunJam.Application.Contribution.RejectTransitionProposal;
+using AcroFunJam.Domain.SharedKernel;
 using AcroFunJam.Application.Catalog.IsPoseNamePublished;
 using AcroFunJam.Application.Catalog.ListPublishedPoses;
 using AcroFunJam.Application.Catalog.PublishPose;
@@ -35,7 +42,6 @@ public static class DependencyInjection
         services.AddScoped<IQueryHandler<ListPublishedPoses, IReadOnlyList<PublishedPoseSummary>>, ListPublishedPosesHandler>();
         services.AddScoped<ICommandHandler<PublishPose, PoseId>, PublishPoseHandler>();
         services.AddScoped<IQueryHandler<IsPoseNamePublished, bool>, IsPoseNamePublishedHandler>();
-        services.AddScoped<IQueryHandler<GetPublishedPose, PublishedPoseDetails>, GetPublishedPoseHandler>();
         services.AddScoped<IQueryHandler<GetMyAccount, MyAccountDto>, GetMyAccountHandler>();
         services.AddScoped<ICommandHandler<AssignRole, bool>, AssignRoleHandler>();
         services.AddScoped<ICommandHandler<RevokeRole, bool>, RevokeRoleHandler>();
@@ -52,6 +58,13 @@ public static class DependencyInjection
         services.AddScoped<ICommandHandler<RejectPoseRevision, DecidedPoseRevisionDto>, RejectPoseRevisionHandler>();
         services.AddScoped<IQueryHandler<GetPendingRevisionOfPose, PendingRevisionOfPose?>, GetPendingRevisionOfPoseHandler>();
         services.AddScoped<ICommandHandler<RevisePose, PoseVersion>, RevisePoseHandler>();
+        services.AddScoped<IQueryHandler<GetPublishedPoseNames, IReadOnlyDictionary<PoseId, PoseName>>, GetPublishedPoseNamesHandler>();
+        services.AddScoped<ICommandHandler<ProposeTransition, TransitionProposalDto>, ProposeTransitionHandler>();
+        services.AddScoped<ICommandHandler<PublishTransition, TransitionId>, PublishTransitionHandler>();
+        services.AddScoped<ICommandHandler<AcceptTransitionProposal, DecidedTransitionProposalDto>, AcceptTransitionProposalHandler>();
+        services.AddScoped<ICommandHandler<RejectTransitionProposal, DecidedTransitionProposalDto>, RejectTransitionProposalHandler>();
+        services.AddScoped<IQueryHandler<IsTransitionSlotPublished, bool>, IsTransitionSlotPublishedHandler>();
+        services.AddScoped<IQueryHandler<GetPosePage, PosePage>, GetPosePageHandler>();
         return services;
     }
 }

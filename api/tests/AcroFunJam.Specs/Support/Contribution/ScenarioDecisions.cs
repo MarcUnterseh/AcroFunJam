@@ -13,7 +13,17 @@ public sealed class ScenarioDecisions
         {
             field = value;
             OnRevision = false;
+            OnTransition = null;
         }
+    }
+
+    /// <summary>The transition proposal the last decision was on (story 7), if it was on one.</summary>
+    public Guid? OnTransition { get; private set; }
+
+    public void OnTransitionProposal(HttpResponseMessage response, Guid proposal)
+    {
+        Last = response;
+        OnTransition = proposal;
     }
 
     /// <summary>Whether the last decision was on a revision proposal (story 6) rather than on a pose proposal.</summary>

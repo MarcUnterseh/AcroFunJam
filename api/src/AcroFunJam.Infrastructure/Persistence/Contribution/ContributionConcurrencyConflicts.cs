@@ -10,4 +10,7 @@ public static class ContributionConcurrencyConflicts
 
     public static readonly ConcurrencyConflictError PoseRevisionProposalDecided =
         new(typeof(PoseRevisionProposalRecord), ContributionErrors.ProposalAlreadyDecided);
+
+    public static readonly ConcurrencyConflictError TransitionProposalDecided =
+        new(typeof(TransitionProposalRecord), ContributionErrors.ProposalAlreadyDecided);
 }

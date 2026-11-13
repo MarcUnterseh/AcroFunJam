@@ -468,6 +468,84 @@ Carte d'example mapping du 2026-11-12, **révisée le même jour** avec les déc
 
 **Points à revoir plus tard** : plusieurs modifications en attente d'une même pose ; retirer une modification en attente ; alias (qui rendraient la charte de validation sur les renommages obsolète).
 
+### Story 7 « Proposer une transition » (validée le 2026-11-13)
+Carte d'example mapping du 2026-11-13, **révisée le même jour** avec les décisions du porteur du produit et les avis de l'ux-expert et de l'expert acroyoga. Scénarios (tous `@wip`) : `specs/features/contribution/proposer-une-transition.feature` (proposer, valider, suivre) et `specs/features/catalogue/consulter-les-transitions.feature` (page d'une pose). Contexte Contribution → Catalogue, cibles @api et @web (pas de mobile, comme les stories 3 à 6).
+
+**Story** : en tant que contributeur connecté, je propose une transition d'une pose publiée vers une pose publiée ; un validateur ou un administrateur l'accepte, au besoin avec ajustements, ou la refuse, comme une proposition de pose, afin que le catalogue relie les poses par les transitions pratiquées. Tout visiteur consulte, sur la page d'une pose, les transitions qui en partent et celles qui y arrivent.
+
+**Déjà décidé** (découverte, « Modèle : un graphe ») : transition orientée (décision 6) ; plusieurs transitions entre les mêmes poses dans le même sens (décision 7) ; difficulté base et difficulté flyer (décision 8) ; washing machine sans concept dédié (décision 9) ; positions de passage non modélisées (décision 2).
+
+**Vocabulaire** (glossaire à mettre à jour par le domain-expert) : **proposition de transition** (agrégat distinct, `kind` transition dans la file et dans « Mes propositions ») ; **transition sans nom** et son **libellé par défaut** « Throne → Bird » (lecteurs d'écran : « de Throne vers Bird ») ; **description** d'une transition (publique) ; **position de passage** (et non « pose intermédiaire ») ; **page d'une pose**.
+
+**Décisions du porteur du produit (2026-11-13)**
+1. **Nom facultatif** (Q72, Q88) : sans nom, la transition se présente par ses poses (« Throne → Bird »). Au plus **une transition sans nom** par pose de départ et pose d'arrivée, dans un sens donné, publiée ou en attente ; toute autre transition entre ces poses dans ce sens doit avoir un nom. Un nom donné suit les règles d'un nom de pose (espaces superflus retirés, 60 caractères au plus, clé de comparaison de la story 3) et est **unique pour la pose de départ et la pose d'arrivée** (publiée ou en attente), pas dans tout le catalogue (Q73). Les exemples « Classique », « Icarienne », « En pop » du brouillon, qui étaient des étiquettes déguisées, sont remplacés par des noms d'usage réels (« Ninja Star », de Star vers Star ; « Catherine's Wheel ») ou des transitions sans nom.
+2. **Description facultative et publique** (Q75, Q82, Q93) : 500 caractères au plus ; elle décrit le passage (« Passe par Throne sans s'arrêter. », un lien vidéo en texte brut, sans aperçu). Publiée avec la transition, affichée sous elle dans le catalogue, lue par le validateur dans la file ; ajustable à l'acceptation, l'ajustement apparaît dans « Mes propositions ». Pas de second message privé au validateur.
+3. **Difficultés** (Q76, Q90) : difficulté base et difficulté flyer obligatoires, mêmes niveaux que les poses, sans valeur par défaut. Elles mesurent **le passage seul**, les poses étant supposées maîtrisées (texte d'aide du formulaire). Aucune contrainte par rapport aux difficultés des poses.
+4. **Washing machine et positions de passage** (Q78, Q91, Q92) : une transition peut aller d'une pose vers elle-même (Ninja Star, de Star vers Star). Un mouvement qui traverse une pose sans s'y arrêter peut être proposé comme une seule transition, la description le précise ; la **charte de validation** dira quand découper (hors scénario). On dit « position de passage », jamais « pose intermédiaire ».
+5. **Accès** (Q86, Q100, Q103, Q104) : le nom d'une carte du catalogue devient un lien vers la **page de la pose** `/poses/:id` (zone cliquable étendue à la carte, le lien « Proposer une modification » reste utilisable). La page propose « Proposer une transition depuis Throne ». Formulaire, dans cet ordre : Pose de départ (préremplie, modifiable), Pose d'arrivée (liste déroulante des poses publiées, option vide « Choisis une pose »), Nom (facultatif), Difficulté base, Difficulté flyer, Description (facultative). Accès direct à l'adresse du formulaire : connexion demandée, puis retour au formulaire.
+6. **Qui propose, ce que devient la proposition** (recommandations validées) : seul un utilisateur connecté propose ; la proposition d'un utilisateur est en attente et invisible dans le catalogue, même pour lui ; celle d'un validateur ou d'un administrateur est publiée directement, **sans récapitulatif**, le formulaire l'annonçant par l'encadré « Ton rôle te permet de publier directement : la transition apparaîtra dans le catalogue dès l'envoi. ».
+7. **Poses et sens** : les deux poses doivent être publiées (inconnue ou en attente de validation : irrecevable ; pas de propositions groupées, Q79). Une proposition = un sens ; le sens inverse est une autre proposition ; pas d'indicateur « réversible » ni de raccourci « sens inverse » (Q77).
+8. **Renommage des poses** (Q80) : une transition référence ses poses et présente leurs **noms actuels** (catalogue, file, « Mes propositions ») ; pas de contrôle de version des poses. Écart accepté : une modification de pose garde, elle, le nom de la pose au moment de la proposition.
+9. **Validation** (Q81, Q83) : nouveau type dans la file, même ordre et même compteur que les autres propositions ; carte titrée « Transition **<Nom>** de **Throne** vers **Bird** », ou « Transition de Throne vers Bird » sans nom ; compte supprimé conservé comme pour les autres propositions (Q11). Seul un validateur ou un administrateur décide ; accepter publie (contributeur, validateur, date conservés). Ajustements : nom (le donner, le corriger ou le retirer), difficultés, description, **jamais les poses** ; un nom retenu reste unique pour ces poses et au plus une transition reste sans nom. Nom pris entre-temps, ou transition sans nom publiée entre-temps pour ces poses : acceptation impossible avec message. Refus avec motif, qui libère le nom (ou la place sans nom). Une transition qui arrive dans la mauvaise pose est **refusée avec un motif** (« Cette transition arrive en Bird, pas en Star : propose-la vers Bird. »). Déjà décidée : message de la story 4.
+10. **« Mes propositions »** (Q84) : nouveau type, titre commun avec la file. **Révise la story 5** : état vide « Tu n'as encore rien proposé. » (au lieu de « Tu n'as encore proposé aucune pose. ») et introduction « Les poses, les modifications et les transitions que tu proposes apparaissent ici, avec ce qu'elles deviennent. ».
+11. **Après l'envoi** : utilisateur, actions « Voir mes propositions », « Proposer une autre transition depuis Throne », « Revenir à Throne » ; validateur, « Voir la pose Throne » à la place de « Revenir à Throne », sans « Voir mes propositions » (comme la story 5, Q23). « Annuler » ramène à la page de la pose d'origine.
+12. **Page d'une pose** (Q85 ; catalogue, visiteurs compris) : lien de retour « Catalogue » ; titre = nom de la pose ; actions « Proposer une transition depuis Throne » et « Proposer une modification » (personnes connectées) ; caractéristiques de la pose ; légende de l'échelle de difficulté avec un **avertissement de responsabilité** : les transitions sont le moment où les chutes arrivent, pratique avec un spotter ; sections « Transitions depuis Throne » et « Transitions vers Throne », listes plates sans compteur. Chaque transition présente l'autre pose (lien vers sa page), son nom s'il y en a un, ses deux difficultés et sa description ; ordre : l'autre pose, puis le nom (sans nom en premier) ; une washing machine figure dans les deux sections avec « (même pose) ». États : chargement ; erreur avec « Réessayer » ; section vide « Aucune transition ne part de Star pour l'instant. » / « Aucune transition n'arrive à Star pour l'instant. » ; pose introuvable (titre « Pose introuvable »). Les transitions en attente n'y figurent pas.
+
+**Règles et exemples** (C = `consulter-les-transitions.feature`, sinon `proposer-une-transition.feature`)
+- **R1. La transition d'un utilisateur est en attente de validation et n'apparaît pas dans le catalogue**, même pour lui. Alice propose « Ninja Star » de Star vers Star, avancé / avancé : en attente.
+- **R2. La transition d'un validateur ou d'un administrateur est publiée directement.** Bruno, puis Paul : la transition sans nom de Throne vers Bird apparaît aussitôt.
+- **R3. Seule une personne connectée propose.** Visiteur : il faut être connecté. Compte supprimé : comme une session expirée.
+- **R4. Une transition relie une pose de départ et une pose d'arrivée publiées.** Pose absente : obligatoire ; inconnue : introuvable ; « High Bird » proposée par Chloé, encore en attente : introuvable.
+- **R5. Une transition ne va que dans un sens ; le sens inverse est une autre transition.** Throne → Bird publiée n'apparaît pas depuis Bird ; Alice propose Bird → Throne sans nom : recevable.
+- **R6. Une washing machine est une transition comme une autre.** Ninja Star, de Star vers Star.
+- **R7. Un mouvement qui traverse une position de passage se propose comme une seule transition.** De Star vers Bird, « Passe par Throne sans s'arrêter. ».
+- **R8. Le nom est facultatif ; donné, il est normalisé et compte au plus 60 caractères.** Aucun nom, ou un nom fait seulement d'espaces : transition sans nom ; « Ninja   Star » entouré d'espaces → « Ninja Star » ; 60 caractères acceptés ; 61 : trop long ; « --- » : irrecevable.
+- **R9. Au plus une transition sans nom relie deux poses dans un sens donné.** Une seconde sans nom de Throne vers Bird, face à une publiée ou à une en attente : irrecevable. « Ninja Star » à côté d'une sans nom de Star vers Star, et l'inverse : recevable.
+- **R10. Le nom est unique pour la pose de départ et la pose d'arrivée, pas dans tout le catalogue.** « ninja-star » face à « Ninja Star » publiée, « NINJA STAR » face à une en attente : irrecevable ; « Ninja Star » de Throne vers Star : recevable (la charte de validation juge du fond).
+- **R11. Difficultés obligatoires, de l'échelle, indépendantes de celles des poses.** Sans difficulté base ou flyer : obligatoire ; « expert » : n'existe pas ; avancé / avancé de Front Plank (débutant / débutant) vers Bird : recevable.
+- **R12. Description facultative et publique, 500 caractères au plus.** Lien vidéo en texte brut conservé ; faite d'espaces : aucune description ; 500 : acceptée ; 501 : trop longue.
+- **R13. La file de validation présente chaque transition** avec ses poses (noms actuels), son nom, ses difficultés, sa description, son contributeur et sa date ; mêlée aux autres propositions, la plus ancienne d'abord ; comptée dans le nombre en attente ; maintenue pour un compte supprimé.
+- **R14. Seul un validateur ou un administrateur décide.**
+- **R15. Accepter publie la transition telle que proposée**, description comprise, et garde contributeur, validateur et date.
+- **R16. Accepter avec ajustements publie les valeurs retenues** : « ninja star » → « Ninja Star », flyer intermédiaire → avancé, description corrigée ; une correction faite d'espaces superflus n'est pas un ajustement ; une description retenue de 501 caractères rend l'acceptation impossible.
+- **R17. Le nom retenu reste unique pour ces poses, et au plus une reste sans nom.** Donner le nom « Ninja Star » à une transition proposée sans nom : ajustement ; nom corrigé déjà publié, ou nom retiré alors qu'une sans nom est publiée : acceptation impossible.
+- **R18. Un nom, ou une place sans nom, pris entre-temps empêche l'acceptation** (amorçage de données).
+- **R19. Refuser ne publie rien, garde le motif et libère le nom ou la place sans nom.** Throne → Star refusée (« Cette transition arrive en Bird, pas en Star : propose-la vers Bird. »), puis proposée de nouveau par Chloé.
+- **R20. Une transition déjà traitée ne peut plus être décidée.**
+- **R21. « Mes propositions »** : transition en attente (poses, nom, difficultés, description, statut, date) ; ajustement de la description ; motif d'un refus ; publiée directement ; noms actuels des poses après un renommage.
+- **R22. Sur le site (contribution)** : invitation sur la page d'une pose réservée aux personnes connectées ; accès direct d'un visiteur → connexion, puis retour au formulaire de la même pose ; pose de départ introuvable signalée ; pose de départ préremplie et modifiable ; seules les poses publiées proposées comme pose d'arrivée ; texte d'aide des difficultés ; « Annuler » ramène à la pose ; encadré de publication directe pour un validateur ; confirmations et actions suivantes ; pose d'arrivée non choisie, nom pris, transition sans nom déjà présente, signalés sous le champ ; AcroFunJam injoignable, session expirée (saisie conservée et retrouvée) ; carte de la file (avec ou sans nom), acceptation annoncée, nom pris entre-temps ; « Mes propositions » (titres, introduction, état vide).
+- **C1. La page d'une pose présente les transitions qui en partent** (pose d'arrivée, nom, difficultés, description) **et C2. celles qui y arrivent** (pose de départ, …).
+- **C3. Ordre : l'autre pose, puis le nom, sans nom en premier** (@api). Depuis Star : Bird, Star (sans nom), Star « Ninja Star », Throne.
+- **C4. Une washing machine figure dans les deux sections**, marquée « (même pose) » sur le site.
+- **C5. Une transition sans nom se présente par ses poses** (« Throne → Bird »).
+- **C6. Seules les transitions publiées sont présentées.**
+- **C7. Une transition suit le renommage de ses poses** (Bird renommée Front Bird).
+- **C8. Une section vide le signale** (« Aucune transition ne part de Star pour l'instant. », « Aucune transition n'arrive à Star pour l'instant. »).
+- **C9. La page présente les caractéristiques de la pose, la légende de l'échelle et l'avertissement de responsabilité.**
+- **C10. Seule une pose publiée se consulte** (« Pose introuvable »). **C11. Page impossible à charger** : message et « Réessayer ».
+- **C12. Navigation** : du nom de la carte vers la page de la pose ; de la transition vers la page de l'autre pose ; retour au catalogue.
+
+**Hors périmètre** : étiquettes ; photos et vidéos (un lien vidéo s'écrit dans la description) ; modifier ou retirer une transition publiée (Q87) ; proposer une transition « vers » une pose depuis sa page ; recherche ou liste filtrable des poses dans le formulaire ; afficher les transitions existantes dans le formulaire ; propositions groupées ; page propre à une transition ; générateur de flow ; écran mobile.
+
+**À venir**
+- Story **« Gérer la liste des étiquettes »**, avant le générateur de flow (Q74), puis l'étiquetage des transitions. Étiquettes jugées indispensables par l'expert acroyoga : contrôlé / fluide, dynamique, pop, whip, icarien, envol, inversion, lunaire, washing machine. Une transition est publiée sans étiquette d'ici là.
+- Modifier ou retirer une transition publiée (symétrique de la story 6).
+- **Charte de validation** des transitions, avec l'expert acroyoga : quand découper un mouvement en plusieurs transitions, quand refuser un nom en usage entre d'autres poses.
+
+**Points mineurs à confirmer** (non bloquants, recommandation entre parenthèses)
+- **Q105** Une description garde-t-elle ses retours à la ligne ? (oui : espaces retirés en début et en fin, une description faite seulement d'espaces vaut absence de description, mais les espaces intérieurs et les retours à la ligne sont conservés, contrairement au message de modification). Les scénarios ne vérifient que le début, la fin et le cas « seulement des espaces ».
+- **Q106** (tranchée) Libellé de l'avertissement de la page d'une pose : vocabulaire du glossaire, **avertissement de responsabilité** et **spotter** ; libellé exact fixé par la conception visuelle.
+- **Q107** Un nom fait uniquement de ponctuation (« --- ») : irrecevable (« le nom de la transition doit contenir une lettre ou un chiffre »), plutôt que transformé en transition sans nom, par cohérence avec la clé de comparaison non vide d'un nom de pose.
+
+**Ordre d'implémentation conseillé**
+1. API : R1, R3, R4 (proposer, en attente, visiteur, poses absentes, inconnues ou en attente), R6, R5.
+2. API : R8 à R12 (nom facultatif, place sans nom, unicité par couple, difficultés, description).
+3. API, catalogue : C1, C2, C6, C10 (lecture de la page d'une pose), puis R2 (publication directe), C3, C4, C7.
+4. API : R13 à R20 (file, décisions, ajustements, unicité à l'acceptation, entre-temps, refus).
+5. API : R21 (« Mes propositions »).
+6. Site, catalogue : C12 (carte → page), C1, C2, C5, C8, C9, C10, C11, C4.
+7. Site, contribution : R22 (accès et formulaire, envoi et confirmations, erreurs, incidents), puis file de validation et « Mes propositions » (avec la révision de l'état vide de la story 5).
+
 ### Découpage des stories suivantes (décidé le 2026-11-02)
 1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.
 2. **Proposer une pose** (Contribution) : reprend les règles de contenu de `specs/features/catalogue/publier-une-pose.feature` (brouillon) ; publication directe pour un validateur ou un administrateur.
@@ -494,7 +572,7 @@ Le marqueur **[bloquant]** signale une question à trancher avant la story conce
 - Lien variante → pose principale : faut-il le modéliser ? Est-ce utile pour la recherche ou l'affichage ?
 - Que devient une pose retirée ou fusionnée qui a des transitions ? Peut-on retirer un élément publié ?
 - Que devient une étiquette retirée de la liste alors que des transitions la portent ?
-- Une transition doit-elle porter au moins une étiquette ?
+- Une transition doit-elle porter au moins une étiquette ? En attendant la story « Gérer la liste des étiquettes » (avant le générateur de flow), une transition est publiée sans étiquette (story 7, 2026-11-13).
 - Les étiquettes s'appliquent-elles uniquement aux transitions, ou aussi aux poses ?
 
 ### Génération de flow
@@ -522,12 +600,14 @@ Le marqueur **[bloquant]** signale une question à trancher avant la story conce
 - Définitions concrètes des niveaux de difficulté (Q52) : à rédiger avec l'expert acroyoga, non bloquant.
 - ~~Qui devient validateur ? Faut-il distinguer validateur et administrateur ?~~ Tranché : un administrateur attribue les rôles ; validateur et administrateur sont distincts.
 - ~~Un validateur peut-il accepter sa propre proposition ?~~ Tranché : sa proposition est publiée directement, sans validation (idem pour un administrateur).
-- Peut-on proposer une transition vers une pose elle-même encore en attente de validation ? Faut-il des propositions groupées ?
+- ~~Peut-on proposer une transition vers une pose elle-même encore en attente de validation ? Faut-il des propositions groupées ?~~ Tranché (story 7, 2026-11-13) : non, une transition relie deux poses publiées ; pas de propositions groupées.
+- Modifier ou retirer une transition publiée : story ultérieure, symétrique de la story 6.
+- Charte de validation des transitions (quand découper un mouvement qui traverse une position de passage, nom en usage entre d'autres poses) : à rédiger avec l'expert acroyoga, non bloquant.
 - Refus : un motif est-il obligatoire ? L'auteur peut-il amender puis resoumettre ?
 - Fusion de doublons : qui la fait et comment, avec quelles conséquences sur les transitions ?
 - Photos : consentement des personnes photographiées, crédit de l'auteur, procédure de retrait, formats et taille.
 
 ### Identité et présentation
 - Un compte est-il obligatoire pour générer un flow ? Et pour proposer ? (Consulter : non, cf. story 1.)
-- Où afficher l'avertissement de responsabilité : à l'inscription, sur chaque flow, en pied de page ?
+- Où afficher l'avertissement de responsabilité : à l'inscription, sur chaque flow, en pied de page ? Déjà sur le catalogue (story 3) et sur la page d'une pose, sous la légende, avec un rappel propre aux transitions (story 7).
 - Quelles langues pour les contenus : noms en anglais (usage communautaire), descriptions multilingues ?

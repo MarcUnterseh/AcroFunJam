@@ -90,6 +90,82 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.TransitionRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("BaseDifficulty")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("base_difficulty");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("FlyerDifficulty")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("flyer_difficulty");
+
+                    b.Property<Guid>("FromPoseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("from_pose_id");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("NameKey")
+                        .HasColumnType("text")
+                        .HasColumnName("name_key");
+
+                    b.Property<DateTimeOffset>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<Guid?>("SourceProposalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_proposal_id");
+
+                    b.Property<Guid>("ToPoseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("to_pose_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ToPoseId")
+                        .HasDatabaseName("ix_transitions_to_pose_id");
+
+                    b.HasIndex("FromPoseId", "ToPoseId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_transitions_unnamed_slot")
+                        .HasFilter("name_key IS NULL");
+
+                    b.HasIndex("FromPoseId", "ToPoseId", "NameKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_transitions_named_slot")
+                        .HasFilter("name_key IS NOT NULL");
+
+                    b.ToTable("transitions", "catalog", t =>
+                        {
+                            t.HasCheckConstraint("ck_transitions_base_difficulty", "base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_transitions_description", "description <> ''");
+
+                            t.HasCheckConstraint("ck_transitions_description_length", "char_length(description) <= 500");
+
+                            t.HasCheckConstraint("ck_transitions_flyer_difficulty", "flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_transitions_name_key", "(name IS NULL) = (name_key IS NULL) AND name_key <> ''");
+
+                            t.HasCheckConstraint("ck_transitions_name_length", "char_length(name) <= 60");
+                        });
+                });
+
             modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Contribution.PoseProposalRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -415,6 +491,148 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Contribution.TransitionProposalRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AdjustmentNote")
+                        .HasColumnType("text")
+                        .HasColumnName("adjustment_note");
+
+                    b.Property<string>("BaseDifficulty")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("base_difficulty");
+
+                    b.Property<Guid>("ContributorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("contributor_id");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("decided_at");
+
+                    b.Property<Guid?>("DecidedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("decided_by");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("FlyerDifficulty")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("flyer_difficulty");
+
+                    b.Property<Guid>("FromPoseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("from_pose_id");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("NameKey")
+                        .HasColumnType("text")
+                        .HasColumnName("name_key");
+
+                    b.Property<bool>("PublishedDirectly")
+                        .HasColumnType("boolean")
+                        .HasColumnName("published_directly");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("text")
+                        .HasColumnName("rejection_reason");
+
+                    b.Property<string>("RetainedBaseDifficulty")
+                        .HasColumnType("text")
+                        .HasColumnName("retained_base_difficulty");
+
+                    b.Property<string>("RetainedDescription")
+                        .HasColumnType("text")
+                        .HasColumnName("retained_description");
+
+                    b.Property<string>("RetainedFlyerDifficulty")
+                        .HasColumnType("text")
+                        .HasColumnName("retained_flyer_difficulty");
+
+                    b.Property<string>("RetainedName")
+                        .HasColumnType("text")
+                        .HasColumnName("retained_name");
+
+                    b.Property<string>("Status")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.Property<Guid>("ToPoseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("to_pose_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContributorId")
+                        .HasDatabaseName("ix_transition_proposals_contributor_id");
+
+                    b.HasIndex("FromPoseId", "ToPoseId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_transition_proposals_pending_unnamed_slot")
+                        .HasFilter("status = 'pending' AND name_key IS NULL");
+
+                    b.HasIndex("FromPoseId", "ToPoseId", "NameKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_transition_proposals_pending_named_slot")
+                        .HasFilter("status = 'pending' AND name_key IS NOT NULL");
+
+                    b.ToTable("transition_proposals", "contribution", t =>
+                        {
+                            t.HasCheckConstraint("ck_transition_proposals_adjustment_note", "adjustment_note IS NULL OR status = 'accepted'");
+
+                            t.HasCheckConstraint("ck_transition_proposals_adjustment_note_length", "char_length(adjustment_note) <= 500");
+
+                            t.HasCheckConstraint("ck_transition_proposals_base_difficulty", "base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_transition_proposals_decision", "(status = 'pending') = (decided_by IS NULL) AND (status = 'pending') = (decided_at IS NULL)");
+
+                            t.HasCheckConstraint("ck_transition_proposals_description", "description <> ''");
+
+                            t.HasCheckConstraint("ck_transition_proposals_description_length", "char_length(description) <= 500");
+
+                            t.HasCheckConstraint("ck_transition_proposals_flyer_difficulty", "flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_transition_proposals_name_key", "(name IS NULL) = (name_key IS NULL) AND name_key <> ''");
+
+                            t.HasCheckConstraint("ck_transition_proposals_name_length", "char_length(name) <= 60");
+
+                            t.HasCheckConstraint("ck_transition_proposals_published_directly", "NOT published_directly OR (status = 'accepted' AND decided_by = contributor_id AND decided_at = submitted_at AND adjustment_note IS NULL AND (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_description) IS NOT DISTINCT FROM (name, base_difficulty, flyer_difficulty, description))");
+
+                            t.HasCheckConstraint("ck_transition_proposals_rejection_reason", "(status = 'rejected') = (rejection_reason IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_transition_proposals_rejection_reason_length", "char_length(rejection_reason) <= 500");
+
+                            t.HasCheckConstraint("ck_transition_proposals_retained_base_difficulty", "retained_base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_transition_proposals_retained_description_length", "char_length(retained_description) <= 500");
+
+                            t.HasCheckConstraint("ck_transition_proposals_retained_flyer_difficulty", "retained_flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_transition_proposals_retained_name_length", "char_length(retained_name) <= 60");
+
+                            t.HasCheckConstraint("ck_transition_proposals_retained_transition", "(status = 'accepted') = (retained_base_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_flyer_difficulty IS NOT NULL) AND (status = 'accepted' OR (retained_name IS NULL AND retained_description IS NULL))");
+
+                            t.HasCheckConstraint("ck_transition_proposals_status", "status IN ('pending', 'accepted', 'rejected')");
+                        });
+                });
+
             modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -551,6 +769,23 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("user_tokens", "identity");
+                });
+
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.TransitionRecord", b =>
+                {
+                    b.HasOne("AcroFunJam.Infrastructure.Persistence.Catalog.PoseRecord", null)
+                        .WithMany()
+                        .HasForeignKey("FromPoseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_transitions_from_pose");
+
+                    b.HasOne("AcroFunJam.Infrastructure.Persistence.Catalog.PoseRecord", null)
+                        .WithMany()
+                        .HasForeignKey("ToPoseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_transitions_to_pose");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>

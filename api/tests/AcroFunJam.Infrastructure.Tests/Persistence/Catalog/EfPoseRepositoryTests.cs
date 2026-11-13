@@ -149,6 +149,20 @@ public sealed class EfPoseRepositoryTests(PostgreSqlFixture database) : IClassFi
         (await repository.IsNameTaken(PoseName.Create("Bird").Value!.Key, Ct)).ShouldBeFalse();
     }
 
+    /// <summary>Story 7 (ADR 0028): the current names of published poses in one batch, an unknown identifier left out.</summary>
+    [Fact]
+    public async Task NamesOf_Should_ReturnTheNamesOfThePublishedPosesOnly_When_SomeIdsAreUnknown()
+    {
+        var throne = APublishedPose("Throne");
+        var bird = APublishedPose("Bird");
+        await Save(throne, bird, APublishedPose("Star"));
+
+        await using var context = database.CreateDbContext();
+        var names = await new EfPoseRepository(context, new TrackedAggregates()).NamesOf([throne.Id, bird.Id, new PoseId(Guid.NewGuid())], Ct);
+
+        names.ShouldBe(new Dictionary<PoseId, PoseName> { [throne.Id] = throne.Name, [bird.Id] = bird.Name }, ignoreOrder: true);
+    }
+
     [Fact]
     public async Task Database_Should_RejectASecondPose_When_TheNameKeyIsAlreadyPublished()
     {

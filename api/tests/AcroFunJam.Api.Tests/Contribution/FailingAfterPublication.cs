@@ -28,6 +28,12 @@ internal sealed class FailingAfterPublication(CatalogPublisher publisher) : ICat
         return Injected;
     }
 
+    public async Task<Result<bool>> PublishTransition(TransitionProposalId source, TransitionPoses poses, RetainedTransition transition, CancellationToken ct)
+    {
+        (await publisher.PublishTransition(source, poses, transition, ct)).IsSuccess.ShouldBeTrue();
+        return Injected;
+    }
+
     /// <summary>The same Api, whose catalog publisher fails after publishing.</summary>
     public static WebApplicationFactory<Program> In(ApiWithDatabase api) =>
         api.WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>

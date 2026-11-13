@@ -3,7 +3,6 @@ using AcroFunJam.Domain.Common;
 using AcroFunJam.Domain.Contribution;
 using AcroFunJam.Domain.SharedKernel;
 using AcroFunJam.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 namespace AcroFunJam.Infrastructure.ContextIntegration;
 
@@ -31,16 +30,6 @@ public sealed class PgPoseReservation(AcroFunJamDbContext context) : IPoseReserv
     public Task<Result<T>> Run<T>(PublishedPoseId pose, PoseNameKey? key, Func<CancellationToken, Task<Result<T>>> work, CancellationToken ct) =>
         RunLocked(key is null ? [PoseLockKeyPrefix + pose.Value] : [PoseLockKeyPrefix + pose.Value, LockKeyPrefix + key.Value], work, ct);
 
-    private async Task<Result<T>> RunLocked<T>(string[] lockKeys, Func<CancellationToken, Task<Result<T>>> work, CancellationToken ct)
-    {
-        ArgumentNullException.ThrowIfNull(work);
-
-        await using var transaction = await context.Database.BeginTransactionAsync(ct);
-        foreach (var lockKey in lockKeys)
-            await context.Database.ExecuteSqlAsync($"SELECT pg_advisory_xact_lock(hashtextextended({lockKey}, 0))", ct);
-        var result = await work(ct);
-        if (result.IsSuccess) await transaction.CommitAsync(ct);
-        else context.ChangeTracker.Clear(); // nothing of the rolled-back work may be saved later in the scope
-        return result;
-    }
+    private Task<Result<T>> RunLocked<T>(string[] lockKeys, Func<CancellationToken, Task<Result<T>>> work, CancellationToken ct) =>
+        AdvisoryLocks.RunLocked(context, lockKeys, work, ct);
 }

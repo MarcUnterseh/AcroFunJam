@@ -11,4 +11,14 @@ public static class CatalogErrors
         new("catalog.pose-version-mismatch", "Cette pose a changé depuis la version attendue.");
 
     public static readonly Error PoseNotFound = new("catalog.pose-not-found", "Cette pose n'est pas dans le catalogue.");
+
+    public static readonly Error FromPoseNotFound = new("catalog.from-pose-not-found", "La pose de départ n'est pas dans le catalogue.");
+
+    public static readonly Error ToPoseNotFound = new("catalog.to-pose-not-found", "La pose d'arrivée n'est pas dans le catalogue.");
+
+    public static readonly Error TransitionNameTaken =
+        new("catalog.transition-name-taken", "Une transition de ce nom relie déjà ces poses dans le catalogue.");
+
+    public static readonly Error UnnamedTransitionTaken =
+        new("catalog.unnamed-transition-taken", "Une transition sans nom relie déjà ces poses dans le catalogue.");
 }

@@ -16,4 +16,7 @@ public interface IPoseRepository
 
     /// <summary>Whether a published pose already has this name key.</summary>
     Task<bool> IsNameTaken(PoseNameKey key, CancellationToken ct);
+
+    /// <summary>The current names of the published poses among these identifiers; an unknown identifier is left out.</summary>
+    Task<IReadOnlyDictionary<PoseId, PoseName>> NamesOf(IReadOnlyCollection<PoseId> ids, CancellationToken ct);
 }

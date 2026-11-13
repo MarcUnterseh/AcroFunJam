@@ -90,7 +90,13 @@ public sealed class ValidationSteps(
         var queue = (await Queue()).Proposals;
         if (expected.Header.Contains("proposition"))
         {
-            queue.Select(p => p.Kind == "pose-revision" ? "modification de " + p.Pose?.Name : "pose " + p.Name)
+            queue.Select(p => p.Kind switch
+                {
+                    "pose-revision" => "modification de " + p.Pose?.Name,
+                    // Story 7: « transition de Throne vers Bird », « transition Ninja Star de Star vers Star ».
+                    "transition-proposal" => $"transition {(p.Name is null ? "" : p.Name + " ")}de {p.FromPose?.Name} vers {p.ToPose?.Name}",
+                    _ => "pose " + p.Name,
+                })
                 .ShouldBe(expected.Rows.Select(row => row["proposition"]));
             return;
         }
@@ -291,6 +297,16 @@ public sealed class ValidationSteps(
     [Then(@"^la proposition garde la difficulté (base|flyer) proposée ""([^""]*)"" et la difficulté (?:base|flyer) retenue ""([^""]*)""$")]
     public async Task ThenTheProposalKeepsTheProposedAndRetainedDifficulty(string role, string proposed, string retained)
     {
+        if (decisions.OnTransition is { } transition)
+        {
+            // Story 7: the same outcome for a transition proposal.
+            var decision = await TransitionProposalsInDatabase.DecisionOn(transition);
+            var kept = decision.Retained.ShouldNotBeNull();
+            (role == "base" ? decision.Proposed.BaseDifficulty : decision.Proposed.FlyerDifficulty).ShouldBe(DifficultyLabels.ToCode(proposed));
+            (role == "base" ? kept.BaseDifficulty : kept.FlyerDifficulty).ShouldBe(DifficultyLabels.ToCode(retained));
+            return;
+        }
+
         if (decisions.OnRevision)
         {
             // Story 6: the same outcome for a revision proposal.
@@ -386,6 +402,12 @@ public sealed class ValidationSteps(
         "le message est trop long" => (HttpStatusCode.BadRequest, "contribution.adjustment-note-too-long"),
         "la modification retenue ne change rien à la pose" =>
             (HttpStatusCode.UnprocessableEntity, "contribution.retained-revision-changes-nothing"),
+        // Story 7: the retained transition follows the content rules of a transition, and takes its place between its poses.
+        "la description de la transition est trop longue" => (HttpStatusCode.BadRequest, "transition.description-too-long"),
+        "une transition de ce nom relie déjà ces poses dans le catalogue" =>
+            (HttpStatusCode.Conflict, "contribution.transition-name-already-in-catalog"),
+        "une transition sans nom relie déjà ces poses dans le catalogue" =>
+            (HttpStatusCode.Conflict, "contribution.unnamed-transition-already-in-catalog"),
         "un message n'accompagne qu'une acceptation avec ajustements" =>
             (HttpStatusCode.UnprocessableEntity, "contribution.adjustment-note-without-adjustment"),
         _ when reason.StartsWith("le niveau de difficulté \"", StringComparison.Ordinal) =>
@@ -503,6 +525,8 @@ public sealed class ValidationSteps(
         Guid Id,
         string? Name,
         QueuedPoseResponse? Pose,
+        QueuedPoseResponse? FromPose,
+        QueuedPoseResponse? ToPose,
         string? BaseDifficulty,
         string? FlyerDifficulty,
         bool? CanStartFlow,

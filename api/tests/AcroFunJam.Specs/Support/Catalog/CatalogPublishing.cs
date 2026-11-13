@@ -1,4 +1,6 @@
+using System.Net.Http.Json;
 using AcroFunJam.Application.Catalog.PublishPose;
+using AcroFunJam.Application.Catalog.PublishTransition;
 using AcroFunJam.Application.Common;
 using AcroFunJam.Domain.Catalog;
 using AcroFunJam.Domain.SharedKernel;
@@ -32,4 +34,34 @@ public sealed class CatalogPublishing(CatalogTestData seeded, Deployment deploym
         var result = await handler.Handle(pose, CancellationToken.None);
         if (result.IsFailure) throw new InvalidOperationException($"Cannot publish the pose {name}: {result.Error}.");
     }
+
+    /// <summary>
+    /// Publishes a transition between two published poses, found by name in the catalog list, through the PublishTransition
+    /// command (story 7, ADR 0028): an @Integration feature only, transitions live in the database.
+    /// </summary>
+    public async Task PublishTransition(string from, string to, string? name, string baseDifficulty, string flyerDifficulty, string? description)
+    {
+        if (!IntegrationDatabase.IsUsedBy(scenario.ScenarioInfo))
+            throw new InvalidOperationException("Les transitions publiées demandent une fonctionnalité @Integration.");
+
+        using var client = deployment.Current.CreateClient();
+        var list = await client.GetFromJsonAsync<PoseList>(new Uri("/catalog/poses", UriKind.Relative));
+        PoseId IdOf(string pose) => new(list!.Poses.Single(p => p.Name == pose).Id);
+
+        using var scope = deployment.Current.Services.CreateScope();
+        var handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<PublishTransition, TransitionId>>();
+        var transition = new PublishTransition(
+            IdOf(from),
+            IdOf(to),
+            TransitionName.CreateOptional(name).Value,
+            Difficulty.FromCodes(baseDifficulty, flyerDifficulty).Value!,
+            TransitionDescription.CreateOptional(description).Value,
+            Source: null);
+        var result = await handler.Handle(transition, CancellationToken.None);
+        if (result.IsFailure) throw new InvalidOperationException($"Cannot publish the transition from {from} to {to}: {result.Error}.");
+    }
+
+    private sealed record PoseList(IReadOnlyList<PoseListItem> Poses);
+
+    private sealed record PoseListItem(Guid Id, string Name);
 }

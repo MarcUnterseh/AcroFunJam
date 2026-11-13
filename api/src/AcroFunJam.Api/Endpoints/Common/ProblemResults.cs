@@ -29,6 +29,19 @@ public static class ProblemResults
         ["contribution.pose-not-found"] = StatusCodes.Status404NotFound,
         ["contribution.pose-revision-already-pending"] = StatusCodes.Status409Conflict,
         ["contribution.pose-changed-since-revision-started"] = StatusCodes.Status409Conflict,
+        // Content and poses of a transition (story 7, ADR 0030).
+        ["transition.name-without-letter-or-digit"] = StatusCodes.Status400BadRequest,
+        ["transition.name-too-long"] = StatusCodes.Status400BadRequest,
+        ["transition.description-too-long"] = StatusCodes.Status400BadRequest,
+        ["contribution.from-pose-required"] = StatusCodes.Status400BadRequest,
+        ["contribution.to-pose-required"] = StatusCodes.Status400BadRequest,
+        ["contribution.from-pose-not-found"] = StatusCodes.Status404NotFound,
+        ["contribution.to-pose-not-found"] = StatusCodes.Status404NotFound,
+        // Place of a transition already taken (ADR 0029).
+        ["contribution.transition-name-already-in-catalog"] = StatusCodes.Status409Conflict,
+        ["contribution.transition-name-already-pending"] = StatusCodes.Status409Conflict,
+        ["contribution.unnamed-transition-already-in-catalog"] = StatusCodes.Status409Conflict,
+        ["contribution.unnamed-transition-already-pending"] = StatusCodes.Status409Conflict,
         // Deciding on a proposal (ADR 0022).
         ["contribution.proposal-not-found"] = StatusCodes.Status404NotFound,
         ["contribution.proposal-already-decided"] = StatusCodes.Status409Conflict,

@@ -58,4 +58,28 @@ public static class ContributionErrors
 
     public static readonly Error AdjustmentNoteWithoutAdjustment =
         new("contribution.adjustment-note-without-adjustment", "Un message n'accompagne qu'une acceptation avec ajustements.");
+
+    public static readonly Error FromPoseRequired =
+        new("contribution.from-pose-required", "La pose de départ de la transition est obligatoire.");
+
+    public static readonly Error ToPoseRequired =
+        new("contribution.to-pose-required", "La pose d'arrivée de la transition est obligatoire.");
+
+    public static readonly Error FromPoseNotFound =
+        new("contribution.from-pose-not-found", "La pose de départ n'est pas dans le catalogue.");
+
+    public static readonly Error ToPoseNotFound =
+        new("contribution.to-pose-not-found", "La pose d'arrivée n'est pas dans le catalogue.");
+
+    public static readonly Error TransitionNameAlreadyInCatalog =
+        new("contribution.transition-name-already-in-catalog", "Une transition de ce nom relie déjà ces poses dans le catalogue.");
+
+    public static readonly Error TransitionNameAlreadyPending =
+        new("contribution.transition-name-already-pending", "Une transition de ce nom entre ces poses est déjà en attente de validation.");
+
+    public static readonly Error UnnamedTransitionAlreadyInCatalog =
+        new("contribution.unnamed-transition-already-in-catalog", "Une transition sans nom relie déjà ces poses dans le catalogue : il faut nommer la nouvelle.");
+
+    public static readonly Error UnnamedTransitionAlreadyPending =
+        new("contribution.unnamed-transition-already-pending", "Une transition sans nom entre ces poses est déjà en attente de validation : il faut nommer la nouvelle.");
 }

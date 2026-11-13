@@ -45,6 +45,18 @@ public sealed class EfPoseRepository(AcroFunJamDbContext context, TrackedAggrega
         Version = pose.Version.Value,
     };
 
+    public async Task<IReadOnlyDictionary<PoseId, PoseName>> NamesOf(IReadOnlyCollection<PoseId> ids, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(ids);
+        var values = ids.Select(id => id.Value).ToList();
+        var names = await context.Set<PoseRecord>().AsNoTracking()
+            .Where(p => values.Contains(p.Id))
+            .Select(p => new { p.Id, p.Name })
+            .ToListAsync(ct);
+        // Stored names always met the rules when written.
+        return names.ToDictionary(p => new PoseId(p.Id), p => PoseName.Create(p.Name).Value!);
+    }
+
     public async Task<Pose?> GetById(PoseId id, CancellationToken ct)
     {
         var record = await context.Set<PoseRecord>().AsNoTracking().SingleOrDefaultAsync(p => p.Id == id.Value, ct);

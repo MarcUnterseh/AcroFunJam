@@ -22,6 +22,9 @@ internal sealed class FakePoseRepository(params string[] publishedNames) : IPose
 
     public Task<bool> IsNameTaken(PoseNameKey key, CancellationToken ct) =>
         Task.FromResult(publishedNames.Any(n => PoseName.Create(n).Value!.Key == key) || Added.Any(p => p.Name.Key == key));
+
+    public Task<IReadOnlyDictionary<PoseId, PoseName>> NamesOf(IReadOnlyCollection<PoseId> ids, CancellationToken ct) =>
+        Task.FromResult<IReadOnlyDictionary<PoseId, PoseName>>(Added.Where(p => ids.Contains(p.Id)).ToDictionary(p => p.Id, p => p.Name));
 }
 
 public sealed class PublishPoseHandlerTests

@@ -1,4 +1,3 @@
-using System.Text;
 using AcroFunJam.Domain.Common;
 
 namespace AcroFunJam.Domain.SharedKernel;
@@ -12,13 +11,10 @@ public sealed record PoseName
 
     public static Result<PoseName> Create(string? raw)
     {
-        // As typed (NFC, so that an accent counts as one character), without superfluous spaces.
-        var name = string.Join(' ', (raw ?? string.Empty).Normalize(NormalizationForm.FormC)
-            .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        var name = NameText.Normalize(raw);
         // A name made only of spaces, punctuation or symbols has an empty key: it is no name at all.
         if (PoseNameKey.Compute(name).Length == 0) return PoseContentErrors.NameRequired;
-        // Counted in code points, as PostgreSQL char_length and the site do (ADR 0017).
-        if (name.EnumerateRunes().Count() > MaxLength) return PoseContentErrors.NameTooLong;
+        if (NameText.IsLongerThan(name, MaxLength)) return PoseContentErrors.NameTooLong;
         return Result<PoseName>.Success(new PoseName(name));
     }
 

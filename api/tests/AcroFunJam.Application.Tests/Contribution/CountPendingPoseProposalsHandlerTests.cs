@@ -10,7 +10,7 @@ public sealed class CountPendingPoseProposalsHandlerTests
         var reader = new FakePendingPoseProposalsReader(
             APendingProposal.Named("Throne").Build(), APendingProposal.Named("Bird").Build());
 
-        var result = await new CountPendingPoseProposalsHandler(reader, new FakePendingPoseRevisionsReader())
+        var result = await new CountPendingPoseProposalsHandler(reader, new FakePendingPoseRevisionsReader(), new FakePendingTransitionProposalsReader())
             .Handle(new CountPendingPoseProposals(), TestContext.Current.CancellationToken);
 
         result.Value.ShouldBe(2);
@@ -22,7 +22,7 @@ public sealed class CountPendingPoseProposalsHandlerTests
     {
         var revisions = new FakePendingPoseRevisionsReader { Count = 3 };
 
-        var result = await new CountPendingPoseProposalsHandler(new FakePendingPoseProposalsReader(APendingProposal.Named("Throne").Build()), revisions)
+        var result = await new CountPendingPoseProposalsHandler(new FakePendingPoseProposalsReader(APendingProposal.Named("Throne").Build()), revisions, new FakePendingTransitionProposalsReader())
             .Handle(new CountPendingPoseProposals(), TestContext.Current.CancellationToken);
 
         result.Value.ShouldBe(4);

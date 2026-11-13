@@ -32,8 +32,7 @@ public sealed record Acceptance : ProposalDecision
     {
         ArgumentNullException.ThrowIfNull(retained);
         var hasAdjustments = retained.IsAdjustedFrom(proposed);
-        // A note explains adjustments to the contributor: without adjustment, it has nothing to explain.
-        if (note is not null && !hasAdjustments) return ContributionErrors.AdjustmentNoteWithoutAdjustment;
+        if (DecisionRules.NoteRefusal(note, hasAdjustments) is { } refusal) return refusal;
         return Result<Acceptance>.Success(new Acceptance(by, at, retained, note, hasAdjustments));
     }
 

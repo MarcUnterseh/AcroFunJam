@@ -71,6 +71,7 @@ public static class ContributionEndpoints
             .ProducesProblem(StatusCodes.Status403Forbidden);
 
         contribution.MapPoseRevisionEndpoints();
+        contribution.MapTransitionEndpoints();
 
         return app;
     }
@@ -105,6 +106,7 @@ public static class ContributionEndpoints
     {
         MyPoseProposal pose => ToResponse(pose),
         MyPoseRevision revision => PoseRevisionEndpoints.ToResponse(revision),
+        MyTransitionProposal transition => TransitionEndpoints.ToResponse(transition),
         _ => throw new UnreachableException($"Unknown kind of proposal: {proposal.GetType().Name}."),
     };
 
@@ -220,6 +222,7 @@ public static class ContributionEndpoints
     {
         PendingPoseProposalDto pose => ToResponse(pose),
         PendingPoseRevisionDto revision => PoseRevisionEndpoints.ToResponse(revision),
+        PendingTransitionProposalDto transition => TransitionEndpoints.ToResponse(transition),
         _ => throw new UnreachableException($"Unknown kind of pending proposal: {proposal.GetType().Name}."),
     };
 
@@ -271,12 +274,14 @@ public sealed record PoseProposalResponse(
 public sealed record ValidationQueueResponse(IReadOnlyList<PendingProposalResponse> Proposals);
 
 /// <summary>
-/// A proposal pending validation, of a kind told by <c>kind</c> (ADR 0027): <c>pose-proposal</c> or <c>pose-revision</c>. A
+/// A proposal pending validation, of a kind told by <c>kind</c> (ADR 0027): <c>pose-proposal</c>, <c>pose-revision</c> or
+/// <c>transition-proposal</c> (story 7, ADR 0030). A
 /// client treats an unknown kind as « site à mettre à jour ».
 /// </summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
 [JsonDerivedType(typeof(PendingPoseProposalResponse), "pose-proposal")]
 [JsonDerivedType(typeof(PendingPoseRevisionResponse), "pose-revision")]
+[JsonDerivedType(typeof(PendingTransitionProposalResponse), "transition-proposal")]
 public abstract record PendingProposalResponse;
 
 /// <summary>A proposal pending validation: the proposed pose, its contributor and when it was submitted.</summary>
@@ -386,12 +391,14 @@ public static class MyProposalStatusCodes
 public sealed record MyProposalsResponse(IReadOnlyList<MyProposalResponse> Proposals);
 
 /// <summary>
-/// One of their proposals, of a kind told by <c>kind</c> (ADR 0027): <c>pose-proposal</c> or <c>pose-revision</c>. A client treats
+/// One of their proposals, of a kind told by <c>kind</c> (ADR 0027): <c>pose-proposal</c>, <c>pose-revision</c> or
+/// <c>transition-proposal</c> (story 7, ADR 0030). A client treats
 /// an unknown kind as « site à mettre à jour ».
 /// </summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
 [JsonDerivedType(typeof(MyPoseProposalResponse), "pose-proposal")]
 [JsonDerivedType(typeof(MyPoseRevisionResponse), "pose-revision")]
+[JsonDerivedType(typeof(MyTransitionProposalResponse), "transition-proposal")]
 public abstract record MyProposalResponse;
 
 /// <summary>

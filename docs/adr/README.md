@@ -29,3 +29,6 @@
 | [0025](0025-reservation-par-pose-puis-par-nom.md) | Réservation par pose, puis par nom (complète 0017) | accepté |
 | [0026](0026-proposition-de-modification-d-une-pose.md) | Proposition de modification d'une pose : agrégat distinct, révision dans la même transaction | accepté |
 | [0027](0027-file-de-validation-et-mes-propositions-heterogenes.md) | File de validation et « Mes propositions » hétérogènes (`kind`, `/contribution/my-proposals`) | accepté |
+| [0028](0028-transition-publiee-et-proposition-de-transition.md) | Transition publiée (agrégat `Transition` du Catalogue) et proposition de transition (agrégat distinct, `TransitionAcceptance`, noyau partagé étendu) | accepté |
+| [0029](0029-place-d-une-transition-et-reservation-par-couple.md) | Place d'une transition : unicité par couple orienté, réservation par couple, deux index partiels | accepté |
+| [0030](0030-page-d-une-pose-et-contrat-http-des-transitions.md) | Page d'une pose (`GET /catalog/poses/{id}` enrichi) et contrat HTTP des transitions | accepté |

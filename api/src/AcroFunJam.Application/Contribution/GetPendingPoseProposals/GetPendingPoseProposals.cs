@@ -1,4 +1,5 @@
 using AcroFunJam.Domain.Contribution;
+using AcroFunJam.Domain.SharedKernel;
 
 namespace AcroFunJam.Application.Contribution.GetPendingPoseProposals;
 
@@ -29,6 +30,21 @@ public sealed record PendingPoseRevisionDto(
     PriorPose Current,
     IReadOnlyList<PoseFieldChange> Changes,
     RevisionMessage? Message,
+    string? ContributorEmail,
+    bool IsYou,
+    DateTimeOffset SubmittedAt)
+    : PendingProposalDto(ContributorEmail, IsYou, SubmittedAt);
+
+/// <summary>
+/// A transition proposal of the validation queue (story 7, R13): its poses under their current names and the transition as
+/// proposed.
+/// </summary>
+public sealed record PendingTransitionProposalDto(
+    TransitionProposalId Id,
+    TransitionPoses Poses,
+    PoseName FromPoseName,
+    PoseName ToPoseName,
+    ProposedTransition Transition,
     string? ContributorEmail,
     bool IsYou,
     DateTimeOffset SubmittedAt)

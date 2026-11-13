@@ -33,7 +33,7 @@ public sealed class GetMyProposalsHandlerTests
         var star = APendingProposal.Named("Star").By(Alice).SubmittedAt(Monday).Build();
         var revision = ARevisionOfThroneBy(Alice, Monday.AddDays(1));
         var handler = new GetMyProposalsHandler(
-            new FakeMyPoseProposalsReader(star), new FakeMyPoseRevisionsReader(revision, ARevisionOfThroneBy(Chloe, Monday)));
+            new FakeMyPoseProposalsReader(star), new FakeMyPoseRevisionsReader(revision, ARevisionOfThroneBy(Chloe, Monday)), new FakeMyTransitionProposalsReader(), new FakeCatalogPoses());
 
         var result = await handler.Handle(new GetMyProposals(Alice), Ct);
 

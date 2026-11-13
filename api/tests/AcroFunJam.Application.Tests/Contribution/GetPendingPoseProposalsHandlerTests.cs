@@ -13,7 +13,7 @@ public sealed class GetPendingPoseProposalsHandlerTests
     [Fact]
     public async Task Handle_Should_ReturnAnEmptyQueue_When_NoProposalIsPending()
     {
-        var handler = new GetPendingPoseProposalsHandler(new FakePendingPoseProposalsReader(), new FakePendingPoseRevisionsReader(), new FakeContributorEmails());
+        var handler = new GetPendingPoseProposalsHandler(new FakePendingPoseProposalsReader(), new FakePendingPoseRevisionsReader(), new FakeContributorEmails(), new FakePendingTransitionProposalsReader(), new FakeCatalogPoses());
 
         var result = await handler.Handle(new GetPendingPoseProposals(Bruno), Ct);
 
@@ -25,7 +25,7 @@ public sealed class GetPendingPoseProposalsHandlerTests
     {
         var submittedAt = new DateTimeOffset(2026, 11, 2, 14, 30, 0, TimeSpan.Zero);
         var throne = APendingProposal.Named("Throne").By(Alice).SubmittedAt(submittedAt).Build();
-        var handler = new GetPendingPoseProposalsHandler(new FakePendingPoseProposalsReader(throne), new FakePendingPoseRevisionsReader(), new FakeContributorEmails((Alice, "alice@example.org")));
+        var handler = new GetPendingPoseProposalsHandler(new FakePendingPoseProposalsReader(throne), new FakePendingPoseRevisionsReader(), new FakeContributorEmails((Alice, "alice@example.org")), new FakePendingTransitionProposalsReader(), new FakeCatalogPoses());
 
         var result = await handler.Handle(new GetPendingPoseProposals(Bruno), Ct);
 
@@ -41,7 +41,7 @@ public sealed class GetPendingPoseProposalsHandlerTests
             APendingProposal.Named("Throne").By(Alice).SubmittedAt(monday.AddDays(2)).Build(),
             APendingProposal.Named("Star").By(Alice).SubmittedAt(monday).Build(),
             APendingProposal.Named("Bird").By(Alice).SubmittedAt(monday.AddDays(1)).Build());
-        var handler = new GetPendingPoseProposalsHandler(reader, new FakePendingPoseRevisionsReader(), new FakeContributorEmails((Alice, "alice@example.org")));
+        var handler = new GetPendingPoseProposalsHandler(reader, new FakePendingPoseRevisionsReader(), new FakeContributorEmails((Alice, "alice@example.org")), new FakePendingTransitionProposalsReader(), new FakeCatalogPoses());
 
         var result = await handler.Handle(new GetPendingPoseProposals(Bruno), Ct);
 
@@ -58,7 +58,7 @@ public sealed class GetPendingPoseProposalsHandlerTests
             APendingProposal.Named("Star").By(chloe).Build(),
             APendingProposal.Named("Bird").By(Alice).Build());
 
-        await new GetPendingPoseProposalsHandler(reader, new FakePendingPoseRevisionsReader(), emails).Handle(new GetPendingPoseProposals(Bruno), Ct);
+        await new GetPendingPoseProposalsHandler(reader, new FakePendingPoseRevisionsReader(), emails, new FakePendingTransitionProposalsReader(), new FakeCatalogPoses()).Handle(new GetPendingPoseProposals(Bruno), Ct);
 
         emails.Calls.ShouldHaveSingleItem().ShouldBe([Alice, chloe], ignoreOrder: true);
     }
@@ -68,7 +68,7 @@ public sealed class GetPendingPoseProposalsHandlerTests
     {
         // A validator can find their own proposal in the queue (submitted before being promoted).
         var reader = new FakePendingPoseProposalsReader(APendingProposal.Named("Throne").By(Alice).Build());
-        var handler = new GetPendingPoseProposalsHandler(reader, new FakePendingPoseRevisionsReader(), new FakeContributorEmails((Alice, "alice@example.org")));
+        var handler = new GetPendingPoseProposalsHandler(reader, new FakePendingPoseRevisionsReader(), new FakeContributorEmails((Alice, "alice@example.org")), new FakePendingTransitionProposalsReader(), new FakeCatalogPoses());
 
         var result = await handler.Handle(new GetPendingPoseProposals(new ValidatorId(Alice.Value)), Ct);
 
@@ -79,7 +79,7 @@ public sealed class GetPendingPoseProposalsHandlerTests
     public async Task Handle_Should_PresentNoEmail_When_TheContributorAccountNoLongerExists()
     {
         var reader = new FakePendingPoseProposalsReader(APendingProposal.Named("Throne").By(Alice).Build());
-        var handler = new GetPendingPoseProposalsHandler(reader, new FakePendingPoseRevisionsReader(), new FakeContributorEmails());
+        var handler = new GetPendingPoseProposalsHandler(reader, new FakePendingPoseRevisionsReader(), new FakeContributorEmails(), new FakePendingTransitionProposalsReader(), new FakeCatalogPoses());
 
         var result = await handler.Handle(new GetPendingPoseProposals(Bruno), Ct);
 
@@ -109,7 +109,7 @@ public sealed class GetPendingPoseProposalsHandlerTests
         var submittedAt = new DateTimeOffset(2026, 11, 12, 9, 0, 0, TimeSpan.Zero);
         var revision = ARevisionOfThrone(submittedAt, "Throne se découvre dès la première séance.");
         var handler = new GetPendingPoseProposalsHandler(
-            new FakePendingPoseProposalsReader(), new FakePendingPoseRevisionsReader(revision), new FakeContributorEmails((Alice, "alice@example.org")));
+            new FakePendingPoseProposalsReader(), new FakePendingPoseRevisionsReader(revision), new FakeContributorEmails((Alice, "alice@example.org")), new FakePendingTransitionProposalsReader(), new FakeCatalogPoses());
 
         var result = await handler.Handle(new GetPendingPoseProposals(Bruno), Ct);
 
@@ -131,7 +131,7 @@ public sealed class GetPendingPoseProposalsHandlerTests
         var handler = new GetPendingPoseProposalsHandler(
             new FakePendingPoseProposalsReader(APendingProposal.Named("Star").By(Alice).SubmittedAt(monday).Build()),
             new FakePendingPoseRevisionsReader(ARevisionOfThrone(monday.AddDays(2))),
-            new FakeContributorEmails((Alice, "alice@example.org")));
+            new FakeContributorEmails((Alice, "alice@example.org")), new FakePendingTransitionProposalsReader(), new FakeCatalogPoses());
 
         var result = await handler.Handle(new GetPendingPoseProposals(Bruno), Ct);
 

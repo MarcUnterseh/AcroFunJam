@@ -1,4 +1,5 @@
 using AcroFunJam.Application.Catalog;
+using AcroFunJam.Application.Catalog.GetPosePage;
 using AcroFunJam.Application.Catalog.ListPublishedPoses;
 using AcroFunJam.Application.Common;
 using AcroFunJam.Application.Contribution;
@@ -33,6 +34,10 @@ public static class DependencyInjection
         services.AddSingleton(CatalogConcurrencyConflicts.PoseRevisedMeanwhile);
         services.AddScoped<IPublishedPosesReader, EfPublishedPosesReader>();
         services.AddScoped<IPoseRepository, EfPoseRepository>();
+        services.AddSingleton(CatalogUniqueConstraints.TransitionNamedSlot);
+        services.AddSingleton(CatalogUniqueConstraints.TransitionUnnamedSlot);
+        services.AddScoped<ITransitionRepository, EfTransitionRepository>();
+        services.AddScoped<IPoseTransitionsReader, EfPoseTransitionsReader>();
 
         // Identity
         services.AddScoped<IAccountRepository, EfAccountRepository>();
@@ -42,14 +47,20 @@ public static class DependencyInjection
         services.AddSingleton(ContributionUniqueConstraints.PendingPoseNameKey);
         services.AddSingleton(ContributionUniqueConstraints.PendingRevisionReservedNameKey);
         services.AddSingleton(ContributionUniqueConstraints.PendingRevisionOfPose);
+        services.AddSingleton(ContributionUniqueConstraints.PendingTransitionNamedSlot);
+        services.AddSingleton(ContributionUniqueConstraints.PendingTransitionUnnamedSlot);
         services.AddSingleton(ContributionConcurrencyConflicts.PoseProposalDecided);
         services.AddSingleton(ContributionConcurrencyConflicts.PoseRevisionProposalDecided);
+        services.AddSingleton(ContributionConcurrencyConflicts.TransitionProposalDecided);
         services.AddScoped<IPoseProposalRepository, EfPoseProposalRepository>();
         services.AddScoped<IPendingPoseProposalsReader, EfPendingPoseProposalsReader>();
         services.AddScoped<IMyPoseProposalsReader, EfMyPoseProposalsReader>();
         services.AddScoped<IPoseRevisionProposalRepository, EfPoseRevisionProposalRepository>();
         services.AddScoped<IPendingPoseRevisionsReader, EfPendingPoseRevisionsReader>();
         services.AddScoped<IMyPoseRevisionsReader, EfMyPoseRevisionsReader>();
+        services.AddScoped<ITransitionProposalRepository, EfTransitionProposalRepository>();
+        services.AddScoped<IPendingTransitionProposalsReader, EfPendingTransitionProposalsReader>();
+        services.AddScoped<IMyTransitionProposalsReader, EfMyTransitionProposalsReader>();
 
         // Anti-corruption layers between contexts (ADR 0016)
         services.AddScoped<IContributors, IdentityContributors>();
@@ -58,7 +69,9 @@ public static class DependencyInjection
         services.AddScoped<ICatalogPublisher, CatalogPublisher>();
         services.AddScoped<ICatalogPoseNames, CatalogPoseNames>();
         services.AddScoped<ICatalogPoses, CatalogPoses>();
+        services.AddScoped<ICatalogTransitions, CatalogTransitions>();
         services.AddScoped<IPoseReservation, PgPoseReservation>(); // names of both contexts (ADR 0017)
+        services.AddScoped<ITransitionReservation, PgTransitionReservation>(); // places between poses of both contexts (ADR 0029)
 
         return services;
     }

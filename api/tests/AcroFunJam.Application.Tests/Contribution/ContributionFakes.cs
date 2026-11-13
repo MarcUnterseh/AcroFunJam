@@ -145,6 +145,21 @@ internal sealed class FakeCatalogPublisher(Error? refusal = null) : ReservationA
         return Task.FromResult(Result<bool>.Success(true));
     }
 
+    public List<(TransitionProposalId Source, TransitionPoses Poses, RetainedTransition Transition)> PublishedTransitions { get; } = [];
+
+    /// <summary>Whether each publication of a transition happened inside the reservation of its couple of poses.</summary>
+    public List<bool> TransitionPublicationsInReservation { get; } = [];
+
+    public FakeTransitionReservation? TransitionReservation { get; init; }
+
+    public Task<Result<bool>> PublishTransition(TransitionProposalId source, TransitionPoses poses, RetainedTransition transition, CancellationToken ct)
+    {
+        TransitionPublicationsInReservation.Add(TransitionReservation?.IsHeld == true);
+        if (refusal is not null) return Task.FromResult<Result<bool>>(refusal);
+        PublishedTransitions.Add((source, poses, transition));
+        return Task.FromResult(Result<bool>.Success(true));
+    }
+
     public List<(PoseRevisionProposalId Source, PublishedPoseId Pose, PublishedPoseVersion Expected, RetainedPose Retained)> Revised { get; } = [];
 
     public Task<Result<bool>> RevisePose(
@@ -211,6 +226,104 @@ internal sealed class FakeCatalogPoses(params PublishedPose[] poses) : Reservati
             ? Result<PublishedPose>.Success(pose)
             : (Result<PublishedPose>)ContributionErrors.PoseNotFound);
     }
+
+    public Error? NamesFailure { get; init; }
+
+    public List<IReadOnlyCollection<PublishedPoseId>> NameReads { get; } = [];
+
+    public Task<Result<IReadOnlyDictionary<PublishedPoseId, PoseName>>> NamesOf(IReadOnlyCollection<PublishedPoseId> ids, CancellationToken ct)
+    {
+        Called();
+        NameReads.Add(ids);
+        if (NamesFailure is not null) return Task.FromResult<Result<IReadOnlyDictionary<PublishedPoseId, PoseName>>>(NamesFailure);
+        IReadOnlyDictionary<PublishedPoseId, PoseName> names = poses.Where(p => ids.Contains(p.Id)).ToDictionary(p => p.Id, p => p.Values.Name);
+        return Task.FromResult(Result<IReadOnlyDictionary<PublishedPoseId, PoseName>>.Success(names));
+    }
+}
+
+/// <summary>In-memory fake of <see cref="ICatalogTransitions"/>: the places taken by published transitions, or a failing query.</summary>
+internal sealed class FakeCatalogTransitions : ICatalogTransitions
+{
+    public List<TransitionSlot> Published { get; } = [];
+
+    public Error? Failure { get; init; }
+
+    public Task<Result<bool>> IsSlotTaken(TransitionSlot slot, CancellationToken ct) =>
+        Task.FromResult(Failure is not null ? Failure : Result<bool>.Success(Published.Contains(slot)));
+}
+
+/// <summary>Fake of <see cref="ITransitionReservation"/>: records the couples reserved and whether the reservation is held.</summary>
+internal sealed class FakeTransitionReservation : ITransitionReservation
+{
+    public List<TransitionPoses> Reserved { get; } = [];
+
+    public bool IsHeld { get; private set; }
+
+    public async Task<Result<T>> Run<T>(TransitionPoses poses, Func<CancellationToken, Task<Result<T>>> work, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(work);
+        Reserved.Add(poses);
+        IsHeld = true;
+        try
+        {
+            return await work(ct);
+        }
+        finally
+        {
+            IsHeld = false;
+        }
+    }
+}
+
+/// <summary>In-memory fake of <see cref="ITransitionProposalRepository"/>: the places taken by pending proposals.</summary>
+internal sealed class FakeTransitionProposalRepository(FakeTransitionReservation? reservation = null) : ITransitionProposalRepository
+{
+    public List<TransitionProposal> Added { get; } = [];
+
+    /// <summary>Whether each call happened inside the reservation of the couple.</summary>
+    public List<bool> CallsInReservation { get; } = [];
+
+    public List<TransitionSlot> PendingSlots { get; } = [];
+
+    public void Add(TransitionProposal proposal)
+    {
+        CallsInReservation.Add(reservation?.IsHeld == true);
+        Added.Add(proposal);
+    }
+
+    public Task<bool> ExistsPendingInSlot(TransitionSlot slot, CancellationToken ct)
+    {
+        CallsInReservation.Add(reservation?.IsHeld == true);
+        return Task.FromResult(PendingSlots.Contains(slot));
+    }
+
+    /// <summary>The proposals already stored, found by <see cref="GetById"/>.</summary>
+    public List<TransitionProposal> Stored { get; } = [];
+
+    public List<TransitionProposal> Updated { get; } = [];
+
+    public void Update(TransitionProposal proposal) => Updated.Add(proposal);
+
+    public Task<TransitionProposal?> GetById(TransitionProposalId id, CancellationToken ct) =>
+        Task.FromResult(Stored.Concat(Added).SingleOrDefault(p => p.Id == id));
+
+    public Task<bool> ExistsOtherPendingInSlot(TransitionSlot slot, TransitionProposalId except, CancellationToken ct) =>
+        Task.FromResult(Stored.Any(p => p.Id != except && p.Status == ProposalStatus.Pending && p.Slot == slot));
+}
+
+/// <summary>In-memory fake of <see cref="IMyTransitionProposalsReader"/>: the transition proposals of each contributor.</summary>
+internal sealed class FakeMyTransitionProposalsReader(params TransitionProposal[] proposals) : IMyTransitionProposalsReader
+{
+    public Task<IReadOnlyList<TransitionProposal>> ListSubmittedBy(ContributorId contributor, CancellationToken ct) =>
+        Task.FromResult<IReadOnlyList<TransitionProposal>>([.. proposals.Where(p => p.Contributor == contributor)]);
+}
+
+/// <summary>In-memory fake of <see cref="IPendingTransitionProposalsReader"/>.</summary>
+internal sealed class FakePendingTransitionProposalsReader(params TransitionProposal[] pending) : IPendingTransitionProposalsReader
+{
+    public Task<IReadOnlyList<TransitionProposal>> ListPending(CancellationToken ct) => Task.FromResult<IReadOnlyList<TransitionProposal>>(pending);
+
+    public Task<int> CountPending(CancellationToken ct) => Task.FromResult(pending.Length);
 }
 
 /// <summary>In-memory fake of <see cref="IPoseRevisionProposalRepository"/>.</summary>

@@ -17,4 +17,10 @@ public interface ICatalogPublisher
     /// </summary>
     Task<Result<bool>> RevisePose(
         PoseRevisionProposalId source, PublishedPoseId pose, PublishedPoseVersion expected, RetainedPose retained, CancellationToken ct);
+
+    /// <summary>
+    /// Publishes the retained transition of an accepted transition proposal between its poses (story 7, ADR 0028), in the current
+    /// transaction. The Catalog may refuse it (a pose no longer published, a place taken meanwhile).
+    /// </summary>
+    Task<Result<bool>> PublishTransition(TransitionProposalId source, TransitionPoses poses, RetainedTransition transition, CancellationToken ct);
 }
