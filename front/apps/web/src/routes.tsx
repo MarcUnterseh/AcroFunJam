@@ -9,6 +9,7 @@ import type { ReactNode } from 'react';
 import { matchPath, type RouteObject } from 'react-router';
 import { CatalogRoute } from './catalog/CatalogRoute';
 import { PosePageRoute } from './catalog/PosePageRoute';
+import { TagsPage } from './catalog/TagsPage';
 import { MyProposalsPage } from './contribution/MyProposalsPage';
 import { ProposePosePage } from './contribution/ProposePosePage';
 import { ProposeRevisionPage } from './contribution/ProposeRevisionPage';
@@ -25,6 +26,7 @@ import {
   registrationPagePath,
   revisionPagePattern,
   signInPagePath,
+  tagsPath,
   transitionProposalPagePattern,
   validationPath,
 } from './paths';
@@ -60,6 +62,7 @@ export const routes = (extra?: ReactNode): RouteObject[] => [
     children: [
       { index: true, element: <CatalogRoute /> },
       { path: posePagePattern, element: <PosePageRoute /> },
+      { path: tagsPath, element: <TagsPage /> },
       { path: signInPagePath, element: <SignInPage contextOf={signInContextOf} />, handle: ownSessionNotice },
       { path: registrationPagePath, element: <RegisterPage />, handle: ownSessionNotice },
       { path: proposePosePath, element: <ProposePosePage />, handle: ownSessionNotice },

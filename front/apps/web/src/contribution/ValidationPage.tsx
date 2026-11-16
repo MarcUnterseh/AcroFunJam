@@ -1,9 +1,9 @@
-import { canValidateProposals, validationLabels } from '@acrofunjam/core';
+import { canManageTags, canValidateProposals, tagLabels, validationLabels } from '@acrofunjam/core';
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router';
+import { Link, Navigate } from 'react-router';
 import { useSession } from '../identity/SessionContext';
 import { useBusyMain } from '../layout/useBusyMain';
-import { catalogPath, signInPath, validationPath } from '../paths';
+import { catalogPath, signInPath, tagsPath, validationPath } from '../paths';
 import { ValidationQueue } from './ValidationQueue';
 
 /**
@@ -33,6 +33,12 @@ export function ValidationPage() {
   return (
     <section className="follow-up-page">
       <h1 tabIndex={-1}>{validationLabels.title}</h1>
+      {/* Story 8: the management of the tags, for a validator who may manage them (8-etiquettes.md, § 4). */}
+      {owner && canManageTags(session) && (
+        <Link to={tagsPath} className="button button--secondary link-button validation-page__tags">
+          {tagLabels.validationLink}
+        </Link>
+      )}
       {owner && <ValidationQueue key={owner} owner={owner} />}
     </section>
   );

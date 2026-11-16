@@ -51,3 +51,7 @@ export * from './presentation/contribution/transition-labels';
 export * from './presentation/shared-kernel/date-labels';
 export * from './presentation/catalog/catalog-labels';
 export * from './presentation/catalog/pose-page-labels';
+export * from './domain/catalog/tag';
+export type * from './application/catalog/TagListGateway';
+export * from './application/catalog/tag-list';
+export * from './presentation/catalog/tag-labels';

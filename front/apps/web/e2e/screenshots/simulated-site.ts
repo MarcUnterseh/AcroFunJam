@@ -7,6 +7,7 @@ import { IdentityApi } from '../support/identity-api';
 import { MyProposalsApi } from '../support/my-proposals-api';
 import { defaultPassword, expectSignedIn, signInThroughTheSite } from '../support/people';
 import { PoseRevisionApi } from '../support/pose-revision-api';
+import { TagApi } from '../support/tag-api';
 import { TransitionApi } from '../support/transition-api';
 import { ValidationApi } from '../support/validation-api';
 
@@ -19,6 +20,7 @@ export type SimulatedSite = {
   myProposalsApi: MyProposalsApi;
   poseRevisionApi: PoseRevisionApi;
   transitionApi: TransitionApi;
+  tagApi: TagApi;
 };
 
 /**
@@ -41,6 +43,7 @@ export const test = base.extend<{
       myProposalsApi: new MyProposalsApi(context, identityApi, contributionApi, catalogApi),
       poseRevisionApi: new PoseRevisionApi(context, identityApi, catalogApi, contributionApi),
       transitionApi: new TransitionApi(context, identityApi, catalogApi, contributionApi),
+      tagApi: new TagApi(context, identityApi, catalogApi),
     };
     for (const api of Object.values(site)) await api.start();
     await use(site);

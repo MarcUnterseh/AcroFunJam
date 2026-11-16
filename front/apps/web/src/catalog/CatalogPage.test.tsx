@@ -162,7 +162,9 @@ describe('CatalogPage', () => {
             },
           }}
         >
-          <CatalogPage />
+          <MemoryRouter>
+            <CatalogPage />
+          </MemoryRouter>
         </CatalogGatewayProvider>
       </QueryClientProvider>,
     );

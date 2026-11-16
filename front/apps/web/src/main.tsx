@@ -4,6 +4,7 @@ import {
   createCatalogGateway,
   createContributionGateway,
   createPosePageGateway,
+  createTagListGateway,
   createPoseRevisionGateway,
   createTransitionProposalGateway,
   createValidationGateway,
@@ -22,6 +23,7 @@ import '@fontsource/unbounded/700.css';
 import 'virtual:tokens.css';
 import { CatalogGatewayProvider } from './catalog/CatalogGatewayContext';
 import { PosePageProvider } from './catalog/PosePageContext';
+import { TagListProvider } from './catalog/TagListContext';
 import { ContributionProvider } from './contribution/ContributionContext';
 import { createSessionDecisionInputStore } from './contribution/session-decision-input-store';
 import { createSessionProposalInputStore } from './contribution/session-proposal-input-store';
@@ -57,29 +59,34 @@ createRoot(root).render(
     <QueryClientProvider client={queryClient}>
       <CatalogGatewayProvider gateway={createCatalogGateway(apiClient)}>
         <PosePageProvider gateway={createPosePageGateway(apiClient)}>
-          <ContributionProvider gateway={createContributionGateway(apiClient)} store={proposalInputStore}>
-            <ValidationProvider gateway={createValidationGateway(apiClient)} store={decisionInputStore}>
-              <PoseRevisionProvider gateway={createPoseRevisionGateway(apiClient)} store={revisionInputStore}>
-                <TransitionProposalProvider
-                  gateway={createTransitionProposalGateway(apiClient)}
-                  store={transitionInputStore}
+          <TagListProvider gateway={createTagListGateway(apiClient)}>
+            <ContributionProvider gateway={createContributionGateway(apiClient)} store={proposalInputStore}>
+              <ValidationProvider gateway={createValidationGateway(apiClient)} store={decisionInputStore}>
+                <PoseRevisionProvider
+                  gateway={createPoseRevisionGateway(apiClient)}
+                  store={revisionInputStore}
                 >
-                  <IdentityProvider
-                    gateway={createAuthGateway(apiClient)}
-                    memory={createLocalSessionMemory(localStorage, window)}
-                    forgetOnSignOut={[
-                      proposalInputStore,
-                      decisionInputStore,
-                      { clear: revisionInputStore.clearAll },
-                      { clear: transitionInputStore.clearAll },
-                    ]}
+                  <TransitionProposalProvider
+                    gateway={createTransitionProposalGateway(apiClient)}
+                    store={transitionInputStore}
                   >
-                    <RouterProvider router={router} />
-                  </IdentityProvider>
-                </TransitionProposalProvider>
-              </PoseRevisionProvider>
-            </ValidationProvider>
-          </ContributionProvider>
+                    <IdentityProvider
+                      gateway={createAuthGateway(apiClient)}
+                      memory={createLocalSessionMemory(localStorage, window)}
+                      forgetOnSignOut={[
+                        proposalInputStore,
+                        decisionInputStore,
+                        { clear: revisionInputStore.clearAll },
+                        { clear: transitionInputStore.clearAll },
+                      ]}
+                    >
+                      <RouterProvider router={router} />
+                    </IdentityProvider>
+                  </TransitionProposalProvider>
+                </PoseRevisionProvider>
+              </ValidationProvider>
+            </ContributionProvider>
+          </TagListProvider>
         </PosePageProvider>
       </CatalogGatewayProvider>
     </QueryClientProvider>

@@ -44,5 +44,12 @@ export const canPropose = (session: Session): boolean =>
 export const canValidateProposals = (session: Session): boolean =>
   session.status === 'signedIn' && session.capabilities.includes(validateProposalsCapability);
 
+/**
+ * The person is signed in and the role allows managing the list of tags (capability "manage-tags", story 8):
+ * adding, renaming, describing and removing a tag on the page « Étiquettes ».
+ */
+export const canManageTags = (session: Session): boolean =>
+  session.status === 'signedIn' && session.capabilities.includes('manage-tags');
+
 export const noticeDismissed = (session: Session): Session =>
   session.status === 'visitor' ? { status: 'visitor' } : session;

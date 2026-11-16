@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   canPropose,
+  canManageTags,
   canValidateProposals,
   initialSession,
   noticeDismissed,
@@ -77,5 +78,21 @@ describe('canValidateProposals', () => {
   it('should be false when nobody is signed in', () => {
     expect(canValidateProposals(signedOut())).toBe(false);
     expect(canValidateProposals(initialSession)).toBe(false);
+  });
+});
+
+describe('canManageTags', () => {
+  it.each([
+    [['propose', 'validate-proposals', 'manage-tags'], true],
+    [['propose', 'validate-proposals'], false],
+  ] as const)(
+    'should tell whether the signed-in person may manage the tags when the capabilities are %j',
+    (capabilities, expected) => {
+      expect(canManageTags(signedIn('bruno@example.org', capabilities))).toBe(expected);
+    },
+  );
+
+  it('should be false when nobody is signed in', () => {
+    expect(canManageTags(signedOut())).toBe(false);
   });
 });

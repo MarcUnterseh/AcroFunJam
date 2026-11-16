@@ -30,12 +30,14 @@ type TransitionToPublish = {
   base: string;
   flyer: string;
   description: string | null;
+  /** The tags it carries (story 8). */
+  tagIds?: string[];
 };
 
 /** Publishes a transition between two published poses of the simulated catalog. */
 export const publishTransition = (
   catalogApi: CatalogApi,
-  { from, to, name, base, flyer, description }: TransitionToPublish,
+  { from, to, name, base, flyer, description, tagIds = [] }: TransitionToPublish,
 ) =>
   catalogApi.publishTransition({
     fromPoseId: catalogApi.poseNamed(from).id,
@@ -44,6 +46,7 @@ export const publishTransition = (
     baseDifficulty: difficultyCode(base),
     flyerDifficulty: difficultyCode(flyer),
     description: description || null,
+    tagIds,
   });
 
 // --- Published transitions --------------------------------------------------------------------------

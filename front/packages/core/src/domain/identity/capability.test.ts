@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { isCapability } from './capability';
 
 describe('isCapability', () => {
-  it.each(['propose', 'validate-proposals', 'manage-roles'])(
+  it.each(['propose', 'validate-proposals', 'manage-tags', 'manage-roles'])(
     'should know the capability code "%s"',
     (code) => {
       expect(isCapability(code)).toBe(true);

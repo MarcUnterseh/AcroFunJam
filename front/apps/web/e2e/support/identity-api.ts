@@ -14,8 +14,8 @@ export type Role = 'user' | 'validator' | 'administrator';
 
 const capabilitiesOf: Record<Role, string[]> = {
   user: ['propose'],
-  validator: ['propose', 'validate-proposals'],
-  administrator: ['propose', 'validate-proposals', 'manage-roles'],
+  validator: ['propose', 'validate-proposals', 'manage-tags'],
+  administrator: ['propose', 'validate-proposals', 'manage-tags', 'manage-roles'],
 };
 
 export type Account = Credentials & { role: Role };

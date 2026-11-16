@@ -29,22 +29,34 @@ describe('catalog, link « Mes propositions »', () => {
     expect(link).toHaveAttribute('href', '/mes-propositions');
     expect(link).toHaveClass('button--secondary');
     const header = link.closest('.page-header') as HTMLElement;
-    expect(within(header).getAllByRole('link').map((each) => each.textContent)).toEqual([
+    expect(
+      within(header)
+        .getAllByRole('link')
+        .map((each) => each.textContent),
+    ).toEqual([
       'Proposer une pose',
       'Mes propositions',
+      'Étiquettes', // story 8: for everybody, last of the row
     ]);
   });
 
   it.each([
     ['the catalog is empty', ok([])],
     ['the catalog cannot be loaded', fail({ code: 'catalog.unreachable', message: '…' })],
-  ])('should offer it alone in the header of the page when %s', async (_case, answer) => {
-    renderSite('/', { gateway: signedIn(), catalog: { listPublishedPoses: async () => answer } });
+  ])(
+    'should offer it without « Proposer une pose » in the header of the page when %s',
+    async (_case, answer) => {
+      renderSite('/', { gateway: signedIn(), catalog: { listPublishedPoses: async () => answer } });
 
-    const link = await screen.findByRole('link', { name: 'Mes propositions' });
-    const header = link.closest('.page-header') as HTMLElement;
-    expect(within(header).getAllByRole('link')).toHaveLength(1);
-  });
+      const link = await screen.findByRole('link', { name: 'Mes propositions' });
+      const header = link.closest('.page-header') as HTMLElement;
+      expect(
+        within(header)
+          .getAllByRole('link')
+          .map((each) => each.textContent),
+      ).toEqual(['Mes propositions', 'Étiquettes']);
+    },
+  );
 
   it('should not offer a visitor to see proposals', async () => {
     renderSite('/', { catalog: { listPublishedPoses: async () => ok([throne]) } });
@@ -52,5 +64,18 @@ describe('catalog, link « Mes propositions »', () => {
     await screen.findByRole('heading', { level: 2, name: 'Throne' });
     await screen.findByRole('link', { name: 'Se connecter' });
     expect(myProposalsLink()).not.toBeInTheDocument();
+  });
+});
+
+// Story 8 (8-etiquettes.md, § 5): « Étiquettes » for everybody, alone for a visitor.
+describe('catalog, link « Étiquettes »', () => {
+  it('should offer a visitor the list of tags, alone in the header of the page', async () => {
+    renderSite('/', { catalog: { listPublishedPoses: async () => ok([throne]) } });
+
+    const link = await screen.findByRole('link', { name: 'Étiquettes' });
+    expect(link).toHaveAttribute('href', '/etiquettes');
+    expect(link).toHaveClass('button--secondary');
+    const header = link.closest('.page-header') as HTMLElement;
+    expect(within(header).getAllByRole('link')).toHaveLength(1);
   });
 });

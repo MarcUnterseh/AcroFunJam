@@ -2373,3 +2373,175 @@ main {
     grid-column: 1 / -1;
   }
 }
+
+/* --- Page « Étiquettes » (story 8, docs/design/ecrans/8-etiquettes.md, element-etiquette.md) ----------------- */
+
+.tags-page > .back-link {
+  margin-bottom: var(--afj-spacing-sm);
+}
+
+/* Panel « Ajouter une étiquette »: the only primary button of the page at rest. */
+.tag-panel {
+  display: grid;
+  gap: var(--afj-spacing-lg);
+  margin-top: var(--afj-spacing-lg);
+  padding: var(--afj-spacing-lg);
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-lg);
+}
+
+.tag-panel h2,
+.tags-page__list-title {
+  margin: 0;
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-medium);
+  line-height: var(--afj-line-height-tight);
+}
+
+.tags-page__list-title {
+  margin-top: var(--afj-spacing-xl);
+  margin-bottom: var(--afj-spacing-sm);
+}
+
+.tag-form {
+  display: grid;
+  gap: var(--afj-spacing-lg);
+}
+
+.tag-form__actions,
+.tag__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--afj-spacing-sm);
+}
+
+.tag-list {
+  display: grid;
+  gap: var(--afj-spacing-sm);
+  margin: var(--afj-spacing-lg) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tags-page__list-title + .tag-list {
+  margin-top: 0;
+}
+
+.tag {
+  display: grid;
+  gap: var(--afj-spacing-sm);
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
+}
+
+.tag__name {
+  margin: 0;
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-medium);
+  line-height: var(--afj-line-height-tight);
+  overflow-wrap: anywhere;
+}
+
+.tag__description {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.tag__count {
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+/* Footer of management: dotted top border. */
+.tag__actions {
+  padding-top: var(--afj-spacing-sm);
+  border-top: var(--afj-size-border-width) dotted var(--afj-color-divider);
+}
+
+/* Zone opened in place: change, confirmation or refusal of the removal. */
+.tag__zone {
+  display: grid;
+  gap: var(--afj-spacing-md);
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-background);
+  border-radius: var(--afj-radius-sm);
+}
+
+.tag__question {
+  margin: 0;
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.tag__consequence {
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+.tag__carriers-title {
+  margin: var(--afj-spacing-sm) 0 0;
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.tag__carriers {
+  display: grid;
+  gap: var(--afj-spacing-xs);
+  margin: 0;
+  padding-inline-start: var(--afj-spacing-lg);
+  font-size: var(--afj-font-size-sm);
+}
+
+/* On a coloured surface: the text colour, underlined and semibold (alerte-formulaire.md). */
+.tag__carrier-link {
+  display: inline-block;
+  padding-block: var(--afj-spacing-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text);
+  text-decoration: underline;
+}
+
+.tag-list__empty {
+  margin: var(--afj-spacing-lg) 0 0;
+  padding: var(--afj-spacing-md);
+  color: var(--afj-color-text-muted);
+  border: var(--afj-size-border-width) dashed var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
+}
+
+.validation-page__tags {
+  margin-bottom: var(--afj-spacing-lg);
+}
+
+@media (width >= 40em) {
+  .tag-panel {
+    padding: var(--afj-spacing-xl);
+  }
+
+  /* Mobile: the primary buttons take the full width (.button--primary); here, the width of their content. */
+  .tag-form__actions .button {
+    width: auto;
+    max-width: 100%;
+  }
+
+  .validation-page__tags {
+    align-self: flex-start;
+  }
+}
+
+@media (forced-colors: active) {
+  .tag,
+  .tag-panel {
+    border-color: CanvasText;
+  }
+
+  .tag__carrier-link {
+    color: LinkText;
+  }
+}

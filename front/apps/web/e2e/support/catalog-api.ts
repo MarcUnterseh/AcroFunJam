@@ -31,6 +31,8 @@ export type PublishedTransition = {
   baseDifficulty: DifficultyCode;
   flyerDifficulty: DifficultyCode;
   description: string | null;
+  /** The tags it carries (story 8), read by the simulated list of tags. */
+  tagIds?: string[];
 };
 
 /** Catalog order of the names (ADR 0017), enough for the scenarios of the site. */

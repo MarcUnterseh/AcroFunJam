@@ -55,6 +55,12 @@ import {
   type TransitionProposalGateway,
   type TransitionProposalOutcome,
   type ValidTransitionProposal,
+  type Tag,
+  type TagChangeFailure,
+  type TagListFailure,
+  type TagListGateway,
+  type TagRemovalFailure,
+  type ValidTagContent,
 } from '@acrofunjam/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
@@ -62,6 +68,7 @@ import type { ReactNode } from 'react';
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router';
 import { CatalogGatewayProvider } from '../catalog/CatalogGatewayContext';
 import { PosePageProvider } from '../catalog/PosePageContext';
+import { TagListProvider } from '../catalog/TagListContext';
 import { ContributionProvider } from '../contribution/ContributionContext';
 import { PoseRevisionProvider } from '../contribution/PoseRevisionContext';
 import { TransitionProposalProvider } from '../contribution/TransitionProposalContext';
@@ -315,6 +322,40 @@ export class FakePoseRevisionGateway implements PoseRevisionGateway {
 }
 
 /** The page of a pose in the catalog (story 7): answered in turn (the last answer is repeated), the ids read. */
+/**
+ * The list of tags (story 8): the tags answered in turn (the last answer is repeated), and the changes sent, answered
+ * as told.
+ */
+export class FakeTagListGateway implements TagListGateway {
+  readonly tags: Answers<Result<readonly Tag[], TagListFailure>>;
+  readonly added: ValidTagContent[] = [];
+  readonly changed: Array<{ id: string; content: ValidTagContent }> = [];
+  readonly removed: string[] = [];
+  readonly changes = new Answers<Result<Tag, TagChangeFailure>>([fail({ kind: 'outdated' })]);
+  readonly removals = new Answers<Result<void, TagRemovalFailure>>([ok(undefined)]);
+
+  constructor(...answers: Array<Result<readonly Tag[], TagListFailure> | 'held'>) {
+    this.tags = new Answers(answers.length > 0 ? answers : [ok([])]);
+  }
+
+  listTags = () => this.tags.next();
+
+  addTag = (content: ValidTagContent) => {
+    this.added.push(content);
+    return this.changes.next();
+  };
+
+  changeTag = (id: string, content: ValidTagContent) => {
+    this.changed.push({ id, content });
+    return this.changes.next();
+  };
+
+  removeTag = (id: string) => {
+    this.removed.push(id);
+    return this.removals.next();
+  };
+}
+
 export class FakePosePageGateway implements PosePageGateway {
   readonly page: Answers<Result<PosePage, PosePageFailure>>;
   readonly read: string[] = [];
@@ -458,6 +499,7 @@ export const renderSite = (
     revision = new FakePoseRevisionGateway(),
     revisionStore = new MemoryRevisionInputStore(),
     posePage = new FakePosePageGateway(),
+    tags = new FakeTagListGateway(),
     transitions = new FakeTransitionProposalGateway(),
     transitionStore = new MemoryTransitionInputStore(),
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
@@ -472,6 +514,7 @@ export const renderSite = (
     revision?: FakePoseRevisionGateway;
     revisionStore?: MemoryRevisionInputStore;
     posePage?: FakePosePageGateway;
+    tags?: TagListGateway;
     transitions?: FakeTransitionProposalGateway;
     transitionStore?: MemoryTransitionInputStore;
     queryClient?: QueryClient;
@@ -483,21 +526,23 @@ export const renderSite = (
     <QueryClientProvider client={queryClient}>
       <CatalogGatewayProvider gateway={catalog}>
         <PosePageProvider gateway={posePage}>
-          <ContributionProvider gateway={contribution} store={store}>
-            <ValidationProvider gateway={validation} store={decisionStore}>
-              <PoseRevisionProvider gateway={revision} store={revisionStore}>
-                <TransitionProposalProvider gateway={transitions} store={transitionStore}>
-                  <IdentityProvider
-                    gateway={gateway}
-                    memory={memory}
-                    forgetOnSignOut={[store, decisionStore, revisionStore, transitionStore]}
-                  >
-                    <RouterProvider router={router} />
-                  </IdentityProvider>
-                </TransitionProposalProvider>
-              </PoseRevisionProvider>
-            </ValidationProvider>
-          </ContributionProvider>
+          <TagListProvider gateway={tags}>
+            <ContributionProvider gateway={contribution} store={store}>
+              <ValidationProvider gateway={validation} store={decisionStore}>
+                <PoseRevisionProvider gateway={revision} store={revisionStore}>
+                  <TransitionProposalProvider gateway={transitions} store={transitionStore}>
+                    <IdentityProvider
+                      gateway={gateway}
+                      memory={memory}
+                      forgetOnSignOut={[store, decisionStore, revisionStore, transitionStore]}
+                    >
+                      <RouterProvider router={router} />
+                    </IdentityProvider>
+                  </TransitionProposalProvider>
+                </PoseRevisionProvider>
+              </ValidationProvider>
+            </ContributionProvider>
+          </TagListProvider>
         </PosePageProvider>
       </CatalogGatewayProvider>
     </QueryClientProvider>,

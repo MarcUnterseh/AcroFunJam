@@ -1,10 +1,10 @@
-import { catalogLabels, myProposalsLabels, poseCountLabel, type PoseSummary } from '@acrofunjam/core';
+import { catalogLabels, myProposalsLabels, poseCountLabel, tagLabels, type PoseSummary } from '@acrofunjam/core';
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useAnnounce } from '../layout/Announcer';
 import { focusPageTitle } from '../layout/focus';
 import { Icon } from '../layout/Icon';
-import { myProposalsPath, proposePosePath } from '../paths';
+import { myProposalsPath, proposePosePath, tagsPath } from '../paths';
 import { DifficultyLegend } from './DifficultyLegend';
 import { PoseList } from './PoseList';
 import { usePublishedPoses } from './usePublishedPoses';
@@ -24,6 +24,15 @@ function MyProposalsLink() {
   return (
     <Link to={myProposalsPath} className="button button--secondary link-button">
       {myProposalsLabels.catalogLink}
+    </Link>
+  );
+}
+
+/** Secondary link-button « Étiquettes » (8-etiquettes.md, § 5): for everybody, last of the row. */
+function TagsLink() {
+  return (
+    <Link to={tagsPath} className="button button--secondary link-button">
+      {tagLabels.catalogLink}
     </Link>
   );
 }
@@ -118,10 +127,11 @@ export function CatalogPage({ canPropose = false }: CatalogPageProps) {
       <div className="page-header">
         <h1 tabIndex={-1}>{catalogLabels.title}</h1>
         {/* Once the poses are received or could not be: nothing moves while loading (story 5, Q23). */}
-        {canPropose && (poses !== undefined || error || retrying) && (
+        {(poses !== undefined || error || retrying) && (
           <div className="page-header__actions">
-            {poses !== undefined && poses.length > 0 && <ProposePoseLink />}
-            <MyProposalsLink />
+            {canPropose && poses !== undefined && poses.length > 0 && <ProposePoseLink />}
+            {canPropose && <MyProposalsLink />}
+            <TagsLink />
           </div>
         )}
       </div>

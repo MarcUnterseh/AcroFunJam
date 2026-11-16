@@ -24,6 +24,9 @@ export const revisionPath = (poseId: string): string =>
 /** Page « Mes propositions » (story 5), for a signed-in person who may propose. */
 export const myProposalsPath = '/mes-propositions';
 
+/** Page « Étiquettes » (story 8): the glossary of the tags for everybody, managed by the validators and administrators. */
+export const tagsPath = '/etiquettes';
+
 export const signInPagePath = '/connexion';
 export const registrationPagePath = '/inscription';
 

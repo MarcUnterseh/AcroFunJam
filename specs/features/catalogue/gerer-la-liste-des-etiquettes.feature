@@ -287,21 +287,21 @@ Fonctionnalité: Gérer la liste des étiquettes
 
   Règle: Sur le site, tout le monde consulte la liste des étiquettes, et seuls les validateurs et les administrateurs la gèrent
 
-    @web @wip
+    @web
     Scénario: Un visiteur ouvre la liste des étiquettes depuis le catalogue
       Soit l'étiquette "pop" dans la liste des étiquettes, avec la description « La base propulse le flyer, qui quitte un instant tout contact avec elle avant d'être rattrapé. »
       Et un visiteur consulte les poses du catalogue
       Quand le visiteur ouvre la liste des étiquettes depuis le catalogue
       Alors le site présente l'étiquette "pop" avec la description « La base propulse le flyer, qui quitte un instant tout contact avec elle avant d'être rattrapé. »
 
-    @web @wip
+    @web
     Scénario: Un utilisateur voit la liste des étiquettes sans pouvoir la gérer
       Soit l'étiquette "pop" dans la liste des étiquettes
       Et Alice est connectée sur le site avec l'adresse "alice@example.org"
       Quand Alice consulte la liste des étiquettes sur le site
       Alors le site présente l'étiquette "pop" sans inviter Alice à ajouter, modifier ni retirer d'étiquette
 
-    @web @wip
+    @web
     Scénario: Un validateur ouvre la gestion des étiquettes depuis les propositions à valider
       Soit Bruno est validateur, connecté sur le site
       Et Bruno consulte la file de validation sur le site
@@ -313,36 +313,36 @@ Fonctionnalité: Gérer la liste des étiquettes
     Contexte:
       Soit Bruno est validateur, connecté sur le site
 
-    @web @wip
+    @web
     Scénario: Le validateur ajoute une étiquette sur le site
       Quand Bruno ajoute sur le site l'étiquette "vrille" avec la description « Le flyer tourne sur lui-même autour de l'axe de son corps, par exemple du ventre vers le dos. »
       Alors le site présente l'étiquette "vrille" avec la description « Le flyer tourne sur lui-même autour de l'axe de son corps, par exemple du ventre vers le dos. »
 
-    @web @wip
+    @web
     Scénario: Le site signale sous le nom qu'une étiquette de ce nom existe déjà
       Soit l'étiquette "pop" dans la liste des étiquettes
       Quand Bruno ajoute sur le site l'étiquette "POP" avec la description « Le flyer décolle un instant. »
       Alors le site indique pour le nom qu'une étiquette de ce nom existe déjà dans la liste
 
-    @web @wip
+    @web
     Scénario: Le validateur renomme une étiquette sur le site
       Soit l'étiquette "lunnaire" dans la liste des étiquettes
       Quand Bruno renomme sur le site l'étiquette "lunnaire" en "lunaire"
       Alors le site présente l'étiquette "lunaire"
 
-    @web @wip
+    @web
     Scénario: Le validateur change la description d'une étiquette sur le site
       Soit l'étiquette "pop" dans la liste des étiquettes, avec la description « Le flyer décolle un instant. »
       Quand Bruno change sur le site la description de l'étiquette "pop" en « La base propulse le flyer, qui quitte un instant tout contact avec elle avant d'être rattrapé. »
       Alors le site présente l'étiquette "pop" avec la description « La base propulse le flyer, qui quitte un instant tout contact avec elle avant d'être rattrapé. »
 
-    @web @wip
+    @web
     Scénario: Le validateur retire une étiquette sur le site après l'avoir confirmé
       Soit les étiquettes "pop" et "vrille" dans la liste des étiquettes
       Quand Bruno retire sur le site l'étiquette "vrille" en confirmant le retrait
       Alors le site présente exactement les étiquettes "pop"
 
-    @web @wip
+    @web
     Scénario: Le site présente au validateur le nombre de transitions qui portent chaque étiquette
       Soit les poses publiées "Throne", "Bird" et "Folded Leaf" dans le catalogue
       Et l'étiquette "lunaire" dans la liste des étiquettes
@@ -351,7 +351,7 @@ Fonctionnalité: Gérer la liste des étiquettes
       Quand Bruno consulte la liste des étiquettes sur le site
       Alors le site indique que l'étiquette "lunaire" est portée par 2 transitions
 
-    @web @wip
+    @web
     Scénario: Le site liste les transitions qui empêchent le retrait d'une étiquette, avec un lien vers leur pose
       Soit les poses publiées "Bird" et "Folded Leaf" dans le catalogue
       Et l'étiquette "lunaire" dans la liste des étiquettes
