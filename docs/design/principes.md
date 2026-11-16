@@ -32,21 +32,39 @@ Les noms sont des **rôles**. Mêmes clés en clair (`colors`) et en sombre (`co
 | `infoSurface` | `#DFEAFA` | `#13283F` | bandeaux d'information |
 | `danger` / `dangerSurface` | `#B42318` / `#FDECEA` | `#FF9C8F` / `#3A1714` | erreurs (jamais en fond plein) |
 | `success` / `successSurface` | `#2C6A4C` / `#DCEFE3` | `#82CDA2` / `#163024` | confirmations |
-| `selected` / `selectedSurface` | `#47309F` / `#EBE5FB` | `#CDC2FF` / `#2A2456` | choix coché d'un groupe neutre (Oui / Non), étiquette « Modifiée » : famille du primaire |
+| `selected` / `selectedSurface` | `#47309F` / `#EBE5FB` | `#CDC2FF` / `#2A2456` | choix coché d'un groupe neutre (Oui / Non, cases d'étiquettes), marque « Modifiée » : famille du primaire |
 | `base` / `baseSurface` | `#2C6A4C` / `#DCEFE3` terre | `#82CDA2` / `#163024` | rôle **Base** |
 | `flyer` / `flyerSurface` | `#1D69AE` / `#DFEAFA` ciel | `#8FC1F3` / `#13283F` | rôle **Flyer** |
 | `sun` | `#E8961E` | `#F5C15A` | **décoratif seulement** : logo, astre, éclat du succès |
 | `sunStrong` | `#A15C00` | `#F5C15A` | icônes porteuses de sens : bornes de flow, trajectoires, note de sécurité |
 | `sunSurface` | `#FFEBC4` | `#3A2E14` | note de sécurité (« spotter »), avatar, « Oui » d'une borne de flow |
 | `skyText` | `#211C3B` | `#F3F0FF` | texte sur le ciel de la page d'une pose |
+| `tagSurface` | `#F2EFEA` pierre | `#2A2733` | fond de la **pilule d'étiquette** (lecture seule), story 8 |
+| `tagBorder` | `#CFC8BD` | `#4D4858` | contour **décoratif** de la pilule d'étiquette (jamais un contrôle) |
 
 Le ciel (`sky` / `skyDark`) : dégradé (aube : `#FFE1A0` → `#FBC0A4` → `#D3C1F1` → `#A797E6` ; nuit : `#2E2670` → `#211C55` → `#151233`), astre (soleil / lune en dégradé radial), halo et opacité du grain. Ce sont les seules couleurs écrites hors palette ; le mobile peut les ignorer.
 
 ## Rôles codés par la couleur, le mot toujours écrit
 
-- **Pastille de rôle** (`composants/pastille-role.md`) : l'étiquette « Base » (terre) ou « Flyer » (ciel), la phase de lune, le niveau en toutes lettres. Sur les cartes de pose, la page d'une pose, les transitions, la file de validation, « Mes propositions ».
+- **Pastille de rôle** (`composants/pastille-role.md`) : le mot de la pastille « Base » (terre) ou « Flyer » (ciel), la phase de lune, le niveau en toutes lettres. Sur les cartes de pose, la page d'une pose, les transitions, la file de validation, « Mes propositions ».
 - **Tuiles de difficulté** : cochée = fond et bordure 2 px de la couleur du rôle du groupe ; un point de la couleur du rôle devant la légende.
 - La couleur n'est **jamais seule** : le mot « Base » / « Flyer » est écrit, le niveau aussi ; la bordure épaissie marque le choix.
+
+## Vocabulaire : « étiquette » a un seul sens
+
+Depuis la story 8 (Q161), **« étiquette » désigne uniquement l'étiquette métier** d'une transition (« pop », « lunaire »…). Les éléments d'interface qui portaient ce nom sont renommés : la **marque « Modifiée »** (`composants/marque-modifiee.md`, anciennement « étiquette « Modifiée » ») et le **mot de la pastille** de rôle (« Base » / « Flyer »). Le code suivra à l'implémentation (`modified-tag`, `role-pill__tag`).
+
+## Étiquettes des transitions (story 8)
+
+Trois formes, qui ne se confondent ni entre elles ni avec les pastilles de rôle :
+
+| Forme | Où | Rendu |
+|---|---|---|
+| **Pilule d'étiquette** (`composants/pilule-etiquette.md`) | page d'une pose, file de validation, « Mes propositions », page « Étiquettes » | lecture seule : fond `tagSurface` « pierre », contour décoratif `tagBorder`, texte `text` 14 px ; pas de mot de la pastille, pas de couleur de rôle, pas d'icône |
+| **Case en pastille** (`composants/groupe-cases-pastilles.md`) | formulaire de transition, zone « Étiqueter », zone d'ajustement | vraie case à cocher, pilule de 44 px ; cochée : coche + bordure 2 px `selected` + fond `selectedSurface` + libellé semi-gras |
+| **Mot dans une phrase** | récapitulatif des ajustements | texte simple, « aucune → dynamique, pop » (on compare des mots) |
+
+La pierre est le seul neutre **chaud** de la palette : elle sépare les étiquettes (qualités du mouvement) des rôles (terre, ciel), du choix (famille du primaire) et des boutons discrets (`surfaceHover`, violet froid).
 
 ## Difficulté en phases de lune
 
@@ -65,7 +83,7 @@ Les phases sont décoratives (`aria-hidden`), toujours à côté du niveau écri
 
 ## Formes et rayons
 
-Rayons différents selon la hiérarchie (`radius.*`) : `sm` 10 (petites zones dans une carte : récapitulatifs), `md` 16 (champs, tuiles, éléments de transition, alertes, note de sécurité), `lg` 26 (cartes de pose, cartes de proposition, panneaux, en-tête du ciel), `pill` (boutons, pastilles de rôle, pastille de compteur, étiquette « Modifiée », avatar).
+Rayons différents selon la hiérarchie (`radius.*`) : `sm` 10 (petites zones dans une carte : récapitulatifs), `md` 16 (champs, tuiles, éléments de transition, alertes, note de sécurité), `lg` 26 (cartes de pose, cartes de proposition, panneaux, en-tête du ciel), `pill` (boutons, pastilles de rôle, pastille de compteur, marque « Modifiée », pilules et cases d'étiquettes, avatar).
 
 Boutons en pilule : primaire plein, secondaire à contour `border`, discret (fond `surfaceHover`, sans contour) dans l'en-tête. Hauteurs : 44 px minimum, 48 px pour les actions principales.
 
@@ -90,7 +108,7 @@ Web : `@fontsource/unbounded`, `@fontsource/figtree` (servies par le site, `font
 | Nom sur une carte, titre de section | `lg` 20 | Unbounded 600 / 500 |
 | Texte, champs, boutons | `md` 16 | Figtree 400 / 600 |
 | Texte secondaire | `sm` 14 | Figtree |
-| Étiquette d'une pastille de rôle | `xs` 12 | Figtree 700 (seule exception sous 14 px : un mot répété, toujours lisible à côté du niveau en 14 px) |
+| Mot d'une pastille de rôle | `xs` 12 | Figtree 700 (seule exception sous 14 px : un mot répété, toujours lisible à côté du niveau en 14 px) |
 
 Tailles en `rem` côté web.
 
@@ -118,7 +136,8 @@ Texte (seuil 4,5:1) :
 | `primary` (lien) | `background` / `surface` | 6,4 / 7,1 | 8,9 / 8,1 |
 | `base` | `baseSurface` | 5,4 | 7,6 |
 | `flyer` | `flyerSurface` | **4,7** | 7,9 |
-| `surface` (étiquette) | `base` / `flyer` | 6,4 / 5,7 | 9,2 / 9,1 |
+| `surface` (mot de la pastille de rôle) | `base` / `flyer` | 6,4 / 5,7 | 9,2 / 9,1 |
+| `text` / `textMuted` | `tagSurface` (pilule d'étiquette) | 14,1 / 6,1 | 12,2 / 6,2 |
 | `text` | `baseSurface` / `flyerSurface` / `sunSurface` / `selectedSurface` | 13,5 / 13,4 / 13,9 / 13,2 | 11,8 / 12,5 / 11,1 / 11,8 |
 | `danger` | `background` / `dangerSurface` | 5,9 / 5,8 | 9,3 / 7,9 |
 | `success` / `info` | `successSurface` / `infoSurface` | 5,4 / **4,7** | 7,6 / 7,9 |

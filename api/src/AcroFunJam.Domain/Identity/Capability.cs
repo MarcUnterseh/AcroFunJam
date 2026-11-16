@@ -5,5 +5,6 @@ public enum Capability
 {
     Propose,
     ValidateProposals,
+    ManageTags,
     ManageRoles,
 }

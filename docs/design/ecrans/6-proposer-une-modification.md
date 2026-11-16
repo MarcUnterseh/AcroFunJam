@@ -1,6 +1,6 @@
 # Écrans de la story 6 « Proposer une modification d'une pose publiée »
 
-Composants : `../composants/` (nouveaux : `recapitulatif-modification.md`, `etiquette-modifiee.md`, `carte-modification.md`, `carte-ma-modification.md` ; mis à jour : `carte-pose.md` (lien « Proposer une modification »), `recapitulatif-ajustements.md` (liste partagée), `statut-proposition.md` (conséquences d'une modification), `panneau-succes.md` (variante modification)). Principes et tokens : `../principes.md`. Scénarios : `specs/features/contribution/proposer-une-modification.feature` (`@web`). Décisions et libellés : `docs/domain/decouverte.md`, story 6 (validée le 2026-11-12) ; recommandations de l'`ux-expert` du même jour. Libellés validés par l'`ux-expert` le 2026-11-12 et livrés sur le site le 2026-11-13 (`front/packages/core/src/presentation/contribution/revision-labels.ts`, `validation-labels.ts`, `my-proposals-labels.ts`).
+Composants : `../composants/` (nouveaux : `recapitulatif-modification.md`, `marque-modifiee.md` (anciennement « Étiquette « Modifiée » », renommée en story 8, Q161), `carte-modification.md`, `carte-ma-modification.md` ; mis à jour : `carte-pose.md` (lien « Proposer une modification »), `recapitulatif-ajustements.md` (liste partagée), `statut-proposition.md` (conséquences d'une modification), `panneau-succes.md` (variante modification)). Principes et tokens : `../principes.md`. Scénarios : `specs/features/contribution/proposer-une-modification.feature` (`@web`). Décisions et libellés : `docs/domain/decouverte.md`, story 6 (validée le 2026-11-12) ; recommandations de l'`ux-expert` du même jour. Libellés validés par l'`ux-expert` le 2026-11-12 et livrés sur le site le 2026-11-13 (`front/packages/core/src/presentation/contribution/revision-labels.ts`, `validation-labels.ts`, `my-proposals-labels.ts`).
 
 Gabarit commun (en-tête, bandeau, `main`, annonce de statut) : `2b-se-connecter-sur-le-site.md`. **Aucun nouveau token.**
 
@@ -67,7 +67,7 @@ Même gabarit que « Proposer une pose » (`3-proposer-une-pose.md`) : colonne `
 │ [○ Découverte ][◉ Débutant   ] │
 │ [○ Intermédiaire][○ Avancé   ] │
 │                                │  spacing.lg
-│ Difficulté flyer [Modifiée]    │  legend + etiquette-modifiee.md
+│ Difficulté flyer [Modifiée]    │  legend + marque-modifiee.md
 │ Actuellement : Intermédiaire   │
 │ [◉ Découverte ][○ Débutant   ] │  tuile cochée = nouvelle valeur
 │ [○ Intermédiaire][○ Avancé   ] │
@@ -137,7 +137,7 @@ Même gabarit que « Proposer une pose » (`3-proposer-une-pose.md`) : colonne `
 | Ligne de la pose (`p`) | `size.md`, `regular`, `textMuted` (6,1:1 sur `background`, 5,8:1 sur `surface`) ; nom en `weight.semibold`, `text` ; `overflow-wrap: anywhere` ; marge basse `spacing.sm` |
 | Introduction | `size.md`, `textMuted` ; marge basse `spacing.lg` |
 | Rappel « Actuellement : … » | aide de `champ.md` / `groupe-tuiles-radio.md` (`size.sm`, `textMuted`, `aria-describedby`) ; **sous le champ** pour le nom (avant la mention de longueur et le compteur), **entre la `legend` et les tuiles** pour les groupes (avant l'éventuelle erreur), marge basse `spacing.sm` ; valeur en `regular` (comme « Proposé : … » de la zone d'ajustement) ; reste affiché quand la valeur change |
-| Étiquette « Modifiée » | `etiquette-modifiee.md`, dans le `label` / la `legend` |
+| Marque « Modifiée » | `marque-modifiee.md`, dans le `label` / la `legend` |
 | Message (zone de texte) | `champ.md`, variante zone de texte, compteur à partir de 450 / 500 ; libellé avec « (facultatif) » |
 | Actions | mobile : empilées, pleine largeur, écart `spacing.md` ; ≥ `breakpoints.md` : en ligne, largeur du contenu, alignées à gauche, écart `spacing.md`, `flex-wrap: wrap` ; marge haute `spacing.lg` |
 | Bouton principal | **primaire** : « Proposer la modification » (utilisateur, en cours « Envoi de la modification… ») ; « Vérifier la modification » (validateur, administrateur : mène au récapitulatif) |
@@ -193,12 +193,12 @@ Rangée : comme les actions du formulaire (empilées en mobile, écart `spacing.
 | Cas | Variante | Texte | Action | Ce qui reste |
 |---|---|---|---|---|
 | Rien n'est modifié | **erreur** (l'envoi ne peut pas partir sans correction, comme un champ obligatoire vide) | « Tu n'as rien modifié. Change au moins une valeur pour proposer une modification. » | aucune | le formulaire, inchangé |
-| La pose a changé pendant la saisie | **information** (ce n'est pas une faute de la personne, sa saisie est gardée) | « Cette pose a changé pendant que tu la modifiais. Ses nouvelles valeurs sont affichées : vérifie ta modification, puis envoie-la de nouveau. » | aucune | le formulaire : rappels « Actuellement : … » mis à jour, saisie gardée, étiquettes « Modifiée » recalculées |
+| La pose a changé pendant la saisie | **information** (ce n'est pas une faute de la personne, sa saisie est gardée) | « Cette pose a changé pendant que tu la modifiais. Ses nouvelles valeurs sont affichées : vérifie ta modification, puis envoie-la de nouveau. » | aucune | le formulaire : rappels « Actuellement : … » mis à jour, saisie gardée, marques « Modifiée » recalculées |
 | AcroFunJam injoignable | erreur | message de la story 3 | « Réessayer » (secondaire) | saisie |
 | Session expirée | information | message de la story 3 | lien « Se connecter » (`text` souligné, `semibold`) | saisie |
 
 - Nom déjà pris : **erreur du champ nom** (`champ.md`), pas une alerte : « Une pose de ce nom existe déjà dans le catalogue. »
-- Après un changement de la pose, les rappels dont la valeur a changé ne reçoivent **pas** de marque supplémentaire (ni couleur, ni étiquette) : l'alerte dit ce qui s'est passé et chaque rappel affiche la nouvelle valeur. Une marque « Changée » ajouterait un second code à côté de « Modifiée » et brouillerait les deux.
+- Après un changement de la pose, les rappels dont la valeur a changé ne reçoivent **pas** de marque supplémentaire (ni couleur, ni mot ajouté) : l'alerte dit ce qui s'est passé et chaque rappel affiche la nouvelle valeur. Une marque « Changée » ajouterait un second code à côté de « Modifiée » et brouillerait les deux.
 
 ### Modification déjà en attente, pose introuvable (à la place des champs)
 
@@ -339,8 +339,8 @@ Page de l'écran 5 inchangée (colonne, nombre, états). Les cartes de modificat
 | `primary` (lien « Proposer une modification ») sur `surface` | 4,9:1 |
 | `primaryHover` (lien survolé) sur `surface` | 6,9:1 |
 | `primaryActive` (lien pressé) sur `surface` | 8,9:1 |
-| `text` sur `selectedSurface` (étiquette « Modifiée ») | 14,2:1 |
-| `selected` (bordure de l'étiquette) sur `selectedSurface` / `surface` / `background` | 6,7:1 / 6,9:1 / 7,3:1 |
+| `text` sur `selectedSurface` (marque « Modifiée ») | 14,2:1 |
+| `selected` (bordure de la marque) sur `selectedSurface` / `surface` / `background` | 6,7:1 / 6,9:1 / 7,3:1 |
 | `textMuted` sur `background` / `surface` (rappels « Actuellement : … », ligne de la pose, clés de lecture) | 6,1:1 / 5,8:1 |
 | `text` sur `surface` (titres « Modification de … », préfixe en graisse normale compris, valeurs, messages) | 14,6:1 |
 | Valeurs du récapitulatif sur `background` (gauche `textMuted`, droite `text`) | 6,1:1 / 15,4:1 |
@@ -354,9 +354,9 @@ Rien ne repose sur la couleur seule : champ modifié = mot « Modifiée » ; val
 - Aucune valeur en dur, **aucune nouvelle variable CSS**.
 - Lien des cartes : `margin-block-start: auto` dans une carte en colonne flex (alignement en bas de rangée), `position: relative; z-index: 1` (prêt pour le futur lien étendu du nom), soulignement permanent, `min-block-size: sizes.touchTarget`.
 - `ValueChangeList` : liste unique pour ajustements et modifications, textes masqués en paramètres ; aucune régression visuelle des écrans 4 et 5.
-- Étiquette « Modifiée » : dans le `label` / la `legend`, hauteur ≤ 24 px, passe à la ligne sans déborder.
+- Marque « Modifiée » : dans le `label` / la `legend`, hauteur ≤ 24 px, passe à la ligne sans déborder.
 - Formulaire : actions en ligne à partir de 40em, empilées en dessous ; « Annuler » est un `a` (lien-bouton secondaire).
 - Titres « Modification de … » : préfixe `regular`, nom `bold`, un seul `h2`.
-- 320 px et zoom 400 % : récapitulatifs sur deux lignes par champ, tuiles en une colonne, étiquette sous la legend si besoin, lien des cartes sur deux lignes au pire ; zoom 200 % : aucun défilement horizontal (1.4.10).
-- `forced-colors: active` : lien en `LinkText` souligné, étiquette avec bordure `CanvasText`, barré visible.
+- 320 px et zoom 400 % : récapitulatifs sur deux lignes par champ, tuiles en une colonne, marque sous la legend si besoin, lien des cartes sur deux lignes au pire ; zoom 200 % : aucun défilement horizontal (1.4.10).
+- `forced-colors: active` : lien en `LinkText` souligné, marque avec bordure `CanvasText`, barré visible.
 - Aucune animation.

@@ -13,4 +13,7 @@ public static class CatalogUniqueConstraints
     /// <summary>The unnamed place between two poses taken by a published transition (ADR 0029).</summary>
     public static readonly UniqueConstraintError TransitionUnnamedSlot =
         new(TransitionRecordConfiguration.UnnamedSlotIndex, CatalogErrors.UnnamedTransitionTaken);
+
+    /// <summary>A name taken by a tag still in the list (ADR 0032).</summary>
+    public static readonly UniqueConstraintError TagNameKey = new(TagRecordConfiguration.NameKeyIndex, CatalogErrors.TagNameTaken);
 }

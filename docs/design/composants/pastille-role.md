@@ -8,7 +8,7 @@ Dire la difficulté d'une pose ou d'une transition **pour un rôle** : la base e
 
 ## Anatomie
 
-`[Base] ◐ Intermédiaire` : une pilule (`radius.pill`) en `baseSurface` / `flyerSurface` ; l'étiquette « Base » / « Flyer » (12 px, gras, texte `surface` sur `base` / `flyer`) ; la phase de lune (18 px, couleur du rôle, décorative) ; le niveau en toutes lettres en `text` (14 px, semi-gras).
+`[Base] ◐ Intermédiaire` : une pilule (`radius.pill`) en `baseSurface` / `flyerSurface` ; le **mot de la pastille** « Base » / « Flyer » (12 px, gras, texte `surface` sur `base` / `flyer`) ; la phase de lune (18 px, couleur du rôle, décorative) ; le niveau en toutes lettres en `text` (14 px, semi-gras).
 
 ## Accessibilité
 
@@ -16,6 +16,10 @@ Dire la difficulté d'une pose ou d'une transition **pour un rôle** : la base e
 - La phase est `aria-hidden` ; le mot du rôle et le niveau sont toujours écrits : la couleur n'est jamais seule.
 - Couleurs forcées : la pilule garde un contour `CanvasText`.
 - Contrastes : `base` / `baseSurface` 5,4:1, `flyer` / `flyerSurface` 4,7:1 (aube) ; `text` sur les surfaces ≥ 13:1.
+
+## Vocabulaire
+
+« Mot de la pastille » (Q161, story 8) : le mot « étiquette » est réservé au sens métier (étiquettes des transitions). La pastille de rôle ne se confond pas avec la pilule d'étiquette (`pilule-etiquette.md`) : couleur du rôle et mot de la pastille sur fond plein d'un côté, pilule neutre « pierre » sans mot de la pastille ni phase de l'autre. Le code garde provisoirement `role-pill__tag` (à renommer, par exemple `role-pill__word`, à l'implémentation).
 
 ## Disposition
 

@@ -57,6 +57,15 @@ public static class ProblemResults
         ["contribution.unknown-contributor"] = StatusCodes.Status401Unauthorized,
         ["contribution.unknown-validator"] = StatusCodes.Status401Unauthorized,
         ["identity.account-deleted"] = StatusCodes.Status401Unauthorized,
+        // The list of tags (story 8, ADR 0034).
+        ["tag.name-required"] = StatusCodes.Status400BadRequest,
+        ["tag.name-without-letter-or-digit"] = StatusCodes.Status400BadRequest,
+        ["tag.name-too-long"] = StatusCodes.Status400BadRequest,
+        ["tag.description-required"] = StatusCodes.Status400BadRequest,
+        ["tag.description-too-long"] = StatusCodes.Status400BadRequest,
+        ["catalog.tag-not-found"] = StatusCodes.Status404NotFound,
+        ["catalog.tag-name-taken"] = StatusCodes.Status409Conflict,
+        ["catalog.tag-implied"] = StatusCodes.Status409Conflict,
     };
 
     /// <summary>The status of the listed codes; otherwise 422 (a business rule refused the request).</summary>
@@ -65,5 +74,13 @@ public static class ProblemResults
         ArgumentNullException.ThrowIfNull(error);
         var status = StatusByCode.GetValueOrDefault(error.Code, StatusCodes.Status422UnprocessableEntity);
         return TypedResults.Problem(detail: error.Message, title: error.Code, statusCode: status);
+    }
+
+    /// <summary>The same problem, with details in extensions (e.g. the tags implying a tag, ADR 0034).</summary>
+    public static ProblemHttpResult ToProblem(this Error error, IDictionary<string, object?> extensions)
+    {
+        ArgumentNullException.ThrowIfNull(error);
+        var status = StatusByCode.GetValueOrDefault(error.Code, StatusCodes.Status422UnprocessableEntity);
+        return TypedResults.Problem(detail: error.Message, title: error.Code, statusCode: status, extensions: extensions);
     }
 }

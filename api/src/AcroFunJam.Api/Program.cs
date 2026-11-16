@@ -18,6 +18,7 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCapabilityPolicies();
 builder.Services.AddHostedService<InitialAdministratorStartup>();
+builder.Services.AddHostedService<InitialTagListStartup>();
 builder.Services
     .AddIdentityApiEndpoints<ApplicationUser>(AccountRules.Apply)
     .AddEntityFrameworkStores<AcroFunJamDbContext>();

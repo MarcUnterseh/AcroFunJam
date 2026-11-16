@@ -42,7 +42,7 @@ export const colors = {
   infoSurface: '#DFEAFA',
   /** Background of a disabled control; its text uses textMuted. */
   disabledSurface: '#EDE8F7',
-  /** Checked choice of a neutral group (Oui / Non) and « Modifiée » tag: the primary family. */
+  /** Checked choice of a neutral group (Oui / Non, tag check pills) and « Modifiée » mark: the primary family. */
   selected: '#47309F',
   /** Background of a checked neutral choice. */
   selectedSurface: '#EBE5FB',
@@ -66,6 +66,14 @@ export const colors = {
   sunSurface: '#FFEBC4',
   /** Text on the sky of a pose page: at least 4.5:1 over the whole gradient. */
   skyText: '#211C3B',
+  /**
+   * Background of a tag pill (« pierre », pilule-etiquette.md): a read-only tag of a transition, neutral and warm so
+   * that it is told apart from the role pills, the « Modifiée » mark and the quiet buttons. Text on it: 14.1:1,
+   * textMuted 6.1:1.
+   */
+  tagSurface: '#F2EFEA',
+  /** Outline of a tag pill: decorative only (the word carries the meaning), never the outline of a control. */
+  tagBorder: '#CFC8BD',
 } as const;
 
 export type Colors = typeof colors;
@@ -103,6 +111,8 @@ export const colorsDark: { readonly [Role in keyof Colors]: string } = {
   sunStrong: '#F5C15A',
   sunSurface: '#3A2E14',
   skyText: '#F3F0FF',
+  tagSurface: '#2A2733',
+  tagBorder: '#4D4858',
 };
 
 /**

@@ -19,7 +19,7 @@ public sealed class ApiSecurityTests : IClassFixture<ApiSecurityTests.ApiFactory
         "/identity/logout", // ends the session of whoever calls it: nothing to protect
     ];
 
-    private static readonly string[] CapabilityPolicies = [Capabilities.CanPropose, Capabilities.CanValidate, Capabilities.CanManageRoles];
+    private static readonly string[] CapabilityPolicies = [Capabilities.CanPropose, Capabilities.CanValidate, Capabilities.CanManageTags, Capabilities.CanManageRoles];
 
     private readonly IReadOnlyList<RouteEndpoint> _endpoints;
 
@@ -54,6 +54,10 @@ public sealed class ApiSecurityTests : IClassFixture<ApiSecurityTests.ApiFactory
 
     public sealed class ApiFactory : WebApplicationFactory<Program>
     {
-        protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.UseEnvironment("Testing");
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            builder.UseEnvironment("Testing");
+            builder.UseSetting("Catalog:SeedInitialTagList", "false"); // no database here
+        }
     }
 }

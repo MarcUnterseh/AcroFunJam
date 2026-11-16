@@ -1,0 +1,25 @@
+using AcroFunJam.Application.Catalog;
+using AcroFunJam.Application.Catalog.AddTag;
+using AcroFunJam.Application.Common;
+using AcroFunJam.Domain.Catalog;
+using AcroFunJam.Domain.SharedKernel;
+using AcroFunJam.Specs.Support.Identity;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace AcroFunJam.Specs.Support.Catalog;
+
+/// <summary>
+/// Puts tags in the list for a "Soit" step, through the AddTag command resolved from the application services (no HTTP,
+/// no policy), as <see cref="RoleSetter"/> does for roles (ADR 0009).
+/// </summary>
+public sealed class TagListSetUp(Deployment deployment)
+{
+    public async Task<TagId> Add(string name, string description)
+    {
+        using var scope = deployment.Current.Services.CreateScope();
+        var handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<AddTag, TagDto>>();
+        var result = await handler.Handle(new AddTag(TagName.Create(name).Value!, TagDescription.Create(description).Value!), CancellationToken.None);
+        if (result.IsFailure) throw new InvalidOperationException($"Cannot add the tag {name}: {result.Error}.");
+        return result.Value!.Id;
+    }
+}

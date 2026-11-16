@@ -21,6 +21,8 @@ public sealed class AcroFunJamApiFactory(CatalogTestData catalog, ScenarioClock 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        // A scenario starts with an empty tag list, unless it deploys AcroFunJam (Deployment).
+        builder.UseSetting(Deployment.InitialTagListSetting, "false");
         if (IntegrationDatabase.ConnectionString is { } connectionString)
         {
             builder.UseSetting("ConnectionStrings:AcroFunJam", connectionString);

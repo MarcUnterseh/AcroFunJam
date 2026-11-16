@@ -39,6 +39,7 @@ internal sealed class ProblemDetailsAuthorizationResultHandler : IAuthorizationM
     private static string Describe(Capability? capability) => capability switch
     {
         Capability.ManageRoles => "Seul un administrateur gère les rôles.",
+        Capability.ManageTags => "Seul un validateur ou un administrateur gère la liste des étiquettes.",
         Capability.ValidateProposals => "Seul un validateur peut accepter ou refuser une proposition.",
         Capability.Propose => "Il faut être utilisateur pour proposer.",
         _ => "Votre rôle ne permet pas cette action.",

@@ -76,6 +76,14 @@ Zone d'ajustement : mêmes règles que `carte-proposition.md`, champs du formula
 - Acceptée avec ajustements : « Ajustements apportés » (`recapitulatif-ajustements.md`, variante contributeur) liste nom, difficultés et description ajustés ; une description ajustée longue passe sur plusieurs lignes, valeur proposée barrée puis flèche puis valeur retenue (même liste, aucun rendu nouveau). Absence de nom : « aucun nom » en toutes lettres des deux côtés de la flèche.
 - Refusée : « Motif du refus » inchangé.
 
+## Story 8 : étiquettes
+
+- **Contenu** : ligne « Étiquettes » (`pilule-etiquette.md`) **après les difficultés**, avant la description, marge haute `spacing.sm`. Noms **actuels** (après renommage), ordre reçu.
+- **File de validation** : la ligne est toujours là ; sans étiquette, « Étiquettes : aucune » (mot « aucune » en texte, pas en pilule).
+- **« Mes propositions »** : la ligne n'apparaît que si la transition (proposée, ou retenue si acceptée) porte des étiquettes.
+- **Zone d'ajustement** : `groupe-cases-pastilles.md` après les difficultés et avant la description, avec le rappel « Proposées : dynamique, pop » ou « Proposées : aucune » ; repli « Ce que veulent dire les étiquettes ».
+- **Récapitulatif** : ligne « Étiquettes » de `recapitulatif-ajustements.md` (« aucune → dynamique, pop »).
+
 ## Longueurs
 
 - Titre avec un nom de 60 caractères et deux noms de pose de 60 caractères : jusqu'à 6 lignes à 320 px, passe à la ligne n'importe où.

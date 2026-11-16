@@ -222,6 +222,10 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
     /// <summary>The OpenAPI document is only published in Development.</summary>
     public sealed class DevelopmentApi : WebApplicationFactory<Program>
     {
-        protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.UseEnvironment("Development");
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            builder.UseEnvironment("Development");
+            builder.UseSetting("Catalog:SeedInitialTagList", "false"); // no database here
+        }
     }
 }

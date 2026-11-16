@@ -22,6 +22,8 @@ public static class CatalogEndpoints
             .AllowAnonymous()
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        catalog.MapTagEndpoints();
+
         return app;
     }
 

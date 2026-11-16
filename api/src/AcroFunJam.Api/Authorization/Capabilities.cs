@@ -11,6 +11,7 @@ public static class Capabilities
 {
     public const string CanPropose = nameof(CanPropose);
     public const string CanValidate = nameof(CanValidate);
+    public const string CanManageTags = nameof(CanManageTags);
     public const string CanManageRoles = nameof(CanManageRoles);
 
     public static IServiceCollection AddCapabilityPolicies(this IServiceCollection services)
@@ -20,6 +21,7 @@ public static class Capabilities
         services.AddAuthorizationBuilder()
             .AddPolicy(CanPropose, policy => policy.RequireAuthenticatedUser().AddRequirements(new CapabilityRequirement(Capability.Propose)))
             .AddPolicy(CanValidate, policy => policy.RequireAuthenticatedUser().AddRequirements(new CapabilityRequirement(Capability.ValidateProposals)))
+            .AddPolicy(CanManageTags, policy => policy.RequireAuthenticatedUser().AddRequirements(new CapabilityRequirement(Capability.ManageTags)))
             .AddPolicy(CanManageRoles, policy => policy.RequireAuthenticatedUser().AddRequirements(new CapabilityRequirement(Capability.ManageRoles)));
         return services;
     }

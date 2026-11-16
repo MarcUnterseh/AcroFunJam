@@ -89,6 +89,20 @@ Espacements de la variante (elle n'est pas dans une zone `spacing.lg` comme cell
 
 Le récapitulatif est sur la `surface` de la carte, sa liste sur `background` : contrastes inchangés (clé et mention `textMuted` 5,8:1 sur `surface` ; valeurs 6,1:1 et 15,4:1 sur `background`).
 
+## Story 8 : ajustement des étiquettes
+
+Un ajustement de plus, terme « Étiquettes », placé **après les difficultés et avant la description** (ordre du formulaire). Les deux valeurs sont des **phrases** : noms séparés par des virgules, dans l'ordre du catalogue, « aucune » quand l'ensemble est vide. Aucune pilule ici (on compare des mots, comme partout dans cette liste).
+
+```
+│ Étiquettes                                   │
+│ a̶u̶c̶u̶n̶e̶  →  dynamique, pop                     │
+│ ──────────────────────────────────────────── │
+│ Étiquettes                                   │
+│ d̶y̶n̶a̶m̶i̶q̶u̶e̶,̶ ̶i̶n̶v̶e̶r̶s̶i̶o̶n̶,̶ ̶p̶o̶p̶  →  dynamique, pop  │
+```
+
+Lu : « Étiquettes : Proposé : aucune, retenu : dynamique, pop ». Rendu, barré, flèche, graisse et textes masqués inchangés ; `overflow-wrap: anywhere`. Aucun nouveau style.
+
 ## Aucun ajustement
 
 Si le validateur demande à vérifier sans avoir rien changé (après normalisation, règle R9 bis), pas de récapitulatif : le formulaire reste affiché avec, en tête, une alerte **information** (`alerte-formulaire.md`) dont le texte et l'action sont à fixer par l'`ux-expert` (proposé : « Tu n'as rien modifié. Tu peux accepter la proposition telle quelle. » + bouton secondaire « Accepter et publier »).

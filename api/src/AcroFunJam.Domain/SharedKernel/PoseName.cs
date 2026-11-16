@@ -35,7 +35,6 @@ public sealed record PoseName
         if (left is null) return -1;
         if (right is null) return 1;
 
-        var byKey = string.CompareOrdinal(left.Key.Value, right.Key.Value);
-        return byKey != 0 ? byKey : string.CompareOrdinal(left.Value, right.Value);
+        return NameText.CompareInCatalogOrder(left.Key.Value, left.Value, right.Key.Value, right.Value);
     }
 }

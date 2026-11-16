@@ -36,7 +36,8 @@ Fonctionnalité: Proposer une transition
   # vers Throne. Difficultés des exemples à confirmer par l'expert acroyoga.
   # Dans « Quand Alice propose … » sans difficultés, les difficultés sont valides (débutant / débutant) et la
   # transition n'a pas de description.
-  # Hors périmètre : étiquettes, photos et vidéos, modifier ou retirer une transition publiée, proposer une transition
+  # Étiquettes : story 8, contribution/etiqueter-une-transition.feature.
+  # Hors périmètre : photos et vidéos, modifier ou retirer une transition publiée, proposer une transition
   # « vers » une pose depuis sa page, recherche des poses dans le formulaire, transitions existantes affichées dans le
   # formulaire, propositions groupées, générateur de flow, écran mobile.
   # Les règles sont vérifiées une fois côté @api ; @web vérifie le parcours sur le site.

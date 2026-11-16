@@ -14,8 +14,8 @@ public sealed class RoleTests
     public static TheoryData<string, Capability[]> CapabilitiesByRole() => new()
     {
         { "user", [Capability.Propose] },
-        { "validator", [Capability.Propose, Capability.ValidateProposals] },
-        { "administrator", [Capability.Propose, Capability.ValidateProposals, Capability.ManageRoles] },
+        { "validator", [Capability.Propose, Capability.ValidateProposals, Capability.ManageTags] },
+        { "administrator", [Capability.Propose, Capability.ValidateProposals, Capability.ManageTags, Capability.ManageRoles] },
     };
 
     [Theory]

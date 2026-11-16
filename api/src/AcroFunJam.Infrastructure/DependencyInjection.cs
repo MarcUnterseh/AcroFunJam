@@ -38,6 +38,8 @@ public static class DependencyInjection
         services.AddSingleton(CatalogUniqueConstraints.TransitionUnnamedSlot);
         services.AddScoped<ITransitionRepository, EfTransitionRepository>();
         services.AddScoped<IPoseTransitionsReader, EfPoseTransitionsReader>();
+        services.AddSingleton(CatalogUniqueConstraints.TagNameKey);
+        services.AddScoped<ITagListRepository, EfTagListRepository>();
 
         // Identity
         services.AddScoped<IAccountRepository, EfAccountRepository>();

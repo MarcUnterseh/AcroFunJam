@@ -27,7 +27,8 @@ Fonctionnalité: Consulter les transitions du catalogue
   # - états : chargement, erreur avec « Réessayer », section vide, pose introuvable (titre « Pose introuvable »).
   # Une transition suit le renommage de ses poses. Règles d'interface sans scénario dédié (tests unitaires) : zone
   # cliquable de la carte, libellé lu par les lecteurs d'écran, état de chargement.
-  # Hors périmètre : étiquettes, photos et vidéos, aperçu des liens de la description, page propre à une transition,
+  # Étiquettes : story 8, catalogue/consulter-les-etiquettes-des-transitions.feature.
+  # Hors périmètre : photos et vidéos, aperçu des liens de la description, page propre à une transition,
   # recherche et filtres, générateur de flow, écran mobile.
 
   Contexte:

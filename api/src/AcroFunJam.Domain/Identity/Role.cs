@@ -10,7 +10,7 @@ public sealed record Role
 {
     public static Role User { get; } = new("user", [Capability.Propose]);
 
-    public static Role Validator { get; } = new("validator", [.. User.Capabilities, Capability.ValidateProposals]);
+    public static Role Validator { get; } = new("validator", [.. User.Capabilities, Capability.ValidateProposals, Capability.ManageTags]);
 
     public static Role Administrator { get; } = new("administrator", [.. Validator.Capabilities, Capability.ManageRoles]);
 

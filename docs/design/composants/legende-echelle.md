@@ -17,7 +17,7 @@ En grand écran, l'introduction et les quatre niveaux tiennent sur **une ligne**
 | Élément | Balise | Tokens |
 |---|---|---|
 | Bloc | `div` | marge basse `spacing.lg` avant la grille des cartes |
-| Introduction | texte qui étiquette la liste (`aria-labelledby` sur l'`ol`, ou texte précédant) | `size.sm`, `regular`, `textMuted` (6,1:1) |
+| Introduction | texte qui nomme la liste (`aria-labelledby` sur l'`ol`, ou texte précédant) | `size.sm`, `regular`, `textMuted` (6,1:1) |
 | Liste | `ol`, en ligne (`display: inline-flex`, `flex-wrap: wrap`) ; marges et puces retirées | écart horizontal `spacing.md`, vertical `spacing.xs` |
 | Item | `li` | `size.sm`, `weight.semibold`, `text` (15,4:1) |
 | Échelle à points | `span aria-hidden="true"` avant le nom du niveau | voir ci-dessous ; écart `spacing.xs` avec le nom |

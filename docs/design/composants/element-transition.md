@@ -42,6 +42,10 @@ Balisage : `section` (nommée par son `h2`) > `ul role="list"` > `li` > `h3`, `p
 - Pas de couleur par difficulté (règle de `legende-echelle.md`).
 - Pas de séparateur entre difficultés et description : l'écart suffit, la description appartient à l'élément.
 
+## Story 8 : étiquettes
+
+Ordre dans l'élément : titre, autre pose, difficultés, **ligne « Étiquettes »** (`pilule-etiquette.md`, absente s'il n'y en a aucune), description, **repli « Ce que veulent dire ces étiquettes »** (`repli-descriptions-etiquettes.md`, absent s'il n'y en a aucune), **pied de gestion « Étiqueter »** (`zone-etiqueter.md`, validateurs et administrateurs seulement, présent même sans étiquette). Écart entre ces blocs : celui de l'élément (`spacing.sm`). Écran : `../ecrans/8-etiquettes.md`.
+
 ## États
 
 Aucun état propre à l'élément. Le lien de l'autre pose :

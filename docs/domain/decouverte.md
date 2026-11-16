@@ -528,7 +528,7 @@ Carte d'example mapping du 2026-11-13, **révisée le même jour** avec les déc
 **Hors périmètre** : étiquettes ; photos et vidéos (un lien vidéo s'écrit dans la description) ; modifier ou retirer une transition publiée (Q87) ; proposer une transition « vers » une pose depuis sa page ; recherche ou liste filtrable des poses dans le formulaire ; afficher les transitions existantes dans le formulaire ; propositions groupées ; page propre à une transition ; générateur de flow ; écran mobile.
 
 **À venir**
-- Story **« Gérer la liste des étiquettes »**, avant le générateur de flow (Q74), puis l'étiquetage des transitions. Étiquettes jugées indispensables par l'expert acroyoga : contrôlé / fluide, dynamique, pop, whip, icarien, envol, inversion, lunaire, washing machine. Une transition est publiée sans étiquette d'ici là.
+- Story **« Gérer la liste des étiquettes »**, avant le générateur de flow (Q74), puis l'étiquetage des transitions. Étiquettes jugées indispensables par l'expert acroyoga : contrôlé / fluide, dynamique, pop, whip, icarien, envol, inversion, lunaire, washing machine. Une transition est publiée sans étiquette d'ici là. → **Story 8 « Étiquettes »**, validée le 2026-11-13, qui révise cette liste.
 - Modifier ou retirer une transition publiée (symétrique de la story 6).
 - **Charte de validation** des transitions, avec l'expert acroyoga : quand découper un mouvement en plusieurs transitions, quand refuser un nom en usage entre d'autres poses.
 
@@ -545,6 +545,86 @@ Carte d'example mapping du 2026-11-13, **révisée le même jour** avec les déc
 5. API : R21 (« Mes propositions »).
 6. Site, catalogue : C12 (carte → page), C1, C2, C5, C8, C9, C10, C11, C4.
 7. Site, contribution : R22 (accès et formulaire, envoi et confirmations, erreurs, incidents), puis file de validation et « Mes propositions » (avec la révision de l'état vide de la story 5).
+
+### Story 8 « Étiquettes » (validée le 2026-11-13)
+Carte d'example mapping du 2026-11-13, **révisée le même jour** avec les décisions du porteur du produit et les avis de l'expert acroyoga, de l'ux-expert et du ui-designer (Q116 à Q163). Scénarios (tous `@wip`) : `specs/features/catalogue/gerer-la-liste-des-etiquettes.feature` (L), `specs/features/contribution/etiqueter-une-transition.feature` (E), `specs/features/catalogue/etiqueter-une-transition-publiee.feature` (P), `specs/features/catalogue/consulter-les-etiquettes-des-transitions.feature` (C) ; capacité : `specs/features/identite/comptes-et-roles.feature` (scénario des capacités révisé, `@wip` le temps de la story). Contextes Catalogue et Contribution, cibles @api et @web (pas de mobile).
+
+**Story** : en tant que validateur ou administrateur, je tiens à jour la liste fermée des étiquettes, que tout le monde consulte ; tout contributeur choisit les étiquettes de la transition qu'il propose, que le validateur retient ou ajuste ; un validateur étiquette directement les transitions publiées ; tout visiteur voit les étiquettes de chaque transition sur la page d'une pose. Prépare le générateur de flow (story 9).
+
+**Décisions du porteur du produit (2026-11-13)**
+1. **Liste initiale** (Q117, Q118, Q119, Q145) : amorcée **une seule fois**, au premier déploiement, avec sept étiquettes et les descriptions de l'expert acroyoga :
+   - « dynamique » : « Le passage se fait avec de l'élan : base et flyer se lancent dans le mouvement au lieu de le dérouler lentement. » ;
+   - « pop » : « La base propulse le flyer, qui quitte un instant tout contact avec elle avant d'être rattrapé. » ;
+   - « whip » : « La base balance le flyer et l'élan le fait pivoter d'une prise à l'autre, vers l'avant ou vers l'arrière. » ;
+   - « icarien » : « Style où la base, le plus souvent en L-basing, lance, fait tourner et rattrape le flyer surtout avec les pieds. » ;
+   - « lunaire » : « Pratique thérapeutique : le flyer, détendu et passif, se laisse porter, étirer ou retourner lentement par la base. » ;
+   - « inversion » : « Le flyer passe la tête en bas pendant la transition. » ;
+   - « vrille » : « Le flyer tourne sur lui-même autour de l'axe de son corps, par exemple du ventre vers le dos. ».
+   Ni « classique », ni « envol », ni « contrôlé », ni « fluide ». **« Washing machine » n'est pas une étiquette** : elle se déduit d'une transition dont la pose de départ est la pose d'arrivée (le glossaire, qui annonce le contraire, sera révisé).
+2. **« Dynamique » implicite** (Q136) : choisir « pop », « whip » ou « icarien » ajoute automatiquement « dynamique », à la proposition, à l'ajustement et à l'étiquetage direct ; « dynamique » ne peut pas être retirée tant que l'une d'elles est portée (elle revient). Le site l'explique.
+3. **Facultatives** (Q121, Q137, Q138) : de 0 à n étiquettes par transition, chacune une seule fois ; aucune exigence d'étiquetage complet du catalogue, même avant le générateur. Pas d'exclusivité, pas de maximum, pas d'étiquette de sécurité (Q122, Q146 : le rappel du spotter viendra du générateur, story 9).
+4. **Gestion** (Q116) : validateurs et administrateurs, sans proposition ; nouvelle capacité **« gérer les étiquettes »**.
+5. **Retrait** (Q132, Q155) : impossible tant qu'une transition publiée ou une proposition en attente porte l'étiquette ; le refus liste les transitions concernées (poses de départ et d'arrivée, nom, lien vers la page de la pose) et les propositions en attente. La page de gestion présente « Portée par N transitions » pour chaque étiquette.
+6. **Page « Étiquettes »** (Q133, Q150, Q151) : `/etiquettes`, **publique en lecture** (glossaire des étiquettes) ; ajouter, modifier et retirer sont réservés aux validateurs et aux administrateurs, modification et confirmation du retrait en place (Q156, Q157). Entrées : lien « Étiquettes » du catalogue (pour tous ; libellé à confirmer par l'ux-expert) et lien « Gérer les étiquettes » de la page « Propositions à valider » ; pas d'entrée dans l'en-tête.
+7. **Poses** (Q120, Q139) : non étiquetées dans cette story.
+8. **Nom et description** (Q128, Q130, Q141 ; Q129, Q144, Q153) : nom obligatoire, sans espaces superflus, 30 caractères au plus, unique au sens de la clé de comparaison du nom de pose, termes d'usage sans traduction ; ordre du catalogue sur le nom ; description obligatoire, espaces superflus retirés, 200 caractères au plus, idéalement avec un exemple (charte).
+9. **Renommage** (Q131, Q140) : suivi partout (catalogue, file, « Mes propositions ») ; charte : un nouveau sens est une nouvelle étiquette ; pas de fusion.
+10. **Poser une étiquette** (Q124) : à la proposition ; par le validateur avant d'accepter, ajustement si l'ensemble retenu diffère de l'ensemble proposé (ordre indifférent) ; directement par un validateur sur une transition publiée. Une modification des étiquettes d'une transition publiée par un utilisateur relève de la story « Modifier une transition ».
+11. **Transitions déjà publiées** (Q123, Q125, Q143) : restent publiées sans étiquette ; un validateur les étiquette directement, sans proposition ; la dernière action l'emporte, sans contrôle de version ; le contributeur d'origine n'est pas prévenu ; pas d'historique.
+12. **Site** :
+    - formulaire de transition (Q152, Q162) : cases à cocher en pastilles entre les difficultés et la description, descriptions dans un repli « Ce que veulent dire les étiquettes » ;
+    - page d'une pose (Q154, Q158, Q159, Q127) : ligne « Étiquettes » sous Base / Flyer, rien si la transition n'en porte aucune ; un repli par transition ; bouton « Étiqueter » dans la zone dépliée pour les validateurs et les administrateurs, présent même quand la transition n'a aucune étiquette ;
+    - file de validation et récapitulatif (Q160, Q163) : « Étiquettes : aucune » ; « aucune → dynamique, pop » ;
+    - vocabulaire du design (Q161) : les composants d'interface qui s'appelaient « étiquette » sont renommés (fait par le ui-designer).
+13. **Livraison** (Q135) : deux parties dans la même story, la liste d'abord, puis l'étiquetage.
+
+**Règles et exemples** (L, E, P, C : fichiers ci-dessus)
+- **L1. Liste amorcée une seule fois au premier déploiement** : les sept étiquettes et leurs descriptions ; un nouveau déploiement ne rétablit pas « vrille » retirée.
+- **L2. Tout le monde consulte la liste**, chaque étiquette avec sa description.
+- **L3. Ordre du catalogue sur le nom** : « whip », « Inversion », « dynamique » → dynamique, Inversion, whip.
+- **L4. Seul un validateur ou un administrateur gère la liste** : Bruno et Paul ajoutent « vrille » ; Alice ne peut ni ajouter, ni renommer, ni décrire, ni retirer ; visiteur ; compte supprimé. Capacité « gérer les étiquettes » (comptes-et-roles).
+- **L5. Nom obligatoire, sans espaces superflus, 30 caractères au plus** : « vrille » entouré d'espaces → « vrille » ; 30 acceptés ; vide, espaces, « --- », 31 : impossible.
+- **L6. Nom unique au sens de la clé** : « POP » / « pop », « vrillé » / « vrille », « inversion ! » / « inversion ».
+- **L7. Description obligatoire, 200 caractères au plus** : espaces superflus retirés ; 200 acceptés ; absente, espaces, 201 : impossible.
+- **L8. Renommer suit partout** : « lunnaire » → « lunaire » sur la transition de Bird vers Folded Leaf ; « Pop » → « pop » permis ; « pop » → « Whip » impossible.
+- **L9. Changer la description.**
+- **L10. Retrait seulement d'une étiquette que rien ne porte** : « vrille » retirée ; « lunaire » portée par deux transitions publiées (Bird → Folded Leaf, « Lunar Roll ») ou par une proposition en attente : impossible, avec la liste.
+- **L11. Site** : visiteur, depuis le lien du catalogue ; utilisateur, la liste sans pouvoir la gérer ; validateur, depuis « Propositions à valider » ; ajouter, nom déjà pris sous le champ, renommer, changer la description, retirer avec confirmation, « Portée par 2 transitions », retrait impossible avec la transition et un lien vers sa pose.
+- **E1. Étiquettes facultatives à la proposition** : Bird → Folded Leaf « lunaire, inversion » ; sans étiquette ; « lunaire » deux fois → une fois.
+- **E2. « pop », « whip », « icarien » ajoutent « dynamique »** : « Pop to Bird », « Forbidden », « Icarian Pop ».
+- **E3. Seules les étiquettes de la liste** : « classique » irrecevable.
+- **E4. Publication directe avec les étiquettes.**
+- **E5. File de validation** : étiquettes proposées, nom actuel après renommage.
+- **E6. Accepter publie les étiquettes** : « Forbidden » → dynamique, inversion, whip.
+- **E7. Ajustement des étiquettes** : retirer « inversion » ; autres étiquettes (proposées et retenues gardées) ; même ensemble dans un autre ordre, ou « dynamique » retirée avec « pop » gardée : pas un ajustement ; « classique » : impossible ; aucune → « dynamique, pop » : ajustement.
+- **E8. « Mes propositions »** : étiquettes en attente ; ajustement « dynamique, inversion, pop » → « dynamique, pop ».
+- **E9. Site** : étiquettes et descriptions dans le formulaire ; « pop » ajoute « dynamique », expliqué ; envoi ; étiquette retirée pendant la saisie (signalée, saisie conservée) ; file avec étiquettes ou « Étiquettes : aucune » ; récapitulatif « aucune → dynamique, pop » ; « Mes propositions » (étiquettes, ajustement).
+- **P1. Les transitions publiées sans étiquette restent publiées.**
+- **P2. Étiquetage direct par un validateur ou un administrateur** : effet immédiat ; remplace l'ensemble ; tout retirer est permis.
+- **P3. « dynamique » ajoutée et maintenue avec « pop ».**
+- **P4. Droits** : utilisateur refusé, visiteur.
+- **P5. Étiquettes de la liste, transition publiée** : « classique », transition inconnue.
+- **P6. Site** : « Étiqueter » pour un validateur (même sans étiquette), pas pour un utilisateur ; étiquettes présentées aussitôt ; washing machine (Ninja Star) mise à jour dans les deux sections.
+- **C1. Étiquettes des transitions depuis (@api @web) et vers (@api) une pose.**
+- **C2. Ordre du catalogue** : « Forbidden » → dynamique, inversion, whip.
+- **C3. Sans étiquette : rien.**
+- **C4. Description lisible dans le repli de la transition.**
+
+**Hors périmètre** : étiquettes des poses ; proposer une étiquette (utilisateurs) ; hiérarchie, exclusivité ou maximum ; fusion d'étiquettes ; filtre par étiquette (catalogue, page d'une pose) ; modification des étiquettes d'une transition publiée par un utilisateur ; historique ; notification ; écran mobile.
+
+**À venir**
+- **Prérequis de la story 9** : étiqueter aussi les poses, au moins « inversion » et « lunaire », dont le générateur aura besoin.
+- Story 9 « Générer un flow » : critères d'étiquettes (OU / ET), rappel du spotter (Q146) ; « washing machine » déduite (pose de départ = pose d'arrivée).
+- Glossaire (domain-expert) : réviser « Washing machine » (pas une étiquette), « Étiquette » (exemples, « classique » retiré), « Liste des étiquettes » (validateurs et administrateurs, page publique) ; ajouter nom et description d'une étiquette, clé de comparaison du nom d'une étiquette, étiqueter (une transition), capacité « gérer les étiquettes », étiquettes proposées / retenues, « dynamique » implicite.
+- Story « Modifier une transition » (symétrique de la story 6), étiquettes comprises.
+- Charte de validation : termes d'usage sans traduction, description avec un exemple, un nouveau sens est une nouvelle étiquette.
+
+**Ordre d'implémentation conseillé**
+1. API, liste : L1, L2, L4 (amorçage, consultation, droits, capacité), puis L5, L6, L7 (nom, description), L3 (ordre).
+2. API, présentation et étiquetage direct : C1, C2, puis P1 à P5 (dont P3, « dynamique » implicite).
+3. API, contribution : E1 à E4, puis E5, E6, E7, puis E8.
+4. API, cycle de vie : L8, L9, L10 (retrait conditionnel et sa liste).
+5. Site : L11 (page « Étiquettes »), C3, C4, P6, puis E9.
 
 ### Découpage des stories suivantes (décidé le 2026-11-02)
 1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.
@@ -571,9 +651,9 @@ Le marqueur **[bloquant]** signale une question à trancher avant la story conce
 - Ordre alphabétique : faut-il aussi ignorer les accents (« Étoile » avec les E) et les autres signes (parenthèses, apostrophes) ? En attendant, la règle retenue est la suivante : on retire les traits d'union, on compare sans tenir compte de la casse et sans culture, et le nom exact sert à départager deux noms équivalents.
 - Lien variante → pose principale : faut-il le modéliser ? Est-ce utile pour la recherche ou l'affichage ?
 - Que devient une pose retirée ou fusionnée qui a des transitions ? Peut-on retirer un élément publié ?
-- Que devient une étiquette retirée de la liste alors que des transitions la portent ?
-- Une transition doit-elle porter au moins une étiquette ? En attendant la story « Gérer la liste des étiquettes » (avant le générateur de flow), une transition est publiée sans étiquette (story 7, 2026-11-13).
-- Les étiquettes s'appliquent-elles uniquement aux transitions, ou aussi aux poses ?
+- ~~Que devient une étiquette retirée de la liste alors que des transitions la portent ?~~ Tranché (story 8, 2026-11-13) : le retrait est impossible tant qu'une transition publiée ou une proposition en attente la porte ; le refus les liste.
+- ~~Une transition doit-elle porter au moins une étiquette ?~~ Tranché (story 8, 2026-11-13) : non, de 0 à n, sans exigence d'étiquetage complet, même avant le générateur.
+- Les étiquettes s'appliquent-elles aussi aux poses ? Story 8 : transitions seulement. **[bloquant : génération]** Étiqueter les poses (au moins « inversion » et « lunaire ») est un prérequis de la story 9.
 
 ### Génération de flow
 - **[bloquant : génération]** Que signifie le critère « difficulté » ? Un niveau maximal unique appliqué à la base et au flyer, ou deux niveaux maximaux distincts ? Les difficultés des poses comptent-elles, ou seulement celles des transitions ? S'agit-il d'un niveau maximal ou d'une plage ?

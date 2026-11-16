@@ -86,7 +86,7 @@ Fonctionnalité: Comptes et rôles
       Alors la connexion est refusée car le compte est temporairement verrouillé
 
   # Q1 : les capacités sont observées en consultant ses capacités.
-  # Q13 : « gérer la liste des étiquettes » sera ajoutée avec la story correspondante.
+  # Q13 : « gérer les étiquettes » est ajoutée par la story 8 « Étiquettes » (validée le 2026-11-13).
   Règle: Les capacités d'un rôle s'ajoutent à celles du rôle précédent
 
     @api
@@ -96,10 +96,10 @@ Fonctionnalité: Comptes et rôles
       Alors les capacités d'Alice sont exactement : <capacités>
 
       Exemples:
-        | rôle           | capacités                                                            |
-        | utilisateur    | proposer                                                             |
-        | validateur     | proposer, accepter ou refuser une proposition                        |
-        | administrateur | proposer, accepter ou refuser une proposition, gérer les rôles       |
+        | rôle           | capacités                                                                            |
+        | utilisateur    | proposer                                                                             |
+        | validateur     | proposer, accepter ou refuser une proposition, gérer les étiquettes                  |
+        | administrateur | proposer, accepter ou refuser une proposition, gérer les étiquettes, gérer les rôles |
 
   # Q8 : l'administrateur désigne l'utilisateur par son adresse e-mail.
   Règle: Un administrateur attribue le rôle validateur ou administrateur à un autre utilisateur

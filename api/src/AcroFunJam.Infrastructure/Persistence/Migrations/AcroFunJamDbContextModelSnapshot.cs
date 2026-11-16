@@ -90,6 +90,71 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.TagListRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("SeededAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("seeded_at");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("tag_lists", "catalog");
+                });
+
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.TagRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<Guid?>("ImpliedTagId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("implied_tag_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("NameKey")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name_key");
+
+                    b.Property<DateTimeOffset?>("RemovedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("removed_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImpliedTagId");
+
+                    b.HasIndex("NameKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tags_name_key")
+                        .HasFilter("removed_at IS NULL");
+
+                    b.ToTable("tags", "catalog", t =>
+                        {
+                            t.HasCheckConstraint("ck_tags_description", "description <> ''");
+
+                            t.HasCheckConstraint("ck_tags_description_length", "char_length(description) <= 200");
+
+                            t.HasCheckConstraint("ck_tags_name_key", "name_key <> ''");
+
+                            t.HasCheckConstraint("ck_tags_name_length", "char_length(name) <= 30");
+                        });
+                });
+
             modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.TransitionRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -769,6 +834,15 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("user_tokens", "identity");
+                });
+
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.TagRecord", b =>
+                {
+                    b.HasOne("AcroFunJam.Infrastructure.Persistence.Catalog.TagRecord", null)
+                        .WithMany()
+                        .HasForeignKey("ImpliedTagId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_tags_implied_tag");
                 });
 
             modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.TransitionRecord", b =>

@@ -1,3 +1,9 @@
+using AcroFunJam.Application.Catalog;
+using AcroFunJam.Application.Catalog.AddTag;
+using AcroFunJam.Application.Catalog.ChangeTag;
+using AcroFunJam.Application.Catalog.ListTags;
+using AcroFunJam.Application.Catalog.RemoveTag;
+using AcroFunJam.Application.Catalog.SeedInitialTagList;
 using AcroFunJam.Application.Catalog.GetPublishedPoseNames;
 using AcroFunJam.Application.Catalog.GetPosePage;
 using AcroFunJam.Application.Catalog.IsTransitionSlotPublished;
@@ -65,6 +71,11 @@ public static class DependencyInjection
         services.AddScoped<ICommandHandler<RejectTransitionProposal, DecidedTransitionProposalDto>, RejectTransitionProposalHandler>();
         services.AddScoped<IQueryHandler<IsTransitionSlotPublished, bool>, IsTransitionSlotPublishedHandler>();
         services.AddScoped<IQueryHandler<GetPosePage, PosePage>, GetPosePageHandler>();
+        services.AddScoped<IQueryHandler<ListTags, IReadOnlyList<TagDto>>, ListTagsHandler>();
+        services.AddScoped<ICommandHandler<AddTag, TagDto>, AddTagHandler>();
+        services.AddScoped<ICommandHandler<ChangeTag, TagDto>, ChangeTagHandler>();
+        services.AddScoped<ICommandHandler<RemoveTag, bool>, RemoveTagHandler>();
+        services.AddScoped<ICommandHandler<SeedInitialTagList, bool>, SeedInitialTagListHandler>();
         return services;
     }
 }

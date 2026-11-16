@@ -67,7 +67,7 @@ Celle de `carte-proposition.md` (h3 « Ajuster avant d'accepter », formulaire p
 2. **Rappels sous chaque champ ou `legend`** (aide, `size.sm`, `textMuted`, `aria-describedby`), en une ou deux lignes :
    - champ modifié : « Actuellement : Intermédiaire » puis « Proposée : Découverte » (deux `p`, écart nul) : « Proposée » pour une difficulté, « Proposé » pour le nom et les indicateurs de flow ;
    - champ non modifié : « Actuellement : Débutant » seul.
-   Textes validés par l'`ux-expert`. L'étiquette « Modifiée » (`etiquette-modifiee.md`) n'est **pas** utilisée ici : le validateur compare à la proposition, pas seulement à la pose.
+   Textes validés par l'`ux-expert`. La marque « Modifiée » (`marque-modifiee.md`) n'est **pas** utilisée ici : le validateur compare à la proposition, pas seulement à la pose.
 
 Étape suivante : récapitulatif des **ajustements** (`recapitulatif-ajustements.md`, proposé → retenu, variante validateur, mention « Les autres valeurs restent celles proposées. »), message pour le contributeur, puis « Accepter avec ces ajustements » (primaire), « Modifier les ajustements », « Annuler » (secondaires). Les champs que la modification ne changeait pas et que le validateur ajuste y figurent comme les autres (leur valeur « proposée » est la valeur actuelle).
 

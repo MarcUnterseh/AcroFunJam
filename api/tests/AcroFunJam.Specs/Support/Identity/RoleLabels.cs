@@ -16,6 +16,7 @@ public static class RoleLabels
     {
         ["proposer"] = "propose",
         ["accepter ou refuser une proposition"] = "validate-proposals",
+        ["gérer les étiquettes"] = "manage-tags",
         ["gérer les rôles"] = "manage-roles",
     };
 
