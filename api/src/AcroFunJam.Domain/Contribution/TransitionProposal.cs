@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using AcroFunJam.Domain.Common;
+using AcroFunJam.Domain.SharedKernel;
 
 namespace AcroFunJam.Domain.Contribution;
 
@@ -49,14 +50,17 @@ public sealed class TransitionProposal : AggregateRoot<TransitionProposalId>
     /// </summary>
     public static Result<TransitionProposal> Submit(
         TransitionProposalId id, Contributor contributor, TransitionPoses poses, ProposedTransition proposed, bool fromPosePublished,
-        bool toPosePublished, TransitionSlotAvailability slot, DateTimeOffset now)
+        bool toPosePublished, TransitionSlotAvailability slot, DateTimeOffset now, TagChoice? tags = null)
     {
         ArgumentNullException.ThrowIfNull(contributor);
         ArgumentNullException.ThrowIfNull(poses);
         ArgumentNullException.ThrowIfNull(proposed);
         if (!fromPosePublished) return ContributionErrors.FromPoseNotFound;
         if (!toPosePublished) return ContributionErrors.ToPoseNotFound;
+        // The tags, chosen through the list (story 8, ADR 0033), are checked after the poses and before the place.
+        if (tags is { IsValid: false }) return new ProposedTagsNotInListError(tags.NotInList);
         if (SlotRefusal(proposed.Name is null, slot) is { } taken) return taken;
+        proposed = proposed.Tagged(tags?.Tags ?? proposed.Tags);
 
         var proposal = new TransitionProposal(id, contributor.Id, poses, proposed, now);
         proposal.Raise(new TransitionProposed(id, contributor.Id, poses, proposed.Name, now));
@@ -108,11 +112,14 @@ public sealed class TransitionProposal : AggregateRoot<TransitionProposalId>
     /// the place of the retained transition, this proposal left out.
     /// </summary>
     public Result<TransitionAcceptance> Accept(
-        Validator by, TransitionAdjustments adjustments, AdjustmentNote? note, TransitionSlotAvailability retainedSlot, DateTimeOffset now)
+        Validator by, TransitionAdjustments adjustments, AdjustmentNote? note, TransitionSlotAvailability retainedSlot, DateTimeOffset now,
+        TagChoice? retainedTags = null)
     {
         ArgumentNullException.ThrowIfNull(adjustments);
         if (DecisionRules.CannotBeDecided(by, Decision) is { } refusal) return refusal;
-        var retained = Proposed.Retain(adjustments);
+        // The retained tags, chosen through the list (E7): none given keeps the proposed ones.
+        if (retainedTags is { IsValid: false }) return new ProposedTagsNotInListError(retainedTags.NotInList);
+        var retained = Proposed.Retain(adjustments, retainedTags?.Tags);
         // The acceptance protects its own coherence (a note only with adjustments), checked before the place.
         var acceptance = TransitionAcceptance.Of(Proposed, retained, note, by.Id, now);
         if (acceptance.IsFailure) return acceptance;

@@ -26,6 +26,7 @@ internal static class TransitionProposalRecords
             BaseDifficulty = proposed.Difficulty.Base.ToCode(),
             FlyerDifficulty = proposed.Difficulty.Flyer.ToCode(),
             Description = proposed.Description?.Value,
+            ProposedTagIds = [.. proposed.Tags.Ids.Select(t => t.Value)],
             Status = proposal.Status switch
             {
                 ProposalStatus.Pending => PendingStatus,
@@ -41,6 +42,7 @@ internal static class TransitionProposalRecords
             RetainedBaseDifficulty = acceptance?.Retained.Difficulty.Base.ToCode(),
             RetainedFlyerDifficulty = acceptance?.Retained.Difficulty.Flyer.ToCode(),
             RetainedDescription = acceptance?.Retained.Description?.Value,
+            RetainedTagIds = acceptance is null ? null : [.. acceptance.Retained.Tags.Ids.Select(t => t.Value)],
             AdjustmentNote = acceptance?.Note?.Value,
             PublishedDirectly = acceptance?.IsDirectPublication ?? false,
         };
@@ -50,8 +52,8 @@ internal static class TransitionProposalRecords
     // is a bug, reported as such.
     public static TransitionProposal ToProposal(TransitionProposalRecord record)
     {
-        var proposed = ProposedTransition.Create(record.Name, record.BaseDifficulty, record.FlyerDifficulty, record.Description).Value
-            ?? throw Invalid(record, "proposed transition");
+        var proposed = (ProposedTransition.Create(record.Name, record.BaseDifficulty, record.FlyerDifficulty, record.Description).Value
+            ?? throw Invalid(record, "proposed transition")).Tagged(TagsOf(record.ProposedTagIds));
         var contributor = new ContributorId(record.ContributorId);
         ProposalDecision? decision = record.Status switch
         {
@@ -75,7 +77,8 @@ internal static class TransitionProposalRecords
     private static TransitionAcceptance AcceptanceOf(TransitionProposalRecord record, ProposedTransition proposed)
     {
         var retained = RetainedTransition.Create(
-            record.RetainedName, record.RetainedBaseDifficulty, record.RetainedFlyerDifficulty, record.RetainedDescription).Value
+            record.RetainedName, record.RetainedBaseDifficulty, record.RetainedFlyerDifficulty, record.RetainedDescription,
+            TagsOf(record.RetainedTagIds ?? throw Invalid(record, "retained tags"))).Value
             ?? throw Invalid(record, "retained transition");
         var note = AdjustmentNote.Create(record.AdjustmentNote).Value;
         return TransitionAcceptance.Restore(
@@ -83,6 +86,8 @@ internal static class TransitionProposalRecords
             record.DecidedAt ?? throw Invalid(record, "decision date"), record.PublishedDirectly).Value
             ?? throw Invalid(record, "acceptance");
     }
+
+    private static TagSet TagsOf(IEnumerable<Guid> ids) => TagSet.Of(ids.Select(id => new TagId(id)));
 
     private static InvalidOperationException Invalid(TransitionProposalRecord record, string what) =>
         new($"Invalid stored {what} of the transition proposal {record.Id}.");

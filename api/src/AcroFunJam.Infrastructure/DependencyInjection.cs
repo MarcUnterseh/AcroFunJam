@@ -40,6 +40,8 @@ public static class DependencyInjection
         services.AddScoped<IPoseTransitionsReader, EfPoseTransitionsReader>();
         services.AddSingleton(CatalogUniqueConstraints.TagNameKey);
         services.AddScoped<ITagListRepository, EfTagListRepository>();
+        services.AddScoped<ITagCarriersReader, EfTagCarriersReader>();
+        services.AddScoped<ITagListLock, PgTagListLock>(); // shared by the writers of tags, exclusive for a removal (ADR 0033)
 
         // Identity
         services.AddScoped<IAccountRepository, EfAccountRepository>();
@@ -72,6 +74,8 @@ public static class DependencyInjection
         services.AddScoped<ICatalogPoseNames, CatalogPoseNames>();
         services.AddScoped<ICatalogPoses, CatalogPoses>();
         services.AddScoped<ICatalogTransitions, CatalogTransitions>();
+        services.AddScoped<ICatalogTags, CatalogTags>();
+        services.AddScoped<IPendingTagCarriers, ContributionPendingTagCarriers>(); // read by the Catalog removing a tag (ADR 0033)
         services.AddScoped<IPoseReservation, PgPoseReservation>(); // names of both contexts (ADR 0017)
         services.AddScoped<ITransitionReservation, PgTransitionReservation>(); // places between poses of both contexts (ADR 0029)
 

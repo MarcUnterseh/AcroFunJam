@@ -26,7 +26,11 @@ public sealed record PublishedPoseResponse(
 /// <c>transitionsFrom</c>, the start pose in <c>transitionsTo</c>; the same pose for a washing machine).
 /// </summary>
 public sealed record LinkedTransitionResponse(
-    Guid Id, OtherPoseResponse OtherPose, string? Name, DifficultyCode BaseDifficulty, DifficultyCode FlyerDifficulty, string? Description);
+    Guid Id, OtherPoseResponse OtherPose, string? Name, DifficultyCode BaseDifficulty, DifficultyCode FlyerDifficulty, string? Description,
+    IReadOnlyList<TransitionTagResponse> Tags);
+
+/// <summary>A tag of a transition on the page of a pose, with its description, in catalog order (story 8, ADR 0034).</summary>
+public sealed record TransitionTagResponse(Guid Id, string Name, string Description);
 
 /// <summary>The other pose of a transition, under its current name.</summary>
 public sealed record OtherPoseResponse(Guid Id, string Name);

@@ -395,6 +395,9 @@ public sealed class ValidationSteps(
         "le motif de refus est obligatoire" => (HttpStatusCode.BadRequest, "contribution.rejection-reason-required"),
         "le motif de refus est trop long" => (HttpStatusCode.BadRequest, "contribution.rejection-reason-too-long"),
         "une pose de ce nom existe déjà dans le catalogue" => (HttpStatusCode.Conflict, "contribution.pose-name-already-in-catalog"),
+        // Story 8: a retained tag that is not in the list.
+        _ when reason.StartsWith("l'étiquette ", StringComparison.Ordinal) && reason.EndsWith("n'est pas dans la liste des étiquettes", StringComparison.Ordinal) =>
+            (HttpStatusCode.Conflict, "contribution.tag-not-in-list"),
         "une pose de ce nom est déjà en attente de validation" => (HttpStatusCode.Conflict, "contribution.pose-name-already-pending"),
         // Adjustments (step B): the retained values follow the content rules of a pose (story 3).
         "le nom de la pose est obligatoire" => (HttpStatusCode.BadRequest, "pose.name-required"),

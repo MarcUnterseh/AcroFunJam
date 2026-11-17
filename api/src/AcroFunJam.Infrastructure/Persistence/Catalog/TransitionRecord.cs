@@ -22,6 +22,11 @@ public sealed class TransitionRecord
 
     public string? Description { get; set; }
 
+    /// <summary>Its tags (story 8, ADR 0033): a set written in one row, the last action winning.</summary>
+#pragma warning disable CA1819 // An array column (uuid[]), mapped as such.
+    public Guid[] TagIds { get; set; } = [];
+#pragma warning restore CA1819
+
     public Guid? SourceProposalId { get; set; }
 
     public DateTimeOffset PublishedAt { get; set; }

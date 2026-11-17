@@ -33,11 +33,12 @@ public sealed class EfTransitionRepositoryTests(PostgreSqlFixture database) : IC
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
-    private static Transition ATransition(Pose from, Pose to, string? name = null, string? description = null) =>
+    private static Transition ATransition(Pose from, Pose to, string? name = null, string? description = null, TagSet? tags = null) =>
         Transition.Publish(
             new TransitionId(Guid.NewGuid()), from.Id, to.Id, TransitionName.CreateOptional(name).Value,
             Difficulty.Create(DifficultyLevel.Beginner, DifficultyLevel.Intermediate).Value!, TransitionDescription.CreateOptional(description).Value,
-            source: null, fromPosePublished: true, toPosePublished: true, slotTaken: false, Now).Value!;
+            new TagChoice(tags ?? TagSet.Empty, TagSet.Empty), source: null, fromPosePublished: true, toPosePublished: true, slotTaken: false,
+            Now).Value!;
 
     private async Task<AcroFunJam.Domain.Common.Result<bool>> Save(params Transition[] transitions)
     {
@@ -106,5 +107,76 @@ public sealed class EfTransitionRepositoryTests(PostgreSqlFixture database) : IC
     }
 
     private static LinkedTransition Linked(Transition transition, Pose other) =>
-        new(transition.Id, other.Id, other.Name, transition.Name, transition.Difficulty, transition.Description);
+        new(transition.Id, other.Id, other.Name, transition.Name, transition.Difficulty, transition.Description, transition.Tags);
+
+    // --- Tags (story 8, ADR 0033) -------------------------------------------------------------
+
+    private static readonly TagId Pop = new(Guid.NewGuid());
+    private static readonly TagId Dynamic = new(Guid.NewGuid());
+    private static readonly TagId Lunar = new(Guid.NewGuid());
+
+    [Fact]
+    public async Task GetById_Should_RestoreTheTagsOfTheTransition_When_ItCarriesSome()
+    {
+        var popToBird = ATransition(_throne, _bird, "Pop to Bird", tags: TagSet.Of([Pop, Dynamic]));
+        (await Save(popToBird)).IsSuccess.ShouldBeTrue();
+
+        await using var context = database.CreateDbContext();
+        var stored = (await new EfTransitionRepository(context, new TrackedAggregates()).GetById(popToBird.Id, Ct)).ShouldNotBeNull();
+
+        stored.ShouldSatisfyAllConditions(
+            t => t.Tags.ShouldBe(TagSet.Of([Pop, Dynamic])),
+            t => t.Name.ShouldBe(popToBird.Name),
+            t => t.FromPose.ShouldBe(_throne.Id),
+            t => t.ToPose.ShouldBe(_bird.Id),
+            t => t.Difficulty.ShouldBe(popToBird.Difficulty));
+    }
+
+    [Fact]
+    public async Task Update_Should_ReplaceTheTagsOfTheTransition_When_ItIsTagged()
+    {
+        var popToBird = ATransition(_throne, _bird, "Pop to Bird", tags: TagSet.Of([Pop, Dynamic]));
+        (await Save(popToBird)).IsSuccess.ShouldBeTrue();
+
+        await using (var context = database.CreateDbContext())
+        {
+            var aggregates = new TrackedAggregates();
+            var repository = new EfTransitionRepository(context, aggregates);
+            var transition = (await repository.GetById(popToBird.Id, Ct))!;
+            transition.Tag(new TagChoice(TagSet.Of([Lunar]), TagSet.Empty), Now);
+            repository.Update(transition);
+            (await UnitOfWorks.For(context, aggregates).SaveChanges(Ct)).IsSuccess.ShouldBeTrue();
+        }
+
+        await using var reading = database.CreateDbContext();
+        (await new EfTransitionRepository(reading, new TrackedAggregates()).GetById(popToBird.Id, Ct))!.Tags.ShouldBe(TagSet.Of([Lunar]));
+    }
+
+    [Fact]
+    public async Task PublishedTransitionCounts_Should_CountTheTransitionsCarryingEachTag_When_SomeDo()
+    {
+        (await Save(
+            ATransition(_throne, _bird, "Pop to Bird", tags: TagSet.Of([Pop, Dynamic])),
+            ATransition(_bird, _star, tags: TagSet.Of([Lunar, Dynamic])),
+            ATransition(_star, _star, "Ninja Star"))).IsSuccess.ShouldBeTrue();
+
+        await using var context = database.CreateDbContext();
+        var counts = await new EfTagCarriersReader(context).PublishedTransitionCounts(Ct);
+
+        counts.ShouldBe(new Dictionary<TagId, int> { [Pop] = 1, [Dynamic] = 2, [Lunar] = 1 }, ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task TransitionsCarrying_Should_GiveTheTransitionsCarryingTheTagWithTheNamesOfTheirPoses_When_SomeDo()
+    {
+        var popToBird = ATransition(_throne, _bird, "Pop to Bird", tags: TagSet.Of([Lunar]));
+        (await Save(popToBird, ATransition(_bird, _star, tags: TagSet.Of([Pop])))).IsSuccess.ShouldBeTrue();
+
+        await using var context = database.CreateDbContext();
+        var carriers = await new EfTagCarriersReader(context).TransitionsCarrying(Lunar, Ct);
+
+        carriers.ShouldHaveSingleItem().ShouldBe(
+            new CarryingTransition(popToBird.Id.Value, _throne.Id, _throne.Name, _bird.Id, _bird.Name, popToBird.Name));
+    }
 }
+

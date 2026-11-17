@@ -213,7 +213,7 @@ Fonctionnalité: Gérer la liste des étiquettes
       Soit Bruno est validateur
       Et les poses publiées "Bird" et "Folded Leaf" dans le catalogue
 
-    @api @wip
+    @api
     Scénario: Une transition présente le nouveau nom de son étiquette
       Soit l'étiquette "lunnaire" dans la liste des étiquettes
       Et la transition publiée sans nom de "Bird" vers "Folded Leaf", avec l'étiquette "lunnaire"
@@ -257,7 +257,7 @@ Fonctionnalité: Gérer la liste des étiquettes
       Quand Bruno retire l'étiquette "vrille" de la liste
       Alors la liste des étiquettes présente exactement les étiquettes "lunaire"
 
-    @api @wip
+    @api
     Scénario: Le retrait d'une étiquette portée par des transitions publiées est impossible et les liste
       Soit la transition publiée sans nom de "Bird" vers "Folded Leaf", avec l'étiquette "lunaire"
       Et la transition publiée "Lunar Roll" de "Folded Leaf" vers "Throne", avec l'étiquette "lunaire"
@@ -267,7 +267,7 @@ Fonctionnalité: Gérer la liste des étiquettes
         | Bird           | Folded Leaf    |            |
         | Folded Leaf    | Throne         | Lunar Roll |
 
-    @api @wip
+    @api
     Scénario: Le retrait d'une étiquette portée par une proposition en attente est impossible et la liste
       Soit Alice est utilisateur
       Et Alice a proposé une transition sans nom de "Bird" vers "Folded Leaf", avec l'étiquette "lunaire"

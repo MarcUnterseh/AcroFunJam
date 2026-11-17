@@ -28,6 +28,7 @@ public sealed class EfTransitionProposalRepository(AcroFunJamDbContext context, 
         entry.Property(p => p.RetainedBaseDifficulty).IsModified = true;
         entry.Property(p => p.RetainedFlyerDifficulty).IsModified = true;
         entry.Property(p => p.RetainedDescription).IsModified = true;
+        entry.Property(p => p.RetainedTagIds).IsModified = true;
         entry.Property(p => p.AdjustmentNote).IsModified = true;
         aggregates.Track(proposal);
     }

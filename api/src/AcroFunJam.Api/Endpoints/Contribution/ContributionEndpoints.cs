@@ -95,18 +95,23 @@ public static class ContributionEndpoints
     private static async Task<Results<Ok<MyProposalsResponse>, ProblemHttpResult>> GetMyProposals(
         ClaimsPrincipal contributor,
         IQueryHandler<GetMyProposals, IReadOnlyList<IMyProposal>> handler,
+        ICatalogTags tagNames,
         CancellationToken ct)
     {
         var result = await handler.Handle(new GetMyProposals(ContributorOf(contributor)), ct);
         if (result.IsFailure) return result.Error!.ToProblem();
-        return TypedResults.Ok(new MyProposalsResponse([.. result.Value!.Select(ToResponse)]));
+        // The names of every tag of the list, in one batch (ADR 0033).
+        var transitions = result.Value!.OfType<MyTransitionProposal>().ToList();
+        var names = await TagNames.Of(
+            tagNames, transitions.Select(t => t.Tags).Concat(transitions.SelectMany(t => t.Adjustments.OfType<TransitionTagsAdjustment>().Select(a => a.Proposed))), ct);
+        return TypedResults.Ok(new MyProposalsResponse([.. result.Value!.Select(p => ToResponse(p, names))]));
     }
 
-    private static MyProposalResponse ToResponse(IMyProposal proposal) => proposal switch
+    private static MyProposalResponse ToResponse(IMyProposal proposal, TagNames names) => proposal switch
     {
         MyPoseProposal pose => ToResponse(pose),
         MyPoseRevision revision => PoseRevisionEndpoints.ToResponse(revision),
-        MyTransitionProposal transition => TransitionEndpoints.ToResponse(transition),
+        MyTransitionProposal transition => TransitionEndpoints.ToResponse(transition, names),
         _ => throw new UnreachableException($"Unknown kind of proposal: {proposal.GetType().Name}."),
     };
 
@@ -150,11 +155,14 @@ public static class ContributionEndpoints
     private static async Task<Results<Ok<ValidationQueueResponse>, ProblemHttpResult>> GetValidationQueue(
         ClaimsPrincipal validator,
         IQueryHandler<GetPendingPoseProposals, IReadOnlyList<PendingProposalDto>> handler,
+        ICatalogTags tagNames,
         CancellationToken ct)
     {
         var result = await handler.Handle(new GetPendingPoseProposals(ValidatorOf(validator)), ct);
         if (result.IsFailure) return result.Error!.ToProblem();
-        return TypedResults.Ok(new ValidationQueueResponse([.. result.Value!.Select(ToResponse)]));
+        // The names of every tag of the queue, in one batch (ADR 0033).
+        var names = await TagNames.Of(tagNames, result.Value!.OfType<PendingTransitionProposalDto>().Select(t => t.Transition.Tags), ct);
+        return TypedResults.Ok(new ValidationQueueResponse([.. result.Value!.Select(p => ToResponse(p, names))]));
     }
 
     private static async Task<Results<Ok<PendingCountResponse>, ProblemHttpResult>> CountPendingProposals(
@@ -218,11 +226,11 @@ public static class ContributionEndpoints
     internal static ValidatorId ValidatorOf(ClaimsPrincipal principal) => new(AccountIdOf(principal));
 
     /// <summary>Each kind of proposal with its own shape, told apart by <c>kind</c> (ADR 0027).</summary>
-    private static PendingProposalResponse ToResponse(PendingProposalDto proposal) => proposal switch
+    private static PendingProposalResponse ToResponse(PendingProposalDto proposal, TagNames names) => proposal switch
     {
         PendingPoseProposalDto pose => ToResponse(pose),
         PendingPoseRevisionDto revision => PoseRevisionEndpoints.ToResponse(revision),
-        PendingTransitionProposalDto transition => TransitionEndpoints.ToResponse(transition),
+        PendingTransitionProposalDto transition => TransitionEndpoints.ToResponse(transition, names),
         _ => throw new UnreachableException($"Unknown kind of pending proposal: {proposal.GetType().Name}."),
     };
 

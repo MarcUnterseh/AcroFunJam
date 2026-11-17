@@ -48,6 +48,8 @@ public sealed class TransitionProposalRecordConfiguration : IEntityTypeConfigura
             table.HasCheckConstraint(
                 "ck_transition_proposals_retained_description_length", $"char_length(retained_description) <= {TransitionDescription.MaxLength}");
             table.HasCheckConstraint("ck_transition_proposals_adjustment_note", "adjustment_note IS NULL OR status = 'accepted'");
+            // The retained tags come with an acceptance only (story 8, ADR 0033).
+            table.HasCheckConstraint("ck_transition_proposals_retained_tags", "(status = 'accepted') = (retained_tag_ids IS NOT NULL)");
             table.HasCheckConstraint(
                 "ck_transition_proposals_adjustment_note_length", $"char_length(adjustment_note) <= {AdjustmentNote.MaxLength}");
             // A direct publication retains the proposed transition as is, without note, decided by its contributor when submitted (ADR 0023).
@@ -59,6 +61,11 @@ public sealed class TransitionProposalRecordConfiguration : IEntityTypeConfigura
                 + " IS NOT DISTINCT FROM (name, base_difficulty, flyer_difficulty, description))");
         });
         builder.HasKey(p => p.Id);
+        builder.Property(p => p.ProposedTagIds).HasColumnName("proposed_tag_ids").HasDefaultValueSql("'{}'").IsRequired();
+        builder.Property(p => p.RetainedTagIds).HasColumnName("retained_tag_ids");
+        // The pending proposals carrying a tag: the refusal of its removal (ADR 0033).
+        builder.HasIndex(p => p.ProposedTagIds).HasDatabaseName("ix_transition_proposals_pending_tag_ids").HasMethod("gin")
+            .HasFilter("status = 'pending'");
         builder.Property(p => p.Id).HasColumnName("id");
         builder.Property(p => p.ContributorId).HasColumnName("contributor_id");
         builder.Property(p => p.FromPoseId).HasColumnName("from_pose_id");

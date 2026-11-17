@@ -35,7 +35,7 @@ Fonctionnalité: Consulter les étiquettes des transitions
         | pose d'arrivée | nom         | étiquettes     |
         | Bird           | Pop to Bird | dynamique, pop |
 
-    @api @wip
+    @api
     Scénario: Un visiteur voit les étiquettes des transitions vers une pose
       Soit la transition publiée "Pop to Bird" de "Throne" vers "Bird" de difficulté base "intermédiaire" et de difficulté flyer "intermédiaire", avec l'étiquette "pop"
       Quand un visiteur consulte la pose "Bird" du catalogue
@@ -46,7 +46,7 @@ Fonctionnalité: Consulter les étiquettes des transitions
   # Garanti par l'API (ADR 0007) : vérifié une fois côté @api, le site affiche l'ordre reçu.
   Règle: Les étiquettes d'une transition sont présentées dans l'ordre du catalogue sur leur nom
 
-    @api @wip
+    @api
     Scénario: Les étiquettes d'une transition sont triées par nom
       Soit la transition publiée "Forbidden" de "Throne" vers "Bird" de difficulté base "avancé" et de difficulté flyer "avancé", avec les étiquettes "whip" et "inversion"
       Quand un visiteur consulte la pose "Throne" du catalogue

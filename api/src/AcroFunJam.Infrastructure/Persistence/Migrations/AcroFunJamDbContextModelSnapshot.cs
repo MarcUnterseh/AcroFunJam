@@ -196,11 +196,23 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("source_proposal_id");
 
+                    b.PrimitiveCollection<Guid[]>("TagIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("tag_ids")
+                        .HasDefaultValueSql("'{}'");
+
                     b.Property<Guid>("ToPoseId")
                         .HasColumnType("uuid")
                         .HasColumnName("to_pose_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TagIds")
+                        .HasDatabaseName("ix_transitions_tag_ids");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("TagIds"), "gin");
 
                     b.HasIndex("ToPoseId")
                         .HasDatabaseName("ix_transitions_to_pose_id");
@@ -605,6 +617,13 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name_key");
 
+                    b.PrimitiveCollection<Guid[]>("ProposedTagIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("proposed_tag_ids")
+                        .HasDefaultValueSql("'{}'");
+
                     b.Property<bool>("PublishedDirectly")
                         .HasColumnType("boolean")
                         .HasColumnName("published_directly");
@@ -629,6 +648,10 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("retained_name");
 
+                    b.PrimitiveCollection<Guid[]>("RetainedTagIds")
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("retained_tag_ids");
+
                     b.Property<string>("Status")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -647,6 +670,12 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ContributorId")
                         .HasDatabaseName("ix_transition_proposals_contributor_id");
+
+                    b.HasIndex("ProposedTagIds")
+                        .HasDatabaseName("ix_transition_proposals_pending_tag_ids")
+                        .HasFilter("status = 'pending'");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("ProposedTagIds"), "gin");
 
                     b.HasIndex("FromPoseId", "ToPoseId")
                         .IsUnique()
@@ -689,6 +718,8 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_transition_proposals_retained_description_length", "char_length(retained_description) <= 500");
 
                             t.HasCheckConstraint("ck_transition_proposals_retained_flyer_difficulty", "retained_flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
+
+                            t.HasCheckConstraint("ck_transition_proposals_retained_tags", "(status = 'accepted') = (retained_tag_ids IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_transition_proposals_retained_name_length", "char_length(retained_name) <= 60");
 

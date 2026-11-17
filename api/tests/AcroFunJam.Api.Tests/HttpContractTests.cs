@@ -172,16 +172,16 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
         (body.TryGetProperty("required", out var required) && required.GetBoolean()).ShouldBeFalse();
         var adjustments = schemas.GetProperty("AcceptTransitionProposalRequest");
         adjustments.GetProperty("properties").EnumerateObject().Select(p => p.Name)
-            .ShouldBe(["name", "baseDifficulty", "flyerDifficulty", "description", "message"], ignoreOrder: true);
+            .ShouldBe(["name", "baseDifficulty", "flyerDifficulty", "description", "message", "tagIds"], ignoreOrder: true);
         adjustments.TryGetProperty("required", out _).ShouldBeFalse("every field may be absent");
         schemas.GetProperty("PendingProposalResponsePendingTransitionProposalResponse").GetProperty("required").EnumerateArray()
             .Select(p => p.GetString())
             .ShouldBe(
-                ["id", "fromPose", "toPose", "name", "baseDifficulty", "flyerDifficulty", "description", "contributor", "submittedAt"], ignoreOrder: true);
+                ["id", "fromPose", "toPose", "name", "baseDifficulty", "flyerDifficulty", "description", "tags", "contributor", "submittedAt"], ignoreOrder: true);
         schemas.GetProperty("MyProposalResponseMyTransitionProposalResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
             .ShouldBe(
                 [
-                    "id", "status", "fromPose", "toPose", "name", "baseDifficulty", "flyerDifficulty", "description", "submittedAt", "decidedAt",
+                    "id", "status", "fromPose", "toPose", "name", "baseDifficulty", "flyerDifficulty", "description", "tags", "submittedAt", "decidedAt",
                     "adjustments", "message", "reason",
                 ],
                 ignoreOrder: true);
@@ -201,7 +201,7 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
                 ["id", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "version", "transitionsFrom", "transitionsTo"],
                 ignoreOrder: true);
         schemas.GetProperty("LinkedTransitionResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
-            .ShouldBe(["id", "otherPose", "name", "baseDifficulty", "flyerDifficulty", "description"], ignoreOrder: true);
+            .ShouldBe(["id", "otherPose", "name", "baseDifficulty", "flyerDifficulty", "description", "tags"], ignoreOrder: true);
     }
 
     /// <summary>Story 6: « Mes propositions » is read at /contribution/my-proposals only, which replaces the endpoint of story 5.</summary>

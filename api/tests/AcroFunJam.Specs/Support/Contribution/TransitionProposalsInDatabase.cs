@@ -55,7 +55,9 @@ public static class TransitionProposalsInDatabase
             """
             select t.status, v."Email", t.decided_at, t.rejection_reason,
                    t.name, t.base_difficulty, t.flyer_difficulty, t.description,
-                   t.retained_name, t.retained_base_difficulty, t.retained_flyer_difficulty, t.retained_description, t.adjustment_note
+                   t.retained_name, t.retained_base_difficulty, t.retained_flyer_difficulty, t.retained_description, t.adjustment_note,
+                   array_to_string(array(select unnest(t.proposed_tag_ids) order by 1), ','),
+                   array_to_string(array(select unnest(t.retained_tag_ids) order by 1), ',')
             from contribution.transition_proposals t
             left join identity.users v on v."Id" = t.decided_by
             where t.id = @id
@@ -71,14 +73,17 @@ public static class TransitionProposalsInDatabase
             Text(1),
             reader.IsDBNull(2) ? null : reader.GetFieldValue<DateTimeOffset>(2),
             Text(3),
-            new StoredTransition(Text(4), Text(5)!, Text(6)!, Text(7)),
-            Text(9) is null ? null : new StoredTransition(Text(8), Text(9)!, Text(10)!, Text(11)),
+            new StoredTransition(Text(4), Text(5)!, Text(6)!, Text(7)) { Tags = Text(13) ?? "" },
+            Text(9) is null ? null : new StoredTransition(Text(8), Text(9)!, Text(10)!, Text(11)) { Tags = Text(14) ?? "" },
             Text(12));
     }
 }
 
-/// <summary>A transition as stored: its name, difficulty codes and description.</summary>
-public sealed record StoredTransition(string? Name, string BaseDifficulty, string FlyerDifficulty, string? Description);
+/// <summary>A transition as stored: its name, difficulty codes and description, and its tags (story 8, sorted identifiers).</summary>
+public sealed record StoredTransition(string? Name, string BaseDifficulty, string FlyerDifficulty, string? Description)
+{
+    public string Tags { get; init; } = "";
+}
 
 /// <summary>The decision on a transition proposal as stored, with the transition as proposed and as retained (none unless accepted).</summary>
 public sealed record RecordedTransitionDecision(

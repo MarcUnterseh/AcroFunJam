@@ -198,6 +198,9 @@ public sealed class PoseProposalSteps(People people, Deployment deployment, Scen
         "le message de modification est trop long" => (HttpStatusCode.BadRequest, "contribution.revision-message-too-long"),
         "la pose a changé depuis le début de la modification" => (HttpStatusCode.Conflict, "contribution.pose-changed-since-revision-started"),
         "le nom de la pose est obligatoire" => (HttpStatusCode.BadRequest, "pose.name-required"),
+        // Story 8: a proposed tag that is not in the list.
+        _ when reason.StartsWith("l'étiquette ", StringComparison.Ordinal) && reason.EndsWith("n'est pas dans la liste des étiquettes", StringComparison.Ordinal) =>
+            (HttpStatusCode.Conflict, "contribution.tag-not-in-list"),
         "le nom de la pose est trop long" => (HttpStatusCode.BadRequest, "pose.name-too-long"),
         "la difficulté base est obligatoire" => (HttpStatusCode.BadRequest, "pose.base-difficulty-required"),
         "la difficulté flyer est obligatoire" => (HttpStatusCode.BadRequest, "pose.flyer-difficulty-required"),

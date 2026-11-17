@@ -61,18 +61,19 @@ public static class CatalogEndpoints
             pose.Flow.CanStartFlow,
             pose.Flow.CanEndFlow,
             pose.Version.Value,
-            [.. pose.TransitionsFrom.Select(ToResponse)],
-            [.. pose.TransitionsTo.Select(ToResponse)]));
+            [.. pose.TransitionsFrom.Select(t => ToResponse(pose, t))],
+            [.. pose.TransitionsTo.Select(t => ToResponse(pose, t))]));
     }
 
-    private static LinkedTransitionResponse ToResponse(LinkedTransition transition) =>
+    private static LinkedTransitionResponse ToResponse(PosePage page, LinkedTransition transition) =>
         new(
             transition.Id.Value,
             new OtherPoseResponse(transition.OtherPose.Value, transition.OtherPoseName.Value),
             transition.Name?.Value,
             DifficultyCodes.From(transition.Difficulty.Base),
             DifficultyCodes.From(transition.Difficulty.Flyer),
-            transition.Description?.Value);
+            transition.Description?.Value,
+            [.. page.TagsOf(transition).Select(t => new TransitionTagResponse(t.Id.Value, t.Name.Value, t.Description.Value))]);
 
     private static PoseSummaryResponse ToResponse(PublishedPoseSummary pose) =>
         new(

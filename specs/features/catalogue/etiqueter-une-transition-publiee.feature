@@ -31,7 +31,7 @@ Fonctionnalité: Étiqueter une transition publiée
 
   Règle: Une transition publiée sans étiquette reste publiée et présentée
 
-    @api @wip
+    @api
     Scénario: Une transition publiée avant les étiquettes n'en porte aucune
       Quand un visiteur consulte la pose "Throne" du catalogue
       Alors les transitions depuis la pose "Throne" sont exactement :
@@ -40,7 +40,7 @@ Fonctionnalité: Étiqueter une transition publiée
 
   Règle: Un validateur ou un administrateur étiquette directement une transition publiée
 
-    @api @wip
+    @api
     Plan du Scénario: Un <rôle> étiquette une transition publiée, qui présente aussitôt ses étiquettes
       Soit Bruno est <rôle>
       Et Bruno a étiqueté la transition "Pop to Bird" de "Throne" vers "Bird" avec les étiquettes "pop"
@@ -54,7 +54,7 @@ Fonctionnalité: Étiqueter une transition publiée
         | validateur     |
         | administrateur |
 
-    @api @wip
+    @api
     Scénario: Les étiquettes choisies remplacent celles de la transition
       Soit Bruno est validateur
       Et Bruno a étiqueté la transition "Pop to Bird" de "Throne" vers "Bird" avec les étiquettes "pop"
@@ -64,7 +64,7 @@ Fonctionnalité: Étiqueter une transition publiée
         | pose d'arrivée | nom         | étiquettes                 |
         | Bird           | Pop to Bird | dynamique, icarien, vrille |
 
-    @api @wip
+    @api
     Scénario: Un validateur retire toutes les étiquettes d'une transition publiée
       Soit Bruno est validateur
       Et Bruno a étiqueté la transition "Pop to Bird" de "Throne" vers "Bird" avec les étiquettes "pop"
@@ -77,7 +77,7 @@ Fonctionnalité: Étiqueter une transition publiée
   # Q136 : la même règle qu'à la proposition et à l'ajustement.
   Règle: Étiqueter une transition publiée en « pop », « whip » ou « icarien » lui ajoute « dynamique »
 
-    @api @wip
+    @api
     Scénario: « dynamique » reste portée tant que « pop » l'est
       Soit Bruno est validateur
       Et Bruno a étiqueté la transition "Pop to Bird" de "Throne" vers "Bird" avec les étiquettes "pop"
@@ -89,13 +89,13 @@ Fonctionnalité: Étiqueter une transition publiée
 
   Règle: Seul un validateur ou un administrateur étiquette directement une transition publiée
 
-    @api @wip
+    @api
     Scénario: Un utilisateur ne peut pas étiqueter une transition publiée
       Soit Alice est utilisateur
       Quand Alice étiquette la transition "Pop to Bird" de "Throne" vers "Bird" avec les étiquettes "pop"
       Alors l'étiquetage est refusé car seul un validateur ou un administrateur gère les étiquettes
 
-    @api @wip
+    @api
     Scénario: Un visiteur ne peut pas étiqueter une transition publiée
       Quand un visiteur étiquette la transition "Pop to Bird" de "Throne" vers "Bird" avec les étiquettes "pop"
       Alors l'étiquetage est refusé car il faut être connecté
@@ -105,12 +105,12 @@ Fonctionnalité: Étiqueter une transition publiée
     Contexte:
       Soit Bruno est validateur
 
-    @api @wip
+    @api
     Scénario: Une étiquette absente de la liste rend l'étiquetage impossible
       Quand Bruno étiquette la transition "Pop to Bird" de "Throne" vers "Bird" avec les étiquettes "classique"
       Alors l'étiquetage est impossible car l'étiquette "classique" n'est pas dans la liste des étiquettes
 
-    @api @wip
+    @api
     Scénario: Une transition inconnue du catalogue ne peut pas être étiquetée
       Quand Bruno étiquette une transition qui n'existe pas dans le catalogue avec les étiquettes "pop"
       Alors l'étiquetage est impossible car la transition est introuvable dans le catalogue

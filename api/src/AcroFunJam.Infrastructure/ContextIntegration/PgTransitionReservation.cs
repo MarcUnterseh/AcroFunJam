@@ -18,6 +18,14 @@ public sealed class PgTransitionReservation(AcroFunJamDbContext context) : ITran
     public Task<Result<T>> Run<T>(TransitionPoses poses, Func<CancellationToken, Task<Result<T>>> work, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(poses);
-        return AdvisoryLocks.RunLocked(context, [$"{LockKeyPrefix}{poses.From.Value}:{poses.To.Value}"], work, ct);
+        // Then the list of tags, shared (ADR 0033): the tags chosen inside are never removed meanwhile; a removal waits.
+        return AdvisoryLocks.RunLocked(
+            context, [$"{LockKeyPrefix}{poses.From.Value}:{poses.To.Value}"],
+            async lockedCt =>
+            {
+                await PgTagListLock.TakeShared(context, lockedCt);
+                return await work(lockedCt);
+            },
+            ct);
     }
 }

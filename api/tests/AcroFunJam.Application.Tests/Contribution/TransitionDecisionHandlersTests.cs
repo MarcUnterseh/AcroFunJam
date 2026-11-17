@@ -56,7 +56,8 @@ public sealed class TransitionDecisionHandlersTests
     }
 
     private AcceptTransitionProposalHandler Accepting() =>
-        new(_validators, _proposals, _catalogPoses, _catalogTransitions, _reservation, _publisher, _unitOfWork, new FixedTimeProvider(Later));
+        new(_validators, _proposals, _catalogPoses, _catalogTransitions, _reservation, _publisher, _unitOfWork, new FixedTimeProvider(Later),
+            new FakeCatalogTags(null));
 
     private RejectTransitionProposalHandler Rejecting() => new(_validators, _proposals, _catalogPoses, _unitOfWork, new FixedTimeProvider(Later));
 

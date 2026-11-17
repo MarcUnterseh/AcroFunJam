@@ -4,6 +4,10 @@ using AcroFunJam.Application.Catalog.ChangeTag;
 using AcroFunJam.Application.Catalog.ListTags;
 using AcroFunJam.Application.Catalog.RemoveTag;
 using AcroFunJam.Application.Catalog.SeedInitialTagList;
+using AcroFunJam.Application.Catalog.TagTransition;
+using AcroFunJam.Application.Catalog.GetTagNames;
+using AcroFunJam.Application.Catalog.ChooseTags;
+using AcroFunJam.Application.Contribution.GetPendingTransitionProposalsCarryingTag;
 using AcroFunJam.Application.Catalog.GetPublishedPoseNames;
 using AcroFunJam.Application.Catalog.GetPosePage;
 using AcroFunJam.Application.Catalog.IsTransitionSlotPublished;
@@ -76,6 +80,11 @@ public static class DependencyInjection
         services.AddScoped<ICommandHandler<ChangeTag, TagDto>, ChangeTagHandler>();
         services.AddScoped<ICommandHandler<RemoveTag, bool>, RemoveTagHandler>();
         services.AddScoped<ICommandHandler<SeedInitialTagList, bool>, SeedInitialTagListHandler>();
+        services.AddScoped<ICommandHandler<TagTransition, TagSet>, TagTransitionHandler>();
+        services.AddScoped<IQueryHandler<GetTagNames, IReadOnlyList<NamedTag>>, GetTagNamesHandler>();
+        services.AddScoped<IQueryHandler<ChooseTags, TagChoice>, ChooseTagsHandler>();
+        services.AddScoped<IQueryHandler<GetPendingTransitionProposalsCarryingTag, IReadOnlyList<TransitionProposal>>,
+            GetPendingTransitionProposalsCarryingTagHandler>();
         return services;
     }
 }

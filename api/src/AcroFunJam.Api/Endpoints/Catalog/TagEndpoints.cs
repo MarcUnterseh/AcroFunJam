@@ -5,6 +5,8 @@ using AcroFunJam.Application.Catalog.AddTag;
 using AcroFunJam.Application.Catalog.ChangeTag;
 using AcroFunJam.Application.Catalog.ListTags;
 using AcroFunJam.Application.Catalog.RemoveTag;
+using AcroFunJam.Application.Catalog.GetTagNames;
+using AcroFunJam.Application.Catalog.TagTransition;
 using AcroFunJam.Application.Common;
 using AcroFunJam.Domain.Catalog;
 using AcroFunJam.Domain.Common;
@@ -47,7 +49,33 @@ internal static class TagEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
+        catalog.MapPut("/transitions/{id:guid}/tags", TagTransition)
+            .WithName("TagTransition")
+            .RequireAuthorization(Capabilities.CanManageTags)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
+
         return catalog;
+    }
+
+    /// <summary>
+    /// A validator replaces the tags of a published transition (story 8, P2): an empty list removes them all, duplicates are
+    /// ignored; the answer gives the set completed through the list, in catalog order (ADR 0034).
+    /// </summary>
+    private static async Task<Results<Ok<TaggedTransitionResponse>, ProblemHttpResult>> TagTransition(
+        Guid id,
+        TagTransitionRequest request,
+        ICommandHandler<TagTransition, TagSet> handler,
+        IQueryHandler<GetTagNames, IReadOnlyList<NamedTag>> names,
+        CancellationToken ct)
+    {
+        var tagged = await handler.Handle(new TagTransition(new TransitionId(id), [.. (request.TagIds ?? []).Select(t => new TagId(t))]), ct);
+        if (tagged.IsFailure) return tagged.Error!.ToProblem();
+
+        var named = await names.Handle(new GetTagNames(tagged.Value!), ct);
+        return TypedResults.Ok(new TaggedTransitionResponse(id, [.. named.Value!.Select(t => new NamedTagResponse(t.Id.Value, t.Name.Value))]));
     }
 
     private static async Task<Results<Ok<TagListResponse>, ProblemHttpResult>> ListTags(
@@ -127,3 +155,9 @@ public sealed record TagResponse(Guid Id, string Name, string Description, Guid?
 
 /// <summary>A tag designated by its identifier and its current name.</summary>
 public sealed record NamedTagResponse(Guid Id, string Name);
+
+/// <summary>The tags chosen for a published transition, by identifier (ADR 0034).</summary>
+public sealed record TagTransitionRequest(IReadOnlyList<Guid>? TagIds);
+
+/// <summary>A published transition and its tags, completed through the list, in catalog order.</summary>
+public sealed record TaggedTransitionResponse(Guid Id, IReadOnlyList<NamedTagResponse> Tags);

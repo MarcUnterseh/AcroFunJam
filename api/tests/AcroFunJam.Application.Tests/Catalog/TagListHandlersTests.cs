@@ -68,7 +68,7 @@ public sealed class TagListHandlersTests
         Stored("Inversion");
         var dynamic = Stored("dynamique");
 
-        var tags = (await new ListTagsHandler(_repository).Handle(new ListTags(), Ct)).Value!;
+        var tags = (await new ListTagsHandler(_repository, new FakeTagCarriersReader()).Handle(new ListTags(), Ct)).Value!;
 
         tags.Select(t => t.Name.Value).ShouldBe(["dynamique", "Inversion", "whip"]);
         tags[0].ShouldSatisfyAllConditions(
@@ -81,7 +81,7 @@ public sealed class TagListHandlersTests
     [Fact]
     public async Task ListTags_Should_PresentNoTag_When_NoListExists()
     {
-        (await new ListTagsHandler(_repository).Handle(new ListTags(), Ct)).Value!.ShouldBeEmpty();
+        (await new ListTagsHandler(_repository, new FakeTagCarriersReader()).Handle(new ListTags(), Ct)).Value!.ShouldBeEmpty();
     }
 
     // --- Adding (L4 to L7) --------------------------------------------------------------------
@@ -136,7 +136,7 @@ public sealed class TagListHandlersTests
     {
         var id = Stored("lunnaire");
 
-        var result = await new ChangeTagHandler(_repository, _unitOfWork, _clock).Handle(new ChangeTag(id, Name("lunaire"), Description("Pratique thérapeutique.")), Ct);
+        var result = await new ChangeTagHandler(_repository, new FakeTagCarriersReader(), _unitOfWork, _clock).Handle(new ChangeTag(id, Name("lunaire"), Description("Pratique thérapeutique.")), Ct);
 
         result.Value!.ShouldSatisfyAllConditions(
             t => t.Name.ShouldBe(Name("lunaire")),
@@ -153,7 +153,7 @@ public sealed class TagListHandlersTests
         var id = Stored("pop");
         _repository.Stored!.ClearDomainEvents();
 
-        await new ChangeTagHandler(_repository, _unitOfWork, _clock).Handle(new ChangeTag(id, Name("pop"), Description("La base propulse le flyer.")), Ct);
+        await new ChangeTagHandler(_repository, new FakeTagCarriersReader(), _unitOfWork, _clock).Handle(new ChangeTag(id, Name("pop"), Description("La base propulse le flyer.")), Ct);
 
         _repository.Stored.DomainEvents.ShouldHaveSingleItem().ShouldBeOfType<TagDescribed>();
     }
@@ -164,7 +164,7 @@ public sealed class TagListHandlersTests
         var id = Stored("Pop");
         _repository.Stored!.ClearDomainEvents();
 
-        await new ChangeTagHandler(_repository, _unitOfWork, _clock).Handle(new ChangeTag(id, Name("pop"), Description("Ce que veut dire Pop.")), Ct);
+        await new ChangeTagHandler(_repository, new FakeTagCarriersReader(), _unitOfWork, _clock).Handle(new ChangeTag(id, Name("pop"), Description("Ce que veut dire Pop.")), Ct);
 
         _repository.Stored.DomainEvents.ShouldHaveSingleItem().ShouldBeOfType<TagRenamed>();
     }
@@ -175,7 +175,7 @@ public sealed class TagListHandlersTests
         var pop = Stored("pop");
         Stored("whip");
 
-        var result = await new ChangeTagHandler(_repository, _unitOfWork, _clock).Handle(new ChangeTag(pop, Name("Whip"), Description("D.")), Ct);
+        var result = await new ChangeTagHandler(_repository, new FakeTagCarriersReader(), _unitOfWork, _clock).Handle(new ChangeTag(pop, Name("Whip"), Description("D.")), Ct);
 
         result.Error.ShouldBe(CatalogErrors.TagNameTaken);
         _unitOfWork.Saves.ShouldBe(0);
@@ -184,7 +184,7 @@ public sealed class TagListHandlersTests
     [Fact]
     public async Task ChangeTag_Should_FailWithTagNotFound_When_NoListExists()
     {
-        var result = await new ChangeTagHandler(_repository, _unitOfWork, _clock).Handle(new ChangeTag(new TagId(Guid.NewGuid()), Name("pop"), Description("D.")), Ct);
+        var result = await new ChangeTagHandler(_repository, new FakeTagCarriersReader(), _unitOfWork, _clock).Handle(new ChangeTag(new TagId(Guid.NewGuid()), Name("pop"), Description("D.")), Ct);
 
         result.Error.ShouldBe(CatalogErrors.TagNotFound);
     }
@@ -196,7 +196,7 @@ public sealed class TagListHandlersTests
     {
         var id = Stored("vrille");
 
-        var result = await new RemoveTagHandler(_repository, _unitOfWork, _clock).Handle(new RemoveTag(id), Ct);
+        var result = await new RemoveTagHandler(_repository, new FakeTagCarriersReader(), new FakePendingTagCarriers(), new FakePoseRepository(), new FakeTagListLock(), _unitOfWork, _clock).Handle(new RemoveTag(id), Ct);
 
         result.IsSuccess.ShouldBeTrue();
         _repository.Stored!.Tags.ShouldBeEmpty();
@@ -209,7 +209,7 @@ public sealed class TagListHandlersTests
         _repository.Stored = TagList.Seed(InitialTagList.Tags, () => new TagId(Guid.NewGuid()), Now);
         var dynamic = _repository.Stored.Tags.Single(t => t.Name.Value == "dynamique").Id;
 
-        var result = await new RemoveTagHandler(_repository, _unitOfWork, _clock).Handle(new RemoveTag(dynamic), Ct);
+        var result = await new RemoveTagHandler(_repository, new FakeTagCarriersReader(), new FakePendingTagCarriers(), new FakePoseRepository(), new FakeTagListLock(), _unitOfWork, _clock).Handle(new RemoveTag(dynamic), Ct);
 
         result.Error.ShouldBe(CatalogErrors.TagImplied);
         _unitOfWork.Saves.ShouldBe(0);
@@ -218,7 +218,7 @@ public sealed class TagListHandlersTests
     [Fact]
     public async Task RemoveTag_Should_FailWithTagNotFound_When_NoListExists()
     {
-        (await new RemoveTagHandler(_repository, _unitOfWork, _clock).Handle(new RemoveTag(new TagId(Guid.NewGuid())), Ct))
+        (await new RemoveTagHandler(_repository, new FakeTagCarriersReader(), new FakePendingTagCarriers(), new FakePoseRepository(), new FakeTagListLock(), _unitOfWork, _clock).Handle(new RemoveTag(new TagId(Guid.NewGuid())), Ct))
             .Error.ShouldBe(CatalogErrors.TagNotFound);
     }
 }

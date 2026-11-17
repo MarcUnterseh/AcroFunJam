@@ -51,4 +51,12 @@ public sealed class TransitionProposalRecord
 
     /// <summary>The acceptance is a direct publication (ADR 0023): recorded when it happens, never deduced.</summary>
     public bool PublishedDirectly { get; set; }
+
+    /// <summary>The proposed tags (story 8, ADR 0033), an empty set without any.</summary>
+#pragma warning disable CA1819 // Array columns (uuid[]), mapped as such.
+    public Guid[] ProposedTagIds { get; set; } = [];
+
+    /// <summary>The retained tags, with the decision of acceptance only.</summary>
+    public Guid[]? RetainedTagIds { get; set; }
+#pragma warning restore CA1819
 }

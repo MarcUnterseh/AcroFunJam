@@ -12,7 +12,8 @@ internal sealed class ProposeTransitionHandler(
     ITransitionReservation reservation,
     ICatalogPublisher catalogPublisher,
     IUnitOfWork unitOfWork,
-    TimeProvider clock) : ICommandHandler<ProposeTransition, TransitionProposalDto>
+    TimeProvider clock,
+    ICatalogTags catalogTags) : ICommandHandler<ProposeTransition, TransitionProposalDto>
 {
     public async Task<Result<TransitionProposalDto>> Handle(ProposeTransition command, CancellationToken ct)
     {
@@ -33,10 +34,12 @@ internal sealed class ProposeTransitionHandler(
         var published = names.Value!;
         var slot = await SlotAvailability(TransitionSlot.Of(poses, command.Transition.Name), ct);
         if (slot.IsFailure) return slot.Error!;
+        // Chosen through the list inside the reservation, which holds the list shared: no tag is removed meanwhile (ADR 0033).
+        var tags = await catalogTags.Choose(command.Tags ?? [], ct);
 
         var submitted = TransitionProposal.Submit(
             new TransitionProposalId(Guid.CreateVersion7()), contributor, poses, command.Transition,
-            published.ContainsKey(poses.From), published.ContainsKey(poses.To), slot.Value, clock.GetUtcNow());
+            published.ContainsKey(poses.From), published.ContainsKey(poses.To), slot.Value, clock.GetUtcNow(), tags);
         if (submitted.IsFailure) return submitted.Error!;
 
         var proposal = submitted.Value!;

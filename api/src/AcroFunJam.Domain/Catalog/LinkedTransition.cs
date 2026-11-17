@@ -7,7 +7,8 @@ namespace AcroFunJam.Domain.Catalog;
 /// end pose of a transition from the pose, the start pose of a transition to it), and the transition itself.
 /// </summary>
 public sealed record LinkedTransition(
-    TransitionId Id, PoseId OtherPose, PoseName OtherPoseName, TransitionName? Name, Difficulty Difficulty, TransitionDescription? Description);
+    TransitionId Id, PoseId OtherPose, PoseName OtherPoseName, TransitionName? Name, Difficulty Difficulty, TransitionDescription? Description,
+    TagSet Tags);
 
 /// <summary>
 /// The order of the transitions on the page of a pose (C3): the other pose in the order of the catalog, then the name, the

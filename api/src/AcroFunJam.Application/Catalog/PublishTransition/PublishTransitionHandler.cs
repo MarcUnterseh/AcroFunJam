@@ -4,7 +4,8 @@ using AcroFunJam.Domain.Common;
 
 namespace AcroFunJam.Application.Catalog.PublishTransition;
 
-internal sealed class PublishTransitionHandler(IPoseRepository poses, ITransitionRepository transitions, IUnitOfWork unitOfWork, TimeProvider clock)
+internal sealed class PublishTransitionHandler(
+    IPoseRepository poses, ITransitionRepository transitions, ITagListRepository tagLists, IUnitOfWork unitOfWork, TimeProvider clock)
     : ICommandHandler<PublishTransition, TransitionId>
 {
     public async Task<Result<TransitionId>> Handle(PublishTransition command, CancellationToken ct)
@@ -13,9 +14,11 @@ internal sealed class PublishTransitionHandler(IPoseRepository poses, ITransitio
         // The Catalog stays master: it checks the poses and the place again (ADR 0028, ADR 0029).
         var published = await poses.NamesOf([command.FromPose, command.ToPose], ct);
         var slotTaken = await transitions.IsSlotTaken(command.FromPose, command.ToPose, command.Name?.Key, ct);
+        // The tags are chosen again through the list (ADR 0033): idempotent for a set already completed by Contribution.
+        var tags = (await tagLists.Get(ct) ?? TagList.Empty()).Choose(command.Tags);
         var transition = Transition.Publish(
             new TransitionId(Guid.CreateVersion7()), command.FromPose, command.ToPose, command.Name, command.Difficulty, command.Description,
-            command.Source, published.ContainsKey(command.FromPose), published.ContainsKey(command.ToPose), slotTaken, clock.GetUtcNow());
+            tags, command.Source, published.ContainsKey(command.FromPose), published.ContainsKey(command.ToPose), slotTaken, clock.GetUtcNow());
         if (transition.IsFailure) return transition.Error!;
 
         transitions.Add(transition.Value!);

@@ -33,5 +33,6 @@ public sealed class EfPoseTransitionsReader(AcroFunJamDbContext context) : IPose
             PoseName.Create(row.OtherPoseName).Value!,
             TransitionName.CreateOptional(row.Transition.Name).Value,
             Difficulty.FromCodes(row.Transition.BaseDifficulty, row.Transition.FlyerDifficulty).Value!,
-            TransitionDescription.CreateOptional(row.Transition.Description).Value);
+            TransitionDescription.CreateOptional(row.Transition.Description).Value,
+            TagSet.Of(row.Transition.TagIds.Select(t => new TagId(t))));
 }

@@ -7,7 +7,9 @@ namespace AcroFunJam.Application.Contribution.AcceptTransitionProposal;
 /// A validator accepts a transition proposal, possibly with adjustments of its name, difficulties and description, and a note
 /// (story 7, R15 to R18): the retained transition is published in the catalog.
 /// </summary>
-public sealed record AcceptTransitionProposal(TransitionProposalId Proposal, ValidatorId By, TransitionAdjustments Adjustments, AdjustmentNote? Note);
+/// <remarks>The retained tags (story 8, E7): none given keeps the proposed ones; an empty list removes them.</remarks>
+public sealed record AcceptTransitionProposal(
+    TransitionProposalId Proposal, ValidatorId By, TransitionAdjustments Adjustments, AdjustmentNote? Note, IReadOnlyCollection<TagId>? Tags = null);
 
 /// <summary>
 /// The decided transition proposal: its status, its poses under their current names and, once accepted, the retained transition

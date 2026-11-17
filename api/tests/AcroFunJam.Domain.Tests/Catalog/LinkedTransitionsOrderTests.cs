@@ -10,7 +10,7 @@ public sealed class LinkedTransitionsOrderTests
 
     private static LinkedTransition To(string otherPose, string? name = null) =>
         new(new TransitionId(Guid.NewGuid()), new PoseId(Guid.NewGuid()), PoseName.Create(otherPose).Value!, TransitionName.CreateOptional(name).Value,
-            Intermediate, Description: null);
+            Intermediate, Description: null, TagSet.Empty);
 
     /// <summary>The example of C3: the other pose in the order of the catalog, then the name, the unnamed one first.</summary>
     [Fact]

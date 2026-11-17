@@ -44,7 +44,8 @@ public sealed class ProposeTransitionHandlerTests
     }
 
     private ProposeTransitionHandler Handler(FakeUnitOfWork? unitOfWork = null) =>
-        new(_contributors, _catalogPoses, _catalogTransitions, _proposals, _reservation, _publisher, unitOfWork ?? _unitOfWork, new FixedTimeProvider(Now));
+        new(_contributors, _catalogPoses, _catalogTransitions, _proposals, _reservation, _publisher, unitOfWork ?? _unitOfWork, new FixedTimeProvider(Now),
+            new FakeCatalogTags(null));
 
     private static ProposeTransition From(PublishedPoseId from, PublishedPoseId to, Contributor? by = null) =>
         new((by ?? Alice).Id, new TransitionPoses(from, to), Unnamed);

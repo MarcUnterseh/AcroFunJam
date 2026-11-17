@@ -87,6 +87,13 @@ public sealed class TagListSteps(People people, Deployment deployment, TagListSe
         responses.Last = await visitor.PostAsJsonAsync(Tags, new { name, description });
     }
 
+    [Given(@"^(\w+) a renommé l'étiquette ""([^""]+)"" en ""([^""]*)""$")]
+    public async Task GivenSomeoneHasRenamedATag(string person, string name, string newName)
+    {
+        await WhenSomeoneRenamesATag(person, name, newName);
+        responses.Last!.StatusCode.ShouldBe(HttpStatusCode.OK, await responses.Last.Content.ReadAsStringAsync());
+    }
+
     [When(@"^(\w+) renomme l'étiquette ""([^""]+)"" en ""([^""]*)""$")]
     public async Task WhenSomeoneRenamesATag(string person, string name, string newName)
     {
@@ -164,6 +171,23 @@ public sealed class TagListSteps(People people, Deployment deployment, TagListSe
             _ => throw new ArgumentOutOfRangeException(nameof(reason), reason, "Motif d'impossibilité inconnu."),
         };
         return ShouldBeAProblem(status, code);
+    }
+
+    [Then("le retrait de l'étiquette est impossible car elle est portée par les transitions du catalogue :")]
+    public Task ThenTheRemovalIsRefusedForTheTransitions(DataTable carriers) => ShouldListTheCarriers("transitions", carriers);
+
+    [Then("le retrait de l'étiquette est impossible car elle est portée par les propositions en attente de validation :")]
+    public Task ThenTheRemovalIsRefusedForTheProposals(DataTable carriers) => ShouldListTheCarriers("pendingProposals", carriers);
+
+    /// <summary>409 catalog.tag-carried, listing the carriers in the order of the catalog (ADR 0034).</summary>
+    private async Task ShouldListTheCarriers(string member, DataTable expected)
+    {
+        await ShouldBeAProblem(HttpStatusCode.Conflict, "catalog.tag-carried");
+        var problem = JsonSerializer.Deserialize<JsonElement>(await responses.Last!.Content.ReadAsStringAsync());
+        problem.GetProperty(member).EnumerateArray()
+            .Select(c => (c.GetProperty("fromPose").GetProperty("name").GetString(), c.GetProperty("toPose").GetProperty("name").GetString(),
+                c.GetProperty("name").GetString() ?? ""))
+            .ShouldBe(expected.Rows.Select(row => ((string?)row["pose de départ"], (string?)row["pose d'arrivée"], row["nom"])));
     }
 
     // --- Helpers ------------------------------------------------------------------------------

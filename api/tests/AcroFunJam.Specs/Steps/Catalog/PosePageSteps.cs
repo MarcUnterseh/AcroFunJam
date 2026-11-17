@@ -18,6 +18,9 @@ public sealed class PosePageSteps(Deployment deployment, People people, CatalogP
     private const string Poses = @"de ""([^""]*)"" vers ""([^""]*)""";
     private const string Difficulties = @"de difficulté base ""([^""]*)"" et de difficulté flyer ""([^""]*)""";
 
+    /// <summary>« , avec l'étiquette "pop" », « , avec les étiquettes "whip" et "inversion" » (story 8).</summary>
+    private const string Tags = @", avec (?:l'étiquette|les étiquettes) ((?:""[^""]+""(?:, | et )?)+)";
+
     private HttpResponseMessage? _response;
 
     // --- Publishing ---------------------------------------------------------------------------
@@ -46,6 +49,17 @@ public sealed class PosePageSteps(Deployment deployment, People people, CatalogP
     public Task GivenAPublishedTransitionWithADescription(
         string transition, string from, string to, string baseDifficulty, string flyerDifficulty, string description) =>
         catalog.PublishTransition(from, to, NameIn(transition), DifficultyLabels.ToCode(baseDifficulty), DifficultyLabels.ToCode(flyerDifficulty), description);
+
+    [Given(@"^la transition publiée " + Transition + " " + Poses + " " + Difficulties + Tags + "$")]
+    public Task GivenAPublishedTaggedTransition(
+        string transition, string from, string to, string baseDifficulty, string flyerDifficulty, string tags) =>
+        catalog.PublishTransition(
+            from, to, NameIn(transition), DifficultyLabels.ToCode(baseDifficulty), DifficultyLabels.ToCode(flyerDifficulty), description: null,
+            TagNames.In(tags));
+
+    [Given(@"^la transition publiée " + Transition + " " + Poses + Tags + "$")]
+    public Task GivenAPublishedTaggedTransitionBetween(string transition, string from, string to, string tags) =>
+        catalog.PublishTransition(from, to, NameIn(transition), "beginner", "beginner", description: null, TagNames.In(tags));
 
     // --- Consulting ---------------------------------------------------------------------------
 
@@ -78,12 +92,23 @@ public sealed class PosePageSteps(Deployment deployment, People people, CatalogP
     [Then(@"^les transitions (depuis|vers) la pose ""([^""]*)"" sont exactement :$")]
     public async Task ThenTheTransitionsAreExactly(string direction, string pose, DataTable expected)
     {
+        // Only the columns of the table are compared: the difficulties, the description and the tags are optional (story 8).
         var other = direction == "depuis" ? "pose d'arrivée" : "pose de départ";
+        var columns = expected.Header;
+        string? Optional(DataTableRow row, string column, Func<string, string?> read) => columns.Contains(column) ? read(row[column]) : null;
         var presented = await Transitions(direction, pose);
-        presented.Select(t => new Presented(t.OtherPose.Name, t.Name, t.BaseDifficulty, t.FlyerDifficulty, t.Description))
+        presented.Select(t => new Presented(
+                t.OtherPose.Name, t.Name,
+                columns.Contains("difficulté base") ? t.BaseDifficulty : null,
+                columns.Contains("difficulté flyer") ? t.FlyerDifficulty : null,
+                columns.Contains("description") ? t.Description : null,
+                columns.Contains("étiquettes") ? string.Join(", ", t.Tags.Select(tag => tag.Name)) : null))
             .ShouldBe(expected.Rows.Select(row => new Presented(
-                row[other], Blank(row["nom"]), DifficultyLabels.ToCode(row["difficulté base"]), DifficultyLabels.ToCode(row["difficulté flyer"]),
-                row.ContainsKey("description") ? Blank(row["description"]) : null)));
+                row[other], Blank(row["nom"]),
+                Optional(row, "difficulté base", DifficultyLabels.ToCode),
+                Optional(row, "difficulté flyer", DifficultyLabels.ToCode),
+                Optional(row, "description", Blank),
+                Optional(row, "étiquettes", value => value.Trim()))));
     }
 
     [Then(@"^les transitions (depuis|vers) la pose ""([^""]*)"" sont présentées dans cet ordre :$")]
@@ -107,6 +132,10 @@ public sealed class PosePageSteps(Deployment deployment, People people, CatalogP
         if (otherPose == pose) presented.OtherPose.Id.ShouldBe(page.Id); // a washing machine: the same pose
     }
 
+    [Then(@"^la transition ""([^""]*)"" (depuis|vers) la pose ""([^""]*)"" présente ses étiquettes dans cet ordre : ((?:""[^""]+""(?:, | et )?)+)$")]
+    public async Task ThenTheTagsOfTheTransitionArePresentedInOrder(string transition, string direction, string pose, string tags) =>
+        (await Transitions(direction, pose)).Single(t => t.Name == transition).Tags.Select(t => t.Name).ShouldBe(TagNames.In(tags));
+
     [Then("la pose est introuvable dans le catalogue")]
     public async Task ThenThePoseIsNotFound()
     {
@@ -118,6 +147,8 @@ public sealed class PosePageSteps(Deployment deployment, People people, CatalogP
 
     private async Task<IReadOnlyList<LinkedTransitionResponse>> Transitions(string direction, string pose)
     {
+        // « Quand Bruno renomme l'étiquette … Alors les transitions depuis la pose … » (story 8): the page is read as a visitor.
+        if (_response is null) await WhenAVisitorConsultsThePose(pose);
         var page = await Page();
         page.Name.ShouldBe(pose);
         return direction == "depuis" ? page.TransitionsFrom : page.TransitionsTo;
@@ -143,10 +174,14 @@ public sealed class PosePageSteps(Deployment deployment, People people, CatalogP
     private sealed record PoseReference(Guid Id, string Name);
 
     private sealed record LinkedTransitionResponse(
-        Guid Id, PoseReference OtherPose, string? Name, string BaseDifficulty, string FlyerDifficulty, string? Description);
+        Guid Id, PoseReference OtherPose, string? Name, string BaseDifficulty, string FlyerDifficulty, string? Description,
+        IReadOnlyList<TransitionTagResponse> Tags);
+
+    private sealed record TransitionTagResponse(Guid Id, string Name, string Description);
 
     private sealed record PosePageResponse(
         Guid Id, string Name, IReadOnlyList<LinkedTransitionResponse> TransitionsFrom, IReadOnlyList<LinkedTransitionResponse> TransitionsTo);
 
-    private sealed record Presented(string OtherPose, string? Name, string BaseDifficulty, string FlyerDifficulty, string? Description);
+    private sealed record Presented(
+        string OtherPose, string? Name, string? BaseDifficulty, string? FlyerDifficulty, string? Description, string? Tags);
 }

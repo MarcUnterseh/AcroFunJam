@@ -22,7 +22,7 @@ public sealed class EfTransitionProposalRepositoryTests(PostgreSqlFixture databa
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
-    internal static TransitionProposal APendingProposal(string? name = "Ninja Star", string? description = null)
+    internal static TransitionProposal APendingProposal(string? name = "Ninja Star", string? description = null, TagSet? tags = null)
     {
         var star = Guid.NewGuid();
         return TransitionProposal.Submit(
@@ -33,7 +33,8 @@ public sealed class EfTransitionProposalRepositoryTests(PostgreSqlFixture databa
             fromPosePublished: true,
             toPosePublished: true,
             TransitionSlotAvailability.Available,
-            Now).Value!;
+            Now,
+            new TagChoice(tags ?? TagSet.Empty, TagSet.Empty)).Value!;
     }
 
     private async Task Save(params TransitionProposal[] proposals)
@@ -285,4 +286,35 @@ public sealed class EfTransitionProposalRepositoryTests(PostgreSqlFixture databa
     {
         (await Restored(new TransitionProposalId(Guid.NewGuid()))).ShouldBeNull();
     }
+
+    // --- Tags (story 8, ADR 0033) -------------------------------------------------------------
+
+    private static readonly TagId Pop = new(Guid.NewGuid());
+    private static readonly TagId Dynamic = new(Guid.NewGuid());
+    private static readonly TagId Inversion = new(Guid.NewGuid());
+
+    [Fact]
+    public async Task GetById_Should_RestoreTheProposedTags_When_ThePendingProposalCarriesSome()
+    {
+        var proposal = APendingProposal(tags: TagSet.Of([Pop, Dynamic]));
+        await Save(proposal);
+
+        (await Restored(proposal.Id))!.Proposed.Tags.ShouldBe(TagSet.Of([Pop, Dynamic]));
+    }
+
+    [Fact]
+    public async Task Update_Should_RecordTheRetainedTags_When_AcceptedWithOtherTags()
+    {
+        var proposal = APendingProposal(tags: TagSet.Of([Pop, Dynamic, Inversion]));
+        await Save(proposal);
+        var retained = new TagChoice(TagSet.Of([Pop, Dynamic]), TagSet.Empty);
+
+        (await Decide(proposal.Id, p => p.Accept(Bruno, TransitionAdjustments.None, null, TransitionSlotAvailability.Available, Later, retained)))
+            .IsSuccess.ShouldBeTrue();
+
+        var acceptance = (TransitionAcceptance)(await Restored(proposal.Id))!.Decision!;
+        acceptance.Retained.Tags.ShouldBe(TagSet.Of([Pop, Dynamic]));
+        acceptance.HasAdjustments.ShouldBeTrue();
+    }
 }
+

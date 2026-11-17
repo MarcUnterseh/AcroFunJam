@@ -150,6 +150,9 @@ public sealed partial class TransitionDecisionSteps(
     private static AcceptanceRequest Adjusting(string adjustments)
     {
         if (adjustments == "retirant le nom") return new AcceptanceRequest { Name = "" };
+        // Story 8: « corrigeant les étiquettes en "pop" et "vrille" », sent by identifier once read in the list.
+        const string Tags = "corrigeant les étiquettes en ";
+        if (adjustments.StartsWith(Tags, StringComparison.Ordinal)) return new AcceptanceRequest { RetainedTagNames = TagNames.In(adjustments[Tags.Length..]) };
         var request = new AcceptanceRequest();
         foreach (Match adjustment in AdjustedField().Matches(adjustments))
         {
@@ -178,6 +181,8 @@ public sealed partial class TransitionDecisionSteps(
     private async Task Accept(string name, Guid id, AcceptanceRequest acceptance)
     {
         var client = await people.SignedInClient(name);
+        if (acceptance.RetainedTagNames is { } tags)
+            acceptance = acceptance with { TagIds = [.. (await TagNames.IdsOf(client, tags)).Select(t => t.Value)] };
         decisions.OnTransitionProposal(
             await client.PostAsJsonAsync(new Uri($"/contribution/transition-proposals/{id}/acceptance", UriKind.Relative), acceptance), id);
     }
@@ -208,6 +213,13 @@ public sealed partial class TransitionDecisionSteps(
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
         public string? Description { get; init; }
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+        public IReadOnlyList<Guid>? TagIds { get; init; }
+
+        /// <summary>The names of the retained tags in the Gherkin, read in the list before sending.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public IReadOnlyList<string>? RetainedTagNames { get; init; }
     }
 
     private sealed record QueueResponse(IReadOnlyList<QueuedResponse> Proposals);

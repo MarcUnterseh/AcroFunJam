@@ -231,4 +231,92 @@ public sealed class TagListTests
         list.SeededAt.ShouldBe(Now);
         list.DomainEvents.ShouldBeEmpty();
     }
+
+    // --- Choosing (ADR 0033) ------------------------------------------------------------------
+
+    [Fact]
+    public void Choose_Should_AddTheTagsTheyImply_When_PopIsChosen()
+    {
+        var list = TagList.Seed(InitialTagList.Tags, NewId, Now);
+
+        var choice = list.Choose([IdOf(list, "pop"), IdOf(list, "inversion")]);
+
+        choice.Tags.ShouldBe(TagSet.Of([IdOf(list, "pop"), IdOf(list, "inversion"), IdOf(list, "dynamique")]));
+        choice.NotInList.ShouldBe(TagSet.Empty);
+        choice.IsValid.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Choose_Should_TellTheTagsNotInTheList_When_UnknownOrRemovedTagsAreChosen()
+    {
+        var (list, vrille) = ListWith("vrille");
+        list.Remove(vrille, Now);
+        var unknown = NewId();
+
+        var choice = list.Choose([vrille, unknown]);
+
+        choice.Tags.ShouldBe(TagSet.Empty);
+        choice.NotInList.ShouldBe(TagSet.Of([vrille, unknown]));
+        choice.IsValid.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Choose_Should_GiveTheSameSet_When_AnAlreadyCompletedSetIsChosenAgain()
+    {
+        var list = TagList.Seed(InitialTagList.Tags, NewId, Now);
+        var once = list.Choose([IdOf(list, "whip")]);
+
+        list.Choose(once.Tags.Ids).Tags.ShouldBe(once.Tags);
+    }
+
+    [Fact]
+    public void NamesOf_Should_NameTheTagsWithTheirCurrentName_When_SomeAreRemoved()
+    {
+        var (list, lunaire) = ListWith("lunnaire");
+        list.Rename(lunaire, Name("lunaire"), Now);
+        var vrille = NewId();
+        list.Add(vrille, Name("vrille"), Description("D."), Now);
+        list.Remove(vrille, Now);
+
+        list.NamesOf(TagSet.Of([lunaire, vrille, NewId()])).ShouldBe(
+            new Dictionary<TagId, TagName> { [lunaire] = Name("lunaire"), [vrille] = Name("vrille") });
+    }
+
+    // --- Removing a carried tag (L10, ADR 0033) -----------------------------------------------
+
+    private static CarryingTransition Carrying(string from, string to, string? name = null) =>
+        new(Guid.NewGuid(), new PoseId(Guid.NewGuid()), PoseName.Create(from).Value!, new PoseId(Guid.NewGuid()), PoseName.Create(to).Value!,
+            TransitionName.CreateOptional(name).Value);
+
+    [Fact]
+    public void Remove_Should_FailWithTagCarriedListingItsCarriers_When_TransitionsOrProposalsCarryIt()
+    {
+        var (list, lunaire) = ListWith("lunaire");
+        var birdToLeaf = Carrying("Bird", "Folded Leaf");
+        var lunarRoll = Carrying("Folded Leaf", "Throne", "Lunar Roll");
+        var pending = Carrying("Bird", "Folded Leaf");
+
+        var error = list.Remove(lunaire, Now, new TagCarriers([lunarRoll, birdToLeaf], [pending])).Error.ShouldBeOfType<TagCarriedError>();
+
+        error.Code.ShouldBe("catalog.tag-carried");
+        error.Carriers.Transitions.ShouldBe([birdToLeaf, lunarRoll]);
+        error.Carriers.PendingProposals.ShouldBe([pending]);
+        list.Tags.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void Remove_Should_TellTheImplicationFirst_When_TheTagIsBothImpliedAndCarried()
+    {
+        var list = TagList.Seed(InitialTagList.Tags, NewId, Now);
+
+        list.Remove(IdOf(list, "dynamique"), Now, new TagCarriers([Carrying("Throne", "Bird")], [])).Error.ShouldBe(CatalogErrors.TagImplied);
+    }
+
+    [Fact]
+    public void Remove_Should_RemoveTheTag_When_NothingCarriesIt()
+    {
+        var (list, vrille) = ListWith("vrille");
+
+        list.Remove(vrille, Now, TagCarriers.None).IsSuccess.ShouldBeTrue();
+    }
 }

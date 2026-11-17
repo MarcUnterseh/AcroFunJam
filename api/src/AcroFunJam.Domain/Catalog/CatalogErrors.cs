@@ -22,6 +22,8 @@ public static class CatalogErrors
     public static readonly Error UnnamedTransitionTaken =
         new("catalog.unnamed-transition-taken", "Une transition sans nom relie déjà ces poses dans le catalogue.");
 
+    public static readonly Error TransitionNotFound = new("catalog.transition-not-found", "Cette transition n'est pas dans le catalogue.");
+
     public static readonly Error TagNameTaken = new("catalog.tag-name-taken", "Une étiquette de ce nom existe déjà dans la liste.");
 
     public static readonly Error TagNotFound = new("catalog.tag-not-found", "Cette étiquette n'est pas dans la liste.");

@@ -12,7 +12,8 @@ internal sealed class AcceptTransitionProposalHandler(
     ITransitionReservation reservation,
     ICatalogPublisher catalogPublisher,
     IUnitOfWork unitOfWork,
-    TimeProvider clock) : ICommandHandler<AcceptTransitionProposal, DecidedTransitionProposalDto>
+    TimeProvider clock,
+    ICatalogTags catalogTags) : ICommandHandler<AcceptTransitionProposal, DecidedTransitionProposalDto>
 {
     public async Task<Result<DecidedTransitionProposalDto>> Handle(AcceptTransitionProposal command, CancellationToken ct)
     {
@@ -33,7 +34,9 @@ internal sealed class AcceptTransitionProposalHandler(
 
             var slot = await RetainedSlotAvailability(proposal, proposal.SlotIfAccepted(command.Adjustments), transactionCt);
             if (slot.IsFailure) return slot.Error!;
-            var accepted = proposal.Accept(validator, command.Adjustments, command.Note, slot.Value, clock.GetUtcNow());
+            // The retained tags, if adjusted, are chosen through the list inside the reservation (ADR 0033).
+            var retainedTags = command.Tags is null ? null : await catalogTags.Choose(command.Tags, transactionCt);
+            var accepted = proposal.Accept(validator, command.Adjustments, command.Note, slot.Value, clock.GetUtcNow(), retainedTags);
             if (accepted.IsFailure) return accepted.Error!;
             var acceptance = accepted.Value!;
 

@@ -29,11 +29,11 @@ public sealed class PublishTransitionHandlerTests
         _poses.Add(_bird);
     }
 
-    private PublishTransitionHandler Handler() => new(_poses, _transitions, _unitOfWork, new FixedTimeProvider(Now));
+    private PublishTransitionHandler Handler() => new(_poses, _transitions, new FakeTagListRepository(), _unitOfWork, new FixedTimeProvider(Now));
 
     private PublishTransition Unnamed(PoseId? to = null) => new(
         _throne.Id, to ?? _bird.Id, Name: null, Difficulty.Create(DifficultyLevel.Beginner, DifficultyLevel.Beginner).Value!, Description: null,
-        new SourceProposalId(Guid.NewGuid()));
+        new SourceProposalId(Guid.NewGuid()), Tags: []);
 
     [Fact]
     public async Task Handle_Should_AddAndSaveTheTransition_When_ItsPosesArePublishedAndItsPlaceFree()

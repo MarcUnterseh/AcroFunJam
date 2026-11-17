@@ -15,6 +15,9 @@ public sealed record ProposedTransition
 
     public TransitionDescription? Description { get; }
 
+    /// <summary>The tags chosen by the contributor through the list (story 8, ADR 0033); none by default.</summary>
+    public TagSet Tags { get; private init; } = TagSet.Empty;
+
     private ProposedTransition(TransitionName? name, Difficulty difficulty, TransitionDescription? description)
     {
         Name = name;
@@ -34,17 +37,29 @@ public sealed record ProposedTransition
         return Result<ProposedTransition>.Success(new ProposedTransition(transitionName.Value, difficulty.Value!, transitionDescription.Value));
     }
 
-    /// <summary>The transition the validator retains: each adjusted value replaces the proposed one, the others are kept.</summary>
-    public RetainedTransition Retain(TransitionAdjustments adjustments)
+    /// <summary>The proposed transition with the tags chosen through the list (story 8).</summary>
+    public ProposedTransition Tagged(TagSet tags)
+    {
+        ArgumentNullException.ThrowIfNull(tags);
+        return this with { Tags = tags };
+    }
+
+    /// <summary>
+    /// The transition the validator retains: each adjusted value replaces the proposed one, the others are kept; the retained tags,
+    /// chosen through the list, replace the proposed ones (none given: kept).
+    /// </summary>
+    public RetainedTransition Retain(TransitionAdjustments adjustments, TagSet? retainedTags = null)
     {
         ArgumentNullException.ThrowIfNull(adjustments);
         return new RetainedTransition(
             adjustments.AdjustsName ? adjustments.Name : Name,
             Difficulty.Create(adjustments.BaseDifficulty ?? Difficulty.Base, adjustments.FlyerDifficulty ?? Difficulty.Flyer).Value!,
-            adjustments.AdjustsDescription ? adjustments.Description : Description);
+            adjustments.AdjustsDescription ? adjustments.Description : Description)
+        { Tags = retainedTags ?? Tags };
     }
 
     /// <summary>A proposed transition read back from storage, as it was recorded.</summary>
-    public static ProposedTransition Restore(TransitionName? name, Difficulty difficulty, TransitionDescription? description) =>
-        new(name, difficulty, description);
+    public static ProposedTransition Restore(
+        TransitionName? name, Difficulty difficulty, TransitionDescription? description, TagSet? tags = null) =>
+        new(name, difficulty, description) { Tags = tags ?? TagSet.Empty };
 }

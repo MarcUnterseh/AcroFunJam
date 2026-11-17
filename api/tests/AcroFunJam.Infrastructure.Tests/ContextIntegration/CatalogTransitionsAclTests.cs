@@ -43,9 +43,34 @@ public sealed class CatalogTransitionsAclTests
         var result = await Publisher(catalog).PublishTransition(source, StarToStar, NinjaStar, Ct);
 
         result.IsSuccess.ShouldBeTrue();
-        catalog.Received.ShouldHaveSingleItem().ShouldBe(new PublishTransition(
+        var received = catalog.Received.ShouldHaveSingleItem();
+        received.ShouldBe(new PublishTransition(
             new PoseId(StarToStar.From.Value), new PoseId(StarToStar.To.Value), NinjaStar.Name, NinjaStar.Difficulty, NinjaStar.Description,
-            new SourceProposalId(source.Value)));
+            new SourceProposalId(source.Value), received.Tags));
+        received.Tags.ShouldBeEmpty();
+    }
+
+    /// <summary>Story 8: the retained tags are published with the transition (ADR 0033).</summary>
+    [Fact]
+    public async Task PublishTransition_Should_PublishTheRetainedTags_When_TheTransitionCarriesSome()
+    {
+        var catalog = new FakePublishTransition();
+        var pop = new TagId(Guid.NewGuid());
+
+        await Publisher(catalog).PublishTransition(new TransitionProposalId(Guid.NewGuid()), StarToStar, NinjaStar with { Tags = TagSet.Of([pop]) }, Ct);
+
+        catalog.Received.ShouldHaveSingleItem().Tags.ShouldBe([pop]);
+    }
+
+    [Fact]
+    public async Task PublishTransition_Should_TellTheTagsNotInTheList_When_TheCatalogRefusesThem()
+    {
+        var classique = TagSet.Of([new TagId(Guid.NewGuid())]);
+
+        var result = await Publisher(new FakePublishTransition(new TagNotInListError(classique)))
+            .PublishTransition(new TransitionProposalId(Guid.NewGuid()), StarToStar, NinjaStar, Ct);
+
+        result.Error.ShouldBeOfType<ProposedTagsNotInListError>().Tags.ShouldBe(classique);
     }
 
     [Theory]

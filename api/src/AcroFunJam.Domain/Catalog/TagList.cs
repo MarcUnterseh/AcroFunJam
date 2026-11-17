@@ -82,14 +82,38 @@ public sealed class TagList : AggregateRoot<TagListId>
     /// Takes the tag out of the list, unless a tag of the list implies it (« dynamique » while « pop » is there). Its name
     /// becomes free again; the tag stays known for the history (ADR 0032).
     /// </summary>
-    public Result<Tag> Remove(TagId id, DateTimeOffset now)
+    /// <remarks>Then, unless something carries it (ADR 0033): the published transitions and the pending proposals, read under the lock.</remarks>
+    public Result<Tag> Remove(TagId id, DateTimeOffset now, TagCarriers? carriers = null)
     {
         if (InTheList(id) is not { } tag) return CatalogErrors.TagNotFound;
         if (ImpliersOf(id).Count > 0) return CatalogErrors.TagImplied;
+        if (carriers is { IsEmpty: false }) return new TagCarriedError(carriers);
 
         tag.Remove(now);
         Raise(new TagRemoved(id, now));
         return Result<Tag>.Success(tag);
+    }
+
+    /// <summary>
+    /// Chooses tags through the list (ADR 0033): those in the list, completed with the tags they imply while those are still
+    /// in the list; the others (unknown or removed) are not in the list. Choosing a completed set again gives the same set.
+    /// </summary>
+    public TagChoice Choose(IEnumerable<TagId> chosen)
+    {
+        ArgumentNullException.ThrowIfNull(chosen);
+        var requested = TagSet.Of(chosen);
+        var inList = requested.Ids.Select(InTheList).OfType<Tag>().ToList();
+        var implied = inList.Select(t => t.ImpliedTag).OfType<TagId>().Where(id => InTheList(id) is not null);
+        return new TagChoice(
+            TagSet.Of(inList.Select(t => t.Id).Concat(implied)),
+            TagSet.Of(requested.Ids.Where(id => InTheList(id) is null)));
+    }
+
+    /// <summary>The current names of these tags, removed ones included (the history of a decided proposal); unknown ones left out.</summary>
+    public IReadOnlyDictionary<TagId, TagName> NamesOf(TagSet tags)
+    {
+        ArgumentNullException.ThrowIfNull(tags);
+        return _tags.Where(t => tags.Contains(t.Id)).ToDictionary(t => t.Id, t => t.Name);
     }
 
     /// <summary>The tags of the list that imply this one, in catalog order.</summary>

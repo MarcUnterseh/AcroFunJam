@@ -39,7 +39,9 @@ public sealed class CatalogPublishing(CatalogTestData seeded, Deployment deploym
     /// Publishes a transition between two published poses, found by name in the catalog list, through the PublishTransition
     /// command (story 7, ADR 0028): an @Integration feature only, transitions live in the database.
     /// </summary>
-    public async Task PublishTransition(string from, string to, string? name, string baseDifficulty, string flyerDifficulty, string? description)
+    public async Task PublishTransition(
+        string from, string to, string? name, string baseDifficulty, string flyerDifficulty, string? description,
+        IReadOnlyList<string>? tags = null)
     {
         if (!IntegrationDatabase.IsUsedBy(scenario.ScenarioInfo))
             throw new InvalidOperationException("Les transitions publiées demandent une fonctionnalité @Integration.");
@@ -56,7 +58,8 @@ public sealed class CatalogPublishing(CatalogTestData seeded, Deployment deploym
             TransitionName.CreateOptional(name).Value,
             Difficulty.FromCodes(baseDifficulty, flyerDifficulty).Value!,
             TransitionDescription.CreateOptional(description).Value,
-            Source: null);
+            Source: null,
+            await TagNames.IdsOf(client, tags ?? []));
         var result = await handler.Handle(transition, CancellationToken.None);
         if (result.IsFailure) throw new InvalidOperationException($"Cannot publish the transition from {from} to {to}: {result.Error}.");
     }

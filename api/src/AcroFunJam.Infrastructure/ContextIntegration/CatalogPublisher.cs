@@ -58,7 +58,8 @@ public sealed class CatalogPublisher(
         var published = await publishTransition.Handle(
             new PublishTransition(
                 new PoseId(poses.From.Value), new PoseId(poses.To.Value), transition.Name, transition.Difficulty, transition.Description,
-                new SourceProposalId(source.Value)),
+                new SourceProposalId(source.Value),
+                [.. transition.Tags.Ids]),
             ct);
         if (published.IsSuccess) return Result<bool>.Success(true);
 
@@ -68,6 +69,7 @@ public sealed class CatalogPublisher(
             var e when e == CatalogErrors.UnnamedTransitionTaken => ContributionErrors.UnnamedTransitionAlreadyInCatalog,
             var e when e == CatalogErrors.FromPoseNotFound => ContributionErrors.FromPoseNotFound,
             var e when e == CatalogErrors.ToPoseNotFound => ContributionErrors.ToPoseNotFound,
+            TagNotInListError notInList => new ProposedTagsNotInListError(notInList.Tags),
             _ => published.Error!,
         };
     }

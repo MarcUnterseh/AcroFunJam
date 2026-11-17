@@ -42,17 +42,17 @@ Fonctionnalité: Étiqueter une transition proposée
     Contexte:
       Soit Alice est utilisateur
 
-    @api @wip
+    @api
     Scénario: Une transition proposée porte les étiquettes choisies
       Quand Alice propose une transition sans nom de "Bird" vers "Folded Leaf", avec les étiquettes "lunaire" et "inversion"
       Alors la proposition de la transition sans nom de "Bird" vers "Folded Leaf" par Alice porte exactement les étiquettes "inversion" et "lunaire"
 
-    @api @wip
+    @api
     Scénario: Une transition proposée sans étiquette est recevable
       Quand Alice propose une transition sans nom de "Throne" vers "Bird"
       Alors la proposition de la transition sans nom de "Throne" vers "Bird" par Alice ne porte aucune étiquette
 
-    @api @wip
+    @api
     Scénario: Une étiquette choisie deux fois n'est portée qu'une fois
       Quand Alice propose une transition sans nom de "Bird" vers "Folded Leaf", avec les étiquettes "lunaire" et "lunaire"
       Alors la proposition de la transition sans nom de "Bird" vers "Folded Leaf" par Alice porte exactement les étiquettes "lunaire"
@@ -63,7 +63,7 @@ Fonctionnalité: Étiqueter une transition proposée
     Contexte:
       Soit Alice est utilisateur
 
-    @api @wip
+    @api
     Plan du Scénario: Une transition proposée en <étiquette> porte aussi l'étiquette « dynamique »
       Quand Alice propose la transition <nom> de "Throne" vers "Bird", avec l'étiquette "<étiquette>"
       Alors la proposition de la transition <nom> de "Throne" vers "Bird" par Alice porte exactement les étiquettes "dynamique" et "<étiquette>"
@@ -76,7 +76,7 @@ Fonctionnalité: Étiqueter une transition proposée
 
   Règle: Seules les étiquettes de la liste peuvent être choisies
 
-    @api @wip
+    @api
     Scénario: Une transition proposée avec une étiquette absente de la liste est irrecevable
       Soit Alice est utilisateur
       Quand Alice propose une transition sans nom de "Throne" vers "Bird", avec l'étiquette "classique"
@@ -84,7 +84,7 @@ Fonctionnalité: Étiqueter une transition proposée
 
   Règle: Une transition proposée par un validateur ou un administrateur est publiée directement avec ses étiquettes
 
-    @api @wip
+    @api
     Plan du Scénario: Une transition proposée par un <rôle> est publiée avec ses étiquettes
       Soit Bruno est <rôle>
       Et Bruno a proposé la transition "Pop to Bird" de "Throne" vers "Bird" de difficulté base "intermédiaire" et de difficulté flyer "intermédiaire", avec l'étiquette "pop"
@@ -108,13 +108,13 @@ Fonctionnalité: Étiqueter une transition proposée
       Soit Alice est utilisateur
       Et Bruno est validateur
 
-    @api @wip
+    @api
     Scénario: La file de validation présente les étiquettes proposées
       Soit Alice a proposé la transition "Pop to Bird" de "Throne" vers "Bird", avec l'étiquette "pop"
       Quand Bruno consulte la file de validation
       Alors la file de validation présente la transition "Pop to Bird" de "Throne" vers "Bird" avec les étiquettes "dynamique" et "pop"
 
-    @api @wip
+    @api
     Scénario: La file de validation présente une étiquette renommée sous son nom actuel
       Soit l'étiquette "lunnaire" dans la liste des étiquettes
       Et Alice a proposé une transition sans nom de "Bird" vers "Folded Leaf", avec l'étiquette "lunnaire"
@@ -124,7 +124,7 @@ Fonctionnalité: Étiqueter une transition proposée
 
   Règle: Accepter une transition la publie avec les étiquettes proposées
 
-    @api @wip
+    @api
     Scénario: Une transition acceptée apparaît dans le catalogue avec ses étiquettes
       Soit Alice est utilisateur
       Et Bruno est validateur
@@ -144,7 +144,7 @@ Fonctionnalité: Étiqueter une transition proposée
       Et Bruno est validateur
       Et Alice a proposé la transition "Pop to Bird" de "Throne" vers "Bird", avec les étiquettes "pop" et "inversion"
 
-    @api @wip
+    @api
     Scénario: Le validateur retire une étiquette avant d'accepter
       Soit Bruno a accepté la proposition de la transition "Pop to Bird" de "Throne" vers "Bird" par Alice en corrigeant les étiquettes en "pop"
       Quand un visiteur consulte la pose "Throne" du catalogue
@@ -152,30 +152,30 @@ Fonctionnalité: Étiqueter une transition proposée
         | pose d'arrivée | nom         | étiquettes     |
         | Bird           | Pop to Bird | dynamique, pop |
 
-    @api @wip
+    @api
     Scénario: La transition acceptée avec d'autres étiquettes garde les étiquettes proposées et les étiquettes retenues
       Quand Bruno accepte la proposition de la transition "Pop to Bird" de "Throne" vers "Bird" par Alice en corrigeant les étiquettes en "pop" et "vrille"
       Alors la proposition de la transition "Pop to Bird" de "Throne" vers "Bird" par Alice est acceptée avec ajustements par Bruno
       Et la proposition garde les étiquettes proposées "dynamique, inversion, pop" et les étiquettes retenues "dynamique, pop, vrille"
 
-    @api @wip
+    @api
     Scénario: Retenir les mêmes étiquettes dans un autre ordre n'est pas un ajustement
       Quand Bruno accepte la proposition de la transition "Pop to Bird" de "Throne" vers "Bird" par Alice en corrigeant les étiquettes en "inversion", "pop" et "dynamique"
       Alors la proposition de la transition "Pop to Bird" de "Throne" vers "Bird" par Alice est acceptée sans ajustement par Bruno
 
-    @api @wip
+    @api
     Scénario: Retirer « dynamique » en gardant « pop » ne retire pas « dynamique »
       Quand Bruno accepte la proposition de la transition "Pop to Bird" de "Throne" vers "Bird" par Alice en corrigeant les étiquettes en "pop" et "inversion"
       Alors la proposition de la transition "Pop to Bird" de "Throne" vers "Bird" par Alice est acceptée sans ajustement par Bruno
 
-    @api @wip
+    @api
     Scénario: Une étiquette retenue absente de la liste rend l'acceptation impossible
       Quand Bruno accepte la proposition de la transition "Pop to Bird" de "Throne" vers "Bird" par Alice en corrigeant les étiquettes en "classique"
       Alors l'acceptation est impossible car l'étiquette "classique" n'est pas dans la liste des étiquettes
 
   Règle: Le validateur peut étiqueter une transition proposée sans étiquette avant de l'accepter
 
-    @api @wip
+    @api
     Scénario: Ajouter des étiquettes à une transition proposée sans étiquette est un ajustement
       Soit Alice est utilisateur
       Et Bruno est validateur
@@ -196,13 +196,13 @@ Fonctionnalité: Étiqueter une transition proposée
       Soit Alice est utilisateur
       Et Bruno est validateur
 
-    @api @wip
+    @api
     Scénario: Une transition en attente présente ses étiquettes
       Soit Alice a proposé la transition "Pop to Bird" de "Throne" vers "Bird", avec l'étiquette "pop"
       Quand Alice consulte ses propositions
       Alors ses propositions présentent la transition "Pop to Bird" de "Throne" vers "Bird" avec les étiquettes "dynamique" et "pop"
 
-    @api @wip
+    @api
     Scénario: Une transition acceptée avec d'autres étiquettes présente l'ajustement des étiquettes
       Soit Alice a proposé la transition "Pop to Bird" de "Throne" vers "Bird", avec les étiquettes "pop" et "inversion"
       Et Bruno a accepté la proposition de la transition "Pop to Bird" de "Throne" vers "Bird" par Alice en corrigeant les étiquettes en "pop"

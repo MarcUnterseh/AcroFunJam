@@ -1,4 +1,6 @@
+using AcroFunJam.Domain.Catalog;
 using AcroFunJam.Domain.Common;
+using AcroFunJam.Domain.Contribution;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AcroFunJam.Api.Endpoints.Common;
@@ -66,15 +68,44 @@ public static class ProblemResults
         ["catalog.tag-not-found"] = StatusCodes.Status404NotFound,
         ["catalog.tag-name-taken"] = StatusCodes.Status409Conflict,
         ["catalog.tag-implied"] = StatusCodes.Status409Conflict,
+        ["catalog.tag-carried"] = StatusCodes.Status409Conflict,
+        ["catalog.transition-not-found"] = StatusCodes.Status404NotFound,
+        // A tag chosen for a transition that is not in the list (any longer): the site names it (ADR 0034).
+        ["catalog.tag-not-in-list"] = StatusCodes.Status409Conflict,
+        ["contribution.tag-not-in-list"] = StatusCodes.Status409Conflict,
     };
 
-    /// <summary>The status of the listed codes; otherwise 422 (a business rule refused the request).</summary>
+    /// <summary>
+    /// The status of the listed codes; otherwise 422 (a business rule refused the request). An error that says more (ADR 0033)
+    /// gives its details in extensions.
+    /// </summary>
     public static ProblemHttpResult ToProblem(this Error error)
     {
         ArgumentNullException.ThrowIfNull(error);
         var status = StatusByCode.GetValueOrDefault(error.Code, StatusCodes.Status422UnprocessableEntity);
-        return TypedResults.Problem(detail: error.Message, title: error.Code, statusCode: status);
+        return TypedResults.Problem(detail: error.Message, title: error.Code, statusCode: status, extensions: ExtensionsOf(error));
     }
+
+    /// <summary>A transition carrying a tag, as the refusal of its removal lists it (ADR 0034).</summary>
+    private static object Carrier(CarryingTransition carrier) => new
+    {
+        id = carrier.Id,
+        fromPose = new { id = carrier.FromPose.Value, name = carrier.FromPoseName.Value },
+        toPose = new { id = carrier.ToPose.Value, name = carrier.ToPoseName.Value },
+        name = carrier.Name?.Value,
+    };
+
+    private static Dictionary<string, object?>? ExtensionsOf(Error error) => error switch
+    {
+        TagNotInListError notInList => new() { ["tagIds"] = notInList.Tags.Ids.Select(t => t.Value).ToList() },
+        ProposedTagsNotInListError notInList => new() { ["tagIds"] = notInList.Tags.Ids.Select(t => t.Value).ToList() },
+        TagCarriedError carried => new()
+        {
+            ["transitions"] = carried.Carriers.Transitions.Select(Carrier).ToList(),
+            ["pendingProposals"] = carried.Carriers.PendingProposals.Select(Carrier).ToList(),
+        },
+        _ => null,
+    };
 
     /// <summary>The same problem, with details in extensions (e.g. the tags implying a tag, ADR 0034).</summary>
     public static ProblemHttpResult ToProblem(this Error error, IDictionary<string, object?> extensions)

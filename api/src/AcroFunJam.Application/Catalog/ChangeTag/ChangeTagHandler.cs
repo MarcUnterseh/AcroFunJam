@@ -4,7 +4,7 @@ using AcroFunJam.Domain.Common;
 
 namespace AcroFunJam.Application.Catalog.ChangeTag;
 
-internal sealed class ChangeTagHandler(ITagListRepository lists, IUnitOfWork unitOfWork, TimeProvider clock) : ICommandHandler<ChangeTag, TagDto>
+internal sealed class ChangeTagHandler(ITagListRepository lists, ITagCarriersReader carriers, IUnitOfWork unitOfWork, TimeProvider clock) : ICommandHandler<ChangeTag, TagDto>
 {
     public async Task<Result<TagDto>> Handle(ChangeTag command, CancellationToken ct)
     {
@@ -19,6 +19,7 @@ internal sealed class ChangeTagHandler(ITagListRepository lists, IUnitOfWork uni
         lists.Update(list);
         var saved = await unitOfWork.SaveChanges(ct);
         if (saved.IsFailure) return saved.Error!;
-        return Result<TagDto>.Success(TagDto.From(tag, transitionCount: 0));
+        var counts = await carriers.PublishedTransitionCounts(ct);
+        return Result<TagDto>.Success(TagDto.From(tag, counts.GetValueOrDefault(tag.Id)));
     }
 }

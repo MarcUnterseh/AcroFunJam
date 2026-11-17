@@ -38,6 +38,7 @@ public sealed class TransitionRecordConfiguration : IEntityTypeConfiguration<Tra
         builder.Property(t => t.BaseDifficulty).HasColumnName("base_difficulty").IsRequired();
         builder.Property(t => t.FlyerDifficulty).HasColumnName("flyer_difficulty").IsRequired();
         builder.Property(t => t.Description).HasColumnName("description");
+        builder.Property(t => t.TagIds).HasColumnName("tag_ids").HasDefaultValueSql("'{}'").IsRequired();
         builder.Property(t => t.SourceProposalId).HasColumnName("source_proposal_id");
         builder.Property(t => t.PublishedAt).HasColumnName("published_at");
 
@@ -51,5 +52,7 @@ public sealed class TransitionRecordConfiguration : IEntityTypeConfiguration<Tra
         builder.HasIndex(t => new { t.FromPoseId, t.ToPoseId, t.NameKey }).HasDatabaseName(NamedSlotIndex).IsUnique().HasFilter("name_key IS NOT NULL");
         builder.HasIndex(t => new { t.FromPoseId, t.ToPoseId }).HasDatabaseName(UnnamedSlotIndex).IsUnique().HasFilter("name_key IS NULL");
         builder.HasIndex(t => t.ToPoseId).HasDatabaseName("ix_transitions_to_pose_id"); // "transitions vers"
+        // The carriers of a tag: its count, and the refusal of its removal (ADR 0033).
+        builder.HasIndex(t => t.TagIds).HasDatabaseName("ix_transitions_tag_ids").HasMethod("gin");
     }
 }

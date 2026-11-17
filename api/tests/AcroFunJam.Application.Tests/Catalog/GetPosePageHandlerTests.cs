@@ -18,14 +18,14 @@ public sealed class GetPosePageHandlerTests
 
     private static LinkedTransition Linked(string otherPose, string? name = null) =>
         new(new TransitionId(Guid.NewGuid()), new PoseId(Guid.NewGuid()), PoseName.Create(otherPose).Value!, TransitionName.CreateOptional(name).Value,
-            Beginner, Description: null);
+            Beginner, Description: null, TagSet.Empty);
 
     private readonly FakePoseRepository _poses = new();
     private readonly FakePoseTransitionsReader _transitions = new();
 
     public GetPosePageHandlerTests() => _poses.Add(Star);
 
-    private GetPosePageHandler Handler() => new(_poses, _transitions);
+    private GetPosePageHandler Handler() => new(_poses, _transitions, new FakeTagListRepository());
 
     [Fact]
     public async Task Handle_Should_PresentThePoseWithItsVersion_When_ItIsPublished()

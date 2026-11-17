@@ -24,6 +24,9 @@ public sealed class MyTransitionProposal : IMyProposal
 
     public TransitionDescription? Description { get; init; }
 
+    /// <summary>Its tags (story 8, E8): the retained ones once accepted, the proposed ones otherwise.</summary>
+    public TagSet Tags { get; init; } = TagSet.Empty;
+
     public required MyProposalStatus Status { get; init; }
 
     public required DateTimeOffset SubmittedAt { get; init; }
@@ -71,6 +74,7 @@ public sealed class MyTransitionProposal : IMyProposal
         Name = proposal.Proposed.Name,
         Difficulty = proposal.Proposed.Difficulty,
         Description = proposal.Proposed.Description,
+        Tags = proposal.Proposed.Tags,
         Status = status,
         SubmittedAt = proposal.SubmittedAt,
         DecidedAt = status == MyProposalStatus.PublishedDirectly ? null : proposal.Decision?.At,
@@ -87,6 +91,7 @@ public sealed class MyTransitionProposal : IMyProposal
         Name = acceptance.Retained.Name,
         Difficulty = acceptance.Retained.Difficulty,
         Description = acceptance.Retained.Description,
+        Tags = acceptance.Retained.Tags,
         Status = acceptance.HasAdjustments ? MyProposalStatus.AcceptedWithAdjustments : MyProposalStatus.Accepted,
         SubmittedAt = proposal.SubmittedAt,
         DecidedAt = acceptance.At,

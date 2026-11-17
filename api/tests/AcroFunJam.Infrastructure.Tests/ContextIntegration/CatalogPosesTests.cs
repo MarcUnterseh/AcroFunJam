@@ -21,7 +21,8 @@ public sealed class CatalogPosesTests
         FlowBoundaries.Create(canStartFlow: true, canEndFlow: false).Value!,
         PoseVersion.Of(4),
         TransitionsFrom: [],
-        TransitionsTo: []);
+        TransitionsTo: [],
+        new Dictionary<TagId, PresentedTag>());
 
     /// <summary>Fake of the Catalog query: the published poses.</summary>
     private sealed class FakeGetPosePage(params PosePage[] poses) : IQueryHandler<GetPosePage, PosePage>
