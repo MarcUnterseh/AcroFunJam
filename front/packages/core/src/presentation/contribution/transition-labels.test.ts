@@ -192,6 +192,17 @@ describe('transitionAdjustmentLine', () => {
       { term: 'Difficulté flyer', proposed: 'Intermédiaire', retained: 'Avancé' },
     ],
     [
+      {
+        field: 'tags',
+        proposed: [],
+        retained: [
+          { id: 'tag-dynamique', name: 'dynamique' },
+          { id: 'tag-pop', name: 'pop' },
+        ],
+      },
+      { term: 'Étiquettes', proposed: 'aucune', retained: 'dynamique, pop' },
+    ],
+    [
       { field: 'description', proposed: 'Vidéo' as TransitionDescription, retained: null },
       { term: 'Description', proposed: 'Vidéo', retained: 'aucune description' },
     ],
@@ -259,6 +270,12 @@ describe('decisionFailureLabel of a transition', () => {
   it('should tell that a pose of the transition left the catalog, the transition to be rejected', () => {
     expect(decisionFailureLabel('transition-pose-not-found')).toBe(
       "Une des poses de cette transition n'est plus dans le catalogue : la transition ne peut pas être publiée. Refuse la proposition.",
+    );
+  });
+
+  it('should tell that a retained tag left the list of tags meanwhile (story 8)', () => {
+    expect(decisionFailureLabel('tags-not-in-list')).toBe(
+      'Une étiquette retenue ne fait plus partie de la liste des étiquettes. Vérifie les étiquettes, puis publie de nouveau.',
     );
   });
 

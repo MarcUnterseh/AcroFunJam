@@ -13,6 +13,8 @@ export type TransitionToPropose = {
   base?: string;
   flyer?: string;
   description?: string;
+  /** Story 8: the tags to check (the ones they add are checked by the form). */
+  tags?: string[];
 };
 
 /**
@@ -62,6 +64,15 @@ export class TransitionForm {
     return this.page.getByRole('main').getByRole('alert');
   }
 
+  /** Story 8: the group « Étiquettes (facultatives) », a checkbox per tag of the list. */
+  get tags() {
+    return this.group('Étiquettes (facultatives)');
+  }
+
+  tag(name: string): Locator {
+    return this.tags.getByRole('checkbox', { name, exact: true });
+  }
+
   get successTitle() {
     return this.page.getByRole('main').getByRole('heading', { level: 2 });
   }
@@ -95,14 +106,16 @@ export class TransitionForm {
       base = 'Débutant',
       flyer = 'Débutant',
       description = '',
+      tags = [],
     } = transition;
-    this.lastFilled = { from, to, name, base, flyer, description };
+    this.lastFilled = { from, to, name, base, flyer, description, tags };
     if (from !== undefined) await this.fromPose.selectOption({ label: from });
     if (to !== null) await this.toPose.selectOption({ label: to });
     await this.name.fill(name);
     await this.baseDifficulty.getByRole('radio', { name: base, exact: true }).check();
     await this.flyerDifficulty.getByRole('radio', { name: flyer, exact: true }).check();
     await this.description.fill(description);
+    for (const tag of tags) await this.tag(tag).check();
   }
 
   async submit(): Promise<void> {

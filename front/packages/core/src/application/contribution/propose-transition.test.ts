@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fail, ok, type Result } from '../../domain/common/result';
+import type { ChoosableTag } from '../../domain/shared-kernel/transition-tags';
 import type {
   TransitionPose,
   TransitionProposalInput,
@@ -22,6 +23,9 @@ import type {
 const throne: TransitionPose = { id: 'pose-throne', name: 'Throne' };
 const bird: TransitionPose = { id: 'pose-bird', name: 'Bird' };
 const owner = 'alice@example.org';
+const dynamique: ChoosableTag = { id: 'tag-dynamique', name: 'dynamique', description: 'Avec élan.', impliedTagId: null };
+const pop: ChoosableTag = { id: 'tag-pop', name: 'pop', description: 'Propulsé.', impliedTagId: 'tag-dynamique' };
+const vrille: ChoosableTag = { id: 'tag-vrille', name: 'vrille', description: 'Rotation.', impliedTagId: null };
 
 const throneToBird: TransitionProposalInput = {
   fromPoseId: 'pose-throne',
@@ -30,15 +34,18 @@ const throneToBird: TransitionProposalInput = {
   baseDifficulty: 'beginner',
   flyerDifficulty: 'beginner',
   description: '',
+  tags: [],
 };
 
 const pending: TransitionProposalOutcome = { status: 'pending', fromPose: throne, toPose: bird, name: null };
 
 class FakeGateway implements TransitionProposalGateway {
   poses: Result<readonly TransitionPose[], TransitionPosesFailure> = ok([bird, throne]);
+  tags: Result<readonly ChoosableTag[], TransitionPosesFailure> = ok([dynamique, pop, vrille]);
   answer: Result<TransitionProposalOutcome, TransitionProposalFailure> = ok(pending);
   readonly sent: ValidTransitionProposal[] = [];
   listPublishedPoses = async () => this.poses;
+  listTags = async () => this.tags;
   proposeTransition = async (transition: ValidTransitionProposal) => {
     this.sent.push(transition);
     return this.answer;
@@ -56,8 +63,18 @@ describe('openTransitionProposal', () => {
   it('should give the published poses, in the order received, and the departure pose consulted', async () => {
     const result = await openTransitionProposal(new FakeGateway(), 'pose-throne');
 
-    expect(result).toEqual(ok({ poses: [bird, throne], fromPose: throne }));
+    expect(result).toEqual(ok({ poses: [bird, throne], fromPose: throne, tags: [dynamique, pop, vrille] }));
   });
+
+  it.each<TransitionPosesFailure>([{ kind: 'unreachable' }, { kind: 'outdated' }])(
+    'should tell why the list of tags could not be read ($kind)',
+    async (failure) => {
+      const gateway = new FakeGateway();
+      gateway.tags = fail(failure);
+
+      expect(await openTransitionProposal(gateway, 'pose-throne')).toEqual(fail(failure));
+    },
+  );
 
   it('should tell a departure pose that is not among the published poses as not found', async () => {
     expect(await openTransitionProposal(new FakeGateway(), 'pose-unknown')).toEqual(
@@ -93,8 +110,36 @@ describe('proposeTransition', () => {
         baseDifficulty: 'beginner',
         flyerDifficulty: 'beginner',
         description: null,
+        tags: [],
       },
     ]);
+    expect(store.load('pose-throne')).toBeNull();
+  });
+
+  it('should send the chosen tags', async () => {
+    const gateway = new FakeGateway();
+    const tags = [
+      { id: 'tag-dynamique', name: 'dynamique' },
+      { id: 'tag-pop', name: 'pop' },
+    ];
+
+    await proposeTransition(gateway, new MemoryStore(), 'pose-throne', { ...throneToBird, tags }, owner);
+
+    expect(gateway.sent[0]?.tags).toEqual(tags);
+  });
+
+  it('should name the chosen tags no longer in the list, without keeping the input', async () => {
+    const gateway = new FakeGateway();
+    gateway.answer = fail({ kind: 'tags-not-in-list', tagIds: ['tag-vrille'] });
+    const store = new MemoryStore();
+    const tags = [
+      { id: 'tag-pop', name: 'pop' },
+      { id: 'tag-vrille', name: 'vrille' },
+    ];
+
+    expect(
+      await proposeTransition(gateway, store, 'pose-throne', { ...throneToBird, tags }, owner),
+    ).toEqual(fail({ kind: 'tags-not-in-list', tags: [{ id: 'tag-vrille', name: 'vrille' }] }));
     expect(store.load('pose-throne')).toBeNull();
   });
 

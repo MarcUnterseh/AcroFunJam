@@ -4,7 +4,7 @@ import type { TransitionAdjustmentInput } from '../../domain/contribution/transi
 import type { TransitionDescription } from '../../domain/shared-kernel/transition-description';
 import type { TransitionName } from '../../domain/shared-kernel/transition-name';
 import type { DecisionInputStore, KeptDecisionInputs } from './DecisionInputStorePort';
-import { acceptTransitionProposal, rejectProposal } from './validation-use-cases';
+import { acceptTransitionProposal, listTransitionTags, rejectProposal } from './validation-use-cases';
 import type {
   DecisionFailure,
   PendingTransitionProposal,
@@ -28,6 +28,7 @@ const ninjaStar: PendingTransitionProposal = {
     baseDifficulty: 'advanced',
     flyerDifficulty: 'intermediate',
     description: 'Vidéo : https://example.org/ninja-star' as TransitionDescription,
+    tags: [{ id: 'tag-inversion', name: 'inversion' }],
   },
   contributor: { email: 'alice@example.org', isYou: false },
   submittedAt: new Date('2026-11-14T09:00:00Z'),
@@ -40,8 +41,14 @@ const published: TransitionAcceptanceOutcome = {
   adjusted: false,
 };
 
-class FakeGateway implements Pick<ValidationGateway, 'acceptTransitionProposal' | 'rejectProposal'> {
+const pop = { id: 'tag-pop', name: 'pop', description: 'Propulsé.', impliedTagId: 'tag-dynamique' };
+
+class FakeGateway
+  implements Pick<ValidationGateway, 'acceptTransitionProposal' | 'rejectProposal' | 'listTags'>
+{
   answer: Result<TransitionAcceptanceOutcome, DecisionFailure> = ok(published);
+  tags: Awaited<ReturnType<ValidationGateway['listTags']>> = ok([pop]);
+  listTags = async () => this.tags;
   readonly accepted: Array<{ proposal: ProposalReference; acceptance: TransitionAcceptance }> = [];
   readonly rejected: ProposalReference[] = [];
   acceptTransitionProposal = async ({ id, kind }: ProposalReference, acceptance: TransitionAcceptance) => {
@@ -68,6 +75,7 @@ const retained = (input: Partial<TransitionAdjustmentInput>): TransitionAdjustme
   baseDifficulty: 'advanced',
   flyerDifficulty: 'intermediate',
   description: 'Vidéo : https://example.org/ninja-star',
+  tags: [{ id: 'tag-inversion', name: 'inversion' }],
   ...input,
 });
 
@@ -110,6 +118,35 @@ describe('acceptTransitionProposal', () => {
       ],
       note: 'Nom usuel.',
     });
+  });
+
+  it('should send other retained tags as an adjustment of the tags', async () => {
+    const gateway = new FakeGateway();
+    const tags = [
+      { id: 'tag-dynamique', name: 'dynamique' },
+      { id: 'tag-pop', name: 'pop' },
+    ];
+
+    await acceptTransitionProposal(
+      gatewayOf(gateway),
+      new MemoryStore(),
+      ninjaStar,
+      { input: retained({ tags }), note: '' },
+      owner,
+    );
+
+    expect(gateway.accepted[0]?.acceptance.adjustments).toEqual([
+      { field: 'tags', proposed: [{ id: 'tag-inversion', name: 'inversion' }], retained: tags },
+    ]);
+  });
+
+  it('should tell the retained tags left the list meanwhile', async () => {
+    const gateway = new FakeGateway();
+    gateway.answer = fail({ kind: 'tags-not-in-list' });
+
+    const result = await acceptTransitionProposal(gatewayOf(gateway), new MemoryStore(), ninjaStar, null, owner);
+
+    expect(result).toEqual(fail({ kind: 'tags-not-in-list' }));
   });
 
   it('should accept as proposed, without the note, when nothing differs', async () => {
@@ -183,5 +220,11 @@ describe('rejectProposal of a transition', () => {
     await rejectProposal(gatewayOf(gateway), new MemoryStore(), ninjaStar, 'Doublon.', owner);
 
     expect(gateway.rejected).toEqual([{ id: 'transition-ninja-star', kind: 'transition-proposal' }]);
+  });
+});
+
+describe('listTransitionTags', () => {
+  it('should give the tags of the list, to adjust those of a transition', async () => {
+    expect(await listTransitionTags(gatewayOf(new FakeGateway()))).toEqual(ok([pop]));
   });
 });

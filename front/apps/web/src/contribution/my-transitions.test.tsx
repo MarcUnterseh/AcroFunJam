@@ -13,6 +13,7 @@ import {
   FakeAuthGateway,
   FakeContributionGateway,
   renderSite,
+  tagNamed,
 } from '../test/site-harness';
 
 // Story 7: a transition of the requester in « Mes propositions » (docs/design/composants/carte-transition.md).
@@ -73,6 +74,7 @@ describe('a transition in « Mes propositions »', () => {
           baseDifficulty: 'beginner',
           flyerDifficulty: 'beginner',
           description: null,
+          tags: [],
         },
       }),
     );
@@ -127,5 +129,52 @@ describe('a transition in « Mes propositions »', () => {
     expect(within(transition).getByText('Motif du refus')).toBeInTheDocument();
     expect(within(transition).getByText('Elle arrive en Bird.')).toBeInTheDocument();
     expect(within(transition).getByText("Elle n'est pas publiée dans le catalogue.")).toBeInTheDocument();
+  });
+
+  it('should present the tags of a pending transition (story 8)', async () => {
+    openMyProposals(
+      aMyTransition({
+        transition: { ...aMyTransition().transition, tags: [tagNamed('dynamique'), tagNamed('pop')] },
+      }),
+    );
+
+    const transition = await card('Transition Ninja Star de Star vers Star');
+    const line = within(transition).getByRole('list', { name: 'Étiquettes' });
+    expect(
+      within(line)
+        .getAllByRole('listitem')
+        .map((pill) => pill.textContent),
+    ).toEqual(['dynamique', 'pop']);
+  });
+
+  it('should present no line of tags for a transition without any (story 8)', async () => {
+    openMyProposals(aMyTransition());
+
+    const transition = await card('Transition Ninja Star de Star vers Star');
+    expect(within(transition).queryByText('Étiquettes')).not.toBeInTheDocument();
+  });
+
+  it('should present the adjustment of the tags, proposed → retained (story 8)', async () => {
+    openMyProposals(
+      aMyTransition({
+        status: {
+          kind: 'accepted-with-adjustments',
+          decidedAt,
+          adjustments: [
+            {
+              field: 'tags',
+              proposed: [tagNamed('dynamique'), tagNamed('inversion'), tagNamed('pop')],
+              retained: [tagNamed('dynamique'), tagNamed('pop')],
+            },
+          ],
+          message: null,
+        },
+      }),
+    );
+
+    const transition = await card('Transition Ninja Star de Star vers Star');
+    expect(valueOf(transition, 'Étiquettes')).toContain(
+      'Proposé : dynamique, inversion, pop, retenu : dynamique, pop',
+    );
   });
 });

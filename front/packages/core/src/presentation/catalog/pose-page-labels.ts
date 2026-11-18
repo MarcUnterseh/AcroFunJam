@@ -59,3 +59,47 @@ export const unnamedTransitionLabel = ({
 /** The primary action of the page, for a person who may propose (story 7). */
 export const proposeTransitionFromLabel = (poseName: string): string =>
   `Proposer une transition depuis ${poseName}`;
+
+/** Texts of the zone « Étiqueter » of a published transition (story 8, zone-etiqueter.md), validators only. */
+export const transitionTaggingLabels = {
+  tag: 'Étiqueter',
+  legend: 'Étiquettes de la transition',
+  save: 'Enregistrer les étiquettes',
+  saving: 'Enregistrement…',
+  cancel: 'Annuler',
+  saved: 'Étiquettes enregistrées.',
+  loading: 'Chargement des étiquettes…',
+  loadingFailed:
+    'Impossible de charger la liste des étiquettes. Vérifie ta connexion Internet, puis réessaie.',
+  retry: 'Réessayer',
+  reload: 'Recharger la page',
+  signIn: 'Se connecter',
+} as const;
+
+/** The accessible name of the button: « Étiqueter Pop to Bird », « Étiqueter de Bird vers Folded Leaf ». */
+export const tagTransitionButtonName = (transition: string): string =>
+  `${transitionTaggingLabels.tag} ${transition}`;
+
+/** Why the tags of a transition were not recorded, as the zone tells it. */
+export type TransitionTaggingFailure = {
+  readonly kind:
+    'session-expired' | 'role-withdrawn' | 'unreachable' | 'outdated' | 'not-found' | 'tags-not-in-list';
+};
+
+/** The alert at the top of the zone « Étiqueter ». */
+export const tagTransitionFailureLabel = ({ kind }: TransitionTaggingFailure): string => {
+  switch (kind) {
+    case 'session-expired':
+      return 'Ta session a expiré. Connecte-toi de nouveau pour étiqueter cette transition.';
+    case 'role-withdrawn':
+      return 'Tu ne peux plus étiqueter les transitions : ton rôle a changé.';
+    case 'unreachable':
+      return "Les étiquettes n'ont pas pu être enregistrées : impossible de joindre AcroFunJam. Vérifie ta connexion Internet, puis réessaie.";
+    case 'outdated':
+      return "Les étiquettes n'ont pas pu être enregistrées : le site doit être mis à jour. Recharge la page.";
+    case 'not-found':
+      return "Cette transition n'est plus dans le catalogue. Recharge la page.";
+    case 'tags-not-in-list':
+      return 'Une étiquette choisie ne fait plus partie de la liste des étiquettes. Vérifie les étiquettes, puis enregistre de nouveau.';
+  }
+};

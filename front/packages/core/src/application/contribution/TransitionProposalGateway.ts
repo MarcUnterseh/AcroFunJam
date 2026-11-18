@@ -1,5 +1,6 @@
 import type { Result } from '../../domain/common/result';
 import type { TransitionPose, ValidTransitionProposal } from '../../domain/contribution/transition-proposal';
+import type { ChoosableTag } from '../../domain/shared-kernel/transition-tags';
 
 /** What became of a received transition, as stated by the API (never guessed from the role): ADR 0019, ADR 0030. */
 export type TransitionProposalOutcome = {
@@ -24,6 +25,8 @@ export type TransitionProposalFailure =
   /** The pose left the catalog since the form was opened (or never was in it). */
   | { readonly kind: 'from-pose-not-found' }
   | { readonly kind: 'to-pose-not-found' }
+  /** Story 8: chosen tags left the list of tags since the form was opened (ADR 0034). */
+  | { readonly kind: 'tags-not-in-list'; readonly tagIds: readonly string[] }
   /** Visitor, expired session or deleted account (ADR 0018): the site handles it as an expired session. */
   | { readonly kind: 'unauthenticated' }
   | { readonly kind: 'unreachable' }
@@ -40,6 +43,8 @@ export type TransitionPosesFailure = { readonly kind: 'unreachable' } | { readon
 export interface TransitionProposalGateway {
   /** The published poses, in catalog order (GET /catalog/poses): the choices of the two drop-down lists. */
   listPublishedPoses(): Promise<Result<readonly TransitionPose[], TransitionPosesFailure>>;
+  /** Story 8: the tags of the list, in catalog order (GET /catalog/tags): the choices of the group « Étiquettes ». */
+  listTags(): Promise<Result<readonly ChoosableTag[], TransitionPosesFailure>>;
   proposeTransition(
     transition: ValidTransitionProposal,
   ): Promise<Result<TransitionProposalOutcome, TransitionProposalFailure>>;

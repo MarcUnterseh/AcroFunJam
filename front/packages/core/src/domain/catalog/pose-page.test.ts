@@ -19,6 +19,7 @@ const linked = (otherPose: { id: string; name: string }): LinkedTransition => ({
   baseDifficulty: 'advanced',
   flyerDifficulty: 'advanced',
   description: null,
+  tags: [{ id: 'tag-inversion', name: 'inversion', description: 'Le flyer passe tête en bas.' }],
 });
 
 describe('isSamePose', () => {

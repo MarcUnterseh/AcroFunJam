@@ -1,7 +1,9 @@
 import {
   contributorLine,
   decisionLabelsOf,
+  proposedTagsLabel,
   proposedTransitionValueLabel,
+  transitionTagLabels,
   transitionDescriptionLength,
   transitionNameLength,
   transitionProposalLabels,
@@ -15,6 +17,7 @@ import {
 import { useId, type Ref } from 'react';
 import { Field, FormAlert, TextAreaField } from '../layout/form-controls';
 import { Icon } from '../layout/Icon';
+import { TagChoiceGroup } from '../layout/tag-parts';
 import { DecisionAlert } from './DecisionAlert';
 import { DescriptionCounter } from './DescriptionCounter';
 import { NameCounter } from './NameCounter';
@@ -22,6 +25,7 @@ import { levels } from './pose-choices';
 import { TileRadioGroup } from './TileRadioGroup';
 import type { Sending } from './useDecisionCard';
 import { useTransitionDecision } from './useTransitionDecision';
+import { useTransitionTags } from './useTransitionTags';
 import { ValidatorTextCounter } from './ValidatorTextCounter';
 import { TransitionAdjustmentList, TransitionDetails, TransitionTitleText } from './TransitionParts';
 
@@ -44,6 +48,7 @@ export function TransitionProposalCard({
   const titleId = useId();
   const ids = { group: useId(), difficultyHelp: useId() };
   const decision = useTransitionDecision({ proposal, owner, kept, onDecided });
+  const tagList = useTransitionTags();
   const { mode, reason, reasonError, input, note, noteError, alert, sending, refs, closed } = decision;
   const labels = decisionLabelsOf(proposal.kind);
   const { transition } = proposal;
@@ -104,7 +109,9 @@ export function TransitionProposalCard({
         {known ? <strong>{contributor.contributor}</strong> : contributor.contributor}
         <time dateTime={proposal.submittedAt.toISOString()}>{contributor.after}</time>
       </p>
-      {(closed || mode === 'rest' || mode === 'rejecting') && <TransitionDetails transition={transition} />}
+      {(closed || mode === 'rest' || mode === 'rejecting') && (
+        <TransitionDetails transition={transition} showNoTags />
+      )}
       <div className="proposal-card__decision">
         {(closed || mode !== 'adjusting') && decisionAlert}
         {!closed && mode === 'rest' && (
@@ -197,6 +204,16 @@ export function TransitionProposalCard({
                 firstRadioRef={refs.flyerDifficulty}
               />
             </div>
+            {tagList && (
+              <TagChoiceGroup
+                list={tagList}
+                chosen={input.tags}
+                onChange={(tags) => decision.change('tags', tags)}
+                legend={transitionTagLabels.legend}
+                reminder={proposedTagsLabel(transition.tags)}
+                firstBoxRef={refs.tags}
+              />
+            )}
             <TextAreaField
               ref={refs.description}
               label={transitionProposalLabels.description}

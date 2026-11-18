@@ -26,6 +26,10 @@ const pendingNinjaStar = {
   baseDifficulty: 'advanced',
   flyerDifficulty: 'advanced',
   description: 'Vidéo : https://example.org/ninja-star',
+  tags: [
+    { id: 'tag-dynamique', name: 'dynamique' },
+    { id: 'tag-pop', name: 'pop' },
+  ],
   contributor: { email: 'alice@example.org', isYou: false },
   submittedAt: '2026-11-14T09:00:00+00:00',
 };
@@ -74,6 +78,10 @@ describe('createValidationGateway, transitions', () => {
             baseDifficulty: 'advanced',
             flyerDifficulty: 'advanced',
             description: 'Vidéo : https://example.org/ninja-star',
+            tags: [
+              { id: 'tag-dynamique', name: 'dynamique' },
+              { id: 'tag-pop', name: 'pop' },
+            ],
           },
           contributor: { email: 'alice@example.org', isYou: false },
           submittedAt: new Date('2026-11-14T09:00:00Z'),
@@ -92,12 +100,36 @@ describe('createValidationGateway, transitions', () => {
     expect(queue.ok && queue.value[0]).toMatchObject({ transition: { name: null, description: null } });
   });
 
-  it('should report a transition it cannot read as an outdated site', async () => {
+  it.each([
+    ['a pose it cannot read', { toPose: { id: starId } }],
+    ['a tag without its name', { tags: [{ id: 'tag-pop' }] }],
+    ['no list of tags', { tags: undefined }],
+  ])('should report a transition it cannot read (%s) as an outdated site', async (_case, change) => {
     const gateway = createValidationGateway(
-      apiAnswering(200, { proposals: [{ ...pendingNinjaStar, toPose: { id: starId } }] }),
+      apiAnswering(200, { proposals: [{ ...pendingNinjaStar, ...change }] }),
     );
 
     expect(await gateway.getValidationQueue()).toEqual(fail({ kind: 'outdated' }));
+  });
+
+  it('should read the tags of the list from GET /catalog/tags, to adjust those of a transition', async () => {
+    const requests: Request[] = [];
+    const gateway = createValidationGateway(
+      apiAnswering(
+        200,
+        {
+          tags: [
+            { id: 'tag-pop', name: 'pop', description: 'Propulsé.', impliedTagId: null, transitionCount: 0 },
+          ],
+        },
+        requests,
+      ),
+    );
+
+    expect(await gateway.listTags()).toEqual(
+      ok([{ id: 'tag-pop', name: 'pop', description: 'Propulsé.', impliedTagId: null }]),
+    );
+    expect(new URL(requests[0]!.url).pathname).toBe('/catalog/tags');
   });
 
   it('should accept a transition at its own address, as proposed', async () => {
@@ -138,7 +170,41 @@ describe('createValidationGateway, transitions', () => {
     });
   });
 
+  it('should send the retained tags by identifier, all of them, when they are adjusted', async () => {
+    const requests: Request[] = [];
+    const gateway = createValidationGateway(apiAnswering(200, { ...accepted, adjusted: true }, requests));
+
+    await gateway.acceptTransitionProposal(aTransition, {
+      adjustments: [
+        {
+          field: 'tags',
+          proposed: [],
+          retained: [
+            { id: 'tag-dynamique', name: 'dynamique' },
+            { id: 'tag-pop', name: 'pop' },
+          ],
+        },
+      ],
+      note: null,
+    });
+
+    expect(await requests[0]!.json()).toEqual({ tagIds: ['tag-dynamique', 'tag-pop'] });
+  });
+
+  it('should send no tag when they are all removed', async () => {
+    const requests: Request[] = [];
+    const gateway = createValidationGateway(apiAnswering(200, { ...accepted, adjusted: true }, requests));
+
+    await gateway.acceptTransitionProposal(aTransition, {
+      adjustments: [{ field: 'tags', proposed: [{ id: 'tag-pop', name: 'pop' }], retained: [] }],
+      note: null,
+    });
+
+    expect(await requests[0]!.json()).toEqual({ tagIds: [] });
+  });
+
   it.each([
+    ['contribution.tag-not-in-list', 'tags-not-in-list'],
     ['contribution.transition-name-already-in-catalog', 'transition-name-already-in-catalog'],
     ['contribution.transition-name-already-pending', 'transition-name-already-pending'],
     ['contribution.unnamed-transition-already-in-catalog', 'unnamed-transition-already-in-catalog'],
@@ -189,6 +255,7 @@ const myThroneToBird = {
   baseDifficulty: 'beginner',
   flyerDifficulty: 'beginner',
   description: null,
+  tags: [],
   submittedAt: '2026-11-14T09:00:00+00:00',
   ...none,
 };
@@ -209,6 +276,7 @@ describe('createContributionGateway, getMyProposals of transitions', () => {
             baseDifficulty: 'beginner',
             flyerDifficulty: 'beginner',
             description: null,
+            tags: [],
           },
           submittedAt: new Date('2026-11-14T09:00:00Z'),
           status: { kind: 'pending' },
@@ -230,6 +298,7 @@ describe('createContributionGateway, getMyProposals of transitions', () => {
               name: { proposed: null, retained: 'Ninja Star' },
               baseDifficulty: null,
               flyerDifficulty: { proposed: 'beginner', retained: 'advanced' },
+              tags: { proposed: [], retained: [{ id: 'tag-pop', name: 'pop' }] },
               description: { proposed: 'Vidéo', retained: null },
             },
             message: 'Nom usuel.',
@@ -246,6 +315,7 @@ describe('createContributionGateway, getMyProposals of transitions', () => {
       adjustments: [
         { field: 'name', proposed: null, retained: 'Ninja Star' },
         { field: 'flyerDifficulty', proposed: 'beginner', retained: 'advanced' },
+        { field: 'tags', proposed: [], retained: [{ id: 'tag-pop', name: 'pop' }] },
         { field: 'description', proposed: 'Vidéo', retained: null },
       ],
       message: 'Nom usuel.',

@@ -154,7 +154,18 @@ Then(
   async ({ posePage }, direction: string, pose: string, expected: DataTable) => {
     const otherPoseColumn = direction === 'depuis' ? "pose d'arrivée" : 'pose de départ';
     const displayed = await posePage.transitions(directionOf(direction), pose);
-    expect(displayed.map((transition) => asRow(transition, otherPoseColumn))).toEqual(expected.hashes());
+    const rows = expected.hashes();
+    // Only the columns the scenario states; « étiquettes » (story 8) lists the tags shown, in their order.
+    const columns = Object.keys(rows[0] ?? {});
+    expect(
+      displayed.map((transition) => {
+        const row: Record<string, string> = {
+          ...asRow(transition, otherPoseColumn),
+          étiquettes: transition.tags.join(', '),
+        };
+        return Object.fromEntries(columns.map((column) => [column, row[column]]));
+      }),
+    ).toEqual(rows);
   },
 );
 

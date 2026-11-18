@@ -14,6 +14,7 @@ const throneToBird: LinkedTransition = {
   baseDifficulty: 'beginner',
   flyerDifficulty: 'beginner',
   description: null,
+  tags: [],
 };
 
 const birdToThrone: LinkedTransition = {
@@ -23,6 +24,7 @@ const birdToThrone: LinkedTransition = {
   baseDifficulty: 'beginner',
   flyerDifficulty: 'discovery',
   description: 'Le flyer redescend en Throne.\nSans à-coup.',
+  tags: [],
 };
 
 const throne = (overrides: Partial<PosePage> = {}): PosePage => ({

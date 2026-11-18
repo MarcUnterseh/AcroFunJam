@@ -1,4 +1,5 @@
 import {
+  canManageTags,
   canPropose,
   emptyTransitionsLabel,
   getPosePage,
@@ -7,6 +8,7 @@ import {
   posePageLabels,
   proposeTransitionFromLabel,
   transitionsSectionTitle,
+  transitionTagLabels,
   unnamedTransitionLabel,
   type LinkedTransition,
   type PosePage,
@@ -20,10 +22,12 @@ import { useSession } from '../identity/SessionContext';
 import { useAnnounce } from '../layout/Announcer';
 import { focusPageTitle } from '../layout/focus';
 import { Icon } from '../layout/Icon';
+import { TagLine, TagMeanings } from '../layout/tag-parts';
 import { catalogPath, posePath, revisionPath, transitionProposalPath } from '../paths';
 import { DifficultyLegend } from './DifficultyLegend';
 import { DifficultyDetails, PoseDetails } from './PoseList';
 import { usePosePageGateway } from './PosePageContext';
+import { TransitionTagging } from './TransitionTagging';
 
 /** The page of a pose could not be read: carries the failure of the use case. */
 class PosePageLoadingFailed extends Error {
@@ -88,17 +92,21 @@ function UnnamedTitle({ from, to }: { readonly from: string; readonly to: string
 
 /**
  * A transition of a section (docs/design/composants/element-transition.md): its name, or its poses without one; the
- * other pose, a link to its page, « (même pose) » for a washing machine; its difficulties; its description, plain
- * text with its line breaks.
+ * other pose, a link to its page, « (même pose) » for a washing machine; its difficulties; its tags (story 8); its
+ * description, plain text with its line breaks; the fold of the meaning of its tags; the zone « Étiqueter » of a
+ * validator.
  */
 function TransitionItem({
   page,
   direction,
   transition,
+  manages,
 }: {
   readonly page: PosePage;
   readonly direction: TransitionDirection;
   readonly transition: LinkedTransition;
+  /** A validator or an administrator: invited to tag the transition. */
+  readonly manages: boolean;
 }) {
   const other = transition.otherPose;
   const [from, to] = direction === 'from' ? [page.name, other.name] : [other.name, page.name];
@@ -116,7 +124,15 @@ function TransitionItem({
         {samePose && <span>{posePageLabels.samePose}</span>}
       </p>
       <DifficultyDetails difficulties={transition} />
+      <TagLine tags={transition.tags} />
       {transition.description && <p className="transition__description">{transition.description}</p>}
+      <TagMeanings tags={transition.tags} summary={transitionTagLabels.transitionMeanings} />
+      {manages && (
+        <TransitionTagging
+          transition={transition}
+          spokenTitle={transition.name ?? unnamedTransitionLabel({ from, to }).spoken}
+        />
+      )}
     </li>
   );
 }
@@ -125,9 +141,11 @@ function TransitionItem({
 function TransitionSection({
   page,
   direction,
+  manages,
 }: {
   readonly page: PosePage;
   readonly direction: TransitionDirection;
+  readonly manages: boolean;
 }) {
   const titleId = useId();
   const transitions = direction === 'from' ? page.transitionsFrom : page.transitionsTo;
@@ -142,7 +160,13 @@ function TransitionSection({
         // role="list" restores the list semantics that some browsers drop with "list-style: none".
         <ul className="transition-list" role="list">
           {transitions.map((transition) => (
-            <TransitionItem key={transition.id} page={page} direction={direction} transition={transition} />
+            <TransitionItem
+              key={transition.id}
+              page={page}
+              direction={direction}
+              transition={transition}
+              manages={manages}
+            />
           ))}
         </ul>
       )}
@@ -169,7 +193,15 @@ function Horizon() {
  * The pose, its characteristics, the scale and the warning, then its two sections of transitions. The header of the
  * page is the only spectacular moment of the site (principes.md): the name under a sky, a rising orb, a horizon.
  */
-function LoadedPage({ page, canProposeHere }: { readonly page: PosePage; readonly canProposeHere: boolean }) {
+function LoadedPage({
+  page,
+  canProposeHere,
+  manages,
+}: {
+  readonly page: PosePage;
+  readonly canProposeHere: boolean;
+  readonly manages: boolean;
+}) {
   return (
     <>
       <div className="pose-hero">
@@ -194,8 +226,8 @@ function LoadedPage({ page, canProposeHere }: { readonly page: PosePage; readonl
           </div>
         )}
         <DifficultyLegend warning={posePageLabels.responsibilityWarning} safetyNote />
-        <TransitionSection page={page} direction="from" />
-        <TransitionSection page={page} direction="to" />
+        <TransitionSection page={page} direction="from" manages={manages} />
+        <TransitionSection page={page} direction="to" manages={manages} />
       </div>
     </>
   );
@@ -285,7 +317,10 @@ export function PosePageRoute() {
 
   let content: ReactNode;
   // A page already received stays on screen when a refresh fails: the failure only matters without it.
-  if (page) content = <LoadedPage page={page} canProposeHere={canPropose(session)} />;
+  if (page)
+    content = (
+      <LoadedPage page={page} canProposeHere={canPropose(session)} manages={canManageTags(session)} />
+    );
   else if (notFound) content = <PoseNotFound />;
   else if (error || retrying)
     content = (

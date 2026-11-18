@@ -13,6 +13,7 @@ const ninjaStar: TransitionProposalInput = {
   baseDifficulty: 'advanced',
   flyerDifficulty: 'advanced',
   description: '  Vidéo : https://example.org/ninja-star  ',
+  tags: [{ id: 'tag-inversion', name: 'inversion' }],
 };
 
 describe('emptyTransitionProposalInput', () => {
@@ -24,6 +25,7 @@ describe('emptyTransitionProposalInput', () => {
       baseDifficulty: null,
       flyerDifficulty: null,
       description: '',
+      tags: [],
     });
   });
 });
@@ -38,6 +40,7 @@ describe('validateTransitionProposal', () => {
         baseDifficulty: 'advanced',
         flyerDifficulty: 'advanced',
         description: 'Vidéo : https://example.org/ninja-star',
+        tags: [{ id: 'tag-inversion', name: 'inversion' }],
       }),
     );
   });
@@ -56,6 +59,7 @@ describe('validateTransitionProposal', () => {
       baseDifficulty: null,
       flyerDifficulty: null,
       description: 'x'.repeat(501),
+      tags: [],
     });
 
     expect(result).toEqual(

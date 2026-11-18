@@ -35,6 +35,20 @@ export type PublishedTransition = {
   tagIds?: string[];
 };
 
+/** A tag described: its name and its description (story 8). */
+export type DescribedTag = { id: string; name: string; description: string };
+
+/**
+ * The simulated list of tags as the other simulated APIs read it (story 8): set by the simulated list itself (TagApi),
+ * which reads the transitions of this catalog to count them. Without it, a transition carries no tag.
+ */
+export type TagDirectory = {
+  /** These tags, with their names and descriptions, in catalog order; a tag unknown to the list is left out. */
+  describe(ids: readonly string[]): DescribedTag[];
+  /** The chosen tags with the tags they add, and the chosen ones not in the list (ADR 0034). */
+  choose(ids: readonly string[]): { tagIds: string[]; notInList: string[] };
+};
+
 /** Catalog order of the names (ADR 0017), enough for the scenarios of the site. */
 const byCatalogOrder = (a: string, b: string) => a.localeCompare(b, 'en', { sensitivity: 'base' });
 
@@ -49,6 +63,11 @@ export class CatalogApi {
   /** Published transitions (story 7), in the order of publication. */
   readonly transitions: PublishedTransition[] = [];
   private unreachable = false;
+  /** The simulated list of tags (story 8), set by TagApi. */
+  tags: TagDirectory = {
+    describe: () => [],
+    choose: (ids) => ({ tagIds: [...ids], notInList: [] }),
+  };
 
   constructor(private readonly context: BrowserContext) {}
 
@@ -139,7 +158,7 @@ export class CatalogApi {
       .filter((transition) => (direction === 'from' ? transition.fromPoseId : transition.toPoseId) === poseId)
       .map((transition) => {
         const other = this.poseWithId(direction === 'from' ? transition.toPoseId : transition.fromPoseId)!;
-        const { id, name, baseDifficulty, flyerDifficulty, description } = transition;
+        const { id, name, baseDifficulty, flyerDifficulty, description, tagIds = [] } = transition;
         return {
           id,
           otherPose: { id: other.id, name: other.name },
@@ -147,6 +166,7 @@ export class CatalogApi {
           baseDifficulty,
           flyerDifficulty,
           description,
+          tags: this.tags.describe(tagIds),
         };
       })
       .sort(

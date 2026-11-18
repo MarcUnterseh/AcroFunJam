@@ -5,6 +5,7 @@ import {
   type TransitionPose,
   type TransitionProposalInput,
 } from '../../domain/contribution/transition-proposal';
+import type { ChoosableTag, TagReference } from '../../domain/shared-kernel/transition-tags';
 import { keepKeyedInput, restoreKeyedInput } from './keyed-input';
 import type { TransitionInputStore } from './TransitionInputStorePort';
 import type {
@@ -16,25 +17,30 @@ import type {
 
 // Story 7 « Proposer une transition »: the form of a person who may propose, opened from the page of a pose.
 
-/** The form, as it opens: the choices of the two lists, and the departure pose, the pose consulted. */
+/** The form, as it opens: the choices of the two lists, the departure pose (the pose consulted), the tags of the list. */
 export type TransitionProposalOpening = {
   readonly poses: readonly TransitionPose[];
   readonly fromPose: TransitionPose;
+  readonly tags: readonly ChoosableTag[];
 };
 
 export type OpenTransitionProposalError =
   /** The pose consulted is not among the published poses: « Cette pose n'est plus dans le catalogue. » */
   { readonly kind: 'not-found' } | TransitionPosesFailure;
 
-/** The published poses, and the departure pose among them (ADR 0030: no list of transitions is read to propose). */
+/**
+ * The published poses, the departure pose among them (ADR 0030: no list of transitions is read to propose) and the tags
+ * of the list (story 8).
+ */
 export const openTransitionProposal = async (
   gateway: TransitionProposalGateway,
   fromPoseId: string,
 ): Promise<Result<TransitionProposalOpening, OpenTransitionProposalError>> => {
-  const poses = await gateway.listPublishedPoses();
+  const [poses, tags] = await Promise.all([gateway.listPublishedPoses(), gateway.listTags()]);
   if (!poses.ok) return poses;
+  if (!tags.ok) return tags;
   const fromPose = poses.value.find((pose) => pose.id === fromPoseId);
-  return fromPose ? ok({ poses: poses.value, fromPose }) : fail({ kind: 'not-found' });
+  return fromPose ? ok({ poses: poses.value, fromPose, tags: tags.value }) : fail({ kind: 'not-found' });
 };
 
 export type ProposeTransitionError =
@@ -43,6 +49,8 @@ export type ProposeTransitionError =
   | { readonly kind: TransitionPlaceTaken }
   /** A pose of the transition left the catalog meanwhile: told under its field. */
   | { readonly kind: 'pose-not-found'; readonly field: 'fromPoseId' | 'toPoseId' }
+  /** Story 8: chosen tags left the list meanwhile, named as the person chose them. */
+  | { readonly kind: 'tags-not-in-list'; readonly tags: readonly TagReference[] }
   | { readonly kind: 'session-expired' }
   | { readonly kind: 'unreachable' }
   | { readonly kind: 'outdated' };
@@ -80,6 +88,8 @@ export const proposeTransition = async (
       return fail({ kind: 'pose-not-found', field: 'fromPoseId' });
     case 'to-pose-not-found':
       return fail({ kind: 'pose-not-found', field: 'toPoseId' });
+    case 'tags-not-in-list':
+      return fail({ kind: 'tags-not-in-list', tags: input.tags.filter((tag) => failure.tagIds.includes(tag.id)) });
     default:
       return fail(failure);
   }

@@ -19,6 +19,7 @@ import {
 import type { ApiClient } from '../client';
 import type { components } from '../generated/schema';
 import { isDifficultyCode } from '../shared-kernel/difficulty-codes';
+import { toChoosableTags } from '../shared-kernel/tag-reading';
 import { toTransitionContent, toTransitionPose, transitionPlaceRefusals } from './transition-reading';
 
 type AcceptPoseProposalRequest = components['schemas']['AcceptPoseProposalRequest'];
@@ -160,6 +161,8 @@ const decisionRefusals: Readonly<Record<string, DecisionFailure>> = {
   // Story 7: a pose of the transition left the catalog meanwhile.
   'contribution.from-pose-not-found': { kind: 'transition-pose-not-found' },
   'contribution.to-pose-not-found': { kind: 'transition-pose-not-found' },
+  // Story 8: retained tags left the list of tags meanwhile.
+  'contribution.tag-not-in-list': { kind: 'tags-not-in-list' },
 };
 
 // 401 and 403 whatever the code (session, deleted account, role withdrawn). The content rules (400 pose.*, the
@@ -188,6 +191,9 @@ const toTransitionField = (adjustment: TransitionAdjustment): AcceptTransitionPr
       return { baseDifficulty: adjustment.retained };
     case 'flyerDifficulty':
       return { flyerDifficulty: adjustment.retained };
+    case 'tags':
+      // Every retained tag (none: an empty list), never absent or null, which would keep the proposed ones.
+      return { tagIds: adjustment.retained.map((tag) => tag.id) };
     case 'description':
       return { description: adjustment.retained ?? '' };
   }
@@ -279,6 +285,14 @@ export const createValidationGateway = (client: ApiClient): ValidationGateway =>
       )
         return fail({ kind: 'outdated' });
       return ok({ name, fromPose, toPose, adjusted: data.adjusted });
+    }),
+
+  listTags: () =>
+    unlessUnreachable(async () => {
+      const { data, response } = await client.GET('/catalog/tags');
+      if (!response.ok) return fail(accessFailure(response.status));
+      const tags = toChoosableTags(data);
+      return tags ? ok(tags) : fail({ kind: 'outdated' });
     }),
 
   rejectProposal: (proposal, reason) =>

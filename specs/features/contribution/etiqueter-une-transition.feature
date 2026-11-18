@@ -218,24 +218,24 @@ Fonctionnalité: Étiqueter une transition proposée
     Contexte:
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
 
-    @web @wip
+    @web
     Scénario: Le formulaire de transition propose les étiquettes de la liste et leur description
       Quand Alice commence à proposer sur le site une transition depuis la pose "Throne"
       Alors le formulaire de transition propose exactement les étiquettes "dynamique", "icarien", "inversion", "lunaire", "pop", "vrille" et "whip"
       Et le formulaire de transition permet de lire ce que veut dire chaque étiquette
 
-    @web @wip
+    @web
     Scénario: Le formulaire explique que « pop » ajoute « dynamique »
       Soit Alice a commencé à proposer sur le site une transition depuis la pose "Throne"
       Quand Alice choisit l'étiquette "pop"
       Alors le formulaire de transition présente aussi l'étiquette "dynamique" choisie, et explique que « pop », « whip » et « icarien » l'ajoutent
 
-    @web @wip
+    @web
     Scénario: Un utilisateur propose sur le site une transition étiquetée
       Quand Alice propose sur le site la transition "Pop to Bird" de "Throne" vers "Bird", avec l'étiquette "pop"
       Alors le site confirme à Alice que sa transition « Pop to Bird » de Throne vers Bird est envoyée et attend une validation
 
-    @web @wip
+    @web
     Scénario: Le site signale une étiquette retirée de la liste pendant la saisie et conserve la transition saisie
       Soit Bruno est validateur
       Et Alice a commencé à proposer sur le site une transition depuis la pose "Throne"
@@ -250,19 +250,19 @@ Fonctionnalité: Étiqueter une transition proposée
       Soit Alice est utilisateur avec l'adresse "alice@example.org"
       Et Bruno est validateur, connecté sur le site
 
-    @web @wip
+    @web
     Scénario: Le validateur voit sur le site les étiquettes d'une transition proposée
       Soit Alice a proposé la transition "Pop to Bird" de "Throne" vers "Bird", avec l'étiquette "pop"
       Quand Bruno consulte la file de validation sur le site
       Alors le site présente la proposition « Transition Pop to Bird de Throne vers Bird » avec les étiquettes « dynamique » et « pop »
 
-    @web @wip
+    @web
     Scénario: La file de validation indique qu'une transition proposée ne porte aucune étiquette
       Soit Alice a proposé une transition sans nom de "Throne" vers "Bird"
       Quand Bruno consulte la file de validation sur le site
       Alors le site présente la proposition « Transition de Throne vers Bird » avec « Étiquettes : aucune »
 
-    @web @wip
+    @web
     Scénario: Le récapitulatif du validateur présente l'ajustement des étiquettes
       Soit Alice a proposé la transition "Pop to Bird" de "Throne" vers "Bird"
       Quand Bruno ajuste sur le site la proposition de la transition "Pop to Bird" de "Throne" vers "Bird" par Alice en corrigeant les étiquettes en "pop"
@@ -273,13 +273,13 @@ Fonctionnalité: Étiqueter une transition proposée
     Contexte:
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
 
-    @web @wip
+    @web
     Scénario: « Mes propositions » présente les étiquettes d'une transition en attente
       Soit Alice a proposé la transition "Pop to Bird" de "Throne" vers "Bird", avec l'étiquette "pop"
       Quand Alice consulte ses propositions sur le site
       Alors le site présente la proposition « Transition Pop to Bird de Throne vers Bird » avec les étiquettes « dynamique » et « pop »
 
-    @web @wip
+    @web
     Scénario: « Mes propositions » présente l'ajustement des étiquettes
       Soit Bruno est validateur
       Et Alice a proposé la transition "Pop to Bird" de "Throne" vers "Bird", avec les étiquettes "pop" et "inversion"

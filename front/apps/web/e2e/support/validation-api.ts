@@ -193,7 +193,7 @@ export class ValidationApi {
   ): PendingProposalResponse {
     const from = this.catalogApi.poseWithId(transition.fromPoseId)!;
     const to = this.catalogApi.poseWithId(transition.toPoseId)!;
-    const { id, name, baseDifficulty, flyerDifficulty, description, submittedAt } = transition;
+    const { id, name, baseDifficulty, flyerDifficulty, description, submittedAt, tagIds = [] } = transition;
     return {
       kind: 'transition-proposal',
       id,
@@ -203,6 +203,7 @@ export class ValidationApi {
       baseDifficulty,
       flyerDifficulty,
       description,
+      tags: this.catalogApi.tags.describe(tagIds).map((tag) => ({ id: tag.id, name: tag.name })),
       contributor,
       submittedAt,
     };

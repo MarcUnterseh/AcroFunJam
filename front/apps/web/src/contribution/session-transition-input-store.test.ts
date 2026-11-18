@@ -11,6 +11,7 @@ const kept: KeptTransitionInput = {
     baseDifficulty: 'advanced',
     flyerDifficulty: null,
     description: 'Vidéo :\nhttps://example.org/ninja-star',
+    tags: [{ id: 'tag-inversion', name: 'inversion' }],
   },
 };
 

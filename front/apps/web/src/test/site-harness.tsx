@@ -61,6 +61,9 @@ import {
   type TagListGateway,
   type TagRemovalFailure,
   type ValidTagContent,
+  type ChoosableTag,
+  type TagTransitionFailure,
+  type TransitionTaggingGateway,
 } from '@acrofunjam/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
@@ -69,6 +72,7 @@ import { createMemoryRouter, RouterProvider, useLocation } from 'react-router';
 import { CatalogGatewayProvider } from '../catalog/CatalogGatewayContext';
 import { PosePageProvider } from '../catalog/PosePageContext';
 import { TagListProvider } from '../catalog/TagListContext';
+import { TransitionTaggingProvider } from '../catalog/TransitionTaggingContext';
 import { ContributionProvider } from '../contribution/ContributionContext';
 import { PoseRevisionProvider } from '../contribution/PoseRevisionContext';
 import { TransitionProposalProvider } from '../contribution/TransitionProposalContext';
@@ -124,6 +128,35 @@ export class MemoryProposalInputStore implements ProposalInputStore {
 
 const star: TransitionPose = { id: 'pose-star', name: 'Star' };
 
+const listed = (name: string, description: string, impliedTagId: string | null = null): Tag => ({
+  id: `tag-${name}`,
+  name,
+  description,
+  impliedTagId,
+  transitionCount: 0,
+});
+
+/** The list of tags as seeded (story 8, ADR 0032), in catalog order: « pop », « whip » and « icarien » add « dynamique ». */
+export const seededTags: readonly Tag[] = [
+  listed('dynamique', "Le passage se fait avec de l'élan."),
+  listed('icarien', 'La base fait tourner le flyer avec les pieds.', 'tag-dynamique'),
+  listed('inversion', 'Le flyer passe tête en bas.'),
+  listed('lunaire', 'Une transition lente et contrôlée.'),
+  listed(
+    'pop',
+    "La base propulse le flyer, qui quitte un instant tout contact avec elle avant d'être rattrapé.",
+    'tag-dynamique',
+  ),
+  listed('vrille', 'Le flyer tourne autour de son axe.'),
+  listed('whip', 'Le flyer est fouetté autour de la base.', 'tag-dynamique'),
+];
+
+/** A tag of the seeded list, as a transition carries it (its id and its name). */
+export const tagNamed = (name: string) => {
+  const tag = seededTags.find((t) => t.name === name)!;
+  return { id: tag.id, name: tag.name };
+};
+
 /**
  * A transition pending validation (story 7): Alice proposes on 14 November 2026 « Ninja Star », from Star to Star,
  * advanced / advanced, with a video link as description, unless stated otherwise.
@@ -140,6 +173,7 @@ export const aPendingTransition = (
     baseDifficulty: 'advanced',
     flyerDifficulty: 'advanced',
     description: 'Vidéo : https://example.org/ninja-star' as TransitionDescription,
+    tags: [],
   },
   contributor: { email: 'alice@example.org', isYou: false },
   submittedAt: new Date('2026-11-14T09:00:00Z'),
@@ -286,6 +320,9 @@ export class FakeValidationGateway implements ValidationGateway {
     this.rejected.push({ id, kind, reason });
     return this.rejection.next();
   };
+  /** Story 8: the list of tags, offered in the adjustment zone of a transition. */
+  readonly tags = new Answers<Result<readonly ChoosableTag[], AccessFailure>>([ok(seededTags)]);
+  listTags = () => this.tags.next();
 }
 
 /** Throne, published (version 1): beginner / intermediate, can start and end a flow (story 6). */
@@ -370,6 +407,17 @@ export class FakePosePageGateway implements PosePageGateway {
   };
 }
 
+/** Tagging a published transition (story 8): the tags sent, answered in turn. */
+export class FakeTransitionTaggingGateway implements TransitionTaggingGateway {
+  readonly answer = new Answers<Result<void, TagTransitionFailure>>([ok(undefined)]);
+  readonly sent: Array<{ transitionId: string; tagIds: readonly string[] }> = [];
+
+  tagTransition = (transitionId: string, tagIds: readonly string[]) => {
+    this.sent.push({ transitionId, tagIds });
+    return this.answer.next();
+  };
+}
+
 /** The published poses of the catalog as the form « Proposer une transition » reads them: Bird, Star, Throne. */
 export const transitionPoses: readonly TransitionPose[] = [
   { id: 'pose-bird', name: 'Bird' },
@@ -386,8 +434,11 @@ export class FakeTransitionProposalGateway implements TransitionProposalGateway 
     ok({ status: 'pending', fromPose: transitionPoses[2]!, toPose: transitionPoses[0]!, name: null }),
   ]);
   readonly sent: ValidTransitionProposal[] = [];
+  /** Story 8: the list of tags, offered by the form. */
+  readonly tags = new Answers<Result<readonly ChoosableTag[], TransitionPosesFailure>>([ok(seededTags)]);
 
   listPublishedPoses = () => this.poses.next();
+  listTags = () => this.tags.next();
   proposeTransition = (transition: ValidTransitionProposal) => {
     this.sent.push(transition);
     return this.answer.next();
@@ -500,6 +551,7 @@ export const renderSite = (
     revisionStore = new MemoryRevisionInputStore(),
     posePage = new FakePosePageGateway(),
     tags = new FakeTagListGateway(),
+    tagging = new FakeTransitionTaggingGateway(),
     transitions = new FakeTransitionProposalGateway(),
     transitionStore = new MemoryTransitionInputStore(),
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
@@ -515,6 +567,7 @@ export const renderSite = (
     revisionStore?: MemoryRevisionInputStore;
     posePage?: FakePosePageGateway;
     tags?: TagListGateway;
+    tagging?: FakeTransitionTaggingGateway;
     transitions?: FakeTransitionProposalGateway;
     transitionStore?: MemoryTransitionInputStore;
     queryClient?: QueryClient;
@@ -527,21 +580,23 @@ export const renderSite = (
       <CatalogGatewayProvider gateway={catalog}>
         <PosePageProvider gateway={posePage}>
           <TagListProvider gateway={tags}>
-            <ContributionProvider gateway={contribution} store={store}>
-              <ValidationProvider gateway={validation} store={decisionStore}>
-                <PoseRevisionProvider gateway={revision} store={revisionStore}>
-                  <TransitionProposalProvider gateway={transitions} store={transitionStore}>
-                    <IdentityProvider
-                      gateway={gateway}
-                      memory={memory}
-                      forgetOnSignOut={[store, decisionStore, revisionStore, transitionStore]}
-                    >
-                      <RouterProvider router={router} />
-                    </IdentityProvider>
-                  </TransitionProposalProvider>
-                </PoseRevisionProvider>
-              </ValidationProvider>
-            </ContributionProvider>
+            <TransitionTaggingProvider gateway={tagging}>
+              <ContributionProvider gateway={contribution} store={store}>
+                <ValidationProvider gateway={validation} store={decisionStore}>
+                  <PoseRevisionProvider gateway={revision} store={revisionStore}>
+                    <TransitionProposalProvider gateway={transitions} store={transitionStore}>
+                      <IdentityProvider
+                        gateway={gateway}
+                        memory={memory}
+                        forgetOnSignOut={[store, decisionStore, revisionStore, transitionStore]}
+                      >
+                        <RouterProvider router={router} />
+                      </IdentityProvider>
+                    </TransitionProposalProvider>
+                  </PoseRevisionProvider>
+                </ValidationProvider>
+              </ContributionProvider>
+            </TransitionTaggingProvider>
           </TagListProvider>
         </PosePageProvider>
       </CatalogGatewayProvider>
@@ -559,6 +614,7 @@ export const renderSite = (
     revision,
     revisionStore,
     posePage,
+    tagging,
     transitions,
     transitionStore,
     queryClient,

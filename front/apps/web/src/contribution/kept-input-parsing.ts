@@ -2,6 +2,7 @@ import {
   difficultyScale,
   type DifficultyLevel,
   type PoseProposalInput,
+  type TagReference,
   type TransitionAdjustmentInput,
 } from '@acrofunjam/core';
 
@@ -20,17 +21,28 @@ export const isRecord = (value: unknown): value is Record<string, unknown> =>
 /** A stored level of the scale, null when it is not one the site knows (not trusted, left unanswered). */
 export const level = (value: unknown): DifficultyLevel | null =>
   difficultyScale.find((known) => known === value) ?? null;
+/** Stored tags of a transition (story 8), by id and name; null when they cannot be read (not trusted). */
+export const storedTags = (value: unknown): TagReference[] | null =>
+  Array.isArray(value) &&
+  value.every((tag) => isRecord(tag) && typeof tag['id'] === 'string' && typeof tag['name'] === 'string')
+    ? value.map((tag: Record<string, string>) => ({ id: tag['id']!, name: tag['name']! }))
+    : null;
+
 const answer = (value: unknown): boolean | null => (typeof value === 'boolean' ? value : null);
 
 /** The values of a transition typed in the adjustment zone (story 7), as stored. */
 export const parseTransitionAdjustmentInput = (value: unknown): TransitionAdjustmentInput | null => {
   if (!isRecord(value) || typeof value['name'] !== 'string' || typeof value['description'] !== 'string')
     return null;
+  // Tags that cannot be read would be taken for an adjustment: the whole input is not trusted.
+  const tags = storedTags(value['tags']);
+  if (!tags) return null;
   return {
     name: value['name'],
     baseDifficulty: level(value['baseDifficulty']),
     flyerDifficulty: level(value['flyerDifficulty']),
     description: value['description'],
+    tags,
   };
 };
 

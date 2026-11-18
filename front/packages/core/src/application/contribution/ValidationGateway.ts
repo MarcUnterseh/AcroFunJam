@@ -7,6 +7,7 @@ import type { RejectionReason } from '../../domain/contribution/rejection-reason
 import type { RevisionMessage } from '../../domain/contribution/revision-message';
 import type { TransitionAdjustment } from '../../domain/contribution/transition-adjustment';
 import type { TransitionContent, TransitionPose } from '../../domain/contribution/transition-proposal';
+import type { ChoosableTag } from '../../domain/shared-kernel/transition-tags';
 import type { TransitionPlaceTaken } from './TransitionProposalGateway';
 
 /** Who made a proposal: their address (null if the account no longer exists), and whether it is the requester. */
@@ -107,7 +108,9 @@ export type DecisionFailure =
   /** The retained name of a transition, or its place without a name, is taken between its poses (story 7). */
   | { readonly kind: TransitionPlaceTaken }
   /** A pose of the transition left the catalog meanwhile (story 7): it can only be rejected. */
-  | { readonly kind: 'transition-pose-not-found' };
+  | { readonly kind: 'transition-pose-not-found' }
+  /** Retained tags left the list of tags meanwhile (story 8, ADR 0034). */
+  | { readonly kind: 'tags-not-in-list' };
 
 /** Port: the validation of proposals by the Contribution API (implemented by @acrofunjam/api-client). */
 export interface ValidationGateway {
@@ -126,4 +129,6 @@ export interface ValidationGateway {
     proposal: ProposalReference,
     reason: RejectionReason,
   ): Promise<Result<void, DecisionFailure>>;
+  /** Story 8: the tags of the list, in catalog order, to adjust those of a transition. */
+  listTags(): Promise<Result<readonly ChoosableTag[], AccessFailure>>;
 }

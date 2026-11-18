@@ -13,6 +13,7 @@ import {
   type TransitionAdjustmentInput,
 } from '../../domain/contribution/transition-adjustment';
 import type { TransitionFieldError } from '../../domain/contribution/transition-proposal';
+import type { ChoosableTag } from '../../domain/shared-kernel/transition-tags';
 import type { TransitionPlaceTaken } from './TransitionProposalGateway';
 import type { DecisionInputStore, KeptDecision } from './DecisionInputStorePort';
 import type {
@@ -51,7 +52,8 @@ export type DecisionError =
   | { readonly kind: 'retained-revision-changes-nothing' }
   | { readonly kind: 'pose-changed' }
   | { readonly kind: TransitionPlaceTaken }
-  | { readonly kind: 'transition-pose-not-found' };
+  | { readonly kind: 'transition-pose-not-found' }
+  | { readonly kind: 'tags-not-in-list' };
 
 export type RejectProposalError =
   DecisionError | { readonly kind: 'invalid-reason'; readonly code: RejectionReasonError };
@@ -270,3 +272,8 @@ export const restoreDecisionInputs = (
   store.clear();
   return kept?.owner === owner ? kept.decisions : {};
 };
+
+/** Story 8: the tags of the list, in catalog order, offered in the adjustment zone of a transition. */
+export const listTransitionTags = async (
+  gateway: ValidationGateway,
+): Promise<Result<readonly ChoosableTag[], AccessError>> => translated(await gateway.listTags());

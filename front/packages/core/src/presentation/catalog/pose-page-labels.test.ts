@@ -6,6 +6,10 @@ import {
   proposeTransitionFromLabel,
   transitionsSectionTitle,
   unnamedTransitionLabel,
+  tagTransitionButtonName,
+  tagTransitionFailureLabel,
+  type TransitionTaggingFailure,
+  transitionTaggingLabels,
 } from './pose-page-labels';
 
 describe('posePageLabels', () => {
@@ -67,5 +71,46 @@ describe('unnamedTransitionLabel', () => {
 describe('proposeTransitionFromLabel', () => {
   it('should invite to propose a transition from the pose consulted', () => {
     expect(proposeTransitionFromLabel('Throne')).toBe('Proposer une transition depuis Throne');
+  });
+});
+
+describe('the zone « Étiqueter » (story 8)', () => {
+  it('should name the button, the group and the actions as the design does', () => {
+    expect(transitionTaggingLabels).toMatchObject({
+      tag: 'Étiqueter',
+      legend: 'Étiquettes de la transition',
+      save: 'Enregistrer les étiquettes',
+      saving: 'Enregistrement…',
+      cancel: 'Annuler',
+      saved: 'Étiquettes enregistrées.',
+    });
+  });
+
+  it('should complete the name of the button with the transition it tags', () => {
+    expect(tagTransitionButtonName('Pop to Bird')).toBe('Étiqueter Pop to Bird');
+    expect(tagTransitionButtonName('de Bird vers Folded Leaf')).toBe('Étiqueter de Bird vers Folded Leaf');
+  });
+
+  it.each<[TransitionTaggingFailure, string]>([
+    [
+      { kind: 'session-expired' },
+      'Ta session a expiré. Connecte-toi de nouveau pour étiqueter cette transition.',
+    ],
+    [{ kind: 'role-withdrawn' }, 'Tu ne peux plus étiqueter les transitions : ton rôle a changé.'],
+    [
+      { kind: 'unreachable' },
+      "Les étiquettes n'ont pas pu être enregistrées : impossible de joindre AcroFunJam. Vérifie ta connexion Internet, puis réessaie.",
+    ],
+    [
+      { kind: 'outdated' },
+      "Les étiquettes n'ont pas pu être enregistrées : le site doit être mis à jour. Recharge la page.",
+    ],
+    [{ kind: 'not-found' }, "Cette transition n'est plus dans le catalogue. Recharge la page."],
+    [
+      { kind: 'tags-not-in-list' },
+      'Une étiquette choisie ne fait plus partie de la liste des étiquettes. Vérifie les étiquettes, puis enregistre de nouveau.',
+    ],
+  ])('should tell why the tags were not recorded (%o)', (error, label) => {
+    expect(tagTransitionFailureLabel(error)).toBe(label);
   });
 });

@@ -16,7 +16,12 @@ import {
   transitionSuccessDocumentTitle,
   newTransitionFormAnnouncement,
   transitionProposalLabels,
+  tagsNoLongerInListLabel,
+  transitionTagLabels,
+  withImpliedTags,
+  type ChoosableTag,
   type OpenTransitionProposalError,
+  type TagReference,
   type TransitionField,
   type TransitionFieldError,
   type TransitionPlaceTaken,
@@ -33,6 +38,7 @@ import { useAnnounce } from '../layout/Announcer';
 import { focusPageTitle } from '../layout/focus';
 import { Field, FormAlert, SelectField, TextAreaField } from '../layout/form-controls';
 import { Icon } from '../layout/Icon';
+import { TagChoiceGroup } from '../layout/tag-parts';
 import { catalogPath, posePath, signInPath, transitionProposalPath } from '../paths';
 import { descriptionCounter, DescriptionCounter } from './DescriptionCounter';
 import { nameCounter, NameCounter } from './NameCounter';
@@ -49,10 +55,16 @@ type Opening =
       readonly status: 'loaded';
       readonly poses: readonly TransitionPose[];
       readonly fromPose: TransitionPose;
+      readonly tags: readonly ChoosableTag[];
     };
 
 /** Global alerts, at the top of the form; the input is kept for each of them. */
-type Alert = 'unreachable' | 'outdated' | 'session-expired';
+type Alert =
+  | 'unreachable'
+  | 'outdated'
+  | 'session-expired'
+  /** Story 8: chosen tags left the list meanwhile (information: not a fault of the person). */
+  | { readonly tagsGone: readonly TagReference[] };
 
 /** A refusal shown under a field: the place taken between the poses (under the name), a pose gone. */
 type FieldRefusal =
@@ -135,7 +147,12 @@ export function TransitionForm({
       restored.current = true;
       const kept = restoreTransitionInput(store, originPoseId, owner);
       if (kept) {
-        setInput(kept);
+        // A kept tag that left the list meanwhile is left out.
+        const tags = withImpliedTags(
+          answer.value.tags,
+          kept.tags.map((tag) => tag.id),
+        );
+        setInput({ ...kept, tags });
         announce(transitionProposalLabels.inputRestored);
       }
     }
@@ -312,10 +329,27 @@ export function TransitionForm({
         const field = failure.field;
         const published = await gateway.listPublishedPoses();
         if (!mounted.current) return;
-        if (published.ok) setOpening({ status: 'loaded', poses: published.value, fromPose: origin });
+        if (published.ok) setOpening({ ...opening, poses: published.value });
         setInput((current) => ({ ...current, [field]: '' }));
         setRefusal({ field, kind: 'pose-not-found' });
         setFocus(field);
+        return;
+      }
+      case 'tags-not-in-list': {
+        // The tags gone are taken out of the input and of the list read again; the rest of the input is kept.
+        setErrors([]);
+        setRefusal(null);
+        const gone = new Set(failure.tags.map((tag) => tag.id));
+        setInput((current) => ({ ...current, tags: current.tags.filter((tag) => !gone.has(tag.id)) }));
+        setAlert({ tagsGone: failure.tags });
+        const listed = await gateway.listTags();
+        if (!mounted.current) return;
+        setOpening({
+          status: 'loaded',
+          poses,
+          fromPose: origin,
+          tags: listed.ok ? listed.value : opening.tags.filter((tag) => !gone.has(tag.id)),
+        });
         return;
       }
       case 'session-expired':
@@ -390,6 +424,13 @@ export function TransitionForm({
               >
                 {busy ? transitionProposalLabels.submitting : transitionProposalLabels.retry}
               </button>
+            </div>
+          </FormAlert>
+        ) : typeof alert === 'object' && alert !== null ? (
+          <FormAlert key={attempt} variant="info">
+            <Icon name="info" />
+            <div className="form-alert__content">
+              <p>{tagsNoLongerInListLabel(alert.tagsGone)}</p>
             </div>
           </FormAlert>
         ) : (
@@ -474,6 +515,13 @@ export function TransitionForm({
             firstRadioRef={refs.flyerDifficulty}
           />
         </div>
+        <TagChoiceGroup
+          list={opening.tags}
+          chosen={input.tags}
+          onChange={(tags) => setInput((current) => ({ ...current, tags }))}
+          legend={transitionTagLabels.legend}
+          help={transitionTagLabels.help}
+        />
         <TextAreaField
           ref={refs.description}
           label={transitionProposalLabels.description}

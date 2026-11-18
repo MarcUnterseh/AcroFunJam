@@ -1,6 +1,7 @@
 import {
   fail,
   ok,
+  type ChoosableTag,
   type Result,
   type TransitionPose,
   type TransitionPosesFailure,
@@ -11,6 +12,7 @@ import {
 } from '@acrofunjam/core';
 import type { ApiClient } from '../client';
 import type { components } from '../generated/schema';
+import { tagIdsOf, toChoosableTags } from '../shared-kernel/tag-reading';
 import { isRecord, toTransitionPose, transitionPlaceRefusals } from './transition-reading';
 
 type ProposeTransitionRequest = components['schemas']['ProposeTransitionRequest'];
@@ -30,6 +32,8 @@ const failureOf = (status: number, problem: unknown): TransitionProposalFailure 
   // handled the same way, as for the other proposals.
   if (status === 401 || status === 403) return { kind: 'unauthenticated' };
   if (status >= 500) return { kind: 'unreachable' };
+  if (status === 409 && codeOf(problem) === 'contribution.tag-not-in-list')
+    return { kind: 'tags-not-in-list', tagIds: tagIdsOf(problem) };
   const refusal = status === 404 || status === 409 ? refusals[codeOf(problem)] : undefined;
   // The content rules (400) are checked by the site before sending: refused anyway, the site is outdated, as for a
   // refusal it does not know; the input is kept and reloading brings the new rules (ADR 0019).
@@ -44,6 +48,7 @@ const toRequest = (transition: ValidTransitionProposal): ProposeTransitionReques
   baseDifficulty: transition.baseDifficulty,
   flyerDifficulty: transition.flyerDifficulty,
   description: transition.description,
+  tagIds: transition.tags.map((tag) => tag.id),
 });
 
 const statuses: Readonly<Record<string, TransitionProposalOutcome['status']>> = {
@@ -73,6 +78,14 @@ export const createTransitionProposalGateway = (client: ApiClient): TransitionPr
       if (!Array.isArray(poses)) return fail({ kind: 'outdated' });
       const read = poses.map(toTransitionPose);
       return read.every((pose) => pose !== null) ? ok(read) : fail({ kind: 'outdated' });
+    }),
+
+  listTags: () =>
+    unlessUnreachable<readonly ChoosableTag[], TransitionPosesFailure>(async () => {
+      const { data, response } = await client.GET('/catalog/tags');
+      if (!response.ok) return fail(response.status >= 500 ? { kind: 'unreachable' } : { kind: 'outdated' });
+      const tags = toChoosableTags(data);
+      return tags ? ok(tags) : fail({ kind: 'outdated' });
     }),
 
   proposeTransition: (transition) =>

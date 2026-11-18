@@ -1,4 +1,5 @@
 import type {
+  TagReference,
   TransitionAdjustment,
   TransitionContent,
   TransitionDescription,
@@ -6,6 +7,7 @@ import type {
   TransitionPose,
 } from '@acrofunjam/core';
 import { isDifficultyCode } from '../shared-kernel/difficulty-codes';
+import { everyItem, toTagReference } from '../shared-kernel/tag-reading';
 
 // Reading the transitions of the Contribution API (story 7, ADR 0030). The generated types describe the contract, but
 // the server may evolve before the client is regenerated: every value is checked, null when it cannot be read.
@@ -21,10 +23,15 @@ export const toTransitionPose = (value: unknown): TransitionPose | null =>
     ? { id: value['id'], name: value['name'] }
     : null;
 
-/** The transition carried by an item (proposed, or retained once accepted): name and description normalised by the API. */
+/**
+ * The transition carried by an item (proposed, or retained once accepted): name and description normalised by the API,
+ * tags under their current names, in catalog order (story 8).
+ */
 export const toTransitionContent = (item: Record<string, unknown>): TransitionContent | null => {
   const { name, baseDifficulty, flyerDifficulty, description } = item;
+  const tags = everyItem(item['tags'], toTagReference);
   if (
+    !tags ||
     !isOptionalString(name) ||
     !isDifficultyCode(baseDifficulty) ||
     !isDifficultyCode(flyerDifficulty) ||
@@ -36,10 +43,14 @@ export const toTransitionContent = (item: Record<string, unknown>): TransitionCo
     baseDifficulty,
     flyerDifficulty,
     description: description as TransitionDescription | null,
+    tags,
   };
 };
 
 type Change<T> = { readonly proposed: T; readonly retained: T };
+
+/** A list of tags by identifier and current name (story 8). */
+const isTagList = (value: unknown): value is TagReference[] => everyItem(value, toTagReference) !== null;
 
 /** An adjusted field, null when absent (not adjusted), undefined when it cannot be read. */
 const change = <T>(value: unknown, isValue: (v: unknown) => v is T): Change<T> | null | undefined => {
@@ -58,8 +69,9 @@ export const toTransitionAdjustments = (adjustments: unknown): TransitionAdjustm
   const name = change(adjustments['name'], isOptionalString);
   const base = change(adjustments['baseDifficulty'], isDifficultyCode);
   const flyer = change(adjustments['flyerDifficulty'], isDifficultyCode);
+  const tags = change(adjustments['tags'], isTagList);
   const description = change(adjustments['description'], isOptionalString);
-  if ([name, base, flyer, description].includes(undefined)) return undefined;
+  if ([name, base, flyer, tags, description].includes(undefined)) return undefined;
   const read: TransitionAdjustment[] = [];
   if (name)
     read.push({
@@ -69,6 +81,7 @@ export const toTransitionAdjustments = (adjustments: unknown): TransitionAdjustm
     });
   if (base) read.push({ field: 'baseDifficulty', ...base });
   if (flyer) read.push({ field: 'flyerDifficulty', ...flyer });
+  if (tags) read.push({ field: 'tags', ...tags });
   if (description)
     read.push({
       field: 'description',

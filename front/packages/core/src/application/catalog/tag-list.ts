@@ -28,7 +28,8 @@ export type TagEditError =
 
 export type TagRemovalError = TagAccessError | Exclude<TagRemovalFailure, TagAccessFailure>;
 
-const accessError = (failure: TagAccessFailure): TagAccessError => {
+/** What the site tells of a refusal whatever the tag (also when tagging a transition). */
+export const tagAccessError = (failure: TagAccessFailure): TagAccessError => {
   switch (failure.kind) {
     case 'unauthenticated':
       return { kind: 'session-expired' };
@@ -43,7 +44,7 @@ const isAccessFailure = (failure: { readonly kind: string }): failure is TagAcce
   ['unauthenticated', 'forbidden', 'unreachable', 'outdated'].includes(failure.kind);
 
 const translated = <E extends { readonly kind: string }>(failure: E | TagAccessFailure) =>
-  isAccessFailure(failure) ? accessError(failure) : (failure as Exclude<E, TagAccessFailure>);
+  isAccessFailure(failure) ? tagAccessError(failure) : (failure as Exclude<E, TagAccessFailure>);
 
 /** The tags of the list, in catalog order. */
 export const listTags = (gateway: TagListGateway): Promise<Result<readonly Tag[], TagListFailure>> =>

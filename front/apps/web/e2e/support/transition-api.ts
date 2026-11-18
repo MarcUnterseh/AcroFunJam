@@ -24,6 +24,9 @@ const normalisedText = (text: string | null | undefined) =>
   (text ?? '').split(/\s+/u).filter(Boolean).join(' ');
 const optionalName = (raw: string | null | undefined) => normalised(raw ?? '') || null;
 const optionalDescription = (raw: string | null | undefined) => (raw ?? '').trim() || null;
+/** The same set of tags, whatever their order. */
+const sameTags = (a: readonly string[] = [], b: readonly string[] = []) =>
+  a.length === b.length && a.every((id) => b.includes(id));
 
 /** A transition sent by the site, as received. */
 export type SentTransition = ProposeTransitionRequest;
@@ -64,9 +67,19 @@ export class TransitionApi {
     );
   }
 
-  /** Accepted elsewhere (before the scenario), as proposed. */
-  acceptElsewhere(transition: SubmittedTransition): void {
-    this.publish(transition, this.valuesOf(transition), null);
+  /** Accepted elsewhere (before the scenario), as proposed, or with other tags (story 8). */
+  acceptElsewhere(transition: SubmittedTransition, tagIds?: string[]): void {
+    const values = this.valuesOf(transition);
+    this.publish(
+      transition,
+      tagIds ? { ...values, tagIds: this.catalogApi.tags.choose(tagIds).tagIds } : values,
+      null,
+    );
+  }
+
+  /** The values of a transition as answered: its tags by id and current name, in catalog order. */
+  private response({ tagIds = [], ...values }: TransitionValues) {
+    return { ...values, tags: this.catalogApi.tags.describe(tagIds).map(({ id, name }) => ({ id, name })) };
   }
 
   /** Reachability, then the session (401), then the capability to decide (403), as the API policies do. */
@@ -111,6 +124,9 @@ export class TransitionApi {
     const name = optionalName(request.name);
     const place = this.placeTaken(from.id, to.id, name);
     if (place) return this.problem(route, 409, this.placeTakenCode(place, name !== null));
+    const chosen = this.catalogApi.tags.choose(request.tagIds ?? []);
+    if (chosen.notInList.length > 0)
+      return this.problem(route, 409, 'contribution.tag-not-in-list', { tagIds: chosen.notInList });
 
     const directly = account.role !== 'user';
     const values: TransitionValues = {
@@ -118,6 +134,7 @@ export class TransitionApi {
       baseDifficulty: request.baseDifficulty as DifficultyCode,
       flyerDifficulty: request.flyerDifficulty as DifficultyCode,
       description: optionalDescription(request.description),
+      tagIds: chosen.tagIds,
     };
     const transition = this.contributionApi.addTransition(
       { fromPoseId: from.id, toPoseId: to.id, contributorEmail: account.email, ...values },
@@ -128,7 +145,7 @@ export class TransitionApi {
       status: directly ? 'accepted' : 'pending',
       fromPose: { id: from.id, name: from.name },
       toPose: { id: to.id, name: to.name },
-      ...values,
+      ...this.response(values),
     };
     return route.fulfill({ status: 201, json: answer });
   }
@@ -146,13 +163,22 @@ export class TransitionApi {
       baseDifficulty: (body?.baseDifficulty ?? transition.baseDifficulty) as DifficultyCode,
       flyerDifficulty: (body?.flyerDifficulty ?? transition.flyerDifficulty) as DifficultyCode,
       description: body?.description != null ? optionalDescription(body.description) : transition.description,
+      tagIds: transition.tagIds ?? [],
     };
+    if (body?.tagIds != null) {
+      const chosen = this.catalogApi.tags.choose(body.tagIds);
+      if (chosen.notInList.length > 0)
+        return this.problem(route, 409, 'contribution.tag-not-in-list', { tagIds: chosen.notInList });
+      retained.tagIds = chosen.tagIds;
+    }
     const place = this.placeTaken(transition.fromPoseId, transition.toPoseId, retained.name, transition.id);
     if (place) return this.problem(route, 409, this.placeTakenCode(place, retained.name !== null));
     const proposed = this.valuesOf(transition);
-    const adjusted = (Object.keys(retained) as (keyof TransitionValues)[]).some(
-      (field) => retained[field] !== proposed[field],
-    );
+    const adjusted =
+      !sameTags(retained.tagIds, proposed.tagIds) ||
+      (['name', 'baseDifficulty', 'flyerDifficulty', 'description'] as const).some(
+        (field) => retained[field] !== proposed[field],
+      );
     this.publish(transition, retained, adjusted ? normalisedText(body?.message) || null : null);
     const from = this.catalogApi.poseWithId(transition.fromPoseId)!;
     const to = this.catalogApi.poseWithId(transition.toPoseId)!;
@@ -162,7 +188,7 @@ export class TransitionApi {
       adjusted,
       fromPose: { id: from.id, name: from.name },
       toPose: { id: to.id, name: to.name },
-      ...retained,
+      ...this.response(retained),
     };
     return route.fulfill({ json: answer });
   }
@@ -187,6 +213,7 @@ export class TransitionApi {
       fromPoseId: transition.fromPoseId,
       toPoseId: transition.toPoseId,
       ...retained,
+      tagIds: retained.tagIds ?? [],
     });
   }
 
@@ -195,8 +222,9 @@ export class TransitionApi {
     baseDifficulty,
     flyerDifficulty,
     description,
+    tagIds,
   }: SubmittedTransition): TransitionValues {
-    return { name, baseDifficulty, flyerDifficulty, description };
+    return { name, baseDifficulty, flyerDifficulty, description, tagIds: tagIds ?? [] };
   }
 
   private idOf(route: Route): string {
@@ -204,8 +232,8 @@ export class TransitionApi {
     return segments[segments.length - 2] ?? '';
   }
 
-  private problem(route: Route, status: number, title: string) {
-    const body: ProblemDetails = { title, status };
+  private problem(route: Route, status: number, title: string, extensions: Record<string, unknown> = {}) {
+    const body: ProblemDetails = { title, status, ...extensions };
     return route.fulfill({ status, contentType: 'application/problem+json', body: JSON.stringify(body) });
   }
 }

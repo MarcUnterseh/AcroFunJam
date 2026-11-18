@@ -2545,3 +2545,255 @@ main {
     color: LinkText;
   }
 }
+
+/* ---------------------------------------------------------------------------------------------------------------
+ * Story 8 « Étiquettes », part 2: the tags of a transition (pilule-etiquette.md, groupe-cases-pastilles.md,
+ * repli-descriptions-etiquettes.md, zone-etiqueter.md).
+ * ------------------------------------------------------------------------------------------------------------- */
+
+/* Line « Étiquettes »: read-only pills in stone, after the difficulties. */
+.tag-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--afj-spacing-xs) var(--afj-spacing-sm);
+  margin: 0;
+}
+
+.tag-line__term {
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text-muted);
+}
+
+.tag-line__value {
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+}
+
+.tag-line__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--afj-spacing-xs) var(--afj-spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  max-inline-size: 100%;
+  padding: var(--afj-spacing-xs) calc(var(--afj-spacing-sm) + var(--afj-spacing-xs));
+  background: var(--afj-color-tag-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-tag-border);
+  border-radius: var(--afj-radius-pill);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-medium);
+  line-height: var(--afj-line-height-tight);
+  color: var(--afj-color-text);
+  overflow-wrap: anywhere;
+}
+
+/* Fold of the meanings: a native details, no animation. */
+.tag-meanings__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--afj-spacing-xs);
+  min-block-size: var(--afj-size-touch-target);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-primary);
+  list-style: none;
+  cursor: pointer;
+}
+
+.tag-meanings__summary::-webkit-details-marker {
+  display: none;
+}
+
+.tag-meanings__summary:focus-visible {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus);
+  outline-offset: var(--afj-size-focus-ring-offset);
+  border-radius: var(--afj-radius-sm);
+}
+
+.tag-meanings__summary:active {
+  color: var(--afj-color-primary-active);
+}
+
+.tag-meanings[open] > .tag-meanings__summary .icon {
+  transform: rotate(180deg);
+}
+
+.tag-meanings__list {
+  display: grid;
+  gap: var(--afj-spacing-sm);
+  margin: var(--afj-spacing-xs) 0 0;
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface-hover);
+  border-radius: var(--afj-radius-sm);
+  font-size: var(--afj-font-size-sm);
+}
+
+.tag-meanings__list dt {
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.tag-meanings__list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Group of checkboxes drawn as pills: the native box stays visible, it carries the check. */
+.tag-choice {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.tag-choice__legend {
+  margin-bottom: var(--afj-spacing-xs);
+  padding: 0;
+  font-size: var(--afj-font-size-md);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text);
+}
+
+.tag-choice__help {
+  margin: 0 0 var(--afj-spacing-sm);
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+.tag-choice__boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--afj-spacing-sm);
+}
+
+.tag-choice__box {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--afj-spacing-sm);
+  min-block-size: var(--afj-size-touch-target);
+  max-inline-size: 100%;
+  padding: 0 var(--afj-spacing-md) 0 calc(var(--afj-spacing-sm) + var(--afj-spacing-xs));
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-pill);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.tag-choice__box input {
+  inline-size: var(--afj-size-icon);
+  block-size: var(--afj-size-icon);
+  margin: 0;
+  flex: none;
+  accent-color: var(--afj-color-selected);
+}
+
+/* The ring surrounds the whole pill; the native ring of the box is replaced by it. */
+.tag-choice__box input:focus-visible {
+  outline: none;
+}
+
+.tag-choice__box:has(input:focus-visible) {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus);
+  outline-offset: var(--afj-size-focus-ring-offset);
+}
+
+/* Checked: check, doubled border, semibold label (not carried by the colour alone); the text does not move. */
+.tag-choice__box:has(input:checked) {
+  padding: 0 calc(var(--afj-spacing-md) - var(--afj-size-border-width)) 0
+    calc(var(--afj-spacing-sm) + var(--afj-spacing-xs) - var(--afj-size-border-width));
+  background: var(--afj-color-selected-surface);
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-selected);
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+@media (hover: hover) {
+  .tag-choice__box:not(:has(input:checked)):hover {
+    background: var(--afj-color-surface-hover);
+    border-color: var(--afj-color-text);
+  }
+
+  .tag-meanings__summary:hover {
+    color: var(--afj-color-primary-hover);
+    text-decoration: underline;
+  }
+}
+
+/* « dynamique » est ajoutée… */
+.tag-choice__note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--afj-spacing-sm);
+  margin-top: var(--afj-spacing-sm);
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+  background: var(--afj-color-info-surface);
+  border-radius: var(--afj-radius-md);
+  font-size: var(--afj-font-size-sm);
+}
+
+.tag-choice__note > .icon {
+  flex: none;
+  color: var(--afj-color-info);
+}
+
+.tag-choice__note p {
+  margin: 0;
+}
+
+.tag-choice .tag-meanings {
+  margin-top: var(--afj-spacing-sm);
+}
+
+/* Footer of management of a transition (validators): dotted top border, then the zone « Étiqueter ». */
+.transition__manage {
+  padding-top: var(--afj-spacing-sm);
+  border-top: var(--afj-size-border-width) dotted var(--afj-color-divider);
+}
+
+.tagging-zone {
+  display: grid;
+  gap: var(--afj-spacing-md);
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-background);
+  border-radius: var(--afj-radius-sm);
+}
+
+.tagging-zone__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--afj-spacing-sm);
+}
+
+@media (width < 40em) {
+  .tagging-zone__actions .button {
+    inline-size: 100%;
+  }
+}
+
+@media (forced-colors: active) {
+  .tag-pill,
+  .tag-meanings__list,
+  .tag-choice__note,
+  .tagging-zone {
+    border: var(--afj-size-border-width) solid CanvasText;
+  }
+
+  .tag-choice__box {
+    border-color: CanvasText;
+  }
+
+  .tag-choice__box:has(input:checked) {
+    border-color: Highlight;
+  }
+
+  .tag-meanings__summary {
+    color: LinkText;
+  }
+}

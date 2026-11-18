@@ -10,6 +10,7 @@ import {
   FakeValidationGateway,
   MemoryDecisionInputStore,
   renderSite,
+  tagNamed,
 } from '../test/site-harness';
 
 // Story 7: a transition proposal in the validation queue (docs/design/composants/carte-transition.md).
@@ -80,7 +81,13 @@ describe('a transition in the validation queue', () => {
     const unnamed = aPendingTransition({
       fromPose: { id: 'pose-throne', name: 'Throne' },
       toPose: { id: 'pose-bird', name: 'Bird' },
-      transition: { name: null, baseDifficulty: 'beginner', flyerDifficulty: 'beginner', description: null },
+      transition: {
+        name: null,
+        baseDifficulty: 'beginner',
+        flyerDifficulty: 'beginner',
+        description: null,
+        tags: [],
+      },
     });
     const { card } = await openQueue(new FakeValidationGateway(unnamed), 'Transition de Throne vers Bird');
 
@@ -222,5 +229,70 @@ describe('a transition in the validation queue', () => {
       kind: 'transition-acceptance',
       input: { flyerDifficulty: 'intermediate' },
     });
+  });
+});
+
+describe('the tags of a transition in the validation queue (story 8)', () => {
+  const popToBird = () =>
+    aPendingTransition({
+      transition: {
+        ...aPendingTransition().transition,
+        name: 'Pop to Bird' as TransitionName,
+        tags: [tagNamed('dynamique'), tagNamed('pop')],
+      },
+      fromPose: { id: 'pose-throne', name: 'Throne' },
+      toPose: { id: 'pose-bird', name: 'Bird' },
+    });
+  const popToBirdTitle = 'Transition Pop to Bird de Throne vers Bird';
+
+  it('should present its tags after the difficulties', async () => {
+    const { card } = await openQueue(new FakeValidationGateway(popToBird()), popToBirdTitle);
+
+    const line = within(card).getByRole('list', { name: 'Étiquettes' });
+    expect(
+      within(line)
+        .getAllByRole('listitem')
+        .map((pill) => pill.textContent),
+    ).toEqual(['dynamique', 'pop']);
+  });
+
+  it('should say « aucune » for a transition without tags', async () => {
+    const { card } = await openQueue();
+
+    expect(valueOf(card, 'Étiquettes')).toHaveTextContent('aucune');
+  });
+
+  it('should offer the tags of the list in the adjustment zone, the proposed ones checked and reminded', async () => {
+    const { card, user } = await openQueue(new FakeValidationGateway(popToBird()), popToBirdTitle);
+
+    await user.click(button(card, 'Ajuster avant de publier'));
+
+    const tags = await within(card).findByRole('group', { name: 'Étiquettes (facultatives)' });
+    expect(within(tags).getByRole('checkbox', { name: 'pop' })).toBeChecked();
+    expect(within(tags).getByRole('checkbox', { name: 'dynamique' })).toBeChecked();
+    expect(within(tags).getByRole('checkbox', { name: 'lunaire' })).not.toBeChecked();
+    expect(tags).toHaveAccessibleDescription(expect.stringContaining('Proposées : dynamique, pop'));
+  });
+
+  it('should present the adjustment of the tags in the summary, then send them', async () => {
+    const validation = new FakeValidationGateway(aPendingTransition());
+    const { card, user } = await openQueue(validation);
+
+    await user.click(button(card, 'Ajuster avant de publier'));
+    const tags = await within(card).findByRole('group', { name: 'Étiquettes (facultatives)' });
+    await user.click(within(tags).getByRole('checkbox', { name: 'pop' }));
+    await user.click(button(card, 'Vérifier les ajustements'));
+
+    expect(
+      await within(card).findByRole('heading', { level: 3, name: 'Vérifie tes ajustements' }),
+    ).toBeInTheDocument();
+    expect(valueOf(card, 'Étiquettes')).toHaveTextContent('Proposé : aucune, retenu : dynamique, pop');
+    await user.click(button(card, 'Publier avec ces ajustements'));
+
+    await waitFor(() =>
+      expect(validation.acceptedTransitions[0]?.acceptance.adjustments).toEqual([
+        { field: 'tags', proposed: [], retained: [tagNamed('dynamique'), tagNamed('pop')] },
+      ]),
+    );
   });
 });

@@ -10,6 +10,7 @@ import {
   type TransitionName,
   type TransitionNameError,
 } from '../shared-kernel/transition-name';
+import type { TagReference } from '../shared-kernel/transition-tags';
 
 /**
  * A published pose a transition designates (story 7): its id and its current name. Contribution has its own type: the
@@ -28,6 +29,8 @@ export type TransitionProposalInput = {
   readonly baseDifficulty: DifficultyLevel | null;
   readonly flyerDifficulty: DifficultyLevel | null;
   readonly description: string;
+  /** Story 8: the chosen tags, with the tags they add, in the order of the list (none: an empty list). */
+  readonly tags: readonly TagReference[];
 };
 
 /** The fields of the form, in its order: the poses, the name, the difficulties, the description. */
@@ -62,6 +65,8 @@ export type TransitionContent = {
   readonly baseDifficulty: DifficultyLevel;
   readonly flyerDifficulty: DifficultyLevel;
   readonly description: TransitionDescription | null;
+  /** Story 8: its tags under their current names, in catalog order (none: an empty list). */
+  readonly tags: readonly TagReference[];
 };
 
 /** A transition the site may send: every rule it can check is met (the API checks the poses and the place taken). */
@@ -78,11 +83,15 @@ export const emptyTransitionProposalInput = (fromPoseId: string): TransitionProp
   baseDifficulty: null,
   flyerDifficulty: null,
   description: '',
+  tags: [],
 });
 
-/** The content of a transition (name, difficulties, description) as typed, checked: every error at once. */
+/**
+ * The content of a transition (name, difficulties, tags, description) as typed, checked: every error at once. The tags
+ * were chosen among the list: only the API knows whether one left it meanwhile.
+ */
 export const validateTransitionContent = (
-  input: Pick<TransitionProposalInput, 'name' | 'baseDifficulty' | 'flyerDifficulty' | 'description'>,
+  input: Pick<TransitionProposalInput, 'name' | 'baseDifficulty' | 'flyerDifficulty' | 'description' | 'tags'>,
 ): Result<TransitionContent, TransitionFieldError[]> => {
   const errors: TransitionFieldError[] = [];
   const name = checkTransitionName(input.name);
@@ -95,7 +104,13 @@ export const validateTransitionContent = (
   const description = checkTransitionDescription(input.description);
   if (!description.ok) errors.push({ field: 'description', code: description.error });
   if (!name.ok || baseDifficulty === null || flyerDifficulty === null || !description.ok) return fail(errors);
-  return ok({ name: name.value, baseDifficulty, flyerDifficulty, description: description.value });
+  return ok({
+    name: name.value,
+    baseDifficulty,
+    flyerDifficulty,
+    description: description.value,
+    tags: input.tags,
+  });
 };
 
 /**

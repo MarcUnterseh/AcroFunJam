@@ -63,6 +63,7 @@ export function useTransitionDecision({
     name: useRef<HTMLInputElement>(null),
     baseDifficulty: useRef<HTMLInputElement>(null),
     flyerDifficulty: useRef<HTMLInputElement>(null),
+    tags: useRef<HTMLInputElement>(null),
     description: useRef<HTMLTextAreaElement>(null),
   };
   const card = useDecisionCard<AdjustableTransitionField>({

@@ -20,19 +20,25 @@ type TransitionAdjustmentsResponse = components['schemas']['TransitionAdjustment
 
 const transitionFields = ['name', 'baseDifficulty', 'flyerDifficulty', 'description'] as const;
 
+type NamedTags = Array<{ id: string; name: string }>;
+
 /** Only the adjusted fields of a transition, with the proposed and the retained value; null when nothing differs. */
 const transitionAdjustmentsOf = (
   proposed: TransitionValues,
   retained: TransitionValues,
+  named: (ids: readonly string[]) => NamedTags,
 ): TransitionAdjustmentsResponse | null => {
   const adjusted = transitionFields.filter((field) => proposed[field] !== retained[field]);
-  if (adjusted.length === 0) return null;
+  const [before, after] = [proposed.tagIds ?? [], retained.tagIds ?? []];
+  const tagsAdjusted = before.length !== after.length || before.some((id) => !after.includes(id));
+  if (adjusted.length === 0 && !tagsAdjusted) return null;
   const adjustment = <F extends (typeof transitionFields)[number]>(field: F) =>
     adjusted.includes(field) ? { proposed: proposed[field], retained: retained[field] } : null;
   return {
     name: adjustment('name'),
     baseDifficulty: adjustment('baseDifficulty') as TransitionAdjustmentsResponse['baseDifficulty'],
     flyerDifficulty: adjustment('flyerDifficulty') as TransitionAdjustmentsResponse['flyerDifficulty'],
+    tags: tagsAdjusted ? { proposed: named(before), retained: named(after) } : null,
     description: adjustment('description'),
   };
 };
@@ -158,7 +164,11 @@ const toTransitionResponse = (
     baseDifficulty: transition.baseDifficulty,
     flyerDifficulty: transition.flyerDifficulty,
     description: transition.description,
+    tagIds: transition.tagIds ?? [],
   };
+  const named = (ids: readonly string[]) =>
+    catalogApi.tags.describe(ids).map((tag) => ({ id: tag.id, name: tag.name }));
+  const presented = ({ tagIds = [], ...values }: TransitionValues) => ({ ...values, tags: named(tagIds) });
   const common = {
     kind: 'transition-proposal' as const,
     id,
@@ -169,23 +179,23 @@ const toTransitionResponse = (
   };
   switch (decision?.kind) {
     case undefined:
-      return { ...common, status: 'pending', ...proposed };
+      return { ...common, status: 'pending', ...presented(proposed) };
     case 'published-directly':
-      return { ...common, status: 'published-directly', ...proposed };
+      return { ...common, status: 'published-directly', ...presented(proposed) };
     case 'rejected':
       return {
         ...common,
         status: 'rejected',
-        ...proposed,
+        ...presented(proposed),
         decidedAt: decision.decidedAt,
         reason: decision.reason,
       };
     case 'accepted': {
-      const adjustments = transitionAdjustmentsOf(proposed, decision.retained);
+      const adjustments = transitionAdjustmentsOf(proposed, decision.retained, named);
       return {
         ...common,
         status: adjustments ? 'accepted-with-adjustments' : 'accepted',
-        ...decision.retained,
+        ...presented(decision.retained),
         decidedAt: decision.decidedAt,
         adjustments,
         message: adjustments ? decision.message : null,

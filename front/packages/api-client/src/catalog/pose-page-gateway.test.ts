@@ -13,6 +13,7 @@ const ninjaStar = {
   baseDifficulty: 'advanced',
   flyerDifficulty: 'advanced',
   description: 'Rotation complète, retour en Star.',
+  tags: [{ id: 'tag-inversion', name: 'inversion', description: 'Le flyer passe tête en bas.' }],
 };
 
 const starToBird = {
@@ -22,6 +23,7 @@ const starToBird = {
   baseDifficulty: 'intermediate',
   flyerDifficulty: 'intermediate',
   description: null,
+  tags: [],
 };
 
 const star = {
@@ -109,6 +111,11 @@ describe('createPosePageGateway', () => {
     ['a transition without its other pose', { transitionsTo: [{ ...ninjaStar, otherPose: null }] }],
     ['a description that is not a text', { transitionsTo: [{ ...ninjaStar, description: 42 }] }],
     ['no list of transitions', { transitionsFrom: undefined }],
+    [
+      'a tag without its description',
+      { transitionsTo: [{ ...ninjaStar, tags: [{ id: 'tag-pop', name: 'pop' }] }] },
+    ],
+    ['no list of tags', { transitionsTo: [{ ...ninjaStar, tags: undefined }] }],
   ])('should report an answer it cannot read (%s) as an outdated site', async (_case, change) => {
     const gateway = createPosePageGateway(apiAnswering(200, { ...star, ...change }));
 

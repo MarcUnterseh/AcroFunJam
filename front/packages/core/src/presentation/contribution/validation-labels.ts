@@ -213,7 +213,8 @@ export type DecisionFailureKind =
   | 'transition-name-already-pending'
   | 'unnamed-transition-already-in-catalog'
   | 'unnamed-transition-already-pending'
-  | 'transition-pose-not-found';
+  | 'transition-pose-not-found'
+  | 'tags-not-in-list';
 
 const nameRefusals = {
   'name-already-in-catalog': 'Une pose de ce nom existe déjà dans le catalogue.',
@@ -246,6 +247,9 @@ const decisionFailures: Readonly<Record<DecisionFailureKind, string>> = {
   'unnamed-transition-already-pending': `Une autre transition sans nom entre ces poses attend d'être validée. ${unnamedAdvice}`,
   'transition-pose-not-found':
     "Une des poses de cette transition n'est plus dans le catalogue : la transition ne peut pas être publiée. Refuse la proposition.",
+  // Story 8: a retained tag left the list of tags meanwhile.
+  'tags-not-in-list':
+    'Une étiquette retenue ne fait plus partie de la liste des étiquettes. Vérifie les étiquettes, puis publie de nouveau.',
 };
 
 /** The same incidents, when the validator had typed something (an open zone): the input is kept (ADR 0019). */

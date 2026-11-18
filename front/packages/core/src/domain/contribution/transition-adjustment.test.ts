@@ -14,6 +14,10 @@ const proposed: TransitionContent = {
   baseDifficulty: 'advanced',
   flyerDifficulty: 'intermediate',
   description: 'Vidéo : https://example.org/ninja-star' as TransitionDescription,
+  tags: [
+    { id: 'tag-dynamique', name: 'dynamique' },
+    { id: 'tag-pop', name: 'pop' },
+  ],
 };
 
 const asProposed = transitionAdjustmentInputOf(proposed);
@@ -25,6 +29,7 @@ describe('transitionAdjustmentInputOf', () => {
       baseDifficulty: 'advanced',
       flyerDifficulty: 'intermediate',
       description: '',
+      tags: proposed.tags,
     });
   });
 });
@@ -50,6 +55,7 @@ describe('transitionAdjustmentsOf', () => {
       baseDifficulty: 'advanced',
       flyerDifficulty: 'advanced',
       description: 'Rotation complète, retour en Star.',
+      tags: proposed.tags,
     };
 
     expect(transitionAdjustmentsOf(proposed, input)).toEqual(
@@ -90,6 +96,35 @@ describe('transitionAdjustmentsOf', () => {
         { field: 'name', code: 'transition.name-without-letter-or-digit' },
         { field: 'description', code: 'transition.description-too-long' },
       ]),
+    );
+  });
+
+  it('should not take the same tags in another order as an adjustment', () => {
+    expect(transitionAdjustmentsOf(proposed, { ...asProposed, tags: [...proposed.tags].reverse() })).toEqual(
+      ok([]),
+    );
+  });
+
+  it('should take other tags as an adjustment, placed after the difficulties and before the description', () => {
+    const retained = [{ id: 'tag-dynamique', name: 'dynamique' }];
+
+    expect(
+      transitionAdjustmentsOf(proposed, { ...asProposed, tags: retained, description: 'Rotation complète.' }),
+    ).toEqual(
+      ok([
+        { field: 'tags', proposed: proposed.tags, retained },
+        {
+          field: 'description',
+          proposed: 'Vidéo : https://example.org/ninja-star',
+          retained: 'Rotation complète.',
+        },
+      ]),
+    );
+  });
+
+  it('should take the removal of every tag as an adjustment to none', () => {
+    expect(transitionAdjustmentsOf(proposed, { ...asProposed, tags: [] })).toEqual(
+      ok([{ field: 'tags', proposed: proposed.tags, retained: [] }]),
     );
   });
 });

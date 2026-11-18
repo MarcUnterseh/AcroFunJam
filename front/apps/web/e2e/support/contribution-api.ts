@@ -56,6 +56,8 @@ export type TransitionValues = {
   baseDifficulty: DifficultyCode;
   flyerDifficulty: DifficultyCode;
   description: string | null;
+  /** Story 8: its tags (none when absent), the implied ones included. */
+  tagIds?: string[];
 };
 
 /** What became of a transition proposal; null while pending. */
@@ -191,7 +193,7 @@ export class ContributionApi {
     };
     this.transitions.push(submitted);
     if (directly) {
-      const { fromPoseId, toPoseId, name, baseDifficulty, flyerDifficulty, description } = transition;
+      const { fromPoseId, toPoseId, name, baseDifficulty, flyerDifficulty, description, tagIds } = transition;
       this.catalogApi.publishTransition({
         fromPoseId,
         toPoseId,
@@ -199,6 +201,7 @@ export class ContributionApi {
         baseDifficulty,
         flyerDifficulty,
         description,
+        tagIds: tagIds ?? [],
       });
     }
     return submitted;

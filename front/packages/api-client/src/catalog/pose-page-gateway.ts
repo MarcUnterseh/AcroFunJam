@@ -6,9 +6,11 @@ import {
   type PosePageFailure,
   type PosePageGateway,
   type Result,
+  type TransitionTag,
 } from '@acrofunjam/core';
 import type { ApiClient } from '../client';
 import { isDifficultyCode } from '../shared-kernel/difficulty-codes';
+import { everyItem, toTagReference } from '../shared-kernel/tag-reading';
 
 const isString = (value: unknown): value is string => typeof value === 'string';
 const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
@@ -20,11 +22,21 @@ const isOptionalString = (value: unknown): value is string | null => value === n
 const codeOf = (problem: unknown): string =>
   isRecord(problem) && isString(problem['title']) ? problem['title'] : '';
 
+/** A tag of a transition of the page, with its description (story 8). */
+const toTransitionTag = (value: unknown): TransitionTag | null => {
+  const tag = toTagReference(value);
+  return tag && isRecord(value) && isString(value['description'])
+    ? { ...tag, description: value['description'] }
+    : null;
+};
+
 /** A transition of the page, or null when it cannot be read (the server may evolve before the client). */
 const toLinkedTransition = (value: unknown): LinkedTransition | null => {
   if (!isRecord(value)) return null;
   const { id, otherPose, name, baseDifficulty, flyerDifficulty, description } = value;
+  const tags = everyItem(value['tags'], toTransitionTag);
   if (
+    !tags ||
     !isString(id) ||
     !isRecord(otherPose) ||
     !isString(otherPose['id']) ||
@@ -42,6 +54,7 @@ const toLinkedTransition = (value: unknown): LinkedTransition | null => {
     baseDifficulty,
     flyerDifficulty,
     description,
+    tags,
   };
 };
 

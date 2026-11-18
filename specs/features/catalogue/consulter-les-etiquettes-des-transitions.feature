@@ -27,7 +27,7 @@ Fonctionnalité: Consulter les étiquettes des transitions
 
   Règle: La page d'une pose présente les étiquettes de chaque transition qui en part et qui y arrive
 
-    @api @web @wip
+    @api @web
     Scénario: Un visiteur voit les étiquettes des transitions depuis une pose
       Soit la transition publiée "Pop to Bird" de "Throne" vers "Bird" de difficulté base "intermédiaire" et de difficulté flyer "intermédiaire", avec l'étiquette "pop"
       Quand un visiteur consulte la pose "Throne" du catalogue
@@ -54,7 +54,7 @@ Fonctionnalité: Consulter les étiquettes des transitions
 
   Règle: Une transition sans étiquette n'en présente aucune
 
-    @web @wip
+    @web
     Scénario: Le site ne présente aucune étiquette pour une transition qui n'en porte pas
       Soit la transition publiée sans nom de "Throne" vers "Bird" de difficulté base "débutant" et de difficulté flyer "débutant"
       Quand un visiteur consulte la pose "Throne" du catalogue
@@ -62,7 +62,7 @@ Fonctionnalité: Consulter les étiquettes des transitions
 
   Règle: Le visiteur lit, depuis la page d'une pose, la description des étiquettes d'une transition
 
-    @web @wip
+    @web
     Scénario: Un visiteur lit la description d'une étiquette dans le repli d'une transition
       Soit la transition publiée "Pop to Bird" de "Throne" vers "Bird" de difficulté base "intermédiaire" et de difficulté flyer "intermédiaire", avec l'étiquette "pop"
       Quand un visiteur déplie la transition « Pop to Bird » sur la page de la pose "Throne"

@@ -5,7 +5,6 @@ import {
   carriedRefusalLabel,
   changeTag,
   impliedRefusalLabel,
-  listTags,
   removalQuestion,
   removeTag,
   tagAnnouncements,
@@ -21,10 +20,9 @@ import {
   type TagCarrier,
   type TagEditError,
   type TagInput,
-  type TagListFailure,
   type TagRemovalError,
 } from '@acrofunjam/core';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useState, type FormEvent, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useSession } from '../identity/SessionContext';
@@ -34,38 +32,10 @@ import { Field, FormAlert, TextAreaField } from '../layout/form-controls';
 import { Icon } from '../layout/Icon';
 import { catalogPath, posePath } from '../paths';
 import { useTagListGateway } from './TagListContext';
+import { tagListKey, useTags } from './useTags';
 
 /** Not collapsed with the spaces around a hidden text (which would then vanish on screen). */
 const noBreakSpace = String.fromCharCode(0xa0);
-
-/** The list could not be read: carries the failure of the use case. */
-class TagListLoadingFailed extends Error {
-  readonly failure: TagListFailure;
-
-  constructor(failure: TagListFailure) {
-    super(failure.kind);
-    this.failure = failure;
-    this.name = 'TagListLoadingFailed';
-  }
-}
-
-/** Cache key of the list of tags, under the catalog. */
-export const tagListKey = ['catalog', 'tags'] as const;
-
-function useTags() {
-  const gateway = useTagListGateway();
-  return useQuery<readonly Tag[], TagListLoadingFailed>({
-    queryKey: tagListKey,
-    queryFn: async () => {
-      const result = await listTags(gateway);
-      if (!result.ok) throw new TagListLoadingFailed(result.error);
-      return result.value;
-    },
-    // As the catalog: the failure is shown at once with « Réessayer », even when the browser believes it is offline.
-    retry: false,
-    networkMode: 'always',
-  });
-}
 
 /** What the site tells after a refused change: under a field, or in an alert of the zone. */
 type Refusal = {

@@ -124,13 +124,13 @@ Fonctionnalité: Étiqueter une transition publiée
     Contexte:
       Soit la transition publiée sans nom de "Bird" vers "Folded Leaf" de difficulté base "débutant" et de difficulté flyer "débutant"
 
-    @web @wip
+    @web
     Scénario: Un validateur est invité à étiqueter une transition qui ne porte aucune étiquette
       Soit Bruno est validateur, connecté sur le site
       Quand Bruno consulte la pose "Bird" du catalogue
       Alors la page de la pose invite Bruno à étiqueter la transition « de Bird vers Folded Leaf »
 
-    @web @wip
+    @web
     Scénario: Un utilisateur n'est pas invité à étiqueter une transition publiée
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
       Quand Alice consulte la pose "Bird" du catalogue
@@ -141,14 +141,14 @@ Fonctionnalité: Étiqueter une transition publiée
     Contexte:
       Soit Bruno est validateur, connecté sur le site
 
-    @web @wip
+    @web
     Scénario: La page de la pose présente aussitôt les étiquettes choisies par le validateur
       Soit la transition publiée sans nom de "Bird" vers "Folded Leaf" de difficulté base "débutant" et de difficulté flyer "débutant"
       Quand Bruno étiquette sur le site, depuis la pose "Bird", la transition « de Bird vers Folded Leaf » avec les étiquettes "lunaire"
       Alors les transitions depuis la pose "Bird" présentent la transition « de Bird vers Folded Leaf » avec les étiquettes « lunaire »
 
     # Ninja Star est une washing machine plutôt contrôlée : on l'étiquette « inversion » (le flyer passe tête en bas).
-    @web @wip
+    @web
     Scénario: Une washing machine étiquetée depuis une section présente ses étiquettes dans les deux sections
       Soit la transition publiée "Ninja Star" de "Star" vers "Star" de difficulté base "avancé" et de difficulté flyer "avancé"
       Quand Bruno étiquette sur le site, depuis la section des transitions depuis la pose "Star", la transition « Ninja Star » avec les étiquettes "inversion"

@@ -4,2441 +4,2562 @@
  */
 
 export interface paths {
-    "/health": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["Health"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  '/health': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["GetMyAccount"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['Health'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/me': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/catalog/poses": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["ListPublishedPoses"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['GetMyAccount'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/catalog/poses': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/catalog/poses/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["GetPublishedPose"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['ListPublishedPoses'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/catalog/poses/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/catalog/tags": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["ListTags"];
-        put?: never;
-        post: operations["AddTag"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['GetPublishedPose'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/catalog/tags': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/catalog/tags/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["ChangeTag"];
-        post?: never;
-        delete: operations["RemoveTag"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['ListTags'];
+    put?: never;
+    post: operations['AddTag'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/catalog/tags/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/contribution/pose-proposals": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["ProposePose"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put: operations['ChangeTag'];
+    post?: never;
+    delete: operations['RemoveTag'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/catalog/transitions/{id}/tags': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/contribution/validation-queue": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["GetValidationQueue"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put: operations['TagTransition'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/contribution/pose-proposals': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/contribution/validation-queue/count": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["CountPendingPoseProposals"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['ProposePose'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/contribution/validation-queue': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/contribution/pose-proposals/{id}/acceptance": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["AcceptPoseProposal"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['GetValidationQueue'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/contribution/validation-queue/count': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/contribution/pose-proposals/{id}/rejection": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["RejectPoseProposal"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['CountPendingPoseProposals'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/contribution/pose-proposals/{id}/acceptance': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/contribution/my-proposals": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["GetMyProposals"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['AcceptPoseProposal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/contribution/pose-proposals/{id}/rejection': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/contribution/pose-revision-proposals": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["ProposePoseRevision"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['RejectPoseProposal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/contribution/my-proposals': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/contribution/pose-revision-proposals/pending": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["GetPendingRevisionOfPose"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['GetMyProposals'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/contribution/pose-revision-proposals': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/contribution/pose-revision-proposals/{id}/acceptance": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["AcceptPoseRevision"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['ProposePoseRevision'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/contribution/pose-revision-proposals/pending': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/contribution/pose-revision-proposals/{id}/rejection": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["RejectPoseRevision"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['GetPendingRevisionOfPose'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/contribution/pose-revision-proposals/{id}/acceptance': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/contribution/transition-proposals": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["ProposeTransition"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['AcceptPoseRevision'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/contribution/pose-revision-proposals/{id}/rejection': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/contribution/transition-proposals/{id}/acceptance": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["AcceptTransitionProposal"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['RejectPoseRevision'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/contribution/transition-proposals': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/contribution/transition-proposals/{id}/rejection": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["RejectTransitionProposal"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['ProposeTransition'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/contribution/transition-proposals/{id}/acceptance': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/identity/register": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["RegisterRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['AcceptTransitionProposal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/contribution/transition-proposals/{id}/rejection': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/identity/login": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: {
-                    useCookies?: boolean;
-                    useSessionCookies?: boolean;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["LoginRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AccessTokenResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['RejectTransitionProposal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/identity/register': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/identity/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    get?: never;
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['RegisterRequest'];
         };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["RefreshRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AccessTokenResponse"];
-                    };
-                };
-            };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails'];
+          };
+        };
+      };
     };
-    "/identity/confirmEmail": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["MapIdentityApi-/identity/confirmEmail"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/identity/login': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/identity/resendConfirmationEmail": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    get?: never;
+    put?: never;
+    post: {
+      parameters: {
+        query?: {
+          useCookies?: boolean;
+          useSessionCookies?: boolean;
         };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ResendConfirmationEmailRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['LoginRequest'];
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['AccessTokenResponse'];
+          };
+        };
+      };
     };
-    "/identity/forgotPassword": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ForgotPasswordRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/identity/refresh': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/identity/resetPassword": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    get?: never;
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['RefreshRequest'];
         };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ResetPasswordRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
-                    };
-                };
-            };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['AccessTokenResponse'];
+          };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+      };
     };
-    "/identity/manage/2fa": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["TwoFactorRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["TwoFactorResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/identity/confirmEmail': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/identity/manage/info": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["InfoResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["InfoRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["InfoResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['MapIdentityApi-/identity/confirmEmail'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/identity/resendConfirmationEmail': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/identity/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    get?: never;
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['ResendConfirmationEmailRequest'];
         };
-        get?: never;
-        put?: never;
-        post: operations["SignOut"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/identity/role-assignments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
-        get?: never;
-        put?: never;
-        post: operations["AssignRole"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+      };
     };
-    "/identity/role-revocations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/identity/forgotPassword': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['ForgotPasswordRequest'];
         };
-        get?: never;
-        put?: never;
-        post: operations["RevokeRole"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails'];
+          };
+        };
+      };
     };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/identity/resetPassword': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['ResetPasswordRequest'];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/identity/manage/2fa': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['TwoFactorRequest'];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['TwoFactorResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/identity/manage/info': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['InfoResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['InfoRequest'];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['InfoResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/identity/logout': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['SignOut'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/identity/role-assignments': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AssignRole'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/identity/role-revocations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['RevokeRole'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        AcceptedPoseProposalResponse: {
-            /** Format: uuid */
-            id: string;
-            status: components["schemas"]["ProposalStatusCode"];
-            adjusted: boolean;
-            name: string;
-            baseDifficulty: components["schemas"]["DifficultyCode"];
-            flyerDifficulty: components["schemas"]["DifficultyCode"];
-            canStartFlow: boolean;
-            canEndFlow: boolean;
-        };
-        AcceptedTransitionProposalResponse: {
-            /** Format: uuid */
-            id: string;
-            status: components["schemas"]["ProposalStatusCode"];
-            adjusted: boolean;
-            fromPose: components["schemas"]["PoseReferenceResponse"];
-            toPose: components["schemas"]["PoseReferenceResponse"];
-            name: null | string;
-            baseDifficulty: components["schemas"]["DifficultyCode"];
-            flyerDifficulty: components["schemas"]["DifficultyCode"];
-            description: null | string;
-        };
-        AcceptPoseProposalRequest: {
-            name?: null | string;
-            baseDifficulty?: null | string;
-            flyerDifficulty?: null | string;
-            canStartFlow?: null | boolean;
-            canEndFlow?: null | boolean;
-            message?: null | string;
-        };
-        AcceptTransitionProposalRequest: {
-            name?: null | string;
-            baseDifficulty?: null | string;
-            flyerDifficulty?: null | string;
-            description?: null | string;
-            message?: null | string;
-        };
-        AccessTokenResponse: {
-            tokenType?: null | string;
-            accessToken: string;
-            /** Format: int64 */
-            expiresIn: number | string;
-            refreshToken: string;
-        };
-        DifficultyAdjustmentResponse: {
-            proposed: components["schemas"]["DifficultyCode"];
-            retained: components["schemas"]["DifficultyCode"];
-        };
-        DifficultyChangeResponse: {
-            current: components["schemas"]["DifficultyCode"];
-            proposed: components["schemas"]["DifficultyCode"];
-        };
-        /** @enum {unknown} */
-        DifficultyCode: "discovery" | "beginner" | "intermediate" | "advanced";
-        DifficultyValueChangeResponse: {
-            before: components["schemas"]["DifficultyCode"];
-            after: components["schemas"]["DifficultyCode"];
-        };
-        FlowAdjustmentResponse: {
-            proposed: boolean;
-            retained: boolean;
-        };
-        FlowChangeResponse: {
-            current: boolean;
-            proposed: boolean;
-        };
-        FlowValueChangeResponse: {
-            before: boolean;
-            after: boolean;
-        };
-        ForgotPasswordRequest: {
-            email: string;
-        };
-        HttpValidationProblemDetails: {
-            type?: null | string;
-            title?: null | string;
-            /** Format: int32 */
-            status?: null | number | string;
-            detail?: null | string;
-            instance?: null | string;
-            errors?: {
-                [key: string]: string[];
-            };
-        };
-        InfoRequest: {
-            newEmail?: null | string;
-            newPassword?: null | string;
-            oldPassword?: null | string;
-        };
-        InfoResponse: {
-            email: string;
-            isEmailConfirmed: boolean;
-        };
-        LinkedTransitionResponse: {
-            /** Format: uuid */
-            id: string;
-            otherPose: components["schemas"]["OtherPoseResponse"];
-            name: null | string;
-            baseDifficulty: components["schemas"]["DifficultyCode"];
-            flyerDifficulty: components["schemas"]["DifficultyCode"];
-            description: null | string;
-        };
-        LoginRequest: {
-            email: string;
-            password: string;
-            twoFactorCode?: null | string;
-            twoFactorRecoveryCode?: null | string;
-        };
-        MyAccountResponse: {
-            email: string;
-            role: string;
-            capabilities: string[];
-        };
-        MyProposalResponse: components["schemas"]["MyProposalResponseMyPoseProposalResponse"] | components["schemas"]["MyProposalResponseMyPoseRevisionResponse"] | components["schemas"]["MyProposalResponseMyTransitionProposalResponse"];
-        MyProposalResponseMyPoseProposalResponse: {
-            /** @enum {string} */
-            kind?: "pose-proposal";
-            /** Format: uuid */
-            id: string;
-            status: components["schemas"]["MyProposalStatusCode"];
-            name: string;
-            baseDifficulty: components["schemas"]["DifficultyCode"];
-            flyerDifficulty: components["schemas"]["DifficultyCode"];
-            canStartFlow: boolean;
-            canEndFlow: boolean;
-            /** Format: date-time */
-            submittedAt: string;
-            /** Format: date-time */
-            decidedAt: null | string;
-            adjustments: null | components["schemas"]["PoseAdjustmentsResponse"];
-            message: null | string;
-            reason: null | string;
-        };
-        MyProposalResponseMyPoseRevisionResponse: {
-            /** @enum {string} */
-            kind?: "pose-revision";
-            /** Format: uuid */
-            id: string;
-            status: components["schemas"]["MyProposalStatusCode"];
-            poseName: string;
-            /** Format: date-time */
-            submittedAt: string;
-            /** Format: date-time */
-            decidedAt: null | string;
-            changes: components["schemas"]["PoseChangesResponse"];
-            adjustments: null | components["schemas"]["PoseAdjustmentsResponse"];
-            message: null | string;
-            reason: null | string;
-        };
-        MyProposalResponseMyTransitionProposalResponse: {
-            /** @enum {string} */
-            kind?: "transition-proposal";
-            /** Format: uuid */
-            id: string;
-            status: components["schemas"]["MyProposalStatusCode"];
-            fromPose: components["schemas"]["PoseReferenceResponse"];
-            toPose: components["schemas"]["PoseReferenceResponse"];
-            name: null | string;
-            baseDifficulty: components["schemas"]["DifficultyCode"];
-            flyerDifficulty: components["schemas"]["DifficultyCode"];
-            description: null | string;
-            /** Format: date-time */
-            submittedAt: string;
-            /** Format: date-time */
-            decidedAt: null | string;
-            adjustments: null | components["schemas"]["TransitionAdjustmentsResponse"];
-            message: null | string;
-            reason: null | string;
-        };
-        MyProposalsResponse: {
-            proposals: components["schemas"]["MyProposalResponse"][];
-        };
-        /** @enum {unknown} */
-        MyProposalStatusCode: "pending" | "accepted" | "accepted-with-adjustments" | "rejected" | "published-directly";
-        NameAdjustmentResponse: {
-            proposed: string;
-            retained: string;
-        };
-        NameChangeResponse: {
-            current: string;
-            proposed: string;
-        };
-        NameValueChangeResponse: {
-            before: string;
-            after: string;
-        };
-        OptionalTextAdjustmentResponse: {
-            proposed: null | string;
-            retained: null | string;
-        };
-        OtherPoseResponse: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-        };
-        PendingCountResponse: {
-            /** Format: int32 */
-            count: number | string;
-        };
-        PendingProposalResponse: components["schemas"]["PendingProposalResponsePendingPoseProposalResponse"] | components["schemas"]["PendingProposalResponsePendingPoseRevisionResponse"] | components["schemas"]["PendingProposalResponsePendingTransitionProposalResponse"];
-        PendingProposalResponsePendingPoseProposalResponse: {
-            /** @enum {string} */
-            kind?: "pose-proposal";
-            /** Format: uuid */
-            id: string;
-            name: string;
-            baseDifficulty: components["schemas"]["DifficultyCode"];
-            flyerDifficulty: components["schemas"]["DifficultyCode"];
-            canStartFlow: boolean;
-            canEndFlow: boolean;
-            contributor: components["schemas"]["ProposalContributorResponse"];
-            /** Format: date-time */
-            submittedAt: string;
-        };
-        PendingProposalResponsePendingPoseRevisionResponse: {
-            /** @enum {string} */
-            kind?: "pose-revision";
-            /** Format: uuid */
-            id: string;
-            pose: components["schemas"]["RevisedPoseResponse"];
-            changes: components["schemas"]["RevisionChangesResponse"];
-            message: null | string;
-            contributor: components["schemas"]["ProposalContributorResponse"];
-            /** Format: date-time */
-            submittedAt: string;
-        };
-        PendingProposalResponsePendingTransitionProposalResponse: {
-            /** @enum {string} */
-            kind?: "transition-proposal";
-            /** Format: uuid */
-            id: string;
-            fromPose: components["schemas"]["PoseReferenceResponse"];
-            toPose: components["schemas"]["PoseReferenceResponse"];
-            name: null | string;
-            baseDifficulty: components["schemas"]["DifficultyCode"];
-            flyerDifficulty: components["schemas"]["DifficultyCode"];
-            description: null | string;
-            contributor: components["schemas"]["ProposalContributorResponse"];
-            /** Format: date-time */
-            submittedAt: string;
-        };
-        PendingRevisionOfPoseResponse: {
-            pendingRevision: null | components["schemas"]["PendingRevisionResponse"];
-        };
-        PendingRevisionResponse: {
-            isYours: boolean;
-        };
-        PoseAdjustmentsResponse: {
-            name: null | components["schemas"]["NameAdjustmentResponse"];
-            baseDifficulty: null | components["schemas"]["DifficultyAdjustmentResponse"];
-            flyerDifficulty: null | components["schemas"]["DifficultyAdjustmentResponse"];
-            canStartFlow: null | components["schemas"]["FlowAdjustmentResponse"];
-            canEndFlow: null | components["schemas"]["FlowAdjustmentResponse"];
-        };
-        PoseChangesResponse: {
-            name: null | components["schemas"]["NameValueChangeResponse"];
-            baseDifficulty: null | components["schemas"]["DifficultyValueChangeResponse"];
-            flyerDifficulty: null | components["schemas"]["DifficultyValueChangeResponse"];
-            canStartFlow: null | components["schemas"]["FlowValueChangeResponse"];
-            canEndFlow: null | components["schemas"]["FlowValueChangeResponse"];
-        };
-        PoseListResponse: {
-            poses: components["schemas"]["PoseSummaryResponse"][];
-        };
-        PoseProposalResponse: {
-            /** Format: uuid */
-            id: string;
-            status: components["schemas"]["ProposalStatusCode"];
-            name: string;
-            baseDifficulty: components["schemas"]["DifficultyCode"];
-            flyerDifficulty: components["schemas"]["DifficultyCode"];
-            canStartFlow: boolean;
-            canEndFlow: boolean;
-        };
-        PoseReferenceResponse: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-        };
-        PoseRevisionProposalResponse: {
-            /** Format: uuid */
-            id: string;
-            status: components["schemas"]["ProposalStatusCode"];
-            /** Format: uuid */
-            poseId: string;
-            name: string;
-            baseDifficulty: components["schemas"]["DifficultyCode"];
-            flyerDifficulty: components["schemas"]["DifficultyCode"];
-            canStartFlow: boolean;
-            canEndFlow: boolean;
-        };
-        PoseSummaryResponse: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            baseDifficulty: components["schemas"]["DifficultyCode"];
-            flyerDifficulty: components["schemas"]["DifficultyCode"];
-            canStartFlow: boolean;
-            canEndFlow: boolean;
-        };
-        ProblemDetails: {
-            type?: null | string;
-            title?: null | string;
-            /** Format: int32 */
-            status?: null | number | string;
-            detail?: null | string;
-            instance?: null | string;
-        };
-        ProposalContributorResponse: {
-            email: null | string;
-            isYou: boolean;
-        };
-        /** @enum {unknown} */
-        ProposalStatusCode: "pending" | "accepted" | "rejected";
-        ProposePoseRequest: {
-            name: null | string;
-            baseDifficulty: null | string;
-            flyerDifficulty: null | string;
-            canStartFlow: null | boolean;
-            canEndFlow: null | boolean;
-        };
-        ProposePoseRevisionRequest: {
-            /** Format: uuid */
-            poseId: string;
-            /** Format: int32 */
-            poseVersion: null | number | string;
-            name: null | string;
-            baseDifficulty: null | string;
-            flyerDifficulty: null | string;
-            canStartFlow: null | boolean;
-            canEndFlow: null | boolean;
-            message: null | string;
-        };
-        ProposeTransitionRequest: {
-            /** Format: uuid */
-            fromPoseId: null | string;
-            /** Format: uuid */
-            toPoseId: null | string;
-            name: null | string;
-            baseDifficulty: null | string;
-            flyerDifficulty: null | string;
-            description: null | string;
-        };
-        PublishedPoseResponse: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            baseDifficulty: components["schemas"]["DifficultyCode"];
-            flyerDifficulty: components["schemas"]["DifficultyCode"];
-            canStartFlow: boolean;
-            canEndFlow: boolean;
-            /** Format: int32 */
-            version: number | string;
-            transitionsFrom: components["schemas"]["LinkedTransitionResponse"][];
-            transitionsTo: components["schemas"]["LinkedTransitionResponse"][];
-        };
-        RefreshRequest: {
-            refreshToken: string;
-        };
-        RegisterRequest: {
-            email: string;
-            password: string;
-        };
-        RejectedPoseProposalResponse: {
-            /** Format: uuid */
-            id: string;
-            status: components["schemas"]["ProposalStatusCode"];
-        };
-        RejectPoseProposalRequest: {
-            reason: null | string;
-        };
-        ResendConfirmationEmailRequest: {
-            email: string;
-        };
-        ResetPasswordRequest: {
-            email: string;
-            resetCode: string;
-            newPassword: string;
-        };
-        RevisedPoseResponse: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            baseDifficulty: components["schemas"]["DifficultyCode"];
-            flyerDifficulty: components["schemas"]["DifficultyCode"];
-            canStartFlow: boolean;
-            canEndFlow: boolean;
-        };
-        RevisionChangesResponse: {
-            name: null | components["schemas"]["NameChangeResponse"];
-            baseDifficulty: null | components["schemas"]["DifficultyChangeResponse"];
-            flyerDifficulty: null | components["schemas"]["DifficultyChangeResponse"];
-            canStartFlow: null | components["schemas"]["FlowChangeResponse"];
-            canEndFlow: null | components["schemas"]["FlowChangeResponse"];
-        };
-        RoleChangeRequest: {
-            email: null | string;
-            role: null | string;
-        };
-        TagListResponse: {
-            tags: components["schemas"]["TagResponse"][];
-        };
-        TagRequest: {
-            name: null | string;
-            description: null | string;
-        };
-        TagResponse: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            description: string;
-            /** Format: uuid */
-            impliedTagId: null | string;
-            /** Format: int32 */
-            transitionCount: number | string;
-        };
-        TransitionAdjustmentsResponse: {
-            name: null | components["schemas"]["OptionalTextAdjustmentResponse"];
-            baseDifficulty: null | components["schemas"]["DifficultyAdjustmentResponse"];
-            flyerDifficulty: null | components["schemas"]["DifficultyAdjustmentResponse"];
-            description: null | components["schemas"]["OptionalTextAdjustmentResponse"];
-        };
-        TransitionProposalResponse: {
-            /** Format: uuid */
-            id: string;
-            status: components["schemas"]["ProposalStatusCode"];
-            fromPose: components["schemas"]["PoseReferenceResponse"];
-            toPose: components["schemas"]["PoseReferenceResponse"];
-            name: null | string;
-            baseDifficulty: components["schemas"]["DifficultyCode"];
-            flyerDifficulty: components["schemas"]["DifficultyCode"];
-            description: null | string;
-        };
-        TwoFactorRequest: {
-            enable?: null | boolean;
-            twoFactorCode?: null | string;
-            resetSharedKey?: boolean;
-            resetRecoveryCodes?: boolean;
-            forgetMachine?: boolean;
-        };
-        TwoFactorResponse: {
-            sharedKey: string;
-            /** Format: int32 */
-            recoveryCodesLeft: number | string;
-            recoveryCodes?: null | string[];
-            isTwoFactorEnabled: boolean;
-            isMachineRemembered: boolean;
-        };
-        ValidationQueueResponse: {
-            proposals: components["schemas"]["PendingProposalResponse"][];
-        };
+  schemas: {
+    AcceptedPoseProposalResponse: {
+      /** Format: uuid */
+      id: string;
+      status: components['schemas']['ProposalStatusCode'];
+      adjusted: boolean;
+      name: string;
+      baseDifficulty: components['schemas']['DifficultyCode'];
+      flyerDifficulty: components['schemas']['DifficultyCode'];
+      canStartFlow: boolean;
+      canEndFlow: boolean;
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    AcceptedTransitionProposalResponse: {
+      /** Format: uuid */
+      id: string;
+      status: components['schemas']['ProposalStatusCode'];
+      adjusted: boolean;
+      fromPose: components['schemas']['PoseReferenceResponse'];
+      toPose: components['schemas']['PoseReferenceResponse'];
+      name: null | string;
+      baseDifficulty: components['schemas']['DifficultyCode'];
+      flyerDifficulty: components['schemas']['DifficultyCode'];
+      description: null | string;
+      tags: components['schemas']['ProposalTagResponse'][];
+    };
+    AcceptPoseProposalRequest: {
+      name?: null | string;
+      baseDifficulty?: null | string;
+      flyerDifficulty?: null | string;
+      canStartFlow?: null | boolean;
+      canEndFlow?: null | boolean;
+      message?: null | string;
+    };
+    AcceptTransitionProposalRequest: {
+      name?: null | string;
+      baseDifficulty?: null | string;
+      flyerDifficulty?: null | string;
+      description?: null | string;
+      message?: null | string;
+      tagIds?: null | string[];
+    };
+    AccessTokenResponse: {
+      tokenType?: null | string;
+      accessToken: string;
+      /** Format: int64 */
+      expiresIn: number | string;
+      refreshToken: string;
+    };
+    DifficultyAdjustmentResponse: {
+      proposed: components['schemas']['DifficultyCode'];
+      retained: components['schemas']['DifficultyCode'];
+    };
+    DifficultyChangeResponse: {
+      current: components['schemas']['DifficultyCode'];
+      proposed: components['schemas']['DifficultyCode'];
+    };
+    /** @enum {unknown} */
+    DifficultyCode: 'discovery' | 'beginner' | 'intermediate' | 'advanced';
+    DifficultyValueChangeResponse: {
+      before: components['schemas']['DifficultyCode'];
+      after: components['schemas']['DifficultyCode'];
+    };
+    FlowAdjustmentResponse: {
+      proposed: boolean;
+      retained: boolean;
+    };
+    FlowChangeResponse: {
+      current: boolean;
+      proposed: boolean;
+    };
+    FlowValueChangeResponse: {
+      before: boolean;
+      after: boolean;
+    };
+    ForgotPasswordRequest: {
+      email: string;
+    };
+    HttpValidationProblemDetails: {
+      type?: null | string;
+      title?: null | string;
+      /** Format: int32 */
+      status?: null | number | string;
+      detail?: null | string;
+      instance?: null | string;
+      errors?: {
+        [key: string]: string[];
+      };
+    };
+    InfoRequest: {
+      newEmail?: null | string;
+      newPassword?: null | string;
+      oldPassword?: null | string;
+    };
+    InfoResponse: {
+      email: string;
+      isEmailConfirmed: boolean;
+    };
+    LinkedTransitionResponse: {
+      /** Format: uuid */
+      id: string;
+      otherPose: components['schemas']['OtherPoseResponse'];
+      name: null | string;
+      baseDifficulty: components['schemas']['DifficultyCode'];
+      flyerDifficulty: components['schemas']['DifficultyCode'];
+      description: null | string;
+      tags: components['schemas']['TransitionTagResponse'][];
+    };
+    LoginRequest: {
+      email: string;
+      password: string;
+      twoFactorCode?: null | string;
+      twoFactorRecoveryCode?: null | string;
+    };
+    MyAccountResponse: {
+      email: string;
+      role: string;
+      capabilities: string[];
+    };
+    MyProposalResponse:
+      | components['schemas']['MyProposalResponseMyPoseProposalResponse']
+      | components['schemas']['MyProposalResponseMyPoseRevisionResponse']
+      | components['schemas']['MyProposalResponseMyTransitionProposalResponse'];
+    MyProposalResponseMyPoseProposalResponse: {
+      /** @enum {string} */
+      kind?: 'pose-proposal';
+      /** Format: uuid */
+      id: string;
+      status: components['schemas']['MyProposalStatusCode'];
+      name: string;
+      baseDifficulty: components['schemas']['DifficultyCode'];
+      flyerDifficulty: components['schemas']['DifficultyCode'];
+      canStartFlow: boolean;
+      canEndFlow: boolean;
+      /** Format: date-time */
+      submittedAt: string;
+      /** Format: date-time */
+      decidedAt: null | string;
+      adjustments: null | components['schemas']['PoseAdjustmentsResponse'];
+      message: null | string;
+      reason: null | string;
+    };
+    MyProposalResponseMyPoseRevisionResponse: {
+      /** @enum {string} */
+      kind?: 'pose-revision';
+      /** Format: uuid */
+      id: string;
+      status: components['schemas']['MyProposalStatusCode'];
+      poseName: string;
+      /** Format: date-time */
+      submittedAt: string;
+      /** Format: date-time */
+      decidedAt: null | string;
+      changes: components['schemas']['PoseChangesResponse'];
+      adjustments: null | components['schemas']['PoseAdjustmentsResponse'];
+      message: null | string;
+      reason: null | string;
+    };
+    MyProposalResponseMyTransitionProposalResponse: {
+      /** @enum {string} */
+      kind?: 'transition-proposal';
+      /** Format: uuid */
+      id: string;
+      status: components['schemas']['MyProposalStatusCode'];
+      fromPose: components['schemas']['PoseReferenceResponse'];
+      toPose: components['schemas']['PoseReferenceResponse'];
+      name: null | string;
+      baseDifficulty: components['schemas']['DifficultyCode'];
+      flyerDifficulty: components['schemas']['DifficultyCode'];
+      description: null | string;
+      tags: components['schemas']['ProposalTagResponse'][];
+      /** Format: date-time */
+      submittedAt: string;
+      /** Format: date-time */
+      decidedAt: null | string;
+      adjustments: null | components['schemas']['TransitionAdjustmentsResponse'];
+      message: null | string;
+      reason: null | string;
+    };
+    MyProposalsResponse: {
+      proposals: components['schemas']['MyProposalResponse'][];
+    };
+    /** @enum {unknown} */
+    MyProposalStatusCode:
+      'pending' | 'accepted' | 'accepted-with-adjustments' | 'rejected' | 'published-directly';
+    NameAdjustmentResponse: {
+      proposed: string;
+      retained: string;
+    };
+    NameChangeResponse: {
+      current: string;
+      proposed: string;
+    };
+    NamedTagResponse: {
+      /** Format: uuid */
+      id: string;
+      name: string;
+    };
+    NameValueChangeResponse: {
+      before: string;
+      after: string;
+    };
+    OptionalTextAdjustmentResponse: {
+      proposed: null | string;
+      retained: null | string;
+    };
+    OtherPoseResponse: {
+      /** Format: uuid */
+      id: string;
+      name: string;
+    };
+    PendingCountResponse: {
+      /** Format: int32 */
+      count: number | string;
+    };
+    PendingProposalResponse:
+      | components['schemas']['PendingProposalResponsePendingPoseProposalResponse']
+      | components['schemas']['PendingProposalResponsePendingPoseRevisionResponse']
+      | components['schemas']['PendingProposalResponsePendingTransitionProposalResponse'];
+    PendingProposalResponsePendingPoseProposalResponse: {
+      /** @enum {string} */
+      kind?: 'pose-proposal';
+      /** Format: uuid */
+      id: string;
+      name: string;
+      baseDifficulty: components['schemas']['DifficultyCode'];
+      flyerDifficulty: components['schemas']['DifficultyCode'];
+      canStartFlow: boolean;
+      canEndFlow: boolean;
+      contributor: components['schemas']['ProposalContributorResponse'];
+      /** Format: date-time */
+      submittedAt: string;
+    };
+    PendingProposalResponsePendingPoseRevisionResponse: {
+      /** @enum {string} */
+      kind?: 'pose-revision';
+      /** Format: uuid */
+      id: string;
+      pose: components['schemas']['RevisedPoseResponse'];
+      changes: components['schemas']['RevisionChangesResponse'];
+      message: null | string;
+      contributor: components['schemas']['ProposalContributorResponse'];
+      /** Format: date-time */
+      submittedAt: string;
+    };
+    PendingProposalResponsePendingTransitionProposalResponse: {
+      /** @enum {string} */
+      kind?: 'transition-proposal';
+      /** Format: uuid */
+      id: string;
+      fromPose: components['schemas']['PoseReferenceResponse'];
+      toPose: components['schemas']['PoseReferenceResponse'];
+      name: null | string;
+      baseDifficulty: components['schemas']['DifficultyCode'];
+      flyerDifficulty: components['schemas']['DifficultyCode'];
+      description: null | string;
+      tags: components['schemas']['ProposalTagResponse'][];
+      contributor: components['schemas']['ProposalContributorResponse'];
+      /** Format: date-time */
+      submittedAt: string;
+    };
+    PendingRevisionOfPoseResponse: {
+      pendingRevision: null | components['schemas']['PendingRevisionResponse'];
+    };
+    PendingRevisionResponse: {
+      isYours: boolean;
+    };
+    PoseAdjustmentsResponse: {
+      name: null | components['schemas']['NameAdjustmentResponse'];
+      baseDifficulty: null | components['schemas']['DifficultyAdjustmentResponse'];
+      flyerDifficulty: null | components['schemas']['DifficultyAdjustmentResponse'];
+      canStartFlow: null | components['schemas']['FlowAdjustmentResponse'];
+      canEndFlow: null | components['schemas']['FlowAdjustmentResponse'];
+    };
+    PoseChangesResponse: {
+      name: null | components['schemas']['NameValueChangeResponse'];
+      baseDifficulty: null | components['schemas']['DifficultyValueChangeResponse'];
+      flyerDifficulty: null | components['schemas']['DifficultyValueChangeResponse'];
+      canStartFlow: null | components['schemas']['FlowValueChangeResponse'];
+      canEndFlow: null | components['schemas']['FlowValueChangeResponse'];
+    };
+    PoseListResponse: {
+      poses: components['schemas']['PoseSummaryResponse'][];
+    };
+    PoseProposalResponse: {
+      /** Format: uuid */
+      id: string;
+      status: components['schemas']['ProposalStatusCode'];
+      name: string;
+      baseDifficulty: components['schemas']['DifficultyCode'];
+      flyerDifficulty: components['schemas']['DifficultyCode'];
+      canStartFlow: boolean;
+      canEndFlow: boolean;
+    };
+    PoseReferenceResponse: {
+      /** Format: uuid */
+      id: string;
+      name: string;
+    };
+    PoseRevisionProposalResponse: {
+      /** Format: uuid */
+      id: string;
+      status: components['schemas']['ProposalStatusCode'];
+      /** Format: uuid */
+      poseId: string;
+      name: string;
+      baseDifficulty: components['schemas']['DifficultyCode'];
+      flyerDifficulty: components['schemas']['DifficultyCode'];
+      canStartFlow: boolean;
+      canEndFlow: boolean;
+    };
+    PoseSummaryResponse: {
+      /** Format: uuid */
+      id: string;
+      name: string;
+      baseDifficulty: components['schemas']['DifficultyCode'];
+      flyerDifficulty: components['schemas']['DifficultyCode'];
+      canStartFlow: boolean;
+      canEndFlow: boolean;
+    };
+    ProblemDetails: {
+      type?: null | string;
+      title?: null | string;
+      /** Format: int32 */
+      status?: null | number | string;
+      detail?: null | string;
+      instance?: null | string;
+    };
+    ProposalContributorResponse: {
+      email: null | string;
+      isYou: boolean;
+    };
+    /** @enum {unknown} */
+    ProposalStatusCode: 'pending' | 'accepted' | 'rejected';
+    ProposalTagResponse: {
+      /** Format: uuid */
+      id: string;
+      name: string;
+    };
+    ProposePoseRequest: {
+      name: null | string;
+      baseDifficulty: null | string;
+      flyerDifficulty: null | string;
+      canStartFlow: null | boolean;
+      canEndFlow: null | boolean;
+    };
+    ProposePoseRevisionRequest: {
+      /** Format: uuid */
+      poseId: string;
+      /** Format: int32 */
+      poseVersion: null | number | string;
+      name: null | string;
+      baseDifficulty: null | string;
+      flyerDifficulty: null | string;
+      canStartFlow: null | boolean;
+      canEndFlow: null | boolean;
+      message: null | string;
+    };
+    ProposeTransitionRequest: {
+      /** Format: uuid */
+      fromPoseId: null | string;
+      /** Format: uuid */
+      toPoseId: null | string;
+      name: null | string;
+      baseDifficulty: null | string;
+      flyerDifficulty: null | string;
+      description: null | string;
+      tagIds?: null | string[];
+    };
+    PublishedPoseResponse: {
+      /** Format: uuid */
+      id: string;
+      name: string;
+      baseDifficulty: components['schemas']['DifficultyCode'];
+      flyerDifficulty: components['schemas']['DifficultyCode'];
+      canStartFlow: boolean;
+      canEndFlow: boolean;
+      /** Format: int32 */
+      version: number | string;
+      transitionsFrom: components['schemas']['LinkedTransitionResponse'][];
+      transitionsTo: components['schemas']['LinkedTransitionResponse'][];
+    };
+    RefreshRequest: {
+      refreshToken: string;
+    };
+    RegisterRequest: {
+      email: string;
+      password: string;
+    };
+    RejectedPoseProposalResponse: {
+      /** Format: uuid */
+      id: string;
+      status: components['schemas']['ProposalStatusCode'];
+    };
+    RejectPoseProposalRequest: {
+      reason: null | string;
+    };
+    ResendConfirmationEmailRequest: {
+      email: string;
+    };
+    ResetPasswordRequest: {
+      email: string;
+      resetCode: string;
+      newPassword: string;
+    };
+    RevisedPoseResponse: {
+      /** Format: uuid */
+      id: string;
+      name: string;
+      baseDifficulty: components['schemas']['DifficultyCode'];
+      flyerDifficulty: components['schemas']['DifficultyCode'];
+      canStartFlow: boolean;
+      canEndFlow: boolean;
+    };
+    RevisionChangesResponse: {
+      name: null | components['schemas']['NameChangeResponse'];
+      baseDifficulty: null | components['schemas']['DifficultyChangeResponse'];
+      flyerDifficulty: null | components['schemas']['DifficultyChangeResponse'];
+      canStartFlow: null | components['schemas']['FlowChangeResponse'];
+      canEndFlow: null | components['schemas']['FlowChangeResponse'];
+    };
+    RoleChangeRequest: {
+      email: null | string;
+      role: null | string;
+    };
+    TaggedTransitionResponse: {
+      /** Format: uuid */
+      id: string;
+      tags: components['schemas']['NamedTagResponse'][];
+    };
+    TagListResponse: {
+      tags: components['schemas']['TagResponse'][];
+    };
+    TagRequest: {
+      name: null | string;
+      description: null | string;
+    };
+    TagResponse: {
+      /** Format: uuid */
+      id: string;
+      name: string;
+      description: string;
+      /** Format: uuid */
+      impliedTagId: null | string;
+      /** Format: int32 */
+      transitionCount: number | string;
+    };
+    TagsAdjustmentResponse: {
+      proposed: components['schemas']['ProposalTagResponse'][];
+      retained: components['schemas']['ProposalTagResponse'][];
+    };
+    TagTransitionRequest: {
+      tagIds: null | string[];
+    };
+    TransitionAdjustmentsResponse: {
+      name: null | components['schemas']['OptionalTextAdjustmentResponse'];
+      baseDifficulty: null | components['schemas']['DifficultyAdjustmentResponse'];
+      flyerDifficulty: null | components['schemas']['DifficultyAdjustmentResponse'];
+      description: null | components['schemas']['OptionalTextAdjustmentResponse'];
+      tags: null | components['schemas']['TagsAdjustmentResponse'];
+    };
+    TransitionProposalResponse: {
+      /** Format: uuid */
+      id: string;
+      status: components['schemas']['ProposalStatusCode'];
+      fromPose: components['schemas']['PoseReferenceResponse'];
+      toPose: components['schemas']['PoseReferenceResponse'];
+      name: null | string;
+      baseDifficulty: components['schemas']['DifficultyCode'];
+      flyerDifficulty: components['schemas']['DifficultyCode'];
+      description: null | string;
+      tags: components['schemas']['ProposalTagResponse'][];
+    };
+    TransitionTagResponse: {
+      /** Format: uuid */
+      id: string;
+      name: string;
+      description: string;
+    };
+    TwoFactorRequest: {
+      enable?: null | boolean;
+      twoFactorCode?: null | string;
+      resetSharedKey?: boolean;
+      resetRecoveryCodes?: boolean;
+      forgetMachine?: boolean;
+    };
+    TwoFactorResponse: {
+      sharedKey: string;
+      /** Format: int32 */
+      recoveryCodesLeft: number | string;
+      recoveryCodes?: null | string[];
+      isTwoFactorEnabled: boolean;
+      isMachineRemembered: boolean;
+    };
+    ValidationQueueResponse: {
+      proposals: components['schemas']['PendingProposalResponse'][];
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    Health: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  Health: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    GetMyAccount: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MyAccountResponse"];
-                };
-            };
-        };
+        content?: never;
+      };
     };
-    ListPublishedPoses: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PoseListResponse"];
-                };
-            };
-        };
+  };
+  GetMyAccount: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    GetPublishedPose: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PublishedPoseResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
+        content: {
+          'application/json': components['schemas']['MyAccountResponse'];
         };
+      };
     };
-    ListTags: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TagListResponse"];
-                };
-            };
-        };
+  };
+  ListPublishedPoses: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    AddTag: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TagRequest"];
-            };
+        content: {
+          'application/json': components['schemas']['PoseListResponse'];
         };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TagResponse"];
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-        };
+      };
     };
-    ChangeTag: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TagRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TagResponse"];
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-        };
+  };
+  GetPublishedPose: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
     };
-    RemoveTag: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
+        content: {
+          'application/json': components['schemas']['PublishedPoseResponse'];
         };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
     };
-    ProposePose: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ProposePoseRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PoseProposalResponse"];
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-        };
+  };
+  ListTags: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    GetValidationQueue: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ValidationQueueResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
+        content: {
+          'application/json': components['schemas']['TagListResponse'];
         };
+      };
     };
-    CountPendingPoseProposals: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PendingCountResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-        };
+  };
+  AddTag: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    AcceptPoseProposal: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": null | components["schemas"]["AcceptPoseProposalRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AcceptedPoseProposalResponse"];
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TagRequest'];
+      };
     };
-    RejectPoseProposal: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RejectPoseProposalRequest"];
-            };
+        content: {
+          'application/json': components['schemas']['TagResponse'];
         };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RejectedPoseProposalResponse"];
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
         };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
     };
-    GetMyProposals: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MyProposalsResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-        };
+  };
+  ChangeTag: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
     };
-    ProposePoseRevision: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ProposePoseRevisionRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PoseRevisionProposalResponse"];
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TagRequest'];
+      };
     };
-    GetPendingRevisionOfPose: {
-        parameters: {
-            query: {
-                poseId: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PendingRevisionOfPoseResponse"];
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
+        content: {
+          'application/json': components['schemas']['TagResponse'];
         };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
     };
-    AcceptPoseRevision: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": null | components["schemas"]["AcceptPoseProposalRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AcceptedPoseProposalResponse"];
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-        };
+  };
+  RemoveTag: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
     };
-    RejectPoseRevision: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RejectPoseProposalRequest"];
-            };
+        content?: never;
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
         };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RejectedPoseProposalResponse"];
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
         };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
     };
-    ProposeTransition: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ProposeTransitionRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TransitionProposalResponse"];
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-        };
+  };
+  TagTransition: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
     };
-    AcceptTransitionProposal: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": null | components["schemas"]["AcceptTransitionProposalRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AcceptedTransitionProposalResponse"];
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TagTransitionRequest'];
+      };
     };
-    RejectTransitionProposal: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RejectPoseProposalRequest"];
-            };
+        content: {
+          'application/json': components['schemas']['TaggedTransitionResponse'];
         };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RejectedPoseProposalResponse"];
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
         };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
     };
-    "MapIdentityApi-/identity/confirmEmail": {
-        parameters: {
-            query: {
-                userId: string;
-                code: string;
-                changedEmail?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  ProposePose: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    SignOut: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ProposePoseRequest'];
+      };
     };
-    AssignRole: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RoleChangeRequest"];
-            };
+        content: {
+          'application/json': components['schemas']['PoseProposalResponse'];
         };
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
         };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
     };
-    RevokeRole: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RoleChangeRequest"];
-            };
-        };
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  GetValidationQueue: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ValidationQueueResponse'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  CountPendingPoseProposals: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PendingCountResponse'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  AcceptPoseProposal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        'application/json': null | components['schemas']['AcceptPoseProposalRequest'];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AcceptedPoseProposalResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unprocessable Entity */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  RejectPoseProposal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RejectPoseProposalRequest'];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['RejectedPoseProposalResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  GetMyProposals: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['MyProposalsResponse'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  ProposePoseRevision: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ProposePoseRevisionRequest'];
+      };
+    };
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PoseRevisionProposalResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unprocessable Entity */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  GetPendingRevisionOfPose: {
+    parameters: {
+      query: {
+        poseId: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PendingRevisionOfPoseResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  AcceptPoseRevision: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        'application/json': null | components['schemas']['AcceptPoseProposalRequest'];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AcceptedPoseProposalResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unprocessable Entity */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  RejectPoseRevision: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RejectPoseProposalRequest'];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['RejectedPoseProposalResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  ProposeTransition: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ProposeTransitionRequest'];
+      };
+    };
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['TransitionProposalResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  AcceptTransitionProposal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        'application/json': null | components['schemas']['AcceptTransitionProposalRequest'];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AcceptedTransitionProposalResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unprocessable Entity */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  RejectTransitionProposal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RejectPoseProposalRequest'];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['RejectedPoseProposalResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  'MapIdentityApi-/identity/confirmEmail': {
+    parameters: {
+      query: {
+        userId: string;
+        code: string;
+        changedEmail?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  SignOut: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AssignRole: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RoleChangeRequest'];
+      };
+    };
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  RevokeRole: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RoleChangeRequest'];
+      };
+    };
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
 }

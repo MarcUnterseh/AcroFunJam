@@ -44,7 +44,19 @@ const ninjaStar = {
   baseDifficulty: 'advanced' as const,
   flyerDifficulty: 'advanced' as const,
   description: 'Vidéo : https://example.org/ninja-star' as TransitionDescription,
+  tags: [
+    { id: 'tag-dynamique', name: 'dynamique' },
+    { id: 'tag-pop', name: 'pop' },
+  ],
 };
+
+const tag = (id: string, name: string, impliedTagId: string | null = null) => ({
+  id,
+  name,
+  description: `${name} …`,
+  impliedTagId,
+  transitionCount: 3,
+});
 
 const received = (status: string) => ({
   id: 't-1',
@@ -87,6 +99,39 @@ describe('createTransitionProposalGateway', () => {
     });
   });
 
+  describe('listTags', () => {
+    it('should read the tags of the list, in catalog order, with what they add', async () => {
+      const requests: Request[] = [];
+      const gateway = createTransitionProposalGateway(
+        apiAnswering(
+          200,
+          { tags: [tag('tag-dynamique', 'dynamique'), tag('tag-pop', 'pop', 'tag-dynamique')] },
+          requests,
+        ),
+      );
+
+      expect(await gateway.listTags()).toEqual(
+        ok([
+          { id: 'tag-dynamique', name: 'dynamique', description: 'dynamique …', impliedTagId: null },
+          { id: 'tag-pop', name: 'pop', description: 'pop …', impliedTagId: 'tag-dynamique' },
+        ]),
+      );
+      expect(new URL(requests[0]!.url).pathname).toBe('/catalog/tags');
+    });
+
+    it('should report a failure to read them as unreachable or outdated', async () => {
+      expect(await createTransitionProposalGateway(networkDown()).listTags()).toEqual(
+        fail({ kind: 'unreachable' }),
+      );
+      expect(await createTransitionProposalGateway(apiAnswering(503)).listTags()).toEqual(
+        fail({ kind: 'unreachable' }),
+      );
+      expect(
+        await createTransitionProposalGateway(apiAnswering(200, { tags: [{ id: 1 }] })).listTags(),
+      ).toEqual(fail({ kind: 'outdated' }));
+    });
+  });
+
   describe('proposeTransition', () => {
     it('should send the transition to POST /contribution/transition-proposals, field by field', async () => {
       const requests: Request[] = [];
@@ -96,7 +141,8 @@ describe('createTransitionProposalGateway', () => {
 
       expect(new URL(requests[0]!.url).pathname).toBe('/contribution/transition-proposals');
       expect(requests[0]!.method).toBe('POST');
-      expect(await requests[0]!.json()).toEqual(ninjaStar);
+      const { tags, ...fields } = ninjaStar;
+      expect(await requests[0]!.json()).toEqual({ ...fields, tagIds: tags.map((t) => t.id) });
     });
 
     it('should send null for a transition without a name nor a description', async () => {
@@ -154,6 +200,16 @@ describe('createTransitionProposalGateway', () => {
       const gateway = createTransitionProposalGateway(apiAnswering(status, problem(status, title)));
 
       expect(await gateway.proposeTransition(ninjaStar)).toEqual(fail({ kind }));
+    });
+
+    it('should report the chosen tags no longer in the list, by identifier', async () => {
+      const gateway = createTransitionProposalGateway(
+        apiAnswering(409, { ...problem(409, 'contribution.tag-not-in-list'), tagIds: ['tag-pop'] }),
+      );
+
+      expect(await gateway.proposeTransition(ninjaStar)).toEqual(
+        fail({ kind: 'tags-not-in-list', tagIds: ['tag-pop'] }),
+      );
     });
 
     it('should report a network failure as unreachable', async () => {

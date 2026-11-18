@@ -1,4 +1,10 @@
-import { catalogLabels, myProposalsLabels, poseCountLabel, tagLabels, type PoseSummary } from '@acrofunjam/core';
+import {
+  catalogLabels,
+  myProposalsLabels,
+  poseCountLabel,
+  tagLabels,
+  type PoseSummary,
+} from '@acrofunjam/core';
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useAnnounce } from '../layout/Announcer';
@@ -75,7 +81,13 @@ function EmptyCatalog({ canPropose }: { readonly canPropose: boolean }) {
   );
 }
 
-function Poses({ poses, revisable }: { readonly poses: readonly PoseSummary[]; readonly revisable: boolean }) {
+function Poses({
+  poses,
+  revisable,
+}: {
+  readonly poses: readonly PoseSummary[];
+  readonly revisable: boolean;
+}) {
   return (
     <>
       <p className="catalog__count">{poseCountLabel(poses.length)}</p>

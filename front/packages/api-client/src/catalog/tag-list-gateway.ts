@@ -13,6 +13,7 @@ import {
 } from '@acrofunjam/core';
 import type { ApiClient } from '../client';
 import type { components } from '../generated/schema';
+import { everyItem, toTagReference } from '../shared-kernel/tag-reading';
 
 type TagRequest = components['schemas']['TagRequest'];
 
@@ -41,10 +42,7 @@ const toTag = (value: unknown): Tag | null => {
   return { id, name, description, impliedTagId, transitionCount };
 };
 
-const toNamed = (value: unknown): NamedTag | null =>
-  isRecord(value) && isString(value['id']) && isString(value['name'])
-    ? { id: value['id'], name: value['name'] }
-    : null;
+const toNamed = (value: unknown): NamedTag | null => toTagReference(value);
 
 const toCarrier = (value: unknown): TagCarrier | null => {
   if (!isRecord(value)) return null;
@@ -55,12 +53,7 @@ const toCarrier = (value: unknown): TagCarrier | null => {
   return { id, fromPose, toPose, name };
 };
 
-/** Every item read, or null when one cannot be. */
-const all = <T>(value: unknown, read: (item: unknown) => T | null): T[] | null => {
-  if (!Array.isArray(value)) return null;
-  const items = value.map(read);
-  return items.every((item) => item !== null) ? (items as T[]) : null;
-};
+const all = everyItem;
 
 /** 401: visitor, expired session or deleted account (ADR 0018); 403: a role without « gérer les étiquettes ». */
 const accessFailureOf = (status: number): TagChangeFailure | null => {

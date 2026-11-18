@@ -49,6 +49,10 @@ class FakeValidationGateway implements ValidationGateway {
     return fail({ kind: 'not-found' as const });
   }
 
+  async listTags() {
+    return ok([]);
+  }
+
   async rejectProposal({ id, kind }: ProposalReference, reason: RejectionReason) {
     this.rejected.push({ id, kind, reason });
     return this.rejection;

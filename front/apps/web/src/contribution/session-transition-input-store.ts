@@ -1,5 +1,5 @@
 import type { TransitionProposalInput } from '@acrofunjam/core';
-import { isRecord, level } from './kept-input-parsing';
+import { isRecord, level, storedTags } from './kept-input-parsing';
 import { createKeyedSessionStore } from './keyed-session-store';
 
 const text = (value: unknown): string => (typeof value === 'string' ? value : '');
@@ -14,6 +14,7 @@ const parseTransitionInput = (value: unknown): TransitionProposalInput | null =>
     baseDifficulty: level(value['baseDifficulty']),
     flyerDifficulty: level(value['flyerDifficulty']),
     description: text(value['description']),
+    tags: storedTags(value['tags']) ?? [],
   };
 };
 

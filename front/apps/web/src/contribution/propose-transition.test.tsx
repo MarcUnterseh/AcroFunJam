@@ -177,6 +177,7 @@ describe('the form « Proposer une transition »', () => {
           baseDifficulty: 'beginner',
           flyerDifficulty: 'beginner',
           description: null,
+          tags: [],
         },
       ]),
     );
@@ -384,6 +385,7 @@ describe('the form « Proposer une transition »', () => {
         baseDifficulty: 'advanced',
         flyerDifficulty: 'advanced',
         description: '',
+        tags: [],
       },
     });
     open({ transitionStore });

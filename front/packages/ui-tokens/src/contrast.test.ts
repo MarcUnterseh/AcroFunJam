@@ -41,6 +41,9 @@ const textPairs: readonly [Role, Role][] = [
   ['text', 'selectedSurface'],
   ['text', 'successSurface'],
   ['text', 'dangerSurface'],
+  // Story 8: the pills of the tags of a transition (pilule-etiquette.md).
+  ['text', 'tagSurface'],
+  ['textMuted', 'tagSurface'],
   ['text', 'infoSurface'],
   ['danger', 'background'],
   ['danger', 'surface'],

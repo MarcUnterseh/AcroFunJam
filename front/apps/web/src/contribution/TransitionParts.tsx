@@ -8,6 +8,7 @@ import {
   type TransitionTitle,
 } from '@acrofunjam/core';
 import { DifficultyDetails } from '../catalog/PoseList';
+import { TagLine } from '../layout/tag-parts';
 import { ValueChangeList } from './ValueChangeList';
 
 // The parts of a transition shared by its cards: the validation queue and « Mes propositions » (carte-transition.md).
@@ -23,11 +24,21 @@ export function TransitionTitleText({ transition }: { readonly transition: Trans
   );
 }
 
-/** The transition as it will be published: its two difficulties, then its description, if any (carte-transition.md). */
-export function TransitionDetails({ transition }: { readonly transition: TransitionContent }) {
+/**
+ * The transition as it will be published: its two difficulties, its tags (story 8), then its description, if any
+ * (carte-transition.md). The validation queue always shows the line of the tags, « aucune » without any.
+ */
+export function TransitionDetails({
+  transition,
+  showNoTags = false,
+}: {
+  readonly transition: TransitionContent;
+  readonly showNoTags?: boolean;
+}) {
   return (
     <>
       <DifficultyDetails difficulties={transition} />
+      <TagLine tags={transition.tags} showNone={showNoTags} />
       {transition.description && (
         <div className="transition-description">
           <p className="transition-description__label">{transitionProposalLabels.descriptionTitle}</p>

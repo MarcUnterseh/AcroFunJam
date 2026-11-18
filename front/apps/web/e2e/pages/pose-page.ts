@@ -18,6 +18,8 @@ export type DisplayedTransition = {
   base: string;
   flyer: string;
   description: string;
+  /** Story 8: the names of its tags, in the order shown. */
+  tags: string[];
 };
 
 const escaped = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -100,11 +102,32 @@ export class PosePage {
       .filter({ has: this.page.getByRole('heading', { level: 3, name: title, exact: true }) });
   }
 
+  /** Story 8: the pills of the line « Étiquettes » of a transition. */
+  tagsOf(transition: Locator): Locator {
+    return transition.getByRole('list', { name: 'Étiquettes', exact: true }).getByRole('listitem');
+  }
+
+  /** Story 8: tags a transition through its zone « Étiqueter », checking exactly these tags, then records them. */
+  async tag(transition: Locator, tags: readonly string[]): Promise<void> {
+    await transition.getByRole('button', { name: /^Étiqueter / }).click();
+    const group = transition.getByRole('group', { name: 'Étiquettes de la transition' });
+    await group.getByRole('checkbox').first().waitFor();
+    // From the last to the first: a tag adding another (« pop ») is unchecked before the one it adds (« dynamique »).
+    for (const box of (await group.getByRole('checkbox').all()).reverse()) await box.uncheck();
+    for (const tag of tags) await group.getByRole('checkbox', { name: tag, exact: true }).check();
+    await transition.getByRole('button', { name: 'Enregistrer les étiquettes' }).click();
+    await group.waitFor({ state: 'detached' });
+  }
+
   async transitions(direction: Direction, pose: string): Promise<DisplayedTransition[]> {
     const section = this.section(direction, pose);
     await section.waitFor();
     const read: DisplayedTransition[] = [];
-    for (const item of await section.getByRole('listitem').all()) read.push(await this.readItem(item));
+    // The transitions only: the pills of their tags are list items too (story 8).
+    const items = section
+      .getByRole('listitem')
+      .filter({ has: this.page.getByRole('heading', { level: 3 }) });
+    for (const item of await items.all()) read.push(await this.readItem(item));
     return read;
   }
 
@@ -139,6 +162,7 @@ export class PosePage {
       base: valueOf('Base'),
       flyer: valueOf('Flyer'),
       description: (await description.count()) ? (await description.innerText()).trim() : '',
+      tags: (await this.tagsOf(item).allInnerTexts()).map((tag) => tag.trim()),
     };
   }
 }

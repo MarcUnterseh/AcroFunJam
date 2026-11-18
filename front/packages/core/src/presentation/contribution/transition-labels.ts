@@ -3,7 +3,9 @@ import type { TransitionAdjustment } from '../../domain/contribution/transition-
 import type { TransitionContentErrorCode } from '../../domain/contribution/transition-proposal';
 import { transitionDescriptionPolicy } from '../../domain/shared-kernel/transition-description';
 import { transitionNamePolicy } from '../../domain/shared-kernel/transition-name';
+import type { TagReference } from '../../domain/shared-kernel/transition-tags';
 import { difficultyLevelName } from '../shared-kernel/difficulty-level-labels';
+import { tagNamesSentence, transitionTagLabels } from '../shared-kernel/transition-tag-labels';
 
 const nameMaxLength = transitionNamePolicy.maxLength;
 const descriptionMaxLength = transitionDescriptionPolicy.maxLength;
@@ -235,6 +237,7 @@ export const descriptionCounterLabel = (length: number): string | null => {
 export type TransitionFieldValue =
   | { readonly field: 'name'; readonly value: string | null }
   | { readonly field: 'baseDifficulty' | 'flyerDifficulty'; readonly value: DifficultyLevel }
+  | { readonly field: 'tags'; readonly value: readonly TagReference[] }
   | { readonly field: 'description'; readonly value: string | null };
 
 const displayed = (value: TransitionFieldValue): string => {
@@ -244,6 +247,8 @@ const displayed = (value: TransitionFieldValue): string => {
       return value.value ?? 'aucun nom';
     case 'description':
       return value.value ?? 'aucune description';
+    case 'tags':
+      return tagNamesSentence(value.value);
     default:
       return difficultyLevelName(value.value);
   }
@@ -253,6 +258,7 @@ const terms: Readonly<Record<TransitionFieldValue['field'], string>> = {
   name: 'Nom de la transition',
   baseDifficulty: 'Difficulté base',
   flyerDifficulty: 'Difficulté flyer',
+  tags: transitionTagLabels.adjustmentTerm,
   description: 'Description',
 };
 
