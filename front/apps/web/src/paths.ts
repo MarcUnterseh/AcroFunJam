@@ -27,6 +27,9 @@ export const myProposalsPath = '/mes-propositions';
 /** Page « Étiquettes » (story 8): the glossary of the tags for everybody, managed by the validators and administrators. */
 export const tagsPath = '/etiquettes';
 
+/** Page « Générer un flow » (story 9), for everybody: the criteria in its address, the flow in the history. */
+export const flowGeneratorPath = '/generer-un-flow';
+
 export const signInPagePath = '/connexion';
 export const registrationPagePath = '/inscription';
 

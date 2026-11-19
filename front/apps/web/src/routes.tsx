@@ -10,6 +10,7 @@ import { matchPath, type RouteObject } from 'react-router';
 import { CatalogRoute } from './catalog/CatalogRoute';
 import { PosePageRoute } from './catalog/PosePageRoute';
 import { TagsPage } from './catalog/TagsPage';
+import { FlowGeneratorPage } from './flow-generation/FlowGeneratorPage';
 import { MyProposalsPage } from './contribution/MyProposalsPage';
 import { ProposePosePage } from './contribution/ProposePosePage';
 import { ProposeRevisionPage } from './contribution/ProposeRevisionPage';
@@ -20,6 +21,7 @@ import { NotFoundPage } from './layout/NotFoundPage';
 import type { SiteRouteHandle } from './layout/route-handle';
 import { SiteLayout } from './layout/SiteLayout';
 import {
+  flowGeneratorPath,
   myProposalsPath,
   posePagePattern,
   proposePosePath,
@@ -63,6 +65,7 @@ export const routes = (extra?: ReactNode): RouteObject[] => [
       { index: true, element: <CatalogRoute /> },
       { path: posePagePattern, element: <PosePageRoute /> },
       { path: tagsPath, element: <TagsPage /> },
+      { path: flowGeneratorPath, element: <FlowGeneratorPage /> },
       { path: signInPagePath, element: <SignInPage contextOf={signInContextOf} />, handle: ownSessionNotice },
       { path: registrationPagePath, element: <RegisterPage />, handle: ownSessionNotice },
       { path: proposePosePath, element: <ProposePosePage />, handle: ownSessionNotice },

@@ -23,10 +23,13 @@ const yesOrNo = (can: string) => (can === 'peut' ? 'Oui' : 'Non');
 
 Given('les poses publiées suivantes dans le catalogue :', async ({ catalogApi }, poses: DataTable) => {
   for (const row of poses.hashes()) {
+    // Story 9: the difficulties may be left out (« débutant »), the flow boundaries given (« oui » / « non »).
     catalogApi.publish({
       name: row['nom'] ?? '',
-      baseDifficulty: difficultyCode(row['difficulté base'] ?? ''),
-      flyerDifficulty: difficultyCode(row['difficulté flyer'] ?? ''),
+      baseDifficulty: difficultyCode(row['difficulté base'] ?? 'débutant'),
+      flyerDifficulty: difficultyCode(row['difficulté flyer'] ?? 'débutant'),
+      canStartFlow: (row['peut commencer un flow'] ?? 'oui') === 'oui',
+      canEndFlow: (row['peut terminer un flow'] ?? 'oui') === 'oui',
     });
   }
 });

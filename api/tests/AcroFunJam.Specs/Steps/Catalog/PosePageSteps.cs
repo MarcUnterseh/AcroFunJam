@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using AcroFunJam.Specs.Support;
 using AcroFunJam.Specs.Support.Catalog;
 using AcroFunJam.Specs.Support.Identity;
 using Reqnroll;
@@ -32,7 +33,9 @@ public sealed class PosePageSteps(Deployment deployment, People people, CatalogP
         {
             await catalog.PublishTransition(
                 row["pose de départ"], row["pose d'arrivée"], Blank(row["nom"]),
-                DifficultyLabels.ToCode(row["difficulté base"]), DifficultyLabels.ToCode(row["difficulté flyer"]), Blank(row["description"]));
+                DifficultyLabels.ToCode(row.Or("difficulté base", "débutant")),
+                DifficultyLabels.ToCode(row.Or("difficulté flyer", "débutant")),
+                Blank(row.Or("description", "")));
         }
     }
 

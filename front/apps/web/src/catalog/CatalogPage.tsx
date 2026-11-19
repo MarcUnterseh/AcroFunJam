@@ -1,5 +1,6 @@
 import {
   catalogLabels,
+  flowGenerationLabels,
   myProposalsLabels,
   poseCountLabel,
   tagLabels,
@@ -10,7 +11,7 @@ import { Link } from 'react-router';
 import { useAnnounce } from '../layout/Announcer';
 import { focusPageTitle } from '../layout/focus';
 import { Icon } from '../layout/Icon';
-import { myProposalsPath, proposePosePath, tagsPath } from '../paths';
+import { flowGeneratorPath, myProposalsPath, proposePosePath, tagsPath } from '../paths';
 import { DifficultyLegend } from './DifficultyLegend';
 import { PoseList } from './PoseList';
 import { usePublishedPoses } from './usePublishedPoses';
@@ -30,6 +31,15 @@ function MyProposalsLink() {
   return (
     <Link to={myProposalsPath} className="button button--secondary link-button">
       {myProposalsLabels.catalogLink}
+    </Link>
+  );
+}
+
+/** Secondary link-button « Générer un flow » (9-generer-un-flow.md § 1): for everybody, first of the row, without icon. */
+function GenerateFlowLink() {
+  return (
+    <Link to={flowGeneratorPath} className="button button--secondary link-button">
+      {flowGenerationLabels.generate}
     </Link>
   );
 }
@@ -141,6 +151,7 @@ export function CatalogPage({ canPropose = false }: CatalogPageProps) {
         {/* Once the poses are received or could not be: nothing moves while loading (story 5, Q23). */}
         {(poses !== undefined || error || retrying) && (
           <div className="page-header__actions">
+            <GenerateFlowLink />
             {canPropose && poses !== undefined && poses.length > 0 && <ProposePoseLink />}
             {canPropose && <MyProposalsLink />}
             <TagsLink />

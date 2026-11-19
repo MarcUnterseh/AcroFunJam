@@ -17,6 +17,7 @@ public sealed class ApiSecurityTests : IClassFixture<ApiSecurityTests.ApiFactory
         "/identity/register", "/identity/login", "/identity/refresh", "/identity/confirmEmail",
         "/identity/resendConfirmationEmail", "/identity/forgotPassword", "/identity/resetPassword",
         "/identity/logout", // ends the session of whoever calls it: nothing to protect
+        "/flow-generation/flows", // a POST that changes nothing: anyone, visitor included, generates a flow (ADR 0037)
     ];
 
     private static readonly string[] CapabilityPolicies = [Capabilities.CanPropose, Capabilities.CanValidate, Capabilities.CanManageTags, Capabilities.CanManageRoles];

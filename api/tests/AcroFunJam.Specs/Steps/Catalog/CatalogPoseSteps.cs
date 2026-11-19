@@ -15,9 +15,15 @@ public sealed partial class CatalogPoseSteps(AcroFunJamApiFactory api, CatalogPu
     [Given("les poses publiées suivantes dans le catalogue :")]
     public async Task GivenThePublishedPoses(DataTable poses)
     {
+        // Story 9: the difficulties may be left out (« débutant »), the flow indicators given (« oui », « non »).
         foreach (var row in poses.Rows)
         {
-            await catalog.Publish(row["nom"], DifficultyLabels.ToCode(row["difficulté base"]), DifficultyLabels.ToCode(row["difficulté flyer"]));
+            await catalog.Publish(
+                row["nom"],
+                DifficultyLabels.ToCode(row.Or("difficulté base", "débutant")),
+                DifficultyLabels.ToCode(row.Or("difficulté flyer", "débutant")),
+                canStartFlow: row.Or("peut commencer un flow", "oui") == "oui",
+                canEndFlow: row.Or("peut terminer un flow", "oui") == "oui");
         }
     }
 

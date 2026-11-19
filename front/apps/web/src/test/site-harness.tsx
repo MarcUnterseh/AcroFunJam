@@ -66,6 +66,10 @@ import {
   type PoseTaggingGateway,
   type TagTransitionFailure,
   type TransitionTaggingGateway,
+  type FlowCriteria,
+  type FlowGenerationFailure,
+  type FlowGenerationGateway,
+  type GeneratedFlow,
 } from '@acrofunjam/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
@@ -75,6 +79,7 @@ import { CatalogGatewayProvider } from '../catalog/CatalogGatewayContext';
 import { PosePageProvider } from '../catalog/PosePageContext';
 import { TagListProvider } from '../catalog/TagListContext';
 import { PoseTaggingProvider } from '../catalog/PoseTaggingContext';
+import { FlowGenerationProvider } from '../flow-generation/FlowGenerationContext';
 import { TransitionTaggingProvider } from '../catalog/TransitionTaggingContext';
 import { ContributionProvider } from '../contribution/ContributionContext';
 import { PoseRevisionProvider } from '../contribution/PoseRevisionContext';
@@ -290,6 +295,21 @@ class Answers<T> {
   release(answer: T) {
     this.held.shift()!(answer);
   }
+}
+
+/** Story 9: the generation of flows, the criteria recorded as sent. */
+export class FakeFlowGenerationGateway implements FlowGenerationGateway {
+  readonly flows: Answers<Result<GeneratedFlow, FlowGenerationFailure>>;
+  readonly sent: FlowCriteria[] = [];
+
+  constructor(...answers: Array<Result<GeneratedFlow, FlowGenerationFailure> | 'held'>) {
+    this.flows = new Answers(answers.length > 0 ? answers : [fail({ kind: 'catalog-insufficient' })]);
+  }
+
+  generateFlow = (criteria: FlowCriteria) => {
+    this.sent.push(criteria);
+    return this.flows.next();
+  };
 }
 
 /** The validation API of Contribution: the queue, its count, and the decisions, recorded as sent. */
@@ -582,6 +602,7 @@ export const renderSite = (
     poseTagging = new FakePoseTaggingGateway(),
     transitions = new FakeTransitionProposalGateway(),
     transitionStore = new MemoryTransitionInputStore(),
+    flowGeneration = new FakeFlowGenerationGateway(),
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
   }: {
     gateway?: FakeAuthGateway;
@@ -599,6 +620,7 @@ export const renderSite = (
     poseTagging?: FakePoseTaggingGateway;
     transitions?: FakeTransitionProposalGateway;
     transitionStore?: MemoryTransitionInputStore;
+    flowGeneration?: FakeFlowGenerationGateway;
     queryClient?: QueryClient;
   } = {},
   extra?: ReactNode,
@@ -620,7 +642,9 @@ export const renderSite = (
                           memory={memory}
                           forgetOnSignOut={[store, decisionStore, revisionStore, transitionStore]}
                         >
-                          <RouterProvider router={router} />
+                          <FlowGenerationProvider gateway={flowGeneration}>
+                            <RouterProvider router={router} />
+                          </FlowGenerationProvider>
                         </IdentityProvider>
                       </TransitionProposalProvider>
                     </PoseRevisionProvider>
@@ -648,6 +672,7 @@ export const renderSite = (
     tagging,
     transitions,
     transitionStore,
+    flowGeneration,
     queryClient,
   };
 };

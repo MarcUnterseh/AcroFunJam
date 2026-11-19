@@ -141,9 +141,21 @@ export class TagApi {
     return tag;
   }
 
+  /** Story 9: the list cannot be read by the site (the rest of AcroFunJam answers). */
+  listUnreachable = false;
+
+  /** Story 9: the identifiers of the tags of the list. */
+  get ids(): string[] {
+    return this.tags.map((tag) => tag.id);
+  }
+
   async start(): Promise<void> {
     await this.context.route('**/catalog/tags', (route) =>
-      route.request().method() === 'POST' ? this.manage(route, () => this.create(route)) : this.list(route),
+      route.request().method() === 'POST'
+        ? this.manage(route, () => this.create(route))
+        : this.listUnreachable
+          ? route.abort('connectionrefused')
+          : this.list(route),
     );
     await this.context.route('**/catalog/transitions/*/tags', (route) =>
       this.manage(route, () => this.tagTransition(route)),

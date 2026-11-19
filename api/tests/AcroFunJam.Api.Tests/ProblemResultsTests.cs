@@ -2,6 +2,7 @@ using AcroFunJam.Api.Endpoints.Common;
 using AcroFunJam.Domain.Catalog;
 using AcroFunJam.Domain.Common;
 using AcroFunJam.Domain.Contribution;
+using AcroFunJam.Domain.FlowGeneration;
 using AcroFunJam.Domain.SharedKernel;
 using Microsoft.AspNetCore.Http;
 
@@ -24,7 +25,23 @@ public sealed class ProblemResultsTests
         { ContributionErrors.PoseNameAlreadyInCatalog, StatusCodes.Status409Conflict },
         { CatalogErrors.PoseNameTaken, StatusCodes.Status409Conflict },
         { ContributionErrors.PoseNameAlreadyPending, StatusCodes.Status409Conflict },
+        // Story 9 (ADR 0037).
+        { FlowGenerationErrors.LengthRequired, StatusCodes.Status400BadRequest },
+        { FlowGenerationErrors.LengthOutOfRange, StatusCodes.Status400BadRequest },
+        { FlowGenerationErrors.BaseDifficultyCeilingRequired, StatusCodes.Status400BadRequest },
+        { FlowGenerationErrors.FlyerDifficultyCeilingRequired, StatusCodes.Status400BadRequest },
+        { new TagsNotInListError(TagSet.Of([new TagId(Guid.NewGuid())])), StatusCodes.Status409Conflict },
+        { FlowGenerationErrors.CriteriaTooRestrictive, StatusCodes.Status422UnprocessableEntity },
+        { FlowGenerationErrors.CatalogInsufficient, StatusCodes.Status422UnprocessableEntity },
     };
+
+    [Fact]
+    public void ToProblem_Should_ListTheTagsNotInTheList_When_AGenerationRefusesThem()
+    {
+        var tag = new TagId(Guid.NewGuid());
+
+        new TagsNotInListError(TagSet.Of([tag])).ToProblem().ProblemDetails.Extensions["tagIds"].ShouldBe(new List<Guid> { tag.Value });
+    }
 
     [Theory]
     [MemberData(nameof(StatusByError))]

@@ -38,3 +38,4 @@
 | [0034](0034-contrat-http-des-etiquettes.md) | Contrat HTTP des étiquettes (`/catalog/tags`, `/catalog/transitions/{id}/tags`, `tagIds` et `tags` dans Contribution) | proposé |
 | [0035](0035-champ-d-application-des-etiquettes-et-amorcage-versionne.md) | Champ d'application des étiquettes (`TagScope`), choix par cible (`TagChoice.NotApplicable`), amorçage versionné de la liste (`SeedRevision`, `Upgrade`) | proposé |
 | [0036](0036-etiquettes-d-une-pose-et-contrat-http.md) | Étiquettes d'une pose : étiquetage direct par le Catalogue (version, modification en attente, verrou `pose:<id>` partagé), porteurs entre contextes, contrat HTTP | proposé |
+| [0037](0037-contexte-generation-de-flow.md) | Contexte Génération de flow : graphe publié lu au Catalogue (`GetPublishedGraph`, ACL), recherche aléatoire bornée, `POST /flow-generation/flows` | proposé |

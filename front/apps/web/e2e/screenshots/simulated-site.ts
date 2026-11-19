@@ -7,6 +7,7 @@ import { IdentityApi } from '../support/identity-api';
 import { MyProposalsApi } from '../support/my-proposals-api';
 import { defaultPassword, expectSignedIn, signInThroughTheSite } from '../support/people';
 import { PoseRevisionApi } from '../support/pose-revision-api';
+import { FlowGenerationApi } from '../support/flow-generation-api';
 import { TagApi } from '../support/tag-api';
 import { TransitionApi } from '../support/transition-api';
 import { ValidationApi } from '../support/validation-api';
@@ -21,6 +22,7 @@ export type SimulatedSite = {
   poseRevisionApi: PoseRevisionApi;
   transitionApi: TransitionApi;
   tagApi: TagApi;
+  flowGenerationApi: FlowGenerationApi;
 };
 
 /**
@@ -44,7 +46,9 @@ export const test = base.extend<{
       poseRevisionApi: new PoseRevisionApi(context, identityApi, catalogApi, contributionApi),
       transitionApi: new TransitionApi(context, identityApi, catalogApi, contributionApi),
       tagApi: new TagApi(context, identityApi, catalogApi),
+      flowGenerationApi: new FlowGenerationApi(context, catalogApi),
     };
+    site.flowGenerationApi.tagsOfTheList = () => site.tagApi.ids;
     for (const api of Object.values(site)) await api.start();
     await use(site);
   },

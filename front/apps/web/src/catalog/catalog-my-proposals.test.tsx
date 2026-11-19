@@ -35,6 +35,7 @@ describe('catalog, link « Mes propositions »', () => {
         .getAllByRole('link')
         .map((each) => each.textContent),
     ).toEqual([
+      'Générer un flow', // story 9: for everybody, first of the row
       'Proposer une pose',
       'Mes propositions',
       'Étiquettes', // story 8: for everybody, last of the row
@@ -55,7 +56,7 @@ describe('catalog, link « Mes propositions »', () => {
         within(header)
           .getAllByRole('link')
           .map((each) => each.textContent),
-      ).toEqual(['Mes propositions', 'Étiquettes']);
+      ).toEqual(['Générer un flow', 'Mes propositions', 'Étiquettes']);
     },
   );
 
@@ -68,15 +69,19 @@ describe('catalog, link « Mes propositions »', () => {
   });
 });
 
-// Story 8 (8-etiquettes.md, § 5): « Étiquettes » for everybody, alone for a visitor.
+// Story 8 (8-etiquettes.md, § 5): « Étiquettes » for everybody; for a visitor, after « Générer un flow » (story 9).
 describe('catalog, link « Étiquettes »', () => {
-  it('should offer a visitor the list of tags, alone in the header of the page', async () => {
+  it('should offer a visitor the list of tags, after « Générer un flow » in the header of the page', async () => {
     renderSite('/', { catalog: { listPublishedPoses: async () => ok([throne]) } });
 
     const link = await screen.findByRole('link', { name: 'Étiquettes' });
     expect(link).toHaveAttribute('href', '/etiquettes');
     expect(link).toHaveClass('button--secondary');
     const header = link.closest('.page-header') as HTMLElement;
-    expect(within(header).getAllByRole('link')).toHaveLength(1);
+    expect(
+      within(header)
+        .getAllByRole('link')
+        .map((each) => each.textContent),
+    ).toEqual(['Générer un flow', 'Étiquettes']);
   });
 });

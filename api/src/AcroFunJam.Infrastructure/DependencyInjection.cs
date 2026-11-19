@@ -1,15 +1,19 @@
-using AcroFunJam.Application.Catalog;
 using AcroFunJam.Application.Catalog.GetPosePage;
+using AcroFunJam.Application.Catalog.GetPublishedGraph;
 using AcroFunJam.Application.Catalog.ListPublishedPoses;
+using AcroFunJam.Application.Catalog;
 using AcroFunJam.Application.Common;
 using AcroFunJam.Application.Contribution;
-using AcroFunJam.Application.Identity;
+using AcroFunJam.Application.FlowGeneration;
 using AcroFunJam.Application.Identity.GetAccountEmails;
+using AcroFunJam.Application.Identity;
+using AcroFunJam.Domain.FlowGeneration;
 using AcroFunJam.Infrastructure.ContextIntegration;
-using AcroFunJam.Infrastructure.Persistence;
+using AcroFunJam.Infrastructure.FlowGeneration;
 using AcroFunJam.Infrastructure.Persistence.Catalog;
 using AcroFunJam.Infrastructure.Persistence.Contribution;
 using AcroFunJam.Infrastructure.Persistence.Identity;
+using AcroFunJam.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +37,7 @@ public static class DependencyInjection
         services.AddSingleton(CatalogUniqueConstraints.PoseNameKey);
         services.AddSingleton(CatalogConcurrencyConflicts.PoseRevisedMeanwhile);
         services.AddScoped<IPublishedPosesReader, EfPublishedPosesReader>();
+        services.AddScoped<IPublishedGraphReader, EfPublishedGraphReader>();
         services.AddScoped<IPoseRepository, EfPoseRepository>();
         services.AddSingleton(CatalogUniqueConstraints.TransitionNamedSlot);
         services.AddSingleton(CatalogUniqueConstraints.TransitionUnnamedSlot);
@@ -75,6 +80,8 @@ public static class DependencyInjection
         services.AddScoped<ICatalogPoses, CatalogPoses>();
         services.AddScoped<ICatalogTransitions, CatalogTransitions>();
         services.AddScoped<ICatalogTags, CatalogTags>();
+        services.AddScoped<IPublishedGraphSource, CatalogPublishedGraph>();
+        services.AddSingleton<IRandomSource, SystemRandomSource>();
         services.AddScoped<IPendingTagCarriers, ContributionPendingTagCarriers>();
         services.AddScoped<IPendingPoseRevisions, ContributionPendingPoseRevisions>(); // read by the Catalog tagging a pose (ADR 0036)
         services.AddScoped<IPoseTaggingLock, PgPoseTaggingLock>(); // read by the Catalog removing a tag (ADR 0033)

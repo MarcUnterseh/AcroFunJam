@@ -687,6 +687,153 @@ Carte d'example mapping du 2026-11-18 (bdd-analyst), recommandations validées l
 4. API, modification : M1, M2, M3.
 5. Site : A8, V2 à V4, D5, E6, M4.
 
+### Story 9 « Générer un flow » (validée le 2026-11-19)
+Carte d'example mapping du 2026-11-19 (bdd-analyst), **toutes les recommandations validées le même jour par le porteur du produit**, avec les avis de l'expert acroyoga et de l'ux-expert (Q182 à Q211, UX-1 à UX-8). Scénarios (tous `@wip`) : `specs/features/generation-de-flow/generer-un-flow.feature` (G) et `specs/features/generation-de-flow/criteres-de-generation.feature` (K). Contexte Génération de flow (Q182), cibles @api et @web ; le mobile aura sa story dédiée (Q201).
+
+**Story** : en tant que visiteur ou utilisateur, je tire au hasard, dans le catalogue publié, un flow exécutable du nombre de transitions que je choisis, sans dépasser une difficulté base et une difficulté flyer, avec l'une de certaines étiquettes ou sans certaines autres, afin de pratiquer sans avoir à inventer un enchaînement. (« Pratiquant » reste réservé à l'utilisateur qui tient un répertoire, Q210.)
+
+**Décisions du porteur du produit (2026-11-19)**
+1. **Contexte et acteurs** (Q182, Q183, Q210) : contexte délimité **Génération de flow**, dossier `specs/features/generation-de-flow/` ; tout le monde génère, visiteur compris (seules des données publiques sont lues, rien n'est enregistré) ; l'acteur de la story est « visiteur ou utilisateur ».
+2. **Longueur et valeurs par défaut** (Q184, Q185) : la longueur est le nombre exact de transitions, de 1 à 10 ; jamais de flow plus court à la place. L'API exige la longueur et les deux plafonds ; le site présélectionne 3 transitions, « débutant » / « débutant ».
+3. **Difficulté** (Q186, Q209) : deux plafonds « au plus » (inclusifs), base et flyer, appliqués à chaque pose (départ et arrivée comprises) et à chaque transition. Chaque étape affiche aussi la difficulté base / flyer de sa pose d'arrivée, et la pose de départ la sienne.
+4. **Étiquettes demandées** (Q187, Q188, Q203, Q204), **règle révisée** : OU entre les étiquettes demandées ; une **étape** (une transition et sa pose d'arrivée) est conforme si sa transition **ou** sa pose d'arrivée porte l'une des étiquettes demandées ; la pose de départ n'est pas contrainte. À l'écran : « Chaque étape portera l'une de ces étiquettes, sur la transition ou sur la pose d'arrivée. ». La distinction style / technique (« au moins une » étape en pop, whip…) est reportée à une story ultérieure (Q203).
+5. **Étiquettes exclues** (Q189, Q207) : aucune pose ni aucune transition du flow n'en porte ; exclure « dynamique » écarte pop, whip et icarien, qui l'impliquent. À l'écran : « Seuls les éléments étiquetés sont écartés : vérifie chaque étape. ».
+6. **Critères incohérents** (Q190) : une étiquette absente de la liste, demandée ou exclue, est refusée ; toute étiquette de la liste peut être demandée ou exclue (elle s'applique aux poses ou aux transitions). Même étiquette demandée et exclue : l'API répond « critères trop restrictifs » ; le site l'empêche (case de l'autre groupe désactivée, marquée « (demandée) » ou « (exclue) »).
+7. **Répétition** (Q191, Q192, Q211) : une pose peut revenir, une transition sert au plus une fois ; une washing machine est une étape comme une autre, une fois par flow, sans critère dédié ; le site la marque « washing machine », en plus de son arrivée « (même pose) ».
+8. **Hasard et rejeu** (Q194, Q195, Q196, UX-2, UX-5) : tout flow possible peut sortir, sans garantie d'uniformité, avec une source de hasard injectable ; pas de graine exposée ; les critères sont dans l'adresse de la page et le flow est gardé dans l'historique de navigation (revenir depuis la page d'une pose retrouve le même flow). « Générer un autre flow » rejoue les critères du flow affiché et peut redonner le même flow ; le site le signale : « Le même flow est ressorti : avec ces critères, le catalogue offre peu de choix. ».
+9. **Échecs** (Q197, Q198) : « Critères trop restrictifs : impossible de générer un flow. », puis « Pour élargir le choix, essaie : » avec des pistes adaptées (moins de transitions ; des plafonds de difficulté plus hauts ; moins d'étiquettes exclues, seulement si une étiquette est exclue ; plus d'étiquettes demandées, ou aucune, seulement si une étiquette est demandée) et « Modifier les critères ». Catalogue insuffisant : « Le catalogue ne permet pas encore de générer un flow. » et « Il manque encore des poses ou des transitions pour former un enchaînement. », avec un lien « Voir le catalogue ».
+10. **Rappel du spotter** (Q199) : avec chaque flow, au-dessus des étapes, sans variante : « Ce flow est tiré au hasard : il peut contenir des transitions que ton duo n'a jamais faites. Travaillez-les d'abord une par une, avec un spotter. Chacun peut dire stop à tout moment. ».
+11. **Site** (Q200, UX-1 à UX-8) :
+    - page unique `/generer-un-flow` ; accès par un bouton secondaire « Générer un flow », premier des actions du catalogue ; pas d'entrée dans l'en-tête (UX-1) ;
+    - formulaire : introduction « Choisis la longueur et la difficulté : AcroFunJam tire au hasard un flow parmi les poses et les transitions du catalogue. » ; « Nombre de transitions » (aide « De 1 à 10. Un flow de 3 transitions enchaîne 4 poses. ») ; « Difficulté base, au plus » et « Difficulté flyer, au plus » (aide « Aucune pose ni transition du flow ne dépassera ce niveau. ») ; repli « Étiquettes (facultatives) », fermé par défaut, avec le compte des étiquettes choisies dans son résumé (UX-3, UX-4), groupes « Avec l'une de ces étiquettes » et « Sans ces étiquettes » ; bouton « Générer un flow », « Génération du flow… » pendant la génération ;
+    - flow : titre « Ton flow », résumé « 3 transitions, de Throne à Folded Leaf. », récapitulatif des critères, « Générer un autre flow », « Modifier les critères », rappel du spotter, « Départ : Throne » (avec ses difficultés et ses étiquettes), puis la liste ordonnée des étapes : « Étape 1 · Pop to Bird » (transition sans nom : « Bird → Folded Leaf »), « Vers Bird », difficultés base / flyer de la transition et de la pose d'arrivée, étiquettes, description de la transition repliée (UX-8) ; chaque pose ouvre sa page ;
+    - états : incident réseau « Impossible de générer le flow. Vérifie ta connexion Internet, puis réessaie. » ; étiquette retirée de la liste pendant la saisie « L'étiquette « vrille » n'est plus disponible. Vérifie tes étiquettes, puis génère de nouveau ton flow. », critères conservés ; étiquettes non chargées : génération possible sans étiquette (UX-6).
+12. **Cibles et périmètre** (Q201) : @api et @web ; le mobile dans une story dédiée. Hors périmètre : pose de départ ou d'arrivée imposée (Q193), flow pour un duo et répertoire (Q202), UX-7, sauvegarder et partager un flow. Plus tard : style / technique (Q203), tours de washing machine (Q205), enchaînements dynamiques ou inversions consécutives (Q206), famille de pratique (Q208).
+
+**Déjà décidé** (découverte, « Générateur de flow ») : flow exécutable, qui part d'une pose « peut commencer », alterne pose → transition → pose et finit sur une pose « peut terminer » (15) ; critères de difficulté, de longueur et d'étiquettes (16) ; réponse explicite « critères trop restrictifs, impossible de générer un flow » (17). Story 8 : « washing machine » déduite de ses poses, rappel du spotter par le générateur (Q146). Story 9a : étiquettes des poses (« inversion », « lunaire ») indépendantes de celles des transitions, combinaison laissée au générateur (Q177).
+
+**Règles et exemples** (G = `generer-un-flow.feature`, K = `criteres-de-generation.feature` ; sauf mention, poses et transitions débutant / débutant, sans restriction de difficulté ni d'étiquette)
+- **G1. Un flow part d'une pose qui peut commencer un flow.**
+  - Bird (commence et termine), Free Bird (termine seulement), transitions Bird → Free Bird et Free Bird → Bird ; 1 transition : toujours « Bird → Free Bird ».
+- **G2. Un flow finit sur une pose qui peut terminer un flow.**
+  - Throne (commence et termine), Candlestick (commence seulement), transitions dans les deux sens ; 1 transition : toujours « Candlestick → Throne ».
+- **G3. Au milieu d'un flow, une pose n'a besoin de pouvoir ni commencer ni terminer.**
+  - Bow (ni l'un ni l'autre) : « Bird → Bow → Bird ». Un flow peut finir sur sa pose de départ.
+- **G4. La longueur est le nombre de transitions, exactement celui demandé** (Q184).
+  - Throne → Bird et Bird → Folded Leaf ; 2 transitions : « Throne → Bird → Folded Leaf » (jamais « Throne → Bird » seul).
+  - Seule Throne → Bird existe ; 2 transitions : critères trop restrictifs, pas de flow plus court à la place.
+- **G5. La longueur est obligatoire et comprise entre 1 et 10 transitions** (Q184).
+  - 0 et 11 : génération impossible ; sans longueur : longueur obligatoire. Un flow d'une seule pose, sans transition, n'existe pas.
+- **G6. Le générateur tire au hasard un flow parmi tous ceux qui satisfont les critères** (Q194).
+  - Throne → Bird, Throne → Star, Star → Bird ; 1 transition : l'un des trois. Que chacun puisse sortir est vérifié par des tests unitaires avec une source de hasard simulée, pas par un scénario.
+- **G7. Une pose peut revenir dans un flow** (Q191).
+  - Throne → Bird et Bird → Throne ; 2 transitions : « Throne → Bird → Throne » ou « Bird → Throne → Bird ».
+- **G8. Une transition sert au plus une fois dans un flow** (Q191).
+  - Mêmes transitions, 3 demandées : critères trop restrictifs (il faudrait reprendre Throne → Bird).
+- **G9. Une washing machine est une étape comme une autre, qui ne sert elle aussi qu'une fois** (Q192).
+  - « Ninja Star », de Star vers Star : 1 transition, « Star → Star » par « Ninja Star » ; 2 transitions : critères trop restrictifs.
+- **G10. Seules les poses et les transitions publiées entrent dans un flow.**
+  - Throne → Bird publiée, Bird → Throne proposée par Alice et en attente ; 2 transitions : critères trop restrictifs.
+- **G11. Un catalogue qui ne permet encore aucun flow est signalé autrement que des critères trop restrictifs** (Q198) : aucun flow de 1 à 10 transitions, même sans critère de difficulté ni d'étiquette.
+  - Catalogue sans pose ; Throne et Bird sans transition ; Bow et Free Bird, dont aucune ne peut commencer un flow, reliées par Bow → Free Bird.
+- **G12. Le flow présente sa pose de départ puis, étape par étape, la transition et la pose d'arrivée** (Q200, Q209).
+  - Étape 1 : Throne, « Pop to Bird » (intermédiaire / intermédiaire, dynamique, pop), Bird ; étape 2 : Bird, transition sans nom (débutant / débutant, lunaire), Folded Leaf.
+  - Poses : départ Bird (débutant / découverte, sans étiquette), arrivée de l'étape 1 Folded Leaf (intermédiaire / débutant, inversion, lunaire).
+  - Description de la transition de chaque étape (« Pop to Bird »).
+- **G13. Sur le site, présentation du flow** (Q200, Q209, Q211, UX-2, UX-8).
+  - Étapes numérotées depuis la pose de départ, transition sans nom présentée par ses poses (« Bird → Folded Leaf ») ; résumé « 2 transitions, de Throne à Folded Leaf. ».
+  - Difficultés et étiquettes de la pose de départ, de la transition et de la pose d'arrivée (Bird, Bird → Folded Leaf « lunaire », Folded Leaf « inversion, lunaire ») ; description de la transition dépliée à la demande.
+  - « Ninja Star » marquée « washing machine », vers la même pose.
+  - Chaque pose ouvre sa page ; revenir au flow depuis la page de Bird présente de nouveau « Throne → Bird », sans nouveau tirage.
+- **G14. Le site présente le rappel du spotter avec chaque flow** (Q199).
+- **G15. « Générer un autre flow » rejoue les critères du flow affiché** (Q195, Q196, UX-5).
+  - Récapitulatif : 2 transitions, « débutant » / « débutant » au plus.
+  - Un seul flow possible (Throne → Bird) : « Le même flow est ressorti : avec ces critères, le catalogue offre peu de choix. ».
+  - « Modifier les critères » rouvre le générateur avec les critères du flow affiché.
+- **G16. Tout le monde, visiteur compris, accède au générateur depuis le catalogue** (Q183, Q200, UX-1).
+- **G17. Le site explique pourquoi aucun flow n'a été généré** (Q197, Q198).
+  - « Critères trop restrictifs : impossible de générer un flow. » ; pistes : sans étiquette, moins de transitions et plafonds plus hauts ; « sans vrille » : en plus, moins d'étiquettes exclues ; « avec lunaire » : en plus, plus d'étiquettes demandées, ou aucune.
+  - Catalogue vide : « Le catalogue ne permet pas encore de générer un flow. Il manque encore des poses ou des transitions pour former un enchaînement. » ; « Voir le catalogue » mène aux poses du catalogue.
+  - AcroFunJam injoignable : « Impossible de générer le flow. Vérifie ta connexion Internet, puis réessaie. » ; réessayer donne le flow.
+- **K1. Chaque transition du flow respecte le plafond de difficulté base et celui de difficulté flyer** (Q186).
+  - Throne → Bird sans nom (débutant / débutant) et « Pop to Bird » (intermédiaire / intermédiaire) : plafond base « débutant » ou plafond flyer « débutant » : la transition sans nom seulement.
+  - « Au plus » inclut le niveau : seule « Pop to Bird », plafonds « intermédiaire » : elle est retenue.
+- **K2. Chaque pose du flow, de départ comme d'arrivée, respecte les plafonds** (Q186).
+  - Star intermédiaire / intermédiaire : écartée comme pose d'arrivée sous un plafond flyer « débutant » (« Throne → Bird »), et comme pose de départ sous un plafond base « débutant ».
+- **K3. Les deux plafonds sont obligatoires et pris dans l'échelle de difficulté.**
+  - Sans plafond flyer : obligatoire ; « expert » : n'existe pas.
+- **K4. Avec des étiquettes demandées, chaque étape du flow porte l'une d'elles (OU), sur sa transition ou sur sa pose d'arrivée** (Q187, Q188, Q204, règle révisée).
+  - Bird → Folded Leaf (lunaire), « Pop to Bird » (pop), Star → Bird (aucune), poses sans étiquette ; « lunaire » ou « pop », 1 transition : « Bird → Folded Leaf » ou « Throne → Bird », jamais « Star → Bird ».
+  - **Inversé** : Folded Leaf « lunaire », Bird → Folded Leaf sans étiquette ; « lunaire » demandée : « Bird → Folded Leaf » (la pose d'arrivée rend l'étape conforme).
+  - La pose de départ n'est pas contrainte : Folded Leaf « lunaire », Folded Leaf → Bird sans étiquette ; « lunaire » demandée : critères trop restrictifs.
+  - Folded Leaf → Bird sans étiquette, Bird sans étiquette ; « lunaire », 2 transitions : critères trop restrictifs (une seule étape non conforme suffit).
+- **K5.** Fusionnée dans K4 (ancienne règle « les étiquettes des poses ne satisfont pas les étiquettes demandées », abandonnée).
+- **K6. Aucune pose ni aucune transition du flow ne porte une étiquette exclue** (Q189).
+  - Sans « inversion » : « Forbidden » (whip, inversion) écartée au profit de la transition sans nom de Throne vers Bird ; Folded Leaf (inversion, lunaire) écartée, « Bird → Throne » retenu.
+  - Sans « dynamique » : « Pop to Bird » écartée (« pop » implique « dynamique »).
+  - L'exclusion l'emporte : « lunaire » demandée, « inversion » exclue ; Folded Leaf (inversion, lunaire) écartée, « Bird → Throne » (transition « lunaire ») retenu.
+- **K7. Une étiquette à la fois demandée et exclue ne laisse aucun flow** : « lunaire » demandée et exclue, critères trop restrictifs (Q190).
+- **K8. Les étiquettes demandées ou exclues sont celles de la liste** (Q190, révisée).
+  - « classique » demandée ou exclue : absente de la liste.
+  - « contrepoids » (poses seulement) demandée : permis, « Throne → Star » (Star la porte) ; exclue : permis, Star écartée.
+- **K9. Sur le site** (Q185, Q190, Q204, Q207, UX-3, UX-4, UX-6).
+  - Présélection : 3 transitions, « débutant » / « débutant », aucune étiquette.
+  - Génération avec plafonds « débutant » et « lunaire » demandée : Bird → Folded Leaf sans nom, pas « Forbidden ».
+  - Toutes les étiquettes de la liste, « contrepoids » comprise, proposées dans les deux groupes ; explication de chaque groupe.
+  - Une étiquette demandée ne peut pas être exclue, ni l'inverse ; elle est marquée « (demandée) » ou « (exclue) ».
+  - « vrille » retirée de la liste pendant la saisie : signalée, critères conservés sans elle.
+  - Étiquettes non chargées : génération sans étiquette.
+
+**Questions tranchées** (toutes le 2026-11-19, recommandations validées par le porteur du produit)
+- **Q182 Contexte délimité.** *Tranchée : (a), contexte Génération de flow, dossier `generation-de-flow/`.* Options : (a) **Génération de flow**, déjà prévu par la carte des contextes (core, modèle `FlowGraph` minimal lu par `IPublishedGraphSource`) ; (b) une query du Catalogue. **Recommandation : (a)**, dossier `specs/features/generation-de-flow/`. Arguments : modèle propre (un graphe à parcourir, pas des agrégats à protéger), calcul sans état et aléatoire, critères qui vont grossir (duo, répertoire, pose imposée), et le Catalogue reste la seule source de vérité du publié sans porter d'algorithme de parcours. Coût : un module et une ACL de lecture. Point à noter pour le domain-expert : la présentation du flow a besoin des noms, des difficultés, des étiquettes et des descriptions ; soit `FlowGraph` les porte, soit le flow (identifiants) est enrichi par une lecture du Catalogue.
+- **Q183 Qui génère ?** *Tranchée : tout le monde, visiteur compris.* Options : visiteur compris ; personnes connectées seulement. **Recommandation : tout le monde, visiteur compris** : seules des données publiques sont lues, rien n'est enregistré. Tranche la question « Un compte est-il obligatoire pour générer un flow ? ».
+- **Q184 Longueur.** *Tranchée : nombre exact de transitions, de 1 à 10.* Unité : nombre de transitions (d'étapes) ou de poses ; exacte, plafond ou plage ; bornes. **Recommandation : nombre de transitions, exact, de 1 à 10** (bornes à confirmer avec l'expert acroyoga). Pas de flow à 0 transition (une pose seule n'est pas un enchaînement). Une longueur exacte impossible donne « critères trop restrictifs », jamais un flow plus court.
+- **Q185 Valeurs par défaut.** *Tranchée : l'API exige longueur et plafonds ; le site présélectionne 3 transitions, « débutant » / « débutant » (scénario K9 ajouté avec la revue ux-expert).* **Recommandation : l'API exige la longueur et les deux plafonds** (étiquettes facultatives) ; le site présélectionne 3 transitions et « débutant » / « débutant » (valeurs prudentes), à confirmer par l'ux-expert. Pas de scénario.
+- **Q186 Difficulté.** *Tranchée : deux plafonds « au plus », base et flyer, sur chaque pose et chaque transition.* Options : un niveau unique pour la base et le flyer ; **deux plafonds, base et flyer** ; une plage (minimum et maximum). Portée : transitions seulement, ou **poses et transitions**. **Recommandation : deux plafonds, « au plus » inclusif, appliqués à chaque pose (départ et arrivée comprises) et à chaque transition** : une difficulté est toujours un couple (glossaire), et une pose trop difficile rend le flow inexécutable. Plage : plus tard si besoin (« un flow qui me fait progresser »).
+- **Q187 Étiquettes demandées.** *Tranchée, règle révisée : OU entre les étiquettes demandées, appliqué à chaque étape (transition ou pose d'arrivée), cf. décision 4.* Options : (a) **OU, chaque transition en porte au moins une** ; (b) ET, chaque transition les porte toutes ; (c) le flow contient au moins une transition qui en porte une. **Recommandation : (a)** : un flow « lunaire » est lunaire de bout en bout ; ET serait trop restrictif avec un catalogue peu étiqueté ; (c) se prêterait mieux à « au moins une inversion », à garder pour plus tard.
+- **Q188 Étiquettes des poses dans les étiquettes demandées.** *Tranchée, contre la recommandation (a) : option (b), la pose d'arrivée rend l'étape conforme ; la pose de départ n'est pas contrainte.* Options : (a) **ignorées** ; (b) une étape satisfait aussi par sa pose d'arrivée ; (c) poses et transitions doivent toutes porter l'étiquette. **Recommandation : (a)**, simple et prévisible ; les étiquettes des poses servent à l'exclusion (Q189). À confirmer avec l'expert acroyoga pour « lunaire ».
+- **Q189 Étiquettes exclues.** *Tranchée : exclusion sur les poses et les transitions ; « dynamique » écarte pop, whip, icarien.* Options : pas d'exclusion dans la story 9 ; **exclusion sur les poses et les transitions**. **Recommandation : l'inclure** : c'est le critère qui sert la sécurité et le confort (« sans inversion », « sans dynamique ») et qui donne leur rôle aux étiquettes des poses (prérequis 9a) ; exclure « dynamique » écarte aussi pop, whip et icarien, qui l'impliquent.
+- **Q190 Critères d'étiquettes incohérents.** *Tranchée, révisée : étiquette absente de la liste refusée ; toute étiquette de la liste peut être demandée (elle s'applique aux poses ou aux transitions), « contrepoids » comprise ; même étiquette demandée et exclue : « critères trop restrictifs » côté API, empêchée par le site.* **Recommandation** : étiquette absente de la liste, demandée ou exclue : génération impossible ; étiquette demandée qui ne s'applique pas aux transitions (« contrepoids ») : génération impossible ; exclue : permis ; même étiquette demandée et exclue : simplement « critères trop restrictifs » (pas de nouveau message), le site empêchant de la cocher deux fois.
+- **Q191 Répétition.** *Tranchée : une pose peut revenir, une transition au plus une fois.* Options : rien ne se répète ; **les poses reviennent, chaque transition au plus une fois** ; tout se répète librement. **Recommandation : la voie du milieu** : des flows variés sans exclure les allers-retours (« Throne → Bird → Throne ») ; un catalogue petit reste exploitable.
+- **Q192 Washing machine.** *Tranchée : une fois par flow, sans critère dédié (tours : Q205, plus tard).* Options : **transition comme une autre** ; critère dédié (avec ou sans) ; répétition permise (« trois Ninja Star d'affilée »). **Recommandation : comme une autre, une fois par flow, sans critère dédié** ; le site marque son arrivée « (même pose) ». À confirmer avec l'expert acroyoga : la répétition d'une washing machine est-elle un usage courant à permettre ?
+- **Q193 Pose de départ ou d'arrivée imposée.** *Tranchée : hors périmètre.* **Recommandation : hors story 9**, candidate pour la suivante (« on est en Throne, que faire ensuite ? »).
+- **Q194 Hasard.** *Tranchée : tout flow possible peut sortir, sans garantie d'uniformité, hasard injectable.* Options : tirage uniforme parmi tous les flows possibles (coûteux à garantir) ; **tout flow possible peut sortir, sans garantie d'uniformité**. **Recommandation : la seconde**, avec une source de hasard injectable (choix technique) ; scénarios déterministes : catalogue à un seul flow possible, ou « l'un des suivants ».
+- **Q195 Graine, rejouer, sauvegarder, partager.** *Tranchée : pas de graine exposée ; critères dans l'adresse de la page, flow gardé dans l'historique de navigation (UX-2) ; sauvegarder et partager hors périmètre.* **Recommandation : pas de graine exposée ; « Générer un autre flow » rejoue les mêmes critères ; sauvegarder et partager un flow sont hors périmètre** (story ultérieure : un flow enregistré, ou un lien qui encode ses transitions, plus robuste qu'une graine qui dépend de l'état du catalogue). Option peu coûteuse à trancher par l'ux-expert : critères dans l'adresse de la page, pour partager des critères.
+- **Q196 « Générer un autre flow » peut-il redonner le même ?** *Tranchée : oui, il rejoue les critères du flow affiché ; le site signale le même flow ressorti (UX-5).* **Recommandation : oui** (tirage indépendant) ; écarter le flow précédent demanderait de le transmettre, pour peu de valeur.
+- **Q197 Réponse « trop restrictifs ».** *Tranchée : message, « Pour élargir le choix, essaie : » et pistes adaptées aux critères, « Modifier les critères » (décision 9).* **Recommandation** : « Critères trop restrictifs : impossible de générer un flow. », suivi d'une aide (« Essaie moins de transitions, des plafonds plus hauts ou moins d'étiquettes. », libellé par l'ux-expert), sans dire quel critère bloque.
+- **Q198 Catalogue insuffisant.** *Tranchée : réponse distincte, avec « Il manque encore des poses ou des transitions pour former un enchaînement. » et « Voir le catalogue ».* Options : toujours « trop restrictifs » ; **réponse distincte quand aucun flow de 1 à 10 transitions n'existe sans critère de difficulté ni d'étiquette** (catalogue vide, sans transition, sans pose qui peut commencer ou terminer…). **Recommandation : distincte**, « Le catalogue ne permet pas encore de générer un flow. » : ce n'est pas la faute des critères.
+- **Q199 Rappel du spotter.** *Tranchée : avec chaque flow, au-dessus des étapes, sans variante, libellé de la décision 10.* Quand : **avec chaque flow présenté**, au-dessus des étapes ; aussi sur le formulaire ? Renforcé si le flow contient une inversion ou une transition dynamique ? **Recommandation : avec chaque flow, sans variante** ; proposition de libellé pour l'ux-expert : « Avant de te lancer, vérifie que ton duo sait exécuter chaque étape. Les chutes arrivent surtout pendant les transitions : pratique avec un spotter. ».
+- **Q200 Présentation et accès.** *Tranchée : page unique `/generer-un-flow`, bouton secondaire « Générer un flow » premier des actions du catalogue, pas dans l'en-tête (UX-1) ; présentation de la décision 11.* **Recommandation** : pose de départ en tête, puis étapes numérotées ; chaque étape présente la transition (nom ou libellé par défaut, difficultés, étiquettes, description en repli) et sa pose d'arrivée, chaque pose en lien vers sa page ; pas de difficulté globale du flow dans la story 9. Accès : lien « Générer un flow » du catalogue, et dans l'en-tête (avis de l'ux-expert attendu).
+- **Q201 Cibles.** *Tranchée : @api et @web ; mobile dans une story dédiée.* **Recommandation : @api et @web** ; le mobile, où le générateur sert le plus (sur le tapis), dans une story dédiée juste après.
+- **Q202 Flow pour un duo, répertoire.** *Tranchée : hors périmètre.* **Recommandation : hors périmètre** (le Répertoire n'existe pas encore) ; les critères restent ouverts à la restriction par un duo.
+- **Q203 Étiquettes de style / de technique.** *Tranchée : reportée à une story ultérieure* ; dans la story 9, toutes les étiquettes demandées suivent la règle par étape (décision 4), sans « au moins une » étape en pop, whip…
+- **Q204 Libellé de la règle des étiquettes demandées.** *Tranchée :* « Chaque étape portera l'une de ces étiquettes, sur la transition ou sur la pose d'arrivée. ».
+- **Q205 Tours de washing machine.** *Tranchée : plus tard.*
+- **Q206 Enchaînements dynamiques ou inversions consécutives.** *Tranchée : plus tard.*
+- **Q207 Portée des étiquettes exclues à l'écran.** *Tranchée :* « Seuls les éléments étiquetés sont écartés : vérifie chaque étape. ».
+- **Q208 Famille de pratique.** *Tranchée : plus tard.*
+- **Q209 Difficultés des poses dans le flow.** *Tranchée : chaque étape affiche la difficulté base / flyer de sa pose d'arrivée, la pose de départ la sienne.*
+- **Q210 Acteur de la story.** *Tranchée : « visiteur ou utilisateur » ; « pratiquant » est réservé à l'utilisateur qui tient un répertoire.*
+- **Q211 Marquage de la washing machine.** *Tranchée : marquée « washing machine », en plus de son arrivée « (même pose) ».*
+- **UX-1 à UX-8** (revue ux-expert) : *validées* ; UX-1 accès par le catalogue seulement, UX-2 historique de navigation, UX-3 et UX-4 repli « Étiquettes (facultatives) » fermé avec le compte, UX-5 même flow ressorti signalé, UX-6 génération sans étiquette si elles n'ont pas pu être chargées, UX-8 description repliée ; UX-7 hors périmètre.
+
+**Termes nouveaux ou à réviser** (pour le domain-expert ; glossaire et carte des contextes mis à jour le 2026-11-19, ADR 0037) :
+- nouveaux : **étape (d'un flow)** (une transition et sa pose d'arrivée, numérotée depuis la pose de départ) ; **plafond de difficulté** (base, flyer ; « au plus », inclusif) ; **étiquettes demandées** (OU ; une étape est conforme si sa transition ou sa pose d'arrivée en porte une) ; **étiquettes exclues** (aucune pose ni transition du flow) ; **catalogue insuffisant** (« le catalogue ne permet pas encore de générer un flow ») ; **rappel du spotter** ; **générateur de flow** comme page du site ; **générer un autre flow** (rejoue les critères du flow affiché) ;
+- à réviser : **Longueur (de flow)** (nombre exact de transitions, de 1 à 10) ; **Critères de génération** (longueur, deux plafonds, étiquettes demandées et exclues) ; **Washing machine** (contexte Génération de flow, une fois par flow, marquée sur le site) ; **Visiteur** (« consulte uniquement le catalogue » : il génère aussi des flows, Q183) ; **Pratiquant** (réservé à l'utilisateur qui tient un répertoire, Q210).
+
+**Hors périmètre** : pose de départ ou d'arrivée imposée (Q193) ; flow pour un duo, répertoire (Q202) ; UX-7 ; sauvegarder, partager, historique des flows enregistrés ; graine aléatoire ; difficulté globale du flow ; minuterie ou durée de tenue des poses ; écran mobile (story dédiée).
+
+**Plus tard** : étiquettes de style / de technique, « au moins une » étape en pop, whip… (Q203) ; tours de washing machine (Q205) ; enchaînements dynamiques ou inversions consécutives (Q206) ; famille de pratique (Q208).
+
+**Ordre d'implémentation conseillé**
+1. API, noyau : G1, G2, G4 (flow exécutable de longueur exacte, un seul chemin possible), puis G5 (bornes), G11 (catalogue insuffisant).
+2. API, parcours : G3, G7, G8, G9, G6 (« l'un des suivants »), G10.
+3. API, présentation : G12 (étapes, poses, description).
+4. API, critères : K1, K2, K3, puis K4 (transition, pose d'arrivée, pose de départ non contrainte), K6, K7, K8.
+5. Site, noyau : G16 (accès), K9 (présélection, génération avec critères), G13 (étapes, résumé, détails, washing machine, page d'une pose, retour), G14 (rappel du spotter).
+6. Site, rejeu et échecs : G15 (autre flow, même flow ressorti, modifier les critères), G17 (trop restrictifs et pistes, catalogue insuffisant, incident).
+7. Site, étiquettes : K9 (liste dans les deux groupes, explications, exclusion mutuelle, étiquette retirée, étiquettes non chargées).
+
 ### Découpage des stories suivantes (décidé le 2026-11-02)
 1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.
 2. **Proposer une pose** (Contribution) : reprend les règles de contenu de `specs/features/catalogue/publier-une-pose.feature` (brouillon) ; publication directe pour un validateur ou un administrateur.
@@ -717,12 +864,13 @@ Le marqueur **[bloquant]** signale une question à trancher avant la story conce
 - ~~Les étiquettes s'appliquent-elles aussi aux poses ?~~ Tranché (story 9a, 2026-11-18) : oui, selon le champ d'application de chaque étiquette ; à l'amorçage, « inversion » et « lunaire » s'appliquent aux poses et aux transitions, les autres aux transitions seulement.
 
 ### Génération de flow
-- **[bloquant : génération]** Que signifie le critère « difficulté » ? Un niveau maximal unique appliqué à la base et au flyer, ou deux niveaux maximaux distincts ? Les difficultés des poses comptent-elles, ou seulement celles des transitions ? S'agit-il d'un niveau maximal ou d'une plage ?
-- **[bloquant : génération]** Quelle est l'unité de longueur : nombre de transitions ou nombre de poses ? Longueur exacte ou plage ?
-- **[bloquant : génération]** Le filtrage par étiquettes fonctionne-t-il en « au moins une des étiquettes choisies » (OU) ou en « toutes » (ET) ? Toutes les transitions du flow doivent-elles satisfaire le filtre ?
-- Quelle limite de répétition d'une washing machine, d'une transition ou d'une pose au sein d'un flow ?
-- Peut-on sauvegarder, partager ou rejouer un flow généré ? Une graine aléatoire reproductible est-elle souhaitée ?
-- Un flow de longueur zéro est-il possible (une seule pose qui peut à la fois commencer et terminer) ?
+Tranché par la story 9 (2026-11-19), voir « Story 9 Générer un flow » ci-dessus.
+- ~~Que signifie le critère « difficulté » ?~~ Tranché (Q186) : deux plafonds « au plus », base et flyer, sur chaque pose et chaque transition ; une plage, plus tard si besoin.
+- ~~Quelle est l'unité de longueur ?~~ Tranché (Q184) : nombre exact de transitions, de 1 à 10.
+- ~~Le filtrage par étiquettes fonctionne-t-il en OU ou en ET ?~~ Tranché (Q187, Q188) : OU ; chaque étape porte l'une des étiquettes demandées, sur sa transition ou sur sa pose d'arrivée. Style / technique : plus tard (Q203).
+- ~~Quelle limite de répétition ?~~ Tranché (Q191, Q192) : une pose peut revenir, une transition (washing machine comprise) au plus une fois. Tours de washing machine : plus tard (Q205).
+- ~~Peut-on sauvegarder, partager ou rejouer un flow généré ? Une graine ?~~ Tranché (Q195, Q196) : pas de graine ; « Générer un autre flow » rejoue les critères ; sauvegarder et partager hors périmètre.
+- ~~Un flow de longueur zéro est-il possible ?~~ Tranché (Q184) : non.
 
 ### Répertoire et duo
 - **[bloquant : maîtrise]** La maîtrise se déclare-t-elle par rôle (« je maîtrise Bird en base mais pas en flyer ») ?
@@ -749,6 +897,6 @@ Le marqueur **[bloquant]** signale une question à trancher avant la story conce
 - Photos : consentement des personnes photographiées, crédit de l'auteur, procédure de retrait, formats et taille.
 
 ### Identité et présentation
-- Un compte est-il obligatoire pour générer un flow ? Et pour proposer ? (Consulter : non, cf. story 1.)
+- ~~Un compte est-il obligatoire pour générer un flow ?~~ Tranché (story 9, Q183) : non, le visiteur génère aussi. Et pour proposer ? (Consulter : non, cf. story 1.)
 - Où afficher l'avertissement de responsabilité : à l'inscription, sur chaque flow, en pied de page ? Déjà sur le catalogue (story 3) et sur la page d'une pose, sous la légende, avec un rappel propre aux transitions (story 7).
 - Quelles langues pour les contenus : noms en anglais (usage communautaire), descriptions multilingues ?

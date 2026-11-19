@@ -2865,3 +2865,419 @@ main {
     color: LinkText;
   }
 }
+
+/* ------------------------------------------------------------------------------------------------------------------
+   Story 9 « Générer un flow » (docs/design/ecrans/9-generer-un-flow.md, fil-du-flow.md, repli-criteres-etiquettes.md,
+   recapitulatif-criteres.md, panneau-sans-flow.md): the form and the result alternate on the same page.
+   ------------------------------------------------------------------------------------------------------------------ */
+
+.generator {
+  display: grid;
+  gap: var(--afj-spacing-md);
+  max-width: calc(var(--afj-size-form-wide-max-width) + 2 * var(--afj-spacing-xl));
+  margin: 0 auto;
+}
+
+.generator h1 {
+  margin: 0;
+}
+
+.generator__intro {
+  margin: 0;
+  color: var(--afj-color-text-muted);
+}
+
+.generator__form {
+  display: grid;
+  gap: var(--afj-spacing-lg);
+}
+
+@media (width >= 40em) {
+  .generator__form {
+    padding: var(--afj-spacing-xl);
+    background: var(--afj-color-surface);
+    border: var(--afj-size-border-width) solid var(--afj-color-divider);
+    border-radius: var(--afj-radius-lg);
+  }
+}
+
+@media (width >= 19.5em) {
+  .generator__count-field {
+    max-inline-size: calc(2 * var(--afj-size-tile-min-width) + var(--afj-spacing-sm));
+  }
+}
+
+/* The fold « Étiquettes (facultatives) »: a 48 px summary with the count of the chosen tags. */
+.criteria-fold {
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md);
+}
+
+.criteria-fold__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--afj-spacing-sm);
+  min-block-size: var(--afj-size-control);
+  padding: 0 var(--afj-spacing-md);
+  font-weight: var(--afj-font-weight-semibold);
+  cursor: pointer;
+  list-style: none;
+}
+
+.criteria-fold__summary::-webkit-details-marker {
+  display: none;
+}
+
+.criteria-fold__summary .icon {
+  margin-inline-start: auto;
+}
+
+.criteria-fold[open] > .criteria-fold__summary .icon {
+  transform: rotate(180deg);
+}
+
+.criteria-fold__summary:focus-visible {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus);
+  outline-offset: var(--afj-size-focus-ring-offset);
+  border-radius: var(--afj-radius-md);
+}
+
+.criteria-fold__count {
+  padding: 0 var(--afj-spacing-sm);
+  font-size: var(--afj-font-size-sm);
+  background: var(--afj-color-selected-surface);
+  border-radius: var(--afj-radius-pill);
+}
+
+.criteria-fold__content {
+  display: grid;
+  gap: var(--afj-spacing-lg);
+  padding: var(--afj-spacing-md);
+  border-top: var(--afj-size-border-width) dashed var(--afj-color-divider);
+}
+
+/* A tag chosen in the other group: disabled, dashed, muted; « (demandée) » / « (exclue) » says it in words. */
+.tag-choice__box--disabled {
+  color: var(--afj-color-text-muted);
+  background: var(--afj-color-disabled-surface);
+  border-style: dashed;
+  cursor: not-allowed;
+}
+
+/* The result: one column, then a sticky column of control beside the thread on a large screen. */
+.flow-result {
+  display: grid;
+  gap: var(--afj-spacing-lg);
+  max-width: var(--afj-size-content-max-width);
+  margin: var(--afj-spacing-md) auto 0;
+}
+
+.flow-result__aside {
+  display: grid;
+  gap: var(--afj-spacing-md);
+  align-content: start;
+}
+
+.flow-result__aside h1 {
+  margin: 0;
+}
+
+.flow-result__summary {
+  margin: 0;
+  font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-semibold);
+  line-height: var(--afj-line-height-tight);
+}
+
+.flow-result__actions {
+  display: grid;
+  gap: var(--afj-spacing-sm);
+}
+
+.flow-result__route {
+  display: grid;
+  gap: var(--afj-spacing-lg);
+  align-content: start;
+}
+
+.flow-result__route .safety-note {
+  margin: 0;
+}
+
+@media (width >= 40em) and (width < 64em) {
+  .flow-result__actions {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
+@media (width >= 64em) {
+  .flow-result {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    column-gap: var(--afj-spacing-xl);
+  }
+}
+
+@media (width >= 64em) and (height >= 40em) {
+  .flow-result__aside {
+    position: sticky;
+    top: var(--afj-spacing-lg);
+    align-self: start;
+  }
+}
+
+/* The criteria read again. */
+.criteria-recap {
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface-hover);
+  border-radius: var(--afj-radius-sm);
+}
+
+.criteria-recap__title {
+  margin: 0 0 var(--afj-spacing-sm);
+  font-family: var(--afj-font-family);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.criteria-recap__list {
+  display: grid;
+  gap: var(--afj-spacing-xs);
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+}
+
+.criteria-recap__list > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--afj-spacing-sm);
+}
+
+.criteria-recap__list dt {
+  color: var(--afj-color-text-muted);
+}
+
+.criteria-recap__list dd {
+  margin: 0;
+  font-weight: var(--afj-font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+/* The thread of the flow: stations on a dotted rail, transitions as cards between them. */
+.flow-route {
+  display: grid;
+}
+
+/* The rail starts under the start station, and stops at the middle of the end station (fil-du-flow.md). */
+.flow-station--start,
+.flow-station--end {
+  position: relative;
+}
+
+.flow-station--start {
+  padding-block-end: var(--afj-spacing-md);
+}
+
+.flow-station--start::before,
+.flow-station--end::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: calc(var(--afj-size-icon) / 2 - var(--afj-size-border-width));
+  top: calc(var(--afj-size-touch-target) / 2 + var(--afj-size-icon) / 2);
+  bottom: 0;
+}
+
+.flow-station--start::before {
+  border-inline-start: var(--afj-size-border-width-strong) dotted var(--afj-color-sun-strong);
+}
+
+.flow-step:not(:last-child) {
+  padding-block-end: var(--afj-spacing-md);
+}
+
+/* Under the end station, the rail of its step is hidden by the background of the page. */
+.flow-station--end::after {
+  margin-inline-start: calc(-1 * var(--afj-size-border-width));
+  inline-size: calc(var(--afj-size-border-width-strong) + 2 * var(--afj-size-border-width));
+  background: var(--afj-color-background);
+}
+
+.flow-route__steps {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flow-step {
+  display: grid;
+  gap: var(--afj-spacing-md);
+  margin-inline-start: calc(var(--afj-size-icon) / 2 - var(--afj-size-border-width));
+  padding-inline-start: calc(var(--afj-size-icon) / 2 + var(--afj-spacing-sm));
+  border-inline-start: var(--afj-size-border-width-strong) dotted var(--afj-color-sun-strong);
+}
+
+.flow-step > .flow-station {
+  margin-inline-start: calc(-1 * (var(--afj-size-icon) + var(--afj-spacing-sm)));
+}
+
+.flow-step__card {
+  display: grid;
+  gap: var(--afj-spacing-sm);
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
+}
+
+.flow-step__title {
+  margin: 0;
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-md);
+  font-weight: var(--afj-font-weight-medium);
+  overflow-wrap: anywhere;
+}
+
+.flow-step__number {
+  font-family: var(--afj-font-family);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text-muted);
+  white-space: nowrap;
+}
+
+.flow-step__washing-machine {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--afj-spacing-sm);
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+.flow-step__washing-machine .icon {
+  inline-size: var(--afj-size-trajectory-width);
+  block-size: var(--afj-size-trajectory-height);
+  color: var(--afj-color-sun-strong);
+}
+
+.flow-station {
+  min-block-size: var(--afj-size-touch-target);
+  display: grid;
+  grid-template-columns: var(--afj-size-icon) minmax(0, 1fr);
+  gap: var(--afj-spacing-sm);
+  align-items: start;
+}
+
+.flow-station > .icon {
+  margin-block-start: calc((var(--afj-size-touch-target) - var(--afj-size-icon)) / 2);
+  color: var(--afj-color-sun-strong);
+  background: var(--afj-color-background);
+}
+
+.flow-station__content {
+  display: grid;
+  gap: var(--afj-spacing-xs);
+}
+
+.flow-station__name {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.flow-station__name > span:first-child,
+.flow-station__same {
+  color: var(--afj-color-text-muted);
+}
+
+.flow-station__name > span:first-child {
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.flow-station__name a {
+  font-family: var(--afj-font-family-display);
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+/* No flow: the panel replaces the form. */
+.no-flow {
+  display: grid;
+  gap: var(--afj-spacing-md);
+  justify-items: start;
+  padding: var(--afj-spacing-lg);
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-lg);
+}
+
+.no-flow > .icon {
+  color: var(--afj-color-info);
+}
+
+.no-flow > h2,
+.no-flow__message > h2 {
+  margin: 0;
+  font-size: var(--afj-font-size-lg);
+}
+
+.no-flow p {
+  margin: 0;
+}
+
+/* Story 9: the action of a form or a panel, full width on a phone, the width of its label beyond (bouton.md). */
+.form-actions {
+  justify-self: stretch;
+}
+
+@media (width >= 40em) {
+  .form-actions .button {
+    width: auto;
+  }
+}
+
+.no-flow .criteria-recap {
+  justify-self: stretch;
+}
+
+.no-flow__tips {
+  margin: 0;
+  padding-inline-start: var(--afj-spacing-lg);
+}
+
+@media (forced-colors: active) {
+  .flow-step__card,
+  .criteria-recap,
+  .criteria-fold,
+  .no-flow {
+    border: var(--afj-size-border-width) solid CanvasText;
+  }
+
+  .flow-step,
+  .flow-station--start::before {
+    border-inline-start-color: CanvasText;
+  }
+
+  .flow-station > .icon,
+  .flow-step__washing-machine .icon {
+    color: CanvasText;
+    background: Canvas;
+  }
+
+  .flow-station--end::after {
+    background: Canvas;
+  }
+
+  .tag-choice__box--disabled {
+    color: GrayText;
+  }
+}
+
+.no-flow__message {
+  display: grid;
+  gap: var(--afj-spacing-sm);
+}

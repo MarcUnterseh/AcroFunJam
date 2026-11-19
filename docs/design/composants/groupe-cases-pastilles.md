@@ -14,6 +14,10 @@ Story 8. Choix **multiple et facultatif** des étiquettes d'une transition, parm
 5. formulaire « Proposer une modification », après les questions de flow, avant le message : legend « Étiquettes » + marque « Modifiée » (`marque-modifiee.md`) quand l'ensemble coché diffère de l'actuel, rappel « Actuellement : lunaire » / « Actuellement : aucune » à la place de l'aide (même rendu que les rappels des autres groupes : `size.sm`, `textMuted`, marge basse `spacing.sm`) ; cochées = étiquettes actuelles à l'ouverture ;
 6. zone « Étiquettes de la pose » (`zone-etiqueter.md`, « Variante pose ») et zone d'ajustement d'une proposition ou d'une modification de pose (rappel « Proposées : … »).
 
+**Story 9** (`../ecrans/9-generer-un-flow.md`), même rendu, **toutes** les étiquettes de la liste :
+
+7. générateur de flow, dans le repli « Étiquettes (facultatives) » (`repli-criteres-etiquettes.md`) : deux groupes, « Avec l'une de ces étiquettes » (aide « Chaque étape portera l'une de ces étiquettes, sur la transition ou sur la pose d'arrivée. ») et « Sans ces étiquettes » (aide « Seuls les éléments étiquetés sont écartés : vérifie chaque étape. »), écart `spacing.lg` entre eux ; un seul repli des descriptions, après les deux groupes. Pas de note « dynamique » : ici on filtre, on n'étiquette pas. Une étiquette cochée dans un groupe est **désactivée** dans l'autre (état ci-dessous).
+
 Pas de note « dynamique » sur une pose : aucune implication ne s'applique aux poses à l'amorçage (« dynamique » et ses impliquantes ne s'appliquent qu'aux transitions).
 
 ## Structure
@@ -61,7 +65,7 @@ Ordre des pastilles : celui de la liste (ordre du catalogue sur le nom).
 | **Cochée** (`label:has(input:checked)`) | **coche** (case native cochée, `selected`) + bordure **`borderWidthStrong` (2 px) `selected`** (padding réduit de 1 px : le texte ne bouge pas) + fond **`selectedSurface`** + libellé **`weight.semibold`** |
 | Cochée + survol | inchangée |
 | Cochée + focus | cochée + anneau `focus` |
-| Désactivée | non utilisée (pendant l'envoi, seul le bouton passe en `aria-disabled`) |
+| Désactivée | stories 8 et 9a : non utilisée (pendant l'envoi, seul le bouton passe en `aria-disabled`). **Story 9 seulement** (étiquette déjà choisie dans l'autre groupe du générateur) : `input` `disabled` natif ; fond `disabledSurface` ; contour `borderWidth` **tireté** `border` (la forme change, pas seulement la teinte) ; case et libellé en `textMuted` (5,8:1 / 6,4:1) ; mention **« (demandée) »** / **« (exclue) »** après le nom, dans la pastille, `size.sm` `regular` (elle fait partie du nom accessible) ; curseur `not-allowed` ; ni survol ni focus. Couleurs forcées : contour et texte `GrayText` |
 
 L'état coché se lit **sans la couleur** : coche, bordure doublée, graisse. Contrastes : `selected` sur `selectedSurface` 7,8:1 / 8,6:1 ; `text` sur `selectedSurface` 13,2:1 / 11,8:1 ; `selected` sur `surface` ≥ 3:1 dans les deux thèmes (`contrast.test.ts`).
 

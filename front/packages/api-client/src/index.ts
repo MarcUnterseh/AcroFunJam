@@ -9,3 +9,4 @@ export { createValidationGateway } from './contribution/validation-gateway';
 export { createPoseRevisionGateway } from './contribution/pose-revision-gateway';
 export { createTransitionProposalGateway } from './contribution/transition-proposal-gateway';
 export { createAuthGateway } from './identity/auth-gateway';
+export { createFlowGenerationGateway } from './flow-generation/flow-generation-gateway';

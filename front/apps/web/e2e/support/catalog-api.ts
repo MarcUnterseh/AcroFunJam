@@ -22,7 +22,7 @@ type PublishedPose = {
 type PublishedValues = Omit<PoseSummaryResponse, 'id' | 'tags'>;
 
 /** A published pose as the simulated catalog keeps it: its values, its version (story 6) and its tags (story 9a). */
-type StoredPose = Omit<PoseSummaryResponse, 'tags'> & { version: number; tagIds: string[] };
+export type StoredPose = Omit<PoseSummaryResponse, 'tags'> & { version: number; tagIds: string[] };
 
 /** A published transition (story 7): its poses by id, its optional name and description. */
 export type PublishedTransition = {
@@ -143,6 +143,15 @@ export class CatalogApi {
 
   setUnreachable(unreachable: boolean): void {
     this.unreachable = unreachable;
+  }
+
+  get isUnreachable(): boolean {
+    return this.unreachable;
+  }
+
+  /** Story 9: the published poses, in the order of publication, with their tags. */
+  get published(): readonly StoredPose[] {
+    return this.poses;
   }
 
   async start(): Promise<void> {

@@ -68,6 +68,10 @@ La pierre est le seul neutre **chaud** de la palette : elle sépare les étiquet
 
 **Story 9a, étiquettes des poses** (`ecrans/9a-etiquettes-des-poses.md`) : les mêmes trois formes, sans nouveau token. Les étiquettes d'une pose et celles de ses transitions sont indépendantes ; on les distingue par **la place** (ciel et tête du corps pour la pose, élément de transition pour la transition) et **les mots** (« … les étiquettes de la pose »), jamais par la couleur. Sur le ciel, la pilule reste opaque et le terme « Étiquettes » est en `skyText` (`textMuted` y tomberait à 2,7:1). Le champ d'application d'une étiquette se dit en toutes lettres (« S'applique aux poses et aux transitions »), jamais par une icône ou une couleur.
 
+## Le fil d'un flow (story 9)
+
+Un flow généré se lit comme une course du soleil : **lever** à la pose de départ, **stations** pour les poses intermédiaires, **coucher** à la dernière pose, reliés par un **rail** pointillé `sunStrong` (la trajectoire, à la verticale) ; chaque transition est une carte entre deux stations. Les icônes et le rail sont des renforts : « Départ : », « Vers » et « Étape 1 · » portent le sens. Une washing machine est dite par la boucle **et le mot** « washing machine », jamais par une pilule d'étiquette. Aucun nouveau token ; nouvelle icône `station`. Détail : `composants/fil-du-flow.md`, écran `ecrans/9-generer-un-flow.md`.
+
 ## Difficulté en phases de lune
 
 | Niveau | Phase |

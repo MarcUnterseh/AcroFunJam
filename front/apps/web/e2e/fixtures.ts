@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 import { test as base, createBdd } from 'playwright-bdd';
 import { CatalogPage } from './pages/catalog-page';
+import { FlowGenerator } from './pages/flow-generator';
 import { IdentityForm, SiteHeader } from './pages/identity-pages';
 import { MyProposalsPage } from './pages/my-proposals-page';
 import { PosePage } from './pages/pose-page';
@@ -10,6 +11,7 @@ import { RevisionForm } from './pages/revision-form';
 import { TransitionForm } from './pages/transition-form';
 import { ValidationPage } from './pages/validation-page';
 import { CatalogApi } from './support/catalog-api';
+import { FlowGenerationApi } from './support/flow-generation-api';
 import { ContributionApi } from './support/contribution-api';
 import { IdentityApi } from './support/identity-api';
 import { MyProposalsApi } from './support/my-proposals-api';
@@ -27,6 +29,8 @@ type Fixtures = {
   poseRevisionApi: PoseRevisionApi;
   transitionApi: TransitionApi;
   tagApi: TagApi;
+  flowGenerationApi: FlowGenerationApi;
+  flowGenerator: FlowGenerator;
   catalogPage: CatalogPage;
   posePage: PosePage;
   proposalForm: ProposalForm;
@@ -109,6 +113,16 @@ export const test = base.extend<Fixtures>({
     },
     { auto: true },
   ],
+  flowGenerationApi: [
+    async ({ context, catalogApi, tagApi }, use) => {
+      const api = new FlowGenerationApi(context, catalogApi);
+      api.tagsOfTheList = () => tagApi.ids;
+      await api.start();
+      await use(api);
+    },
+    { auto: true },
+  ],
+  flowGenerator: async ({ page }, use) => use(new FlowGenerator(page)),
   catalogPage: async ({ page }, use) => use(new CatalogPage(page)),
   posePage: async ({ page }, use) => use(new PosePage(page)),
   proposalForm: async ({ page }, use) => use(new ProposalForm(page)),

@@ -15,7 +15,7 @@ public sealed class EfPublishedPosesReader(AcroFunJamDbContext context) : IPubli
         return records.Select(ToSummary).ToList();
     }
 
-    private static PublishedPoseSummary ToSummary(PoseRecord record) =>
+    internal static PublishedPoseSummary ToSummary(PoseRecord record) =>
         new(
             new PoseId(record.Id),
             Valid(PoseName.Create(record.Name), $"name '{record.Name}'"),

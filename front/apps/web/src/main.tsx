@@ -10,6 +10,7 @@ import {
   createPoseRevisionGateway,
   createTransitionProposalGateway,
   createValidationGateway,
+  createFlowGenerationGateway,
 } from '@acrofunjam/api-client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
@@ -36,6 +37,7 @@ import { PoseRevisionProvider } from './contribution/PoseRevisionContext';
 import { createSessionTransitionInputStore } from './contribution/session-transition-input-store';
 import { TransitionProposalProvider } from './contribution/TransitionProposalContext';
 import { ValidationProvider } from './contribution/ValidationContext';
+import { FlowGenerationProvider } from './flow-generation/FlowGenerationContext';
 import { IdentityProvider } from './identity/IdentityContext';
 import { createLocalSessionMemory } from './identity/local-session-memory';
 import { routes } from './routes';
@@ -89,7 +91,9 @@ createRoot(root).render(
                             { clear: transitionInputStore.clearAll },
                           ]}
                         >
-                          <RouterProvider router={router} />
+                          <FlowGenerationProvider gateway={createFlowGenerationGateway(apiClient)}>
+                            <RouterProvider router={router} />
+                          </FlowGenerationProvider>
                         </IdentityProvider>
                       </TransitionProposalProvider>
                     </PoseRevisionProvider>

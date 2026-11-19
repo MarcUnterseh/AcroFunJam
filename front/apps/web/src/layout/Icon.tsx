@@ -14,7 +14,8 @@ type IconName =
   | 'spot'
   | 'trajectory'
   | 'loop'
-  | 'burst';
+  | 'burst'
+  | 'station';
 
 const line = { stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' } as const;
 
@@ -80,6 +81,13 @@ const shapes: Record<IconName, React.ReactNode> = {
       <path d="M4 14a6 6 0 0 1 12 0" fill="none" {...line} strokeWidth="1.8" />
       <path d="M2 17h16" {...line} strokeWidth="1.8" />
       <path d="M10 2v5M7.5 4.5 10 7l2.5-2.5" fill="none" {...line} strokeWidth="1.8" strokeLinejoin="round" />
+    </>
+  ),
+  // A pose in the middle of a flow (fil-du-flow.md, story 9): a station, a ring and its centre.
+  station: (
+    <>
+      <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" strokeWidth="2" />
+      <circle cx="10" cy="10" r="2.5" fill="currentColor" />
     </>
   ),
   // The safety note of the pose page (« spotter »).

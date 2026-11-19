@@ -1,0 +1,1516 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette : générer un flow (story 9)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap">
+<style>
+/* Maquette statique de la story 9 (docs/design/ecrans/9-generer-un-flow.md).
+   Valeurs : @acrofunjam/ui-tokens (front/packages/ui-tokens/src/index.ts), mêmes noms de variables que le site
+   (--afj-*). Aucune valeur nouvelle : la story n'ajoute pas de token. Les classes existantes reprennent celles du
+   site (front/apps/web/src/index.css) ; les nouvelles sont proposées dans la spécification (.generator,
+   .criteria-fold, .tag-choice__box--disabled, .flow-result, .criteria-recap, .flow-route, .flow-station,
+   .flow-step, .no-flow).
+   Les cadres réagissent à leur propre largeur (requêtes de conteneur), comme le site réagit à la fenêtre :
+   40em = breakpoints.md, 64em = breakpoints.lg. */
+
+:root {
+  color-scheme: light;
+  --afj-color-primary: #5B3FC4;
+  --afj-color-primary-hover: #47309F;
+  --afj-color-primary-active: #38267E;
+  --afj-color-primary-contrast: #FFFFFF;
+  --afj-color-background: #F5F2FA;
+  --afj-color-surface: #FFFFFF;
+  --afj-color-surface-hover: #EDE8F7;
+  --afj-color-text: #211C3B;
+  --afj-color-text-muted: #5B5577;
+  --afj-color-border: #8F87A8;
+  --afj-color-divider: #DCD5EA;
+  --afj-color-focus: #1D69AE;
+  --afj-color-danger: #B42318;
+  --afj-color-danger-surface: #FDECEA;
+  --afj-color-info: #1D69AE;
+  --afj-color-info-surface: #DFEAFA;
+  --afj-color-disabled-surface: #EDE8F7;
+  --afj-color-selected: #47309F;
+  --afj-color-selected-surface: #EBE5FB;
+  --afj-color-base: #2C6A4C;
+  --afj-color-base-surface: #DCEFE3;
+  --afj-color-flyer: #1D69AE;
+  --afj-color-flyer-surface: #DFEAFA;
+  --afj-color-sun: #E8961E;
+  --afj-color-sun-strong: #A15C00;
+  --afj-color-sun-surface: #FFEBC4;
+  --afj-color-tag-surface: #F2EFEA;
+  --afj-color-tag-border: #CFC8BD;
+
+  --afj-spacing-xs: 4px;
+  --afj-spacing-sm: 8px;
+  --afj-spacing-md: 16px;
+  --afj-spacing-lg: 24px;
+  --afj-spacing-xl: 32px;
+  --afj-spacing-xxl: 48px;
+
+  --afj-radius-sm: 10px;
+  --afj-radius-md: 16px;
+  --afj-radius-lg: 26px;
+  --afj-radius-pill: 9999px;
+
+  --afj-font-family: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --afj-font-family-display: "Unbounded", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --afj-font-size-xs: 0.75rem;
+  --afj-font-size-sm: 0.875rem;
+  --afj-font-size-md: 1rem;
+  --afj-font-size-lg: 1.25rem;
+  --afj-font-size-xl: 1.75rem;
+  --afj-font-weight-regular: 400;
+  --afj-font-weight-medium: 500;
+  --afj-font-weight-semibold: 600;
+  --afj-font-weight-bold: 700;
+  --afj-line-height-display: 1;
+  --afj-line-height-tight: 1.25;
+  --afj-line-height-normal: 1.5;
+
+  --afj-size-touch-target: 44px;
+  --afj-size-control: 48px;
+  --afj-size-border-width: 1px;
+  --afj-size-border-width-strong: 2px;
+  --afj-size-accent-bar: 4px;
+  --afj-size-focus-ring-width: 3px;
+  --afj-size-focus-ring-offset: 2px;
+  --afj-size-form-wide-max-width: 640px;
+  --afj-size-tile-min-width: 152px;
+  --afj-size-content-max-width: 1040px;
+  --afj-size-icon: 20px;
+  --afj-size-icon-large: 32px;
+  --afj-size-moon: 18px;
+  --afj-size-moon-large: 24px;
+  --afj-size-trajectory-width: 46px;
+  --afj-size-trajectory-height: 20px;
+  --afj-size-avatar: 36px;
+  --afj-size-logo: 30px;
+}
+
+/* La nuit (colorsDark) : suit le système, sauf choix explicite dans la barre de la maquette. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --afj-color-primary: #B6A6FF;
+    --afj-color-primary-hover: #CDC2FF;
+    --afj-color-primary-active: #E0D9FF;
+    --afj-color-primary-contrast: #15122B;
+    --afj-color-background: #110F24;
+    --afj-color-surface: #1A1733;
+    --afj-color-surface-hover: #252148;
+    --afj-color-text: #ECE8F8;
+    --afj-color-text-muted: #ABA4C8;
+    --afj-color-border: #6F6896;
+    --afj-color-divider: #322D57;
+    --afj-color-focus: #8FC1F3;
+    --afj-color-danger: #FF9C8F;
+    --afj-color-danger-surface: #3A1714;
+    --afj-color-info: #8FC1F3;
+    --afj-color-info-surface: #13283F;
+    --afj-color-disabled-surface: #252148;
+    --afj-color-selected: #CDC2FF;
+    --afj-color-selected-surface: #2A2456;
+    --afj-color-base: #82CDA2;
+    --afj-color-base-surface: #163024;
+    --afj-color-flyer: #8FC1F3;
+    --afj-color-flyer-surface: #13283F;
+    --afj-color-sun: #F5C15A;
+    --afj-color-sun-strong: #F5C15A;
+    --afj-color-sun-surface: #3A2E14;
+    --afj-color-tag-surface: #2A2733;
+    --afj-color-tag-border: #4D4858;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --afj-color-primary: #B6A6FF;
+  --afj-color-primary-hover: #CDC2FF;
+  --afj-color-primary-active: #E0D9FF;
+  --afj-color-primary-contrast: #15122B;
+  --afj-color-background: #110F24;
+  --afj-color-surface: #1A1733;
+  --afj-color-surface-hover: #252148;
+  --afj-color-text: #ECE8F8;
+  --afj-color-text-muted: #ABA4C8;
+  --afj-color-border: #6F6896;
+  --afj-color-divider: #322D57;
+  --afj-color-focus: #8FC1F3;
+  --afj-color-danger: #FF9C8F;
+  --afj-color-danger-surface: #3A1714;
+  --afj-color-info: #8FC1F3;
+  --afj-color-info-surface: #13283F;
+  --afj-color-disabled-surface: #252148;
+  --afj-color-selected: #CDC2FF;
+  --afj-color-selected-surface: #2A2456;
+  --afj-color-base: #82CDA2;
+  --afj-color-base-surface: #163024;
+  --afj-color-flyer: #8FC1F3;
+  --afj-color-flyer-surface: #13283F;
+  --afj-color-sun: #F5C15A;
+  --afj-color-sun-strong: #F5C15A;
+  --afj-color-sun-surface: #3A2E14;
+  --afj-color-tag-surface: #2A2733;
+  --afj-color-tag-border: #4D4858;
+}
+
+/* ---------- Base ---------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: var(--afj-spacing-lg) var(--afj-spacing-md) var(--afj-spacing-xxl);
+  font-family: var(--afj-font-family);
+  font-size: var(--afj-font-size-md);
+  line-height: var(--afj-line-height-normal);
+  color: var(--afj-color-text);
+  background: var(--afj-color-background);
+}
+
+h1, h2, h3 { text-wrap: balance; }
+
+h1 {
+  margin: 0;
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-xl);
+  font-weight: var(--afj-font-weight-semibold);
+  line-height: var(--afj-line-height-tight);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+a { color: var(--afj-color-primary); }
+
+:focus-visible {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus);
+  outline-offset: var(--afj-size-focus-ring-offset);
+}
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+
+.icon { inline-size: var(--afj-size-icon); block-size: var(--afj-size-icon); flex-shrink: 0; }
+.moon { inline-size: var(--afj-size-moon); block-size: var(--afj-size-moon); flex-shrink: 0; }
+.icon--trajectory { inline-size: var(--afj-size-trajectory-width); block-size: var(--afj-size-trajectory-height); color: var(--afj-color-sun-strong); }
+
+/* ---------- Habillage de la maquette (hors site) ---------- */
+
+.mq-intro { max-width: 1120px; margin: 0 auto var(--afj-spacing-xl); }
+.mq-intro h1 { margin-bottom: var(--afj-spacing-sm); }
+.mq-intro p { margin: 0 0 var(--afj-spacing-sm); max-width: 80ch; color: var(--afj-color-text-muted); }
+.mq-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-sm); margin-top: var(--afj-spacing-md); }
+.mq-theme[aria-pressed="true"] {
+  background: var(--afj-color-selected-surface);
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-selected);
+}
+.mq-section { max-width: 1440px; margin: 0 auto var(--afj-spacing-xxl); }
+.mq-section > h2 {
+  margin: 0 0 var(--afj-spacing-xs);
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-medium);
+  line-height: var(--afj-line-height-tight);
+}
+.mq-section > p { margin: 0 0 var(--afj-spacing-md); max-width: 90ch; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.mq-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--afj-spacing-lg); margin-bottom: var(--afj-spacing-lg); }
+.mq-frame { margin: 0; min-width: 0; }
+.mq-frame--mobile { flex: 0 0 320px; width: 320px; max-width: 100%; }
+.mq-frame--wide { width: min(100%, 1074px); }
+.mq-frame figcaption {
+  margin-bottom: var(--afj-spacing-xs);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text-muted);
+}
+.mq-screen {
+  container: screen / inline-size;
+  overflow: hidden;
+  background: var(--afj-color-background);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md);
+}
+.mq-omitted {
+  margin: 0;
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+  font-size: var(--afj-font-size-sm);
+  font-style: italic;
+  color: var(--afj-color-text-muted);
+  border: var(--afj-size-border-width) dashed var(--afj-color-border);
+  border-radius: var(--afj-radius-sm);
+}
+
+/* ---------- En-tête du site ---------- */
+
+.site-header { background: var(--afj-color-background); border-bottom: var(--afj-size-border-width) solid var(--afj-color-divider); }
+.site-header__inner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-md);
+  max-width: var(--afj-size-content-max-width); margin-inline: auto; padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+}
+.site-header__brand {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); min-height: var(--afj-size-touch-target);
+  font-family: var(--afj-font-family-display); font-weight: var(--afj-font-weight-semibold); letter-spacing: -0.01em;
+  color: var(--afj-color-text); text-decoration: none;
+}
+.logo { inline-size: var(--afj-size-logo); block-size: var(--afj-size-logo); flex-shrink: 0; }
+.site-header__account { display: flex; align-items: center; gap: var(--afj-spacing-sm); margin-inline-start: auto; }
+.site-header__avatar {
+  display: inline-grid; place-items: center; inline-size: var(--afj-size-avatar); block-size: var(--afj-size-avatar);
+  border-radius: 50%; font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-bold);
+  color: var(--afj-color-text); background: var(--afj-color-sun-surface);
+}
+.site-header .button {
+  min-height: var(--afj-size-touch-target); padding: 0 var(--afj-spacing-md); font-size: var(--afj-font-size-sm);
+  background: var(--afj-color-surface-hover); border-color: transparent; width: auto;
+}
+
+main { max-width: var(--afj-size-content-max-width); margin: 0 auto; padding: var(--afj-spacing-lg) var(--afj-spacing-md); }
+
+/* ---------- Boutons, lien de retour ---------- */
+
+.button {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--afj-spacing-xs);
+  min-height: var(--afj-size-touch-target); padding: 0 var(--afj-spacing-lg);
+  border: var(--afj-size-border-width) solid transparent; border-radius: var(--afj-radius-pill);
+  font: inherit; font-weight: var(--afj-font-weight-semibold); text-align: center; text-decoration: none; cursor: pointer;
+  color: var(--afj-color-text);
+}
+.button--primary { min-height: var(--afj-size-control); width: 100%; color: var(--afj-color-primary-contrast); background: var(--afj-color-primary); }
+.button--secondary { background: transparent; border-color: var(--afj-color-border); }
+.button--wide { min-height: var(--afj-size-control); width: 100%; }
+.button[aria-disabled="true"] { cursor: progress; }
+@media (hover: hover) {
+  .button--primary:hover { background: var(--afj-color-primary-hover); }
+  .button--secondary:hover { background: var(--afj-color-surface-hover); border-color: var(--afj-color-text); }
+}
+.button--primary:active { background: var(--afj-color-primary-active); }
+.button--secondary:active { background: var(--afj-color-divider); }
+
+.back-link {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); min-block-size: var(--afj-size-touch-target);
+  margin-bottom: var(--afj-spacing-xs); color: var(--afj-color-primary);
+  text-decoration: underline; text-decoration-thickness: var(--afj-size-border-width);
+}
+
+/* ---------- Catalogue : actions ---------- */
+
+.page-header { display: flex; flex-direction: column; gap: var(--afj-spacing-md); margin-bottom: var(--afj-spacing-lg); }
+.page-header h1 { line-height: var(--afj-line-height-display); }
+.page-header__actions { display: flex; flex-direction: column; gap: var(--afj-spacing-sm); }
+.link-button { min-height: var(--afj-size-control); }
+
+/* ---------- Formulaire : champ, liste déroulante, alertes, tuiles ---------- */
+
+.field { display: grid; gap: var(--afj-spacing-xs); }
+.field label { font-weight: var(--afj-font-weight-semibold); }
+.field__help { margin: 0 0 var(--afj-spacing-xs); font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.field__select { position: relative; display: flex; }
+.field select {
+  flex: 1; min-width: 0; min-height: var(--afj-size-control); padding-block: 0;
+  padding-inline: var(--afj-spacing-md) calc(var(--afj-spacing-md) + var(--afj-size-icon) + var(--afj-spacing-sm));
+  font: inherit; color: var(--afj-color-text); background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-border); border-radius: var(--afj-radius-md); appearance: none;
+}
+.field__select .icon { position: absolute; inset-inline-end: var(--afj-spacing-md); top: 50%; translate: 0 -50%; color: var(--afj-color-text); pointer-events: none; }
+@media (hover: hover) { .field select:hover { border-color: var(--afj-color-text); } }
+
+.form-alert {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-sm);
+  padding: var(--afj-spacing-md); padding-inline-start: var(--afj-spacing-lg);
+  background: var(--afj-color-danger-surface); border-left: var(--afj-size-accent-bar) solid var(--afj-color-danger);
+  border-radius: var(--afj-radius-md);
+}
+.form-alert .icon { color: var(--afj-color-danger); }
+.form-alert--info { background: var(--afj-color-info-surface); border-left-color: var(--afj-color-info); }
+.form-alert--info .icon { color: var(--afj-color-info); }
+.form-alert__content { display: flex; flex-direction: column; align-items: flex-start; gap: var(--afj-spacing-sm); min-width: 0; }
+.form-alert__content p { margin: 0; }
+.form-alert .button { width: auto; }
+
+/* Note d'information (groupe-cases-pastilles.md, « Note ») */
+.info-note {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-sm); margin: 0;
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md); font-size: var(--afj-font-size-sm);
+  background: var(--afj-color-info-surface); border-radius: var(--afj-radius-md);
+}
+.info-note .icon { color: var(--afj-color-info); }
+
+.difficulty-questions { display: grid; gap: var(--afj-spacing-md); }
+.difficulty-questions__help { margin: 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+
+.tile-group { min-inline-size: 0; margin: 0; padding: 0; border: none; }
+.tile-group__container { container-type: inline-size; }
+.tile-group legend {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-sm);
+  margin-bottom: var(--afj-spacing-sm); padding: 0; font-weight: var(--afj-font-weight-semibold);
+}
+.role-dot { inline-size: var(--afj-spacing-sm); block-size: var(--afj-spacing-sm); border-radius: 50%; flex-shrink: 0; }
+.role-dot--base { background: var(--afj-color-base); }
+.role-dot--flyer { background: var(--afj-color-flyer); }
+.tile-group__tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--afj-spacing-sm); }
+.tile {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--afj-spacing-xs);
+  min-block-size: var(--afj-size-control); min-inline-size: 0; padding: var(--afj-spacing-sm);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md); cursor: pointer; text-align: center;
+  font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold);
+}
+.tile .moon { inline-size: var(--afj-size-moon-large); block-size: var(--afj-size-moon-large); color: var(--afj-color-text-muted); }
+.tile input { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.tile:has(input:focus-visible) { outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus); outline-offset: var(--afj-size-focus-ring-offset); }
+.tile:has(input:checked) { padding: calc(var(--afj-spacing-sm) - var(--afj-size-border-width)); border-width: var(--afj-size-border-width-strong); }
+.tile-group--base .tile:has(input:checked) { color: var(--afj-color-base); background: var(--afj-color-base-surface); border-color: var(--afj-color-base); }
+.tile-group--flyer .tile:has(input:checked) { color: var(--afj-color-flyer); background: var(--afj-color-flyer-surface); border-color: var(--afj-color-flyer); }
+.tile:has(input:checked) .moon { color: currentcolor; }
+@media (hover: hover) { .tile:not(:has(input:checked)):hover { background: var(--afj-color-surface-hover); border-color: var(--afj-color-text); } }
+/* 39.5em = 4 × tileMinWidth + 3 × spacing.sm */
+@container (width >= 39.5em) { .tile-group__tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* ---------- Étiquettes : pilule, repli des descriptions, cases (stories 8, 9a) ---------- */
+
+.tag-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-sm); margin: 0; }
+.tag-line__term { font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text-muted); }
+.tag-line__value { margin: 0; }
+.tag-line__list { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-xs) var(--afj-spacing-sm); margin: 0; padding: 0; list-style: none; }
+.tag-pill {
+  display: inline-flex; align-items: center; max-inline-size: 100%;
+  padding: var(--afj-spacing-xs) calc(var(--afj-spacing-sm) + var(--afj-spacing-xs));
+  background: var(--afj-color-tag-surface); border: var(--afj-size-border-width) solid var(--afj-color-tag-border);
+  border-radius: var(--afj-radius-pill); font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-medium);
+  line-height: var(--afj-line-height-tight); color: var(--afj-color-text); overflow-wrap: anywhere;
+}
+
+.tag-meanings__summary {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); min-block-size: var(--afj-size-touch-target);
+  font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-primary);
+  list-style: none; cursor: pointer;
+}
+.tag-meanings__summary::-webkit-details-marker { display: none; }
+.tag-meanings__summary:focus-visible { border-radius: var(--afj-radius-sm); }
+.tag-meanings[open] > .tag-meanings__summary .icon { transform: rotate(180deg); }
+.tag-meanings__list {
+  display: grid; gap: var(--afj-spacing-sm); margin: var(--afj-spacing-xs) 0 0; padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface-hover); border-radius: var(--afj-radius-sm); font-size: var(--afj-font-size-sm);
+}
+.tag-meanings__list dt { font-weight: var(--afj-font-weight-semibold); }
+.tag-meanings__list dd { margin: 0; overflow-wrap: anywhere; }
+@media (hover: hover) { .tag-meanings__summary:hover { color: var(--afj-color-primary-hover); text-decoration: underline; } }
+
+.tag-choice { min-inline-size: 0; margin: 0; padding: 0; border: 0; }
+.tag-choice__legend { margin-bottom: var(--afj-spacing-xs); padding: 0; font-weight: var(--afj-font-weight-semibold); }
+.tag-choice__help { margin: 0 0 var(--afj-spacing-sm); font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.tag-choice__boxes { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-sm); }
+.tag-choice__box {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); min-block-size: var(--afj-size-touch-target);
+  max-inline-size: 100%; padding: 0 var(--afj-spacing-md) 0 calc(var(--afj-spacing-sm) + var(--afj-spacing-xs));
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-pill); overflow-wrap: anywhere; cursor: pointer;
+}
+.tag-choice__box input { inline-size: var(--afj-size-icon); block-size: var(--afj-size-icon); margin: 0; flex: none; accent-color: var(--afj-color-selected); }
+.tag-choice__box input:focus-visible { outline: none; }
+.tag-choice__box:has(input:focus-visible) { outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus); outline-offset: var(--afj-size-focus-ring-offset); }
+.tag-choice__box:has(input:checked) {
+  padding: 0 calc(var(--afj-spacing-md) - var(--afj-size-border-width)) 0
+    calc(var(--afj-spacing-sm) + var(--afj-spacing-xs) - var(--afj-size-border-width));
+  background: var(--afj-color-selected-surface);
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-selected);
+  font-weight: var(--afj-font-weight-semibold);
+}
+@media (hover: hover) {
+  .tag-choice__box:not(:has(input:checked)):not(:has(input:disabled)):hover { background: var(--afj-color-surface-hover); border-color: var(--afj-color-text); }
+}
+/* Story 9 : étiquette déjà choisie dans l'autre groupe. Forme (tirets) + mot (« (demandée) »), pas seulement la teinte. */
+.tag-choice__box:has(input:disabled) {
+  color: var(--afj-color-text-muted); background: var(--afj-color-disabled-surface);
+  border-style: dashed; cursor: not-allowed;
+}
+.tag-choice__box:has(input:disabled) input { cursor: not-allowed; }
+.tag-choice__state { font-size: var(--afj-font-size-sm); }
+
+/* ---------- Pastilles de rôle ---------- */
+
+.pose-card__details { display: grid; gap: var(--afj-spacing-sm); margin: 0; }
+.pose-card__roles { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-sm); }
+.role-pill {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); max-width: 100%;
+  padding: var(--afj-spacing-xs) var(--afj-spacing-md) var(--afj-spacing-xs) var(--afj-spacing-xs);
+  border-radius: var(--afj-radius-pill); font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold);
+  line-height: var(--afj-line-height-tight);
+}
+.role-pill--base { color: var(--afj-color-base); background: var(--afj-color-base-surface); }
+.role-pill--flyer { color: var(--afj-color-flyer); background: var(--afj-color-flyer-surface); }
+.role-pill__word {
+  padding: 0.125rem var(--afj-spacing-sm); border-radius: var(--afj-radius-pill);
+  font-size: var(--afj-font-size-xs); font-weight: var(--afj-font-weight-bold); color: var(--afj-color-surface);
+}
+.role-pill--base .role-pill__word { background: var(--afj-color-base); }
+.role-pill--flyer .role-pill__word { background: var(--afj-color-flyer); }
+.role-pill__level { display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); margin: 0; color: var(--afj-color-text); }
+
+/* ---------- Note de sécurité (rappel du spotter) ---------- */
+
+.safety-note {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-sm); margin: 0;
+  padding: var(--afj-spacing-md); font-size: var(--afj-font-size-sm); color: var(--afj-color-text);
+  background: var(--afj-color-sun-surface); border-radius: var(--afj-radius-md);
+}
+.safety-note .icon { color: var(--afj-color-sun-strong); }
+
+/* ---------- Story 9 : page du générateur, formulaire ---------- */
+
+.generator { display: grid; gap: var(--afj-spacing-sm); }
+.generator__intro { margin: 0 0 var(--afj-spacing-sm); color: var(--afj-color-text-muted); }
+.generator__form { display: grid; gap: var(--afj-spacing-lg); }
+/* Largeur de deux tuiles : 2 × tileMinWidth + spacing.sm. */
+.generator__count-field { max-inline-size: calc(2 * var(--afj-size-tile-min-width) + var(--afj-spacing-sm)); }
+.form-actions { display: flex; flex-direction: column; gap: var(--afj-spacing-md); }
+
+/* Repli « Étiquettes (facultatives) » (repli-criteres-etiquettes.md) */
+.criteria-fold {
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md);
+}
+.criteria-fold__summary {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-sm);
+  min-block-size: var(--afj-size-control); padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+  font-weight: var(--afj-font-weight-semibold); list-style: none; cursor: pointer; border-radius: var(--afj-radius-md);
+}
+.criteria-fold__summary::-webkit-details-marker { display: none; }
+.criteria-fold__summary > .icon { margin-inline-start: auto; }
+.criteria-fold[open] > .criteria-fold__summary > .icon { transform: rotate(180deg); }
+.criteria-fold__count {
+  display: inline-block; padding: 0 var(--afj-spacing-sm);
+  font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-normal);
+  color: var(--afj-color-text); background: var(--afj-color-selected-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-selected); border-radius: var(--afj-radius-pill);
+}
+.criteria-fold__content {
+  display: grid; gap: var(--afj-spacing-lg); padding: var(--afj-spacing-md);
+  border-top: var(--afj-size-border-width) dotted var(--afj-color-divider);
+}
+@media (hover: hover) { .criteria-fold__summary:hover { background: var(--afj-color-surface-hover); } .criteria-fold:has(> .criteria-fold__summary:hover) { border-color: var(--afj-color-text); } }
+
+/* ---------- Story 9 : résultat ---------- */
+
+.flow-result { display: grid; gap: var(--afj-spacing-lg); }
+.flow-result__aside { display: grid; gap: var(--afj-spacing-md); align-content: start; min-width: 0; }
+.flow-result__main { display: grid; gap: var(--afj-spacing-lg); align-content: start; min-width: 0; }
+.flow-result__summary {
+  margin: 0; font-size: var(--afj-font-size-lg); font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-tight);
+}
+.flow-result__actions { display: flex; flex-direction: column; gap: var(--afj-spacing-sm); }
+
+/* Récapitulatif des critères (recapitulatif-criteres.md) */
+.criteria-recap {
+  display: grid; gap: var(--afj-spacing-sm); padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface-hover); border-radius: var(--afj-radius-sm); font-size: var(--afj-font-size-sm);
+}
+.criteria-recap h2 { margin: 0; font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); }
+.criteria-recap dl { display: grid; gap: var(--afj-spacing-sm); margin: 0; }
+.criteria-recap dl > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--afj-spacing-xs) var(--afj-spacing-md); }
+.criteria-recap dt { display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); color: var(--afj-color-text-muted); }
+.criteria-recap dd { display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); margin: 0; font-weight: var(--afj-font-weight-semibold); }
+.criteria-recap dd .moon { color: var(--afj-color-text-muted); }
+
+/* Fil du flow (fil-du-flow.md) : stations sur un rail, transitions en cartes. */
+.flow-route { display: grid; row-gap: 0; }
+.flow-path { display: grid; row-gap: 0; margin: 0; padding: 0; list-style: none; }
+.flow-station, .flow-step {
+  position: relative; display: grid; grid-template-columns: var(--afj-size-icon) minmax(0, 1fr); column-gap: var(--afj-spacing-sm);
+}
+/* Le rail : pointillé sunStrong, décoratif, au centre de la colonne d'icône. */
+.flow-step::before, .flow-station--start::before {
+  content: ''; position: absolute; top: 0; bottom: 0;
+  inset-inline-start: calc(var(--afj-size-icon) / 2 - var(--afj-size-border-width));
+  border-inline-start: var(--afj-size-border-width-strong) dotted var(--afj-color-sun-strong);
+}
+.flow-station--start::before { top: calc(var(--afj-size-touch-target) / 2); }
+.flow-step > .flow-station { grid-column: 1 / -1; }
+.flow-station { padding-bottom: var(--afj-spacing-md); }
+.flow-station--end { padding-bottom: 0; }
+/* Après la dernière station, le rail s'arrête au centre de son icône. */
+.flow-station--end::after {
+  content: ''; position: absolute; z-index: 1; inset-inline-start: 0; top: calc(var(--afj-size-touch-target) / 2); bottom: 0;
+  inline-size: var(--afj-size-icon); background: var(--afj-color-background);
+}
+.flow-station__icon {
+  position: relative; z-index: 2; grid-row: 1; align-self: center;
+  color: var(--afj-color-sun-strong); background: var(--afj-color-background); border-radius: 50%;
+}
+.flow-station__head {
+  grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--afj-spacing-xs);
+  min-block-size: var(--afj-size-touch-target); margin: 0;
+}
+.flow-station__lead { font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text-muted); }
+.flow-station__pose {
+  display: inline-flex; align-items: center; min-block-size: var(--afj-size-touch-target);
+  font-family: var(--afj-font-family-display); font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-primary); text-decoration: underline; text-decoration-thickness: var(--afj-size-border-width);
+  overflow-wrap: anywhere;
+}
+@media (hover: hover) { .flow-station__pose:hover { color: var(--afj-color-primary-hover); text-decoration-thickness: var(--afj-size-border-width-strong); } }
+.flow-station__same { font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.flow-station__details { grid-column: 2; position: relative; z-index: 2; }
+
+.flow-step__card {
+  grid-column: 2; display: grid; gap: var(--afj-spacing-sm); margin-bottom: var(--afj-spacing-md); padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider); border-radius: var(--afj-radius-md);
+}
+.flow-step__title {
+  margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-sm);
+  font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-md); font-weight: var(--afj-font-weight-medium);
+  line-height: var(--afj-line-height-tight); overflow-wrap: anywhere;
+}
+.flow-step__number { font-family: var(--afj-font-family); font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text-muted); }
+.flow-step__poses { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-sm); }
+.flow-step__washing-machine {
+  display: flex; align-items: center; gap: var(--afj-spacing-sm); margin: 0;
+  font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text-muted);
+}
+.flow-step__description p { margin: var(--afj-spacing-xs) 0 0; white-space: pre-line; overflow-wrap: anywhere; }
+
+/* Panneau « aucun flow » (panneau-sans-flow.md) */
+.no-flow {
+  display: grid; gap: var(--afj-spacing-md); padding: var(--afj-spacing-lg);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider); border-radius: var(--afj-radius-lg);
+}
+.no-flow > .icon { inline-size: var(--afj-size-icon-large); block-size: var(--afj-size-icon-large); color: var(--afj-color-info); }
+.no-flow h2 {
+  margin: 0; font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-medium); line-height: var(--afj-line-height-tight);
+}
+.no-flow p { margin: 0; }
+.no-flow__tips { display: grid; gap: var(--afj-spacing-xs); margin: 0; padding-inline-start: var(--afj-spacing-lg); }
+
+/* ---------- Grand écran (par cadre) ---------- */
+
+@container screen (width >= 40em) {
+  .site-header__inner { padding-inline: var(--afj-spacing-lg); }
+  main { padding-inline: var(--afj-spacing-lg); }
+  .page-header { flex-flow: row wrap; align-items: center; justify-content: space-between; }
+  .page-header__actions { flex-direction: row; flex-wrap: wrap; }
+  .page-header__actions .button { width: auto; }
+  .generator { max-width: calc(var(--afj-size-form-wide-max-width) + 2 * var(--afj-spacing-xl) + 2 * var(--afj-size-border-width)); margin-inline: auto; }
+  .generator__card, .no-flow {
+    padding: var(--afj-spacing-xl);
+  }
+  .generator__card {
+    background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider); border-radius: var(--afj-radius-lg);
+  }
+  .criteria-fold__content { padding: var(--afj-spacing-lg); }
+  .form-actions { flex-flow: row wrap; }
+  .form-actions .button, .no-flow .button { width: auto; }
+  .flow-result__actions { flex-flow: row wrap; }
+  .flow-result__actions .button { width: auto; }
+}
+
+@container screen (width >= 64em) {
+  .flow-result { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); column-gap: var(--afj-spacing-xl); }
+  .flow-result__actions { flex-direction: column; }
+  .flow-result__actions .button { width: 100%; }
+  .flow-result__head { grid-column: 1 / -1; }
+}
+/* Collante seulement si l'écran est assez haut (un écran zoomé ne doit rien masquer). */
+@media (width >= 64em) and (height >= 40em) {
+  .flow-result__aside { position: sticky; top: var(--afj-spacing-lg); }
+}
+
+@media (forced-colors: active) {
+  .flow-step__card, .criteria-recap, .criteria-fold, .safety-note, .no-flow, .generator__card, .tag-pill, .role-pill, .criteria-fold__count { border: var(--afj-size-border-width) solid CanvasText; }
+  .flow-step::before, .flow-station--start::before { border-color: CanvasText; }
+  .flow-station__pose { color: LinkText; }
+  .tag-choice__box { border-color: CanvasText; }
+  .tag-choice__box:has(input:checked) { border-color: Highlight; }
+  .tag-choice__box:has(input:disabled) { color: GrayText; border-color: GrayText; }
+  .role-dot { display: none; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="logo" viewBox="0 0 30 30">
+      <circle cx="15" cy="11" r="6" style="fill: var(--afj-color-sun)"/>
+      <path d="M3 27a12 12 0 0 1 24 0z" style="fill: var(--afj-color-base)"/>
+    </symbol>
+    <symbol id="m1" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16a4.5 8 0 0 0 0-16z" fill="currentColor"/></symbol>
+    <symbol id="m2" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor"/></symbol>
+    <symbol id="m3" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16a4.5 8 0 0 1 0-16z" fill="currentColor"/></symbol>
+    <symbol id="m4" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="currentColor" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="i-rise" viewBox="0 0 20 20"><path d="M4 14a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 2v5M7.5 4.5 10 2l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-set" viewBox="0 0 20 20"><path d="M4 14a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 2v5M7.5 4.5 10 7l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <!-- Nouvelle icône « station » : une pose intermédiaire du fil. -->
+    <symbol id="i-station" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="10" r="2.5" fill="currentColor"/></symbol>
+    <symbol id="i-spot" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 6v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="14" r="1.2" fill="currentColor"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 20 20"><polyline points="12.5,4.5 7,10 12.5,15.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 20 20"><polyline points="4.5,7.5 10,13 15.5,7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-info" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="5.8" r="1.2" fill="currentColor"/><line x1="10" y1="9" x2="10" y2="14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-error" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="10" y1="5.5" x2="10" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="14.5" r="1.2" fill="currentColor"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 20 20"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-trajectory" viewBox="0 0 46 20"><path d="M3 17C12 2 32 2 41 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 4.5"/><path d="M36 14.5l5 1 .5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-loop" viewBox="0 0 46 20"><path d="M8 15c-6-2-5-12 3-12s14 10 24 10c6 0 7-8 1-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 4.5"/><path d="M33.5 1.5 37 4l-3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<div class="mq-intro">
+  <h1>Story 9 « Générer un flow » : maquette</h1>
+  <p>Écran de <code>docs/design/ecrans/9-generer-un-flow.md</code>, avec les valeurs de <code>@acrofunjam/ui-tokens</code> (aucun token nouveau ; une icône nouvelle, « station »). Chaque état est montré à 320 px puis sur grand écran ; les cadres réagissent à leur propre largeur.</p>
+  <p>Le formulaire et le résultat alternent sur la même page : le résultat remplace le formulaire, « Modifier les critères » le fait revenir. Libellés : ceux validés le 2026-11-19 ; ceux marqués « proposé » dans la spécification (« Critères du flow », « 1 choisie », « Description »…) restent à confirmer. Le contenu inchangé est remplacé par un repère en pointillés.</p>
+  <div class="mq-toolbar" role="group" aria-label="Thème de la maquette">
+    <button type="button" class="button button--secondary mq-theme" data-theme-choice="light" aria-pressed="false">Aube (clair)</button>
+    <button type="button" class="button button--secondary mq-theme" data-theme-choice="dark" aria-pressed="false">Nuit (sombre)</button>
+  </div>
+</div>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-access">
+  <h2 id="mq-access">0. Accès depuis le catalogue</h2>
+  <p>« Générer un flow », bouton secondaire, premier des actions du catalogue, pour tout le monde. « Proposer une pose » reste la seule action primaire.</p>
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Catalogue, personne connectée, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="page-header">
+            <h1>Catalogue</h1>
+            <div class="page-header__actions">
+              <a class="button button--secondary link-button" href="#">Générer un flow</a>
+              <a class="button button--primary link-button" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Proposer une pose</a>
+              <a class="button button--secondary link-button" href="#">Mes propositions</a>
+              <a class="button button--secondary link-button" href="#">Étiquettes</a>
+            </div>
+          </div>
+          <p class="mq-omitted">Légende, cartes de pose (inchangées)</p>
+        </main>
+      </div>
+    </figure>
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Catalogue, visiteur, grand écran</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="page-header">
+            <h1>Catalogue</h1>
+            <div class="page-header__actions">
+              <a class="button button--secondary link-button" href="#">Générer un flow</a>
+              <a class="button button--secondary link-button" href="#">Étiquettes</a>
+            </div>
+          </div>
+          <p class="mq-omitted">Légende, cartes de pose (inchangées)</p>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-form">
+  <h2 id="mq-form">1. Formulaire initial</h2>
+  <p>3 transitions, « Débutant » / « Débutant » présélectionnés, repli des étiquettes fermé et sans compte. Une seule action primaire.</p>
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Visiteur, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><a class="button button--secondary" href="#">Se connecter</a></div>
+        </div></header>
+        <main>
+          <div class="generator">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+            <div class="generator__card">
+              <h1>Générer un flow</h1>
+              <p class="generator__intro" style="margin-top: var(--afj-spacing-sm)">Choisis la longueur et la difficulté : AcroFunJam tire au hasard un flow parmi les poses et les transitions du catalogue.</p>
+              <form class="generator__form" style="margin-top: var(--afj-spacing-lg)">
+                <div class="field generator__count-field">
+                  <label for="n1">Nombre de transitions</label>
+                  <p class="field__help">De 1 à 10. Un flow de 3 transitions enchaîne 4 poses.</p>
+                  <div class="field__select">
+                    <select id="n1"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select>
+                    <svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                  </div>
+                </div>
+                <div class="difficulty-questions">
+                  <p class="difficulty-questions__help">Aucune pose ni transition du flow ne dépassera ce niveau.</p>
+                  <fieldset class="tile-group tile-group--base">
+                    <legend><span class="role-dot role-dot--base" aria-hidden="true"></span>Difficulté base, au plus</legend>
+                    <div class="tile-group__container"><div class="tile-group__tiles">
+                      <label class="tile"><input type="radio" name="b1"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</label>
+                      <label class="tile"><input type="radio" name="b1" checked><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</label>
+                      <label class="tile"><input type="radio" name="b1"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</label>
+                      <label class="tile"><input type="radio" name="b1"><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</label>
+                    </div></div>
+                  </fieldset>
+                  <fieldset class="tile-group tile-group--flyer">
+                    <legend><span class="role-dot role-dot--flyer" aria-hidden="true"></span>Difficulté flyer, au plus</legend>
+                    <div class="tile-group__container"><div class="tile-group__tiles">
+                      <label class="tile"><input type="radio" name="f1"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</label>
+                      <label class="tile"><input type="radio" name="f1" checked><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</label>
+                      <label class="tile"><input type="radio" name="f1"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</label>
+                      <label class="tile"><input type="radio" name="f1"><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</label>
+                    </div></div>
+                  </fieldset>
+                </div>
+                <details class="criteria-fold">
+                  <summary class="criteria-fold__summary">Étiquettes (facultatives)<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                </details>
+                <div class="form-actions"><button type="button" class="button button--primary">Générer un flow</button></div>
+              </form>
+            </div>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Visiteur, grand écran : carte de 640 px, tuiles sur une ligne</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><a class="button button--secondary" href="#">Se connecter</a></div>
+        </div></header>
+        <main>
+          <div class="generator">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+            <div class="generator__card">
+              <h1>Générer un flow</h1>
+              <p class="generator__intro" style="margin-top: var(--afj-spacing-sm)">Choisis la longueur et la difficulté : AcroFunJam tire au hasard un flow parmi les poses et les transitions du catalogue.</p>
+              <form class="generator__form" style="margin-top: var(--afj-spacing-lg)">
+                <div class="field generator__count-field">
+                  <label for="n2">Nombre de transitions</label>
+                  <p class="field__help">De 1 à 10. Un flow de 3 transitions enchaîne 4 poses.</p>
+                  <div class="field__select">
+                    <select id="n2"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>10</option></select>
+                    <svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                  </div>
+                </div>
+                <div class="difficulty-questions">
+                  <p class="difficulty-questions__help">Aucune pose ni transition du flow ne dépassera ce niveau.</p>
+                  <fieldset class="tile-group tile-group--base">
+                    <legend><span class="role-dot role-dot--base" aria-hidden="true"></span>Difficulté base, au plus</legend>
+                    <div class="tile-group__container"><div class="tile-group__tiles">
+                      <label class="tile"><input type="radio" name="b2"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</label>
+                      <label class="tile"><input type="radio" name="b2" checked><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</label>
+                      <label class="tile"><input type="radio" name="b2"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</label>
+                      <label class="tile"><input type="radio" name="b2"><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</label>
+                    </div></div>
+                  </fieldset>
+                  <fieldset class="tile-group tile-group--flyer">
+                    <legend><span class="role-dot role-dot--flyer" aria-hidden="true"></span>Difficulté flyer, au plus</legend>
+                    <div class="tile-group__container"><div class="tile-group__tiles">
+                      <label class="tile"><input type="radio" name="f2"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</label>
+                      <label class="tile"><input type="radio" name="f2" checked><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</label>
+                      <label class="tile"><input type="radio" name="f2"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</label>
+                      <label class="tile"><input type="radio" name="f2"><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</label>
+                    </div></div>
+                  </fieldset>
+                </div>
+                <details class="criteria-fold">
+                  <summary class="criteria-fold__summary">Étiquettes (facultatives)<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                </details>
+                <div class="form-actions"><button type="button" class="button button--primary">Générer un flow</button></div>
+              </form>
+            </div>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-tags">
+  <h2 id="mq-tags">2. Repli des étiquettes ouvert, une case désactivée</h2>
+  <p>« lunaire » demandée : cochée dans le premier groupe, désactivée et marquée « (demandée) » dans le second (fond désactivé, contour tireté, mot). Le compte figure dans le résumé du repli.</p>
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>« lunaire » demandée, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <p class="mq-omitted">Lien « Catalogue », titre, introduction, nombre de transitions, difficultés</p>
+          <form class="generator__form" style="margin-top: var(--afj-spacing-lg)">
+            <details class="criteria-fold" open>
+              <summary class="criteria-fold__summary">Étiquettes (facultatives) <span class="criteria-fold__count">1 choisie</span><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+              <div class="criteria-fold__content">
+                <fieldset class="tag-choice">
+                  <legend class="tag-choice__legend">Avec l'une de ces étiquettes</legend>
+                  <p class="tag-choice__help">Chaque étape portera l'une de ces étiquettes, sur la transition ou sur la pose d'arrivée.</p>
+                  <div class="tag-choice__boxes">
+                    <label class="tag-choice__box"><input type="checkbox">contrepoids</label>
+                    <label class="tag-choice__box"><input type="checkbox">dynamique</label>
+                    <label class="tag-choice__box"><input type="checkbox">icarien</label>
+                    <label class="tag-choice__box"><input type="checkbox">inversion</label>
+                    <label class="tag-choice__box"><input type="checkbox" checked>lunaire</label>
+                    <label class="tag-choice__box"><input type="checkbox">pop</label>
+                    <label class="tag-choice__box"><input type="checkbox">vrille</label>
+                    <label class="tag-choice__box"><input type="checkbox">whip</label>
+                  </div>
+                </fieldset>
+                <fieldset class="tag-choice">
+                  <legend class="tag-choice__legend">Sans ces étiquettes</legend>
+                  <p class="tag-choice__help">Seuls les éléments étiquetés sont écartés : vérifie chaque étape.</p>
+                  <div class="tag-choice__boxes">
+                    <label class="tag-choice__box"><input type="checkbox">contrepoids</label>
+                    <label class="tag-choice__box"><input type="checkbox">dynamique</label>
+                    <label class="tag-choice__box"><input type="checkbox">icarien</label>
+                    <label class="tag-choice__box"><input type="checkbox">inversion</label>
+                    <label class="tag-choice__box"><input type="checkbox" disabled>lunaire <span class="tag-choice__state">(demandée)</span></label>
+                    <label class="tag-choice__box"><input type="checkbox">pop</label>
+                    <label class="tag-choice__box"><input type="checkbox">vrille</label>
+                    <label class="tag-choice__box"><input type="checkbox">whip</label>
+                  </div>
+                </fieldset>
+                <details class="tag-meanings">
+                  <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                </details>
+              </div>
+            </details>
+            <div class="form-actions"><button type="button" class="button button--primary">Générer un flow</button></div>
+          </form>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>« lunaire » demandée, « inversion » exclue, grand écran</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="generator">
+            <div class="generator__card">
+              <p class="mq-omitted">Titre, introduction, nombre de transitions, difficultés</p>
+              <form class="generator__form" style="margin-top: var(--afj-spacing-lg)">
+                <details class="criteria-fold" open>
+                  <summary class="criteria-fold__summary">Étiquettes (facultatives) <span class="criteria-fold__count">2 choisies</span><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                  <div class="criteria-fold__content">
+                    <fieldset class="tag-choice">
+                      <legend class="tag-choice__legend">Avec l'une de ces étiquettes</legend>
+                      <p class="tag-choice__help">Chaque étape portera l'une de ces étiquettes, sur la transition ou sur la pose d'arrivée.</p>
+                      <div class="tag-choice__boxes">
+                        <label class="tag-choice__box"><input type="checkbox">contrepoids</label>
+                        <label class="tag-choice__box"><input type="checkbox">dynamique</label>
+                        <label class="tag-choice__box"><input type="checkbox">icarien</label>
+                        <label class="tag-choice__box"><input type="checkbox" disabled>inversion <span class="tag-choice__state">(exclue)</span></label>
+                        <label class="tag-choice__box"><input type="checkbox" checked>lunaire</label>
+                        <label class="tag-choice__box"><input type="checkbox">pop</label>
+                        <label class="tag-choice__box"><input type="checkbox">vrille</label>
+                        <label class="tag-choice__box"><input type="checkbox">whip</label>
+                      </div>
+                    </fieldset>
+                    <fieldset class="tag-choice">
+                      <legend class="tag-choice__legend">Sans ces étiquettes</legend>
+                      <p class="tag-choice__help">Seuls les éléments étiquetés sont écartés : vérifie chaque étape.</p>
+                      <div class="tag-choice__boxes">
+                        <label class="tag-choice__box"><input type="checkbox">contrepoids</label>
+                        <label class="tag-choice__box"><input type="checkbox">dynamique</label>
+                        <label class="tag-choice__box"><input type="checkbox">icarien</label>
+                        <label class="tag-choice__box"><input type="checkbox" checked>inversion</label>
+                        <label class="tag-choice__box"><input type="checkbox" disabled>lunaire <span class="tag-choice__state">(demandée)</span></label>
+                        <label class="tag-choice__box"><input type="checkbox">pop</label>
+                        <label class="tag-choice__box"><input type="checkbox">vrille</label>
+                        <label class="tag-choice__box"><input type="checkbox">whip</label>
+                      </div>
+                    </fieldset>
+                    <details class="tag-meanings" open>
+                      <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                      <dl class="tag-meanings__list">
+                        <div><dt>inversion</dt><dd>La tête du flyer est plus basse que ses hanches, dans la pose ou à un moment de la transition. Ex. : Candlestick, Straddle Bat.</dd></div>
+                        <div><dt>lunaire</dt><dd>Pratique thérapeutique : le flyer, détendu et passif, se laisse porter et étirer par la base ; les passages se font lentement. Ex. : Folded Leaf, Straddle Bat.</dd></div>
+                      </dl>
+                    </details>
+                  </div>
+                </details>
+                <div class="form-actions"><button type="button" class="button button--primary">Générer un flow</button></div>
+              </form>
+            </div>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-states">
+  <h2 id="mq-states">3. Génération en cours et autres états du formulaire</h2>
+  <p>Pendant la génération, seul le libellé du bouton change (« Génération du flow… », <code>aria-disabled</code>, curseur d'attente). Incident réseau : alerte erreur avec « Réessayer ». Étiquette retirée : alerte information, repli rouvert. Étiquettes non chargées : note information à la place du repli.</p>
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Génération en cours, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <p class="mq-omitted">Lien, titre, introduction, nombre de transitions, difficultés (inchangés)</p>
+          <form class="generator__form" style="margin-top: var(--afj-spacing-lg)">
+            <details class="criteria-fold">
+              <summary class="criteria-fold__summary">Étiquettes (facultatives)<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+            </details>
+            <div class="form-actions"><button type="button" class="button button--primary" aria-disabled="true">Génération du flow…</button></div>
+          </form>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Incident réseau, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="generator">
+            <h1>Générer un flow</h1>
+            <p class="mq-omitted">Introduction</p>
+            <div class="form-alert" role="alert" style="margin-top: var(--afj-spacing-md)">
+              <svg class="icon" aria-hidden="true"><use href="#i-error"/></svg>
+              <div class="form-alert__content">
+                <p>Impossible de générer le flow. Vérifie ta connexion Internet, puis réessaie.</p>
+                <button type="button" class="button button--secondary">Réessayer</button>
+              </div>
+            </div>
+            <p class="mq-omitted" style="margin-top: var(--afj-spacing-md)">Critères saisis, conservés ; « Générer un flow »</p>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Étiquette retirée pendant la saisie, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="generator">
+            <h1>Générer un flow</h1>
+            <p class="mq-omitted">Introduction</p>
+            <div class="form-alert form-alert--info" role="alert" style="margin-top: var(--afj-spacing-md)">
+              <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+              <div class="form-alert__content">
+                <p>L'étiquette « vrille » n'est plus disponible. Vérifie tes étiquettes, puis génère de nouveau ton flow.</p>
+              </div>
+            </div>
+            <p class="mq-omitted" style="margin-top: var(--afj-spacing-md)">Nombre de transitions, difficultés ; repli « Étiquettes (facultatives) » ouvert, sans « vrille », « lunaire » toujours cochée</p>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Étiquettes non chargées, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <p class="mq-omitted">Lien, titre, introduction, nombre de transitions, difficultés</p>
+          <form class="generator__form" style="margin-top: var(--afj-spacing-lg)">
+            <p class="info-note"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><span>Les étiquettes n'ont pas pu être chargées : tu peux générer un flow sans étiquette.</span></p>
+            <div class="form-actions"><button type="button" class="button button--primary">Générer un flow</button></div>
+          </form>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <figure class="mq-frame mq-frame--wide">
+    <figcaption>Génération en cours, grand écran (bas de la carte)</figcaption>
+    <div class="mq-screen">
+      <main>
+        <div class="generator">
+          <div class="generator__card">
+            <p class="mq-omitted">Titre, introduction, nombre de transitions, difficultés</p>
+            <form class="generator__form" style="margin-top: var(--afj-spacing-lg)">
+              <details class="criteria-fold">
+                <summary class="criteria-fold__summary">Étiquettes (facultatives) <span class="criteria-fold__count">1 choisie</span><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+              </details>
+              <div class="form-actions"><button type="button" class="button button--primary" aria-disabled="true">Génération du flow…</button></div>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+  </figure>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-flow">
+  <h2 id="mq-flow">4. Flow de 3 étapes avec une washing machine</h2>
+  <p>Throne → Star → Star (Ninja Star, washing machine) → Folded Leaf, plafonds « Avancé » / « Avancé ». Les poses sont des stations sur un rail pointillé (lever au départ, coucher à l'arrivée) ; les transitions des cartes. Étiquettes de la transition dans la carte, celles de la pose sur sa station. Description repliée.</p>
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Flow généré, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><a class="button button--secondary" href="#">Se connecter</a></div>
+        </div></header>
+        <main>
+          <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+          <div class="flow-result">
+            <div class="flow-result__aside">
+              <h1 tabindex="-1">Ton flow</h1>
+              <p class="flow-result__summary">3 transitions, de Throne à Folded Leaf.</p>
+              <section class="criteria-recap" aria-labelledby="cr1">
+                <h2 id="cr1">Critères du flow</h2>
+                <dl>
+                  <div><dt>Nombre de transitions</dt><dd>3</dd></div>
+                  <div><dt><span class="role-dot role-dot--base" aria-hidden="true"></span>Difficulté base, au plus</dt><dd><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</dd></div>
+                  <div><dt><span class="role-dot role-dot--flyer" aria-hidden="true"></span>Difficulté flyer, au plus</dt><dd><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</dd></div>
+                </dl>
+              </section>
+              <div class="flow-result__actions">
+                <button type="button" class="button button--primary">Générer un autre flow</button>
+                <button type="button" class="button button--secondary button--wide">Modifier les critères</button>
+              </div>
+            </div>
+            <div class="flow-result__main">
+              <p class="safety-note"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Ce flow est tiré au hasard : il peut contenir des transitions que ton duo n'a jamais faites. Travaillez-les d'abord une par une, avec un spotter. Chacun peut dire stop à tout moment.</span></p>
+              <div class="flow-route">
+                <div class="flow-station flow-station--start">
+                  <svg class="icon flow-station__icon" aria-hidden="true"><use href="#i-rise"/></svg>
+                  <p class="flow-station__head"><span class="flow-station__lead">Départ :</span> <a class="flow-station__pose" href="#">Throne</a></p>
+                  <dl class="pose-card__details flow-station__details">
+                    <div class="pose-card__roles">
+                      <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                      <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                    </div>
+                  </dl>
+                </div>
+                <ol class="flow-path" role="list">
+                  <li class="flow-step">
+                    <section class="flow-step__card" aria-labelledby="s1a">
+                      <h2 class="flow-step__title" id="s1a"><span class="flow-step__number">Étape 1 ·</span> <span class="visually-hidden">Throne → Star</span><span class="flow-step__poses" aria-hidden="true"><span>Throne</span><svg class="icon--trajectory"><use href="#i-trajectory"/></svg><span>Star</span></span></h2>
+                      <dl class="pose-card__details">
+                        <div class="pose-card__roles">
+                          <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                          <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                        </div>
+                      </dl>
+                    </section>
+                    <div class="flow-station">
+                      <svg class="icon flow-station__icon" aria-hidden="true"><use href="#i-station"/></svg>
+                      <p class="flow-station__head"><span class="flow-station__lead">Vers</span> <a class="flow-station__pose" href="#">Star</a></p>
+                      <dl class="pose-card__details flow-station__details">
+                        <div class="pose-card__roles">
+                          <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                          <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                        </div>
+                      </dl>
+                    </div>
+                  </li>
+                  <li class="flow-step">
+                    <section class="flow-step__card" aria-labelledby="s2a">
+                      <h2 class="flow-step__title" id="s2a"><span class="flow-step__number">Étape 2 ·</span> Ninja Star</h2>
+                      <p class="flow-step__washing-machine"><svg class="icon--trajectory" aria-hidden="true"><use href="#i-loop"/></svg>washing machine</p>
+                      <dl class="pose-card__details">
+                        <div class="pose-card__roles">
+                          <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</dd></div>
+                          <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</dd></div>
+                        </div>
+                      </dl>
+                      <dl class="tag-line"><dt class="tag-line__term">Étiquettes</dt><dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">dynamique</li><li class="tag-pill">vrille</li></ul></dd></dl>
+                      <details class="tag-meanings flow-step__description">
+                        <summary class="tag-meanings__summary">Description<span class="visually-hidden"> de Ninja Star</span><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                        <p>Rotation complète, retour en Star.</p>
+                      </details>
+                    </section>
+                    <div class="flow-station">
+                      <svg class="icon flow-station__icon" aria-hidden="true"><use href="#i-station"/></svg>
+                      <p class="flow-station__head"><span class="flow-station__lead">Vers</span> <a class="flow-station__pose" href="#">Star</a> <span class="flow-station__same">(même pose)</span></p>
+                      <dl class="pose-card__details flow-station__details">
+                        <div class="pose-card__roles">
+                          <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                          <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                        </div>
+                      </dl>
+                    </div>
+                  </li>
+                  <li class="flow-step">
+                    <section class="flow-step__card" aria-labelledby="s3a">
+                      <h2 class="flow-step__title" id="s3a"><span class="flow-step__number">Étape 3 ·</span> <span class="visually-hidden">Star → Folded Leaf</span><span class="flow-step__poses" aria-hidden="true"><span>Star</span><svg class="icon--trajectory"><use href="#i-trajectory"/></svg><span>Folded Leaf</span></span></h2>
+                      <dl class="pose-card__details">
+                        <div class="pose-card__roles">
+                          <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                          <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                        </div>
+                      </dl>
+                      <dl class="tag-line"><dt class="tag-line__term">Étiquettes</dt><dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">lunaire</li></ul></dd></dl>
+                    </section>
+                    <div class="flow-station flow-station--end">
+                      <svg class="icon flow-station__icon" aria-hidden="true"><use href="#i-set"/></svg>
+                      <p class="flow-station__head"><span class="flow-station__lead">Vers</span> <a class="flow-station__pose" href="#">Folded Leaf</a></p>
+                      <dl class="pose-card__details flow-station__details">
+                        <div class="pose-card__roles">
+                          <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                          <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                        </div>
+                        <div class="tag-line"><dt class="tag-line__term">Étiquettes</dt><dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">inversion</li><li class="tag-pill">lunaire</li></ul></dd></div>
+                      </dl>
+                    </div>
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Flow généré, grand écran (≥ 1024 px) : colonne de pilotage à gauche, fil à droite</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><a class="button button--secondary" href="#">Se connecter</a></div>
+        </div></header>
+        <main>
+          <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+          <div class="flow-result">
+            <div class="flow-result__aside">
+              <h1 tabindex="-1">Ton flow</h1>
+              <p class="flow-result__summary">3 transitions, de Throne à Folded Leaf.</p>
+              <section class="criteria-recap" aria-labelledby="cr2">
+                <h2 id="cr2">Critères du flow</h2>
+                <dl>
+                  <div><dt>Nombre de transitions</dt><dd>3</dd></div>
+                  <div><dt><span class="role-dot role-dot--base" aria-hidden="true"></span>Difficulté base, au plus</dt><dd><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</dd></div>
+                  <div><dt><span class="role-dot role-dot--flyer" aria-hidden="true"></span>Difficulté flyer, au plus</dt><dd><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</dd></div>
+                </dl>
+              </section>
+              <div class="flow-result__actions">
+                <button type="button" class="button button--primary">Générer un autre flow</button>
+                <button type="button" class="button button--secondary button--wide">Modifier les critères</button>
+              </div>
+            </div>
+            <div class="flow-result__main">
+              <p class="safety-note"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Ce flow est tiré au hasard : il peut contenir des transitions que ton duo n'a jamais faites. Travaillez-les d'abord une par une, avec un spotter. Chacun peut dire stop à tout moment.</span></p>
+              <div class="flow-route">
+                <div class="flow-station flow-station--start">
+                  <svg class="icon flow-station__icon" aria-hidden="true"><use href="#i-rise"/></svg>
+                  <p class="flow-station__head"><span class="flow-station__lead">Départ :</span> <a class="flow-station__pose" href="#">Throne</a></p>
+                  <dl class="pose-card__details flow-station__details">
+                    <div class="pose-card__roles">
+                      <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                      <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                    </div>
+                  </dl>
+                </div>
+                <ol class="flow-path" role="list">
+                  <li class="flow-step">
+                    <section class="flow-step__card" aria-labelledby="s1b">
+                      <h2 class="flow-step__title" id="s1b"><span class="flow-step__number">Étape 1 ·</span> <span class="visually-hidden">Throne → Star</span><span class="flow-step__poses" aria-hidden="true"><span>Throne</span><svg class="icon--trajectory"><use href="#i-trajectory"/></svg><span>Star</span></span></h2>
+                      <dl class="pose-card__details">
+                        <div class="pose-card__roles">
+                          <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                          <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                        </div>
+                      </dl>
+                    </section>
+                    <div class="flow-station">
+                      <svg class="icon flow-station__icon" aria-hidden="true"><use href="#i-station"/></svg>
+                      <p class="flow-station__head"><span class="flow-station__lead">Vers</span> <a class="flow-station__pose" href="#">Star</a></p>
+                      <dl class="pose-card__details flow-station__details">
+                        <div class="pose-card__roles">
+                          <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                          <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                        </div>
+                      </dl>
+                    </div>
+                  </li>
+                  <li class="flow-step">
+                    <section class="flow-step__card" aria-labelledby="s2b">
+                      <h2 class="flow-step__title" id="s2b"><span class="flow-step__number">Étape 2 ·</span> Ninja Star</h2>
+                      <p class="flow-step__washing-machine"><svg class="icon--trajectory" aria-hidden="true"><use href="#i-loop"/></svg>washing machine</p>
+                      <dl class="pose-card__details">
+                        <div class="pose-card__roles">
+                          <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</dd></div>
+                          <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m4"/></svg>Avancé</dd></div>
+                        </div>
+                      </dl>
+                      <dl class="tag-line"><dt class="tag-line__term">Étiquettes</dt><dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">dynamique</li><li class="tag-pill">vrille</li></ul></dd></dl>
+                      <details class="tag-meanings flow-step__description" open>
+                        <summary class="tag-meanings__summary">Description<span class="visually-hidden"> de Ninja Star</span><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                        <p>Rotation complète, retour en Star.</p>
+                      </details>
+                    </section>
+                    <div class="flow-station">
+                      <svg class="icon flow-station__icon" aria-hidden="true"><use href="#i-station"/></svg>
+                      <p class="flow-station__head"><span class="flow-station__lead">Vers</span> <a class="flow-station__pose" href="#">Star</a> <span class="flow-station__same">(même pose)</span></p>
+                      <dl class="pose-card__details flow-station__details">
+                        <div class="pose-card__roles">
+                          <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                          <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                        </div>
+                      </dl>
+                    </div>
+                  </li>
+                  <li class="flow-step">
+                    <section class="flow-step__card" aria-labelledby="s3b">
+                      <h2 class="flow-step__title" id="s3b"><span class="flow-step__number">Étape 3 ·</span> <span class="visually-hidden">Star → Folded Leaf</span><span class="flow-step__poses" aria-hidden="true"><span>Star</span><svg class="icon--trajectory"><use href="#i-trajectory"/></svg><span>Folded Leaf</span></span></h2>
+                      <dl class="pose-card__details">
+                        <div class="pose-card__roles">
+                          <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                          <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                        </div>
+                      </dl>
+                      <dl class="tag-line"><dt class="tag-line__term">Étiquettes</dt><dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">lunaire</li></ul></dd></dl>
+                    </section>
+                    <div class="flow-station flow-station--end">
+                      <svg class="icon flow-station__icon" aria-hidden="true"><use href="#i-set"/></svg>
+                      <p class="flow-station__head"><span class="flow-station__lead">Vers</span> <a class="flow-station__pose" href="#">Folded Leaf</a></p>
+                      <dl class="pose-card__details flow-station__details">
+                        <div class="pose-card__roles">
+                          <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                          <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                        </div>
+                        <div class="tag-line"><dt class="tag-line__term">Étiquettes</dt><dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">inversion</li><li class="tag-pill">lunaire</li></ul></dd></div>
+                      </dl>
+                    </div>
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-same">
+  <h2 id="mq-same">5. Même flow ressorti</h2>
+  <p>Un seul flow possible (Throne → Bird). Alerte information entre le résumé et les critères ; le flow reste affiché tel quel.</p>
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Même flow ressorti, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+          <div class="flow-result">
+            <div class="flow-result__aside">
+              <h1 tabindex="-1">Ton flow</h1>
+              <p class="flow-result__summary">1 transition, de Throne à Bird.</p>
+              <div class="form-alert form-alert--info">
+                <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+                <div class="form-alert__content"><p>Le même flow est ressorti : avec ces critères, le catalogue offre peu de choix.</p></div>
+              </div>
+              <section class="criteria-recap" aria-labelledby="cr3">
+                <h2 id="cr3">Critères du flow</h2>
+                <dl>
+                  <div><dt>Nombre de transitions</dt><dd>1</dd></div>
+                  <div><dt><span class="role-dot role-dot--base" aria-hidden="true"></span>Difficulté base, au plus</dt><dd><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                  <div><dt><span class="role-dot role-dot--flyer" aria-hidden="true"></span>Difficulté flyer, au plus</dt><dd><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                </dl>
+              </section>
+              <div class="flow-result__actions">
+                <button type="button" class="button button--primary">Générer un autre flow</button>
+                <button type="button" class="button button--secondary button--wide">Modifier les critères</button>
+              </div>
+            </div>
+            <div class="flow-result__main">
+              <p class="mq-omitted">Rappel du spotter</p>
+              <div class="flow-route">
+                <div class="flow-station flow-station--start">
+                  <svg class="icon flow-station__icon" aria-hidden="true"><use href="#i-rise"/></svg>
+                  <p class="flow-station__head"><span class="flow-station__lead">Départ :</span> <a class="flow-station__pose" href="#">Throne</a></p>
+                  <dl class="pose-card__details flow-station__details"><div class="pose-card__roles">
+                    <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                    <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                  </div></dl>
+                </div>
+                <ol class="flow-path" role="list">
+                  <li class="flow-step">
+                    <section class="flow-step__card" aria-labelledby="s1c">
+                      <h2 class="flow-step__title" id="s1c"><span class="flow-step__number">Étape 1 ·</span> <span class="visually-hidden">Throne → Bird</span><span class="flow-step__poses" aria-hidden="true"><span>Throne</span><svg class="icon--trajectory"><use href="#i-trajectory"/></svg><span>Bird</span></span></h2>
+                      <dl class="pose-card__details"><div class="pose-card__roles">
+                        <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                        <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                      </div></dl>
+                    </section>
+                    <div class="flow-station flow-station--end">
+                      <svg class="icon flow-station__icon" aria-hidden="true"><use href="#i-set"/></svg>
+                      <p class="flow-station__head"><span class="flow-station__lead">Vers</span> <a class="flow-station__pose" href="#">Bird</a></p>
+                      <dl class="pose-card__details flow-station__details"><div class="pose-card__roles">
+                        <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                        <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                      </div></dl>
+                    </div>
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Même flow ressorti, grand écran ; « Générer un autre flow » de nouveau en cours</figcaption>
+      <div class="mq-screen">
+        <main>
+          <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+          <div class="flow-result">
+            <div class="flow-result__aside">
+              <h1 tabindex="-1">Ton flow</h1>
+              <p class="flow-result__summary">1 transition, de Throne à Bird.</p>
+              <div class="form-alert form-alert--info">
+                <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+                <div class="form-alert__content"><p>Le même flow est ressorti : avec ces critères, le catalogue offre peu de choix.</p></div>
+              </div>
+              <section class="criteria-recap" aria-labelledby="cr4">
+                <h2 id="cr4">Critères du flow</h2>
+                <dl>
+                  <div><dt>Nombre de transitions</dt><dd>1</dd></div>
+                  <div><dt><span class="role-dot role-dot--base" aria-hidden="true"></span>Difficulté base, au plus</dt><dd><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                  <div><dt><span class="role-dot role-dot--flyer" aria-hidden="true"></span>Difficulté flyer, au plus</dt><dd><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                </dl>
+              </section>
+              <div class="flow-result__actions">
+                <button type="button" class="button button--primary" aria-disabled="true">Génération du flow…</button>
+                <button type="button" class="button button--secondary button--wide">Modifier les critères</button>
+              </div>
+            </div>
+            <div class="flow-result__main">
+              <p class="safety-note"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Ce flow est tiré au hasard : il peut contenir des transitions que ton duo n'a jamais faites. Travaillez-les d'abord une par une, avec un spotter. Chacun peut dire stop à tout moment.</span></p>
+              <p class="mq-omitted">Fil du flow « Throne → Bird » (comme le cadre de gauche), toujours lisible pendant la génération</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-strict">
+  <h2 id="mq-strict">6. Critères trop restrictifs, avec pistes</h2>
+  <p>2 transitions, « Débutant » / « Débutant », sans « vrille » : les pistes « moins de transitions », « des plafonds de difficulté plus hauts » et « moins d'étiquettes exclues ». Pas de rouge : ce n'est pas une erreur. « Modifier les critères » est la seule action, donc primaire.</p>
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Critères trop restrictifs, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="generator">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+            <h1 style="margin-bottom: var(--afj-spacing-md)">Générer un flow</h1>
+            <section class="no-flow" aria-labelledby="nf1">
+              <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+              <h2 id="nf1" tabindex="-1">Critères trop restrictifs : impossible de générer un flow.</h2>
+              <section class="criteria-recap" aria-labelledby="cr5">
+                <h3 id="cr5" style="margin:0; font-size: var(--afj-font-size-sm)">Critères du flow</h3>
+                <dl>
+                  <div><dt>Nombre de transitions</dt><dd>2</dd></div>
+                  <div><dt><span class="role-dot role-dot--base" aria-hidden="true"></span>Difficulté base, au plus</dt><dd><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                  <div><dt><span class="role-dot role-dot--flyer" aria-hidden="true"></span>Difficulté flyer, au plus</dt><dd><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                  <div><dt>Sans ces étiquettes</dt><dd>vrille</dd></div>
+                </dl>
+              </section>
+              <p>Pour élargir le choix, essaie :</p>
+              <ul class="no-flow__tips">
+                <li>moins de transitions ;</li>
+                <li>des plafonds de difficulté plus hauts ;</li>
+                <li>moins d'étiquettes exclues.</li>
+              </ul>
+              <button type="button" class="button button--primary">Modifier les critères</button>
+            </section>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Critères trop restrictifs, « lunaire » demandée, grand écran</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="generator">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+            <h1 style="margin-bottom: var(--afj-spacing-md)">Générer un flow</h1>
+            <section class="no-flow" aria-labelledby="nf2">
+              <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+              <h2 id="nf2" tabindex="-1">Critères trop restrictifs : impossible de générer un flow.</h2>
+              <section class="criteria-recap" aria-labelledby="cr6">
+                <h3 id="cr6" style="margin:0; font-size: var(--afj-font-size-sm)">Critères du flow</h3>
+                <dl>
+                  <div><dt>Nombre de transitions</dt><dd>2</dd></div>
+                  <div><dt><span class="role-dot role-dot--base" aria-hidden="true"></span>Difficulté base, au plus</dt><dd><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                  <div><dt><span class="role-dot role-dot--flyer" aria-hidden="true"></span>Difficulté flyer, au plus</dt><dd><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                  <div><dt>Avec l'une de ces étiquettes</dt><dd>lunaire</dd></div>
+                </dl>
+              </section>
+              <p>Pour élargir le choix, essaie :</p>
+              <ul class="no-flow__tips">
+                <li>moins de transitions ;</li>
+                <li>des plafonds de difficulté plus hauts ;</li>
+                <li>plus d'étiquettes demandées, ou aucune.</li>
+              </ul>
+              <div><button type="button" class="button button--primary">Modifier les critères</button></div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-empty">
+  <h2 id="mq-empty">7. Catalogue insuffisant</h2>
+  <p>Ce n'est pas la faute des critères : pas de récapitulatif ni de pistes, un lien-bouton secondaire « Voir le catalogue » (comme la page « pose introuvable »).</p>
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Catalogue insuffisant, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="generator">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+            <h1 style="margin-bottom: var(--afj-spacing-md)">Générer un flow</h1>
+            <section class="no-flow" aria-labelledby="nf3">
+              <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+              <h2 id="nf3" tabindex="-1">Le catalogue ne permet pas encore de générer un flow.</h2>
+              <p>Il manque encore des poses ou des transitions pour former un enchaînement.</p>
+              <a class="button button--secondary link-button" href="#">Voir le catalogue</a>
+            </section>
+          </div>
+        </main>
+      </div>
+    </figure>
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Catalogue insuffisant, grand écran</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="generator">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+            <h1 style="margin-bottom: var(--afj-spacing-md)">Générer un flow</h1>
+            <section class="no-flow" aria-labelledby="nf4">
+              <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+              <h2 id="nf4" tabindex="-1">Le catalogue ne permet pas encore de générer un flow.</h2>
+              <p>Il manque encore des poses ou des transitions pour former un enchaînement.</p>
+              <div><a class="button button--secondary link-button" href="#">Voir le catalogue</a></div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<script>
+  // Bascule du thème de la maquette : par défaut celui du système, puis le choix explicite.
+  (function () {
+    var root = document.documentElement;
+    var media = window.matchMedia('(prefers-color-scheme: dark)');
+    var buttons = document.querySelectorAll('[data-theme-choice]');
+    function effective() { return root.getAttribute('data-theme') || (media.matches ? 'dark' : 'light'); }
+    function sync() {
+      var current = effective();
+      buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.themeChoice === current)); });
+    }
+    buttons.forEach(function (b) {
+      b.addEventListener('click', function () { root.setAttribute('data-theme', b.dataset.themeChoice); sync(); });
+    });
+    media.addEventListener('change', sync);
+    sync();
+  })();
+</script>
+</body>
+</html>

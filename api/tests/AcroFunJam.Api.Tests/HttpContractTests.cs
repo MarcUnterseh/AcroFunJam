@@ -205,6 +205,26 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
             .ShouldBe(["id", "otherPose", "name", "baseDifficulty", "flyerDifficulty", "description", "tags"], ignoreOrder: true);
     }
 
+    /// <summary>Story 9 (ADR 0037): anyone generates a flow, by a body of criteria; the flow names its poses and transitions.</summary>
+    [Fact]
+    public async Task OpenApiDocument_Should_DescribeTheGenerationOfAFlow_When_AnyoneGeneratesOne()
+    {
+        using var client = api.CreateClient();
+
+        var document = await client.GetFromJsonAsync<JsonElement>(new Uri("/openapi/v1.json", UriKind.Relative), Ct);
+        var operation = document.GetProperty("paths").GetProperty("/flow-generation/flows").GetProperty("post");
+        var schemas = document.GetProperty("components").GetProperty("schemas");
+        string?[] Required(string schema) =>
+            [.. schemas.GetProperty(schema).GetProperty("required").EnumerateArray().Select(p => p.GetString())];
+
+        HasBearerRequirement(operation).ShouldBeFalse();
+        operation.GetProperty("responses").EnumerateObject().Select(r => r.Name).ShouldBe(["200", "400", "409", "422"], ignoreOrder: true);
+        Required("GeneratedFlowResponse").ShouldBe(["start", "steps"], ignoreOrder: true);
+        Required("FlowStepResponse").ShouldBe(["number", "transition", "isWashingMachine", "arrival"], ignoreOrder: true);
+        Required("FlowPoseResponse").ShouldBe(["id", "name", "baseDifficulty", "flyerDifficulty", "tags"], ignoreOrder: true);
+        Required("FlowTransitionResponse").ShouldBe(["id", "name", "baseDifficulty", "flyerDifficulty", "description", "tags"], ignoreOrder: true);
+    }
+
     /// <summary>Story 6: « Mes propositions » is read at /contribution/my-proposals only, which replaces the endpoint of story 5.</summary>
     [Fact]
     public async Task OpenApiDocument_Should_NoLongerDescribeMyPoseProposals_When_MyProposalsReplacesIt()

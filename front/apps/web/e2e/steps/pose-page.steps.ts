@@ -57,8 +57,8 @@ Given('les transitions publiées suivantes dans le catalogue :', async ({ catalo
       from: row['pose de départ'] ?? '',
       to: row["pose d'arrivée"] ?? '',
       name: row['nom'] ?? null,
-      base: row['difficulté base'] ?? '',
-      flyer: row['difficulté flyer'] ?? '',
+      base: row['difficulté base'] ?? 'débutant',
+      flyer: row['difficulté flyer'] ?? 'débutant',
       description: row['description'] ?? null,
     });
 });
@@ -241,8 +241,9 @@ Then(
   },
 );
 
-Then('le site présente les poses du catalogue', async ({ page, catalogPage }) => {
+Then('le site présente les poses du catalogue', async ({ page, catalogPage, catalogApi }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Catalogue des poses' })).toBeVisible();
-  await expect(catalogPage.poseList).toBeVisible();
+  // Story 9: an empty catalog has no list, only its empty state.
+  if (catalogApi.publishedCount > 0) await expect(catalogPage.poseList).toBeVisible();
   expect(new URL(page.url()).pathname).toBe('/');
 });

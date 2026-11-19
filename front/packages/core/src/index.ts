@@ -63,3 +63,8 @@ export * from './application/catalog/tag-pose';
 export * from './application/catalog/tag-choices';
 export type * from './application/catalog/PoseTaggingGateway';
 export * from './presentation/catalog/tag-labels';
+export * from './domain/flow-generation/flow-criteria';
+export * from './domain/flow-generation/generated-flow';
+export type * from './application/flow-generation/FlowGenerationGateway';
+export * from './application/flow-generation/generate-flow';
+export * from './presentation/flow-generation/flow-generation-labels';

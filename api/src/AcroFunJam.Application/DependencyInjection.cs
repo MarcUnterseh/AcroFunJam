@@ -7,6 +7,8 @@ using AcroFunJam.Application.Catalog.SeedInitialTagList;
 using AcroFunJam.Application.Catalog.TagPose;
 using AcroFunJam.Application.Catalog.TagTransition;
 using AcroFunJam.Application.Catalog.GetTagNames;
+using AcroFunJam.Application.Catalog.GetPublishedGraph;
+using AcroFunJam.Application.FlowGeneration.GenerateFlow;
 using AcroFunJam.Application.Catalog.ChooseTags;
 using AcroFunJam.Application.Contribution.GetPendingPoseProposalsCarryingTag;
 using AcroFunJam.Application.Contribution.GetPendingPoseRevisionsCarryingTag;
@@ -86,6 +88,8 @@ public static class DependencyInjection
         services.AddScoped<ICommandHandler<TagTransition, TagSet>, TagTransitionHandler>();
         services.AddScoped<ICommandHandler<TagPose, TagSet>, TagPoseHandler>();
         services.AddScoped<IQueryHandler<GetTagNames, IReadOnlyList<NamedTag>>, GetTagNamesHandler>();
+        services.AddScoped<IQueryHandler<GetPublishedGraph, PublishedCatalogGraph>, GetPublishedGraphHandler>();
+        services.AddScoped<IQueryHandler<GenerateFlow, GeneratedFlow>, GenerateFlowHandler>();
         services.AddScoped<IQueryHandler<ChooseTags, TagChoice>, ChooseTagsHandler>();
         services.AddScoped<IQueryHandler<GetPendingTransitionProposalsCarryingTag, IReadOnlyList<TransitionProposal>>,
             GetPendingTransitionProposalsCarryingTagHandler>();

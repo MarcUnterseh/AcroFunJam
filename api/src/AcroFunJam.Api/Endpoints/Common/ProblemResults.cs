@@ -1,6 +1,7 @@
 using AcroFunJam.Domain.Catalog;
 using AcroFunJam.Domain.Common;
 using AcroFunJam.Domain.Contribution;
+using AcroFunJam.Domain.FlowGeneration;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AcroFunJam.Api.Endpoints.Common;
@@ -81,6 +82,12 @@ public static class ProblemResults
         ["catalog.tag-scope-exceeds-implied"] = StatusCodes.Status409Conflict,
         ["catalog.tag-scope-needed-by-impliers"] = StatusCodes.Status409Conflict,
         ["catalog.pose-revision-pending"] = StatusCodes.Status409Conflict,
+        // Story 9 (ADR 0037): the criteria of a generation; « too restrictive » and « catalog insufficient » are business rules (422).
+        ["flow-generation.length-required"] = StatusCodes.Status400BadRequest,
+        ["flow-generation.length-out-of-range"] = StatusCodes.Status400BadRequest,
+        ["flow-generation.base-difficulty-ceiling-required"] = StatusCodes.Status400BadRequest,
+        ["flow-generation.flyer-difficulty-ceiling-required"] = StatusCodes.Status400BadRequest,
+        ["flow-generation.tag-not-in-list"] = StatusCodes.Status409Conflict,
     };
 
     /// <summary>
@@ -106,6 +113,7 @@ public static class ProblemResults
     private static Dictionary<string, object?>? ExtensionsOf(Error error) => error switch
     {
         TagNotInListError notInList => new() { ["tagIds"] = notInList.Tags.Ids.Select(t => t.Value).ToList() },
+        TagsNotInListError notInList => new() { ["tagIds"] = notInList.Tags.Ids.Select(t => t.Value).ToList() },
         ProposedTagsNotInListError notInList => new() { ["tagIds"] = notInList.Tags.Ids.Select(t => t.Value).ToList() },
         TagNotApplicableError notApplicable => new() { ["tagIds"] = notApplicable.Tags.Ids.Select(t => t.Value).ToList() },
         ProposedTagsNotApplicableError notApplicable => new() { ["tagIds"] = notApplicable.Tags.Ids.Select(t => t.Value).ToList() },
