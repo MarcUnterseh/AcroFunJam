@@ -21,7 +21,10 @@ public sealed class EfPublishedPosesReader(AcroFunJamDbContext context) : IPubli
             Valid(PoseName.Create(record.Name), $"name '{record.Name}'"),
             ToDifficultyLevel(record.BaseDifficulty),
             ToDifficultyLevel(record.FlyerDifficulty),
-            Valid(FlowBoundaries.Create(record.CanStartFlow, record.CanEndFlow), "flow indicators"));
+            Valid(FlowBoundaries.Create(record.CanStartFlow, record.CanEndFlow), "flow indicators"))
+        {
+            Tags = TagSet.Of(record.TagIds.Select(t => new TagId(t))),
+        };
 
     /// <summary>Stored data always met the rules when written: breaking them now is a bug, reported as such.</summary>
     private static T Valid<T>(Result<T> value, string what) =>

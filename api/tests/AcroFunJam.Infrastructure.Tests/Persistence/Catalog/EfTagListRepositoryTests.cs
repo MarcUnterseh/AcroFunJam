@@ -64,15 +64,16 @@ public sealed class EfTagListRepositoryTests(PostgreSqlFixture database) : IClas
     [Fact]
     public async Task Add_Should_StoreTheSeededListWithItsImplications_When_Saved()
     {
-        var seeded = TagList.Seed(InitialTagList.Tags, NewId, Now);
+        var seeded = TagList.Seed(InitialTagList.Current, NewId, Now);
 
         (await Store(seeded)).IsSuccess.ShouldBeTrue();
         seeded.DomainEvents.ShouldBeEmpty();
 
         var stored = (await Stored()).ShouldNotBeNull();
         stored.SeededAt.ShouldBe(Now);
-        stored.Tags.Select(t => (t.Id, t.Name, t.Description, t.ImpliedTag))
-            .ShouldBe(seeded.Tags.Select(t => (t.Id, t.Name, t.Description, t.ImpliedTag)));
+        stored.SeedRevision.ShouldBe(InitialTagList.Current.Number);
+        stored.Tags.Select(t => (t.Id, t.Name, t.Description, t.ImpliedTag, t.Scope))
+            .ShouldBe(seeded.Tags.Select(t => (t.Id, t.Name, t.Description, t.ImpliedTag, t.Scope)));
     }
 
     [Fact]
@@ -82,13 +83,13 @@ public sealed class EfTagListRepositoryTests(PostgreSqlFixture database) : IClas
         var lunaire = NewId();
         var vrille = NewId();
         var list = TagList.Empty();
-        list.Add(pop, Name("pop"), Description("Le flyer décolle."), Now);
-        list.Add(lunaire, Name("lunnaire"), Description("Pratique thérapeutique."), Now);
+        list.Add(pop, Name("pop"), Description("Le flyer décolle."), TagScope.Transitions, Now);
+        list.Add(lunaire, Name("lunnaire"), Description("Pratique thérapeutique."), TagScope.Transitions, Now);
         (await Store(list)).IsSuccess.ShouldBeTrue();
 
         (await Change(l =>
         {
-            l.Add(vrille, Name("vrille"), Description("Le flyer tourne sur lui-même."), Now);
+            l.Add(vrille, Name("vrille"), Description("Le flyer tourne sur lui-même."), TagScope.Transitions, Now);
             l.Rename(lunaire, Name("lunaire"), Now);
             l.Describe(pop, Description("La base propulse le flyer."), Now);
         })).IsSuccess.ShouldBeTrue();
@@ -115,8 +116,8 @@ public sealed class EfTagListRepositoryTests(PostgreSqlFixture database) : IClas
         var secondRepository = new EfTagListRepository(second, secondAggregates);
         var firstList = (await firstRepository.Get(Ct))!;
         var secondList = (await secondRepository.Get(Ct))!;
-        firstList.Add(NewId(), Name("pop"), Description("D."), Now);
-        secondList.Add(NewId(), Name("POP"), Description("D."), Now);
+        firstList.Add(NewId(), Name("pop"), Description("D."), TagScope.Transitions, Now);
+        secondList.Add(NewId(), Name("POP"), Description("D."), TagScope.Transitions, Now);
         firstRepository.Update(firstList);
         secondRepository.Update(secondList);
 
@@ -129,12 +130,39 @@ public sealed class EfTagListRepositoryTests(PostgreSqlFixture database) : IClas
     {
         var vrille = NewId();
         var list = TagList.Empty();
-        list.Add(vrille, Name("vrille"), Description("D."), Now);
+        list.Add(vrille, Name("vrille"), Description("D."), TagScope.Transitions, Now);
         (await Store(list)).IsSuccess.ShouldBeTrue();
         (await Change(l => l.Remove(vrille, Now))).IsSuccess.ShouldBeTrue();
 
-        (await Change(l => l.Add(NewId(), Name("vrille"), Description("D."), Now))).IsSuccess.ShouldBeTrue();
+        (await Change(l => l.Add(NewId(), Name("vrille"), Description("D."), TagScope.Transitions, Now))).IsSuccess.ShouldBeTrue();
 
         (await Stored())!.AllTags.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task Update_Should_StoreTheScopesAndTheRevision_When_TheListIsUpgraded()
+    {
+        (await Store(TagList.Seed(InitialTagList.Revision(1), NewId, Now))).IsSuccess.ShouldBeTrue();
+
+        (await Change(l => l.Upgrade(InitialTagList.Current, Now))).IsSuccess.ShouldBeTrue();
+
+        var stored = (await Stored()).ShouldNotBeNull();
+        stored.SeedRevision.ShouldBe(InitialTagList.Current.Number);
+        stored.Tags.Single(t => t.Name.Value == "lunaire").Scope.ShouldBe(TagScope.PosesAndTransitions);
+        stored.Tags.Single(t => t.Name.Value == "lunaire").Description
+            .ShouldBe(InitialTagList.Current.Tags.Single(t => t.Name.Value == "lunaire").Description);
+    }
+
+    [Fact]
+    public async Task Update_Should_StoreAChangedScope_When_Saved()
+    {
+        var vrille = NewId();
+        var list = TagList.Empty();
+        list.Add(vrille, Name("vrille"), Description("D."), TagScope.Transitions, Now);
+        (await Store(list)).IsSuccess.ShouldBeTrue();
+
+        (await Change(l => l.ChangeScope(vrille, TagScope.Poses, TagCarriers.None, Now))).IsSuccess.ShouldBeTrue();
+
+        (await Stored())!.Tags.Single().Scope.ShouldBe(TagScope.Poses);
     }
 }

@@ -12,7 +12,8 @@ internal sealed class ProposePoseHandler(
     ICatalogPublisher catalogPublisher,
     IPoseReservation nameReservation,
     IUnitOfWork unitOfWork,
-    TimeProvider clock) : ICommandHandler<ProposePose, PoseProposalDto>
+    TimeProvider clock,
+    ICatalogTags catalogTags) : ICommandHandler<ProposePose, PoseProposalDto>
 {
     public async Task<Result<PoseProposalDto>> Handle(ProposePose command, CancellationToken ct)
     {
@@ -30,8 +31,10 @@ internal sealed class ProposePoseHandler(
                 publishedInCatalog: published.Value,
                 pendingProposal: await proposals.ExistsPendingWithNameKey(key, transactionCt)
                     || await revisions.ExistsPendingWithReservedNameKey(key, transactionCt));
+            // Story 9a: the tags, chosen for a pose by the list of the Catalog, inside the reservation (ADR 0036).
+            var tags = command.Tags is null ? null : await catalogTags.ChooseForPose(command.Tags, transactionCt);
             var submitted = PoseProposal.Submit(
-                new PoseProposalId(Guid.CreateVersion7()), contributor, command.Pose, availability, clock.GetUtcNow());
+                new PoseProposalId(Guid.CreateVersion7()), contributor, command.Pose, availability, clock.GetUtcNow(), tags);
             if (submitted.IsFailure) return submitted.Error!;
 
             var proposal = submitted.Value!;

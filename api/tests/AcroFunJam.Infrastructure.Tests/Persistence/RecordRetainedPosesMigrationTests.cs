@@ -65,9 +65,9 @@ public sealed class RecordRetainedPosesMigrationTests(PostgreSqlFixture database
             INSERT INTO contribution.pose_proposals
                 (id, contributor_id, name, name_key, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow, status, submitted_at,
                  decided_by, decided_at, retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow,
-                 retained_can_end_flow, adjustment_note)
+                 retained_can_end_flow, adjustment_note, retained_tag_ids)
             VALUES ({adjusted}, {validator}, 'Thron', 'thron', 'beginner', 'discovery', true, true, 'accepted', {at},
-                    {validator}, {at}, 'Throne', 'beginner', 'discovery', true, true, NULL)
+                    {validator}, {at}, 'Throne', 'beginner', 'discovery', true, true, NULL, ARRAY[]::uuid[])
             """, Ct);
 
         try

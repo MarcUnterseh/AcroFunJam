@@ -14,7 +14,8 @@ internal sealed class ProposePoseRevisionHandler(
     IPoseReservation nameReservation,
     ICatalogPublisher catalogPublisher,
     IUnitOfWork unitOfWork,
-    TimeProvider clock) : ICommandHandler<ProposePoseRevision, PoseRevisionProposalDto>
+    TimeProvider clock,
+    ICatalogTags catalogTags) : ICommandHandler<ProposePoseRevision, PoseRevisionProposalDto>
 {
     public async Task<Result<PoseRevisionProposalDto>> Handle(ProposePoseRevision command, CancellationToken ct)
     {
@@ -38,7 +39,9 @@ internal sealed class ProposePoseRevisionHandler(
                 ? Result<NameAvailability>.Success(NameAvailability.Available)
                 : await NameAvailabilityOf(reservedKey, transactionCt);
             if (availability.IsFailure) return availability.Error!;
-            return await Submit(contributor, pose, command, alreadyPending, availability.Value, transactionCt);
+            // Story 9a: the tags, chosen for a pose by the list of the Catalog, inside the reservation (ADR 0036).
+            var changes = command.Tags is null ? command.Changes : command.Changes.Tagged(await catalogTags.ChooseForPose(command.Tags, transactionCt));
+            return await Submit(contributor, pose, command with { Changes = changes }, alreadyPending, availability.Value, transactionCt);
         }, ct);
     }
 

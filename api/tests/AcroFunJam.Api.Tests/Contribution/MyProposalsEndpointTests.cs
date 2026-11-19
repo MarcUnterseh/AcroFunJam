@@ -226,7 +226,7 @@ public sealed class MyProposalsEndpointTests(ApiWithDatabase api) : IClassFixtur
             () => proposal.EnumerateObject().Select(member => member.Name).ShouldBe(
                 [
                     "kind", "id", "status", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "submittedAt",
-                    "decidedAt", "adjustments", "message", "reason",
+                    "decidedAt", "adjustments", "message", "reason", "tags",
                 ],
                 ignoreOrder: true),
             () => json.ShouldNotContain(brunoEmail, Case.Insensitive),

@@ -8,6 +8,14 @@ Story 8. Choix **multiple et facultatif** des étiquettes d'une transition, parm
 
 Écran : `../ecrans/8-etiquettes.md`. Maquette : `../maquettes/8-etiquettes.html`. Aucun nouveau token.
 
+**Story 9a** (`../ecrans/9a-etiquettes-des-poses.md`), même rendu, pastilles limitées aux étiquettes **applicables aux poses** :
+
+4. formulaire « Proposer une pose », **après les questions de flow**, avant le bouton : legend « Étiquettes (facultatives) », aide « Choisis celles qui décrivent la pose. » ; groupe absent si aucune étiquette ne s'applique aux poses ;
+5. formulaire « Proposer une modification », après les questions de flow, avant le message : legend « Étiquettes » + marque « Modifiée » (`marque-modifiee.md`) quand l'ensemble coché diffère de l'actuel, rappel « Actuellement : lunaire » / « Actuellement : aucune » à la place de l'aide (même rendu que les rappels des autres groupes : `size.sm`, `textMuted`, marge basse `spacing.sm`) ; cochées = étiquettes actuelles à l'ouverture ;
+6. zone « Étiquettes de la pose » (`zone-etiqueter.md`, « Variante pose ») et zone d'ajustement d'une proposition ou d'une modification de pose (rappel « Proposées : … »).
+
+Pas de note « dynamique » sur une pose : aucune implication ne s'applique aux poses à l'amorçage (« dynamique » et ses impliquantes ne s'appliquent qu'aux transitions).
+
 ## Structure
 
 ```

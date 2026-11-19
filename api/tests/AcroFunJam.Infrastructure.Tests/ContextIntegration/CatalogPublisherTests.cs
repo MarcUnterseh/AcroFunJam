@@ -71,7 +71,11 @@ public sealed class CatalogPublisherTests
 
         result.IsSuccess.ShouldBeTrue();
         catalog.Received.ShouldHaveSingleItem().ShouldBe(
-            new RevisePose(new PoseId(pose.Value), Throne.Name, Throne.Difficulty, Throne.Flow, PoseVersion.Of(4), new SourceProposalId(source.Value)));
+            new RevisePose(new PoseId(pose.Value), Throne.Name, Throne.Difficulty, Throne.Flow, PoseVersion.Of(4), new SourceProposalId(source.Value))
+            {
+                // Story 9a: the retained tags, chosen again by the list of the Catalog (ADR 0036).
+                Tags = Throne.Tags,
+            });
     }
 
     [Theory]

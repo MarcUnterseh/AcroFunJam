@@ -18,7 +18,7 @@ public sealed class TagListTests
     {
         var list = TagList.Empty();
         var id = NewId();
-        list.Add(id, Name(name), Description($"Ce que veut dire {name}."), Now);
+        list.Add(id, Name(name), Description($"Ce que veut dire {name}."), TagScope.Transitions, Now);
         list.ClearDomainEvents();
         return (list, id);
     }
@@ -30,10 +30,11 @@ public sealed class TagListTests
     [Fact]
     public void Seed_Should_PresentTheInitialTagsInCatalogOrder_When_TheListIsSeeded()
     {
-        var list = TagList.Seed(InitialTagList.Tags, NewId, Now);
+        var list = TagList.Seed(InitialTagList.Current, NewId, Now);
 
         list.Tags.Select(t => t.Name.Value).ShouldBe(["dynamique", "icarien", "inversion", "lunaire", "pop", "vrille", "whip"]);
-        list.Tags.Single(t => t.Name.Value == "inversion").Description.Value.ShouldBe("Le flyer passe la tête en bas pendant la transition.");
+        list.Tags.Single(t => t.Name.Value == "inversion").Description.Value.ShouldBe(
+            "La tête du flyer est plus basse que ses hanches, dans la pose ou à un moment de la transition. Ex. : Candlestick, Straddle Bat.");
         list.SeededAt.ShouldBe(Now);
         list.DomainEvents.ShouldHaveSingleItem().ShouldBe(new TagListSeeded(TagListId.Catalog, Now));
     }
@@ -41,7 +42,7 @@ public sealed class TagListTests
     [Fact]
     public void Seed_Should_MakePopWhipAndIcarianImplyDynamic_When_TheListIsSeeded()
     {
-        var list = TagList.Seed(InitialTagList.Tags, NewId, Now);
+        var list = TagList.Seed(InitialTagList.Current, NewId, Now);
         var dynamic = IdOf(list, "dynamique");
 
         list.Tags.Where(t => t.ImpliedTag == dynamic).Select(t => t.Name.Value).ShouldBe(["icarien", "pop", "whip"]);
@@ -66,7 +67,7 @@ public sealed class TagListTests
         var list = TagList.Empty();
         var id = NewId();
 
-        var tag = list.Add(id, Name("vrille"), Description("Le flyer tourne sur lui-même."), Now).Value!;
+        var tag = list.Add(id, Name("vrille"), Description("Le flyer tourne sur lui-même."), TagScope.Transitions, Now).Value!;
 
         tag.ShouldSatisfyAllConditions(
             t => t.Id.ShouldBe(id),
@@ -75,16 +76,16 @@ public sealed class TagListTests
             t => t.ImpliedTag.ShouldBeNull(),
             t => t.RemovedAt.ShouldBeNull());
         list.Tags.ShouldHaveSingleItem().ShouldBe(tag);
-        list.DomainEvents.ShouldHaveSingleItem().ShouldBe(new TagAdded(id, Name("vrille"), Now));
+        list.DomainEvents.ShouldHaveSingleItem().ShouldBe(new TagAdded(id, Name("vrille"), TagScope.Transitions, Now));
     }
 
     [Fact]
     public void Tags_Should_BeInCatalogOrder_When_AddedInAnotherOrder()
     {
         var list = TagList.Empty();
-        list.Add(NewId(), Name("whip"), Description("D."), Now);
-        list.Add(NewId(), Name("Inversion"), Description("D."), Now);
-        list.Add(NewId(), Name("dynamique"), Description("D."), Now);
+        list.Add(NewId(), Name("whip"), Description("D."), TagScope.Transitions, Now);
+        list.Add(NewId(), Name("Inversion"), Description("D."), TagScope.Transitions, Now);
+        list.Add(NewId(), Name("dynamique"), Description("D."), TagScope.Transitions, Now);
 
         list.Tags.Select(t => t.Name.Value).ShouldBe(["dynamique", "Inversion", "whip"]);
     }
@@ -97,7 +98,7 @@ public sealed class TagListTests
     {
         var (list, _) = ListWith(existing);
 
-        list.Add(NewId(), Name(added), Description("D."), Now).Error.ShouldBe(CatalogErrors.TagNameTaken);
+        list.Add(NewId(), Name(added), Description("D."), TagScope.Transitions, Now).Error.ShouldBe(CatalogErrors.TagNameTaken);
         list.Tags.ShouldHaveSingleItem();
         list.DomainEvents.ShouldBeEmpty();
     }
@@ -126,7 +127,7 @@ public sealed class TagListTests
     public void Rename_Should_FailWithTagNameTaken_When_AnotherTagHasTheSameKey()
     {
         var (list, pop) = ListWith("pop");
-        list.Add(NewId(), Name("whip"), Description("D."), Now);
+        list.Add(NewId(), Name("whip"), Description("D."), TagScope.Transitions, Now);
 
         list.Rename(pop, Name("Whip"), Now).Error.ShouldBe(CatalogErrors.TagNameTaken);
         list.Tags.Select(t => t.Name.Value).ShouldBe(["pop", "whip"]);
@@ -182,7 +183,7 @@ public sealed class TagListTests
         var (list, removed) = ListWith("vrille");
         list.Remove(removed, Now);
 
-        list.Add(NewId(), Name("vrille"), Description("D."), Now).IsSuccess.ShouldBeTrue();
+        list.Add(NewId(), Name("vrille"), Description("D."), TagScope.Transitions, Now).IsSuccess.ShouldBeTrue();
     }
 
     [Fact]
@@ -198,7 +199,7 @@ public sealed class TagListTests
     [Fact]
     public void Remove_Should_FailWithTagImplied_When_ATagOfTheListImpliesIt()
     {
-        var list = TagList.Seed(InitialTagList.Tags, NewId, Now);
+        var list = TagList.Seed(InitialTagList.Current, NewId, Now);
         var dynamic = IdOf(list, "dynamique");
 
         list.Remove(dynamic, Now).Error.ShouldBe(CatalogErrors.TagImplied);
@@ -208,7 +209,7 @@ public sealed class TagListTests
     [Fact]
     public void Remove_Should_BeAllowed_When_TheTagsThatImplyItHaveBeenRemoved()
     {
-        var list = TagList.Seed(InitialTagList.Tags, NewId, Now);
+        var list = TagList.Seed(InitialTagList.Current, NewId, Now);
         list.Remove(IdOf(list, "pop"), Now);
         list.Remove(IdOf(list, "whip"), Now);
         list.Remove(IdOf(list, "icarien"), Now);
@@ -221,10 +222,10 @@ public sealed class TagListTests
     [Fact]
     public void Rehydrate_Should_RestoreTheListWithoutEvents_When_LoadedFromStorage()
     {
-        var removed = Tag.Rehydrate(NewId(), Name("vrille"), Description("D."), null, Now);
-        var kept = Tag.Rehydrate(NewId(), Name("pop"), Description("D."), null, null);
+        var removed = Tag.Rehydrate(NewId(), Name("vrille"), Description("D."), null, TagScope.Transitions, Now);
+        var kept = Tag.Rehydrate(NewId(), Name("pop"), Description("D."), null, TagScope.PosesAndTransitions, null);
 
-        var list = TagList.Rehydrate(Now, [removed, kept]);
+        var list = TagList.Rehydrate(Now, 2, [removed, kept]);
 
         list.Tags.ShouldHaveSingleItem().ShouldBe(kept);
         list.AllTags.Count.ShouldBe(2);
@@ -237,9 +238,9 @@ public sealed class TagListTests
     [Fact]
     public void Choose_Should_AddTheTagsTheyImply_When_PopIsChosen()
     {
-        var list = TagList.Seed(InitialTagList.Tags, NewId, Now);
+        var list = TagList.Seed(InitialTagList.Current, NewId, Now);
 
-        var choice = list.Choose([IdOf(list, "pop"), IdOf(list, "inversion")]);
+        var choice = list.Choose([IdOf(list, "pop"), IdOf(list, "inversion")], TagTarget.Transition);
 
         choice.Tags.ShouldBe(TagSet.Of([IdOf(list, "pop"), IdOf(list, "inversion"), IdOf(list, "dynamique")]));
         choice.NotInList.ShouldBe(TagSet.Empty);
@@ -253,7 +254,7 @@ public sealed class TagListTests
         list.Remove(vrille, Now);
         var unknown = NewId();
 
-        var choice = list.Choose([vrille, unknown]);
+        var choice = list.Choose([vrille, unknown], TagTarget.Transition);
 
         choice.Tags.ShouldBe(TagSet.Empty);
         choice.NotInList.ShouldBe(TagSet.Of([vrille, unknown]));
@@ -263,10 +264,10 @@ public sealed class TagListTests
     [Fact]
     public void Choose_Should_GiveTheSameSet_When_AnAlreadyCompletedSetIsChosenAgain()
     {
-        var list = TagList.Seed(InitialTagList.Tags, NewId, Now);
-        var once = list.Choose([IdOf(list, "whip")]);
+        var list = TagList.Seed(InitialTagList.Current, NewId, Now);
+        var once = list.Choose([IdOf(list, "whip")], TagTarget.Transition);
 
-        list.Choose(once.Tags.Ids).Tags.ShouldBe(once.Tags);
+        list.Choose(once.Tags.Ids, TagTarget.Transition).Tags.ShouldBe(once.Tags);
     }
 
     [Fact]
@@ -275,7 +276,7 @@ public sealed class TagListTests
         var (list, lunaire) = ListWith("lunnaire");
         list.Rename(lunaire, Name("lunaire"), Now);
         var vrille = NewId();
-        list.Add(vrille, Name("vrille"), Description("D."), Now);
+        list.Add(vrille, Name("vrille"), Description("D."), TagScope.Transitions, Now);
         list.Remove(vrille, Now);
 
         list.NamesOf(TagSet.Of([lunaire, vrille, NewId()])).ShouldBe(
@@ -307,7 +308,7 @@ public sealed class TagListTests
     [Fact]
     public void Remove_Should_TellTheImplicationFirst_When_TheTagIsBothImpliedAndCarried()
     {
-        var list = TagList.Seed(InitialTagList.Tags, NewId, Now);
+        var list = TagList.Seed(InitialTagList.Current, NewId, Now);
 
         list.Remove(IdOf(list, "dynamique"), Now, new TagCarriers([Carrying("Throne", "Bird")], [])).Error.ShouldBe(CatalogErrors.TagImplied);
     }

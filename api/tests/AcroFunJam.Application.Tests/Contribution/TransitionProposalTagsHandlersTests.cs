@@ -134,6 +134,18 @@ internal sealed class FakeCatalogTags(FakeTransitionReservation? reservation, pa
         return Task.FromResult(new TagChoice(TagSet.Of(known.Concat(implied)), TagSet.Of(tags.Where(t => list.All(l => l.Tag != t)))));
     }
 
+    /// <summary>The tags of the list that apply to the poses (story 9a); the others do not.</summary>
+    public HashSet<TagId> PoseTags { get; } = [];
+
+    public Task<TagChoice> ChooseForPose(IReadOnlyCollection<TagId> tags, CancellationToken ct)
+    {
+        var known = tags.Where(t => list.Any(l => l.Tag == t)).ToList();
+        return Task.FromResult(new TagChoice(
+            TagSet.Of(known.Where(PoseTags.Contains)),
+            TagSet.Of(tags.Where(t => list.All(l => l.Tag != t))),
+            TagSet.Of(known.Where(t => !PoseTags.Contains(t)))));
+    }
+
     public Task<IReadOnlyDictionary<TagId, TagName>> NamesOf(TagSet tags, CancellationToken ct) =>
         Task.FromResult<IReadOnlyDictionary<TagId, TagName>>(Names.Where(n => tags.Contains(n.Key)).ToDictionary());
 }

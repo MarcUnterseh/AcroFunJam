@@ -1,3 +1,4 @@
+using AcroFunJam.Domain.SharedKernel;
 using AcroFunJam.Domain.Contribution;
 
 namespace AcroFunJam.Application.Contribution.ProposePoseRevision;
@@ -7,7 +8,11 @@ namespace AcroFunJam.Application.Contribution.ProposePoseRevision;
 /// or published directly for a validator.
 /// </summary>
 public sealed record ProposePoseRevision(
-    ContributorId Contributor, PublishedPoseId Pose, PublishedPoseVersion StartedFrom, PoseChanges Changes, RevisionMessage? Message = null);
+    ContributorId Contributor, PublishedPoseId Pose, PublishedPoseVersion StartedFrom, PoseChanges Changes, RevisionMessage? Message = null)
+{
+    /// <summary>The tags of the revised pose, by identifier (story 9a, Q172); none keeps those of the pose, empty removes them.</summary>
+    public IReadOnlyCollection<TagId>? Tags { get; init; }
+}
 
 /// <summary>The received revision proposal: its identifier, its status and the pose as revised.</summary>
 public sealed record PoseRevisionProposalDto(PoseRevisionProposalId Id, ProposalStatus Status, ProposedPose Pose);

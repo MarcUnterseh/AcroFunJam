@@ -58,7 +58,7 @@ public sealed class TransitionProposal : AggregateRoot<TransitionProposalId>
         if (!fromPosePublished) return ContributionErrors.FromPoseNotFound;
         if (!toPosePublished) return ContributionErrors.ToPoseNotFound;
         // The tags, chosen through the list (story 8, ADR 0033), are checked after the poses and before the place.
-        if (tags is { IsValid: false }) return new ProposedTagsNotInListError(tags.NotInList);
+        if (ProposedTagsNotApplicableError.Of(tags) is { } refused) return refused;
         if (SlotRefusal(proposed.Name is null, slot) is { } taken) return taken;
         proposed = proposed.Tagged(tags?.Tags ?? proposed.Tags);
 
@@ -118,7 +118,7 @@ public sealed class TransitionProposal : AggregateRoot<TransitionProposalId>
         ArgumentNullException.ThrowIfNull(adjustments);
         if (DecisionRules.CannotBeDecided(by, Decision) is { } refusal) return refusal;
         // The retained tags, chosen through the list (E7): none given keeps the proposed ones.
-        if (retainedTags is { IsValid: false }) return new ProposedTagsNotInListError(retainedTags.NotInList);
+        if (ProposedTagsNotApplicableError.Of(retainedTags) is { } refused) return refused;
         var retained = Proposed.Retain(adjustments, retainedTags?.Tags);
         // The acceptance protects its own coherence (a note only with adjustments), checked before the place.
         var acceptance = TransitionAcceptance.Of(Proposed, retained, note, by.Id, now);

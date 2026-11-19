@@ -16,7 +16,7 @@ public sealed record ProposedRevision
     /// The fields the revision changes, in the order of the form, each with its value before and after; never empty. Compared
     /// once normalised: a change of case of the name is one (ordinal comparison).
     /// </summary>
-    public IReadOnlyList<PoseFieldChange> Changes => PoseFieldChanges.Between(Before, After.Name, After.Difficulty, After.Flow);
+    public IReadOnlyList<PoseFieldChange> Changes => PoseFieldChanges.Between(Before, After.Name, After.Difficulty, After.Flow, After.Tags);
 
     /// <summary>The name key the revision reserves while pending (ADR 0025): none when the key of the name does not change.</summary>
     public PoseNameKey? ReservedNameKey => After.Name.Key == Before.Name.Key ? null : After.Name.Key;
@@ -37,10 +37,13 @@ public sealed record ProposedRevision
         var after = ProposedPose.From(
             changes.Name ?? before.Name,
             Difficulty.Create(changes.BaseDifficulty ?? before.Difficulty.Base, changes.FlyerDifficulty ?? before.Difficulty.Flyer).Value!,
-            FlowBoundaries.Create(changes.CanStartFlow ?? before.Flow.CanStartFlow, changes.CanEndFlow ?? before.Flow.CanEndFlow).Value!);
-        // Compared once normalised (story 4, Q15): superfluous spaces are no change, a change of case of the name is one.
-        if (after.Name == before.Name && after.Difficulty == before.Difficulty && after.Flow == before.Flow)
-            return ContributionErrors.RevisionChangesNothing;
+            FlowBoundaries.Create(changes.CanStartFlow ?? before.Flow.CanStartFlow, changes.CanEndFlow ?? before.Flow.CanEndFlow).Value!)
+            .Tagged(changes.Tags?.Tags ?? before.Tags);
+        // Story 9a: tags chosen through the list that it refuses for a pose.
+        if (ProposedTagsNotApplicableError.Of(changes.Tags) is { } refused) return refused;
+        // Compared once normalised (story 4, Q15): superfluous spaces are no change, a change of case of the name is one; the tags
+        // are a set (Q172).
+        if (before.SameValuesAs(after.Name, after.Difficulty, after.Flow, after.Tags)) return ContributionErrors.RevisionChangesNothing;
         return Result<ProposedRevision>.Success(new ProposedRevision(before, after));
     }
 }

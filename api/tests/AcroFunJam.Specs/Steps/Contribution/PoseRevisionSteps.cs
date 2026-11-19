@@ -32,6 +32,7 @@ public sealed partial class PoseRevisionSteps(
     public async Task WhenSomeoneProposesToRevise(string name, string pose, string change) =>
         responses.Last = await ProposeRevision(name, pose, change);
 
+    [Given(@"^(\w+) a proposé de modifier la pose ""([^""]*)"" en retirant (toutes ses étiquettes)$")]
     [Given(@"^(\w+) a proposé de modifier la pose ""([^""]*)"" en changeant (.+)$")]
     public async Task GivenSomeoneHasProposedToRevise(string name, string pose, string change)
     {
@@ -101,9 +102,15 @@ public sealed partial class PoseRevisionSteps(
         decisions.Last!.StatusCode.ShouldBe(HttpStatusCode.OK, await decisions.Last.Content.ReadAsStringAsync());
     }
 
-    private async Task<HttpResponseMessage> Accept(string name, string pose, string contributor, ValidationSteps.AcceptanceRequest acceptance) =>
-        await (await people.SignedInClient(name)).PostAsJsonAsync(
+    private async Task<HttpResponseMessage> Accept(string name, string pose, string contributor, ValidationSteps.AcceptanceRequest acceptance)
+    {
+        var client = await people.SignedInClient(name);
+        // Story 9a: the retained tags, named by the scenario, are sent by identifier once read in the list.
+        if (acceptance.RetainedTagNames is { } tags)
+            acceptance = acceptance with { TagIds = [.. (await TagNames.IdsOf(client, tags)).Select(t => t.Value)] };
+        return await client.PostAsJsonAsync(
             new Uri($"/contribution/pose-revision-proposals/{revisions.IdOf(pose, contributor)}/acceptance", UriKind.Relative), acceptance);
+    }
 
     private async Task<HttpResponseMessage> Reject(string name, string pose, string contributor, ValidationSteps.RejectionRequest rejection) =>
         await (await people.SignedInClient(name)).PostAsJsonAsync(
@@ -161,10 +168,12 @@ public sealed partial class PoseRevisionSteps(
         Changes(revision.GetProperty("changes"), "before", "after").ShouldContain((field, before, after));
     }
 
+    [Then(@"^la modification de la pose ""([^""]*)"" présente, dans ce qui change dans la pose, les (étiquettes) « (.*) » → « (.*) »$")]
     [Then(@"^la modification de la pose ""([^""]*)"" présente, dans ce qui change dans la pose, la (difficulté base|difficulté flyer) « (.*) » → « (.*) »$")]
     public async Task ThenTheRevisionPresentsWhatChanges(string pose, string field, string before, string after) =>
         Changes((await MyRevisionOf(pose)).GetProperty("changes"), "before", "after").ShouldContain((field, before, after));
 
+    [Then(@"^la modification de la pose ""([^""]*)"" présente, dans les ajustements apportés, les (étiquettes) « (.*) » → « (.*) »$")]
     [Then(@"^la modification de la pose ""([^""]*)"" présente, dans les ajustements apportés, la (difficulté base|difficulté flyer) « (.*) » → « (.*) »$")]
     public async Task ThenTheRevisionPresentsTheAdjustments(string pose, string field, string proposed, string retained) =>
         Changes((await MyRevisionOf(pose)).GetProperty("adjustments"), "proposed", "retained").ShouldContain((field, proposed, retained));
@@ -225,6 +234,10 @@ public sealed partial class PoseRevisionSteps(
     public async Task ThenTheQueuePresentsTheRevisionWithTheMessage(string pose, string message) =>
         (await QueuedRevisionOf(pose)).GetProperty("message").GetString().ShouldBe(message);
 
+    [Then(@"^la file de validation présente la modification de la pose ""([^""]*)"" avec les étiquettes « (.*) » → « (.*) »$")]
+    public async Task ThenTheQueuePresentsTheTagsChange(string pose, string current, string proposed) =>
+        Changes((await QueuedRevisionOf(pose)).GetProperty("changes"), "current", "proposed").ShouldContain(("étiquettes", current, proposed));
+
     [Then(@"^la file de validation présente la modification de la pose ""([^""]*)""$")]
     public async Task ThenTheQueuePresentsTheRevision(string pose) => await QueuedRevisionOf(pose);
 
@@ -253,7 +266,7 @@ public sealed partial class PoseRevisionSteps(
         (string Json, string Label)[] fields =
         [
             ("name", "nom"), ("baseDifficulty", "difficulté base"), ("flyerDifficulty", "difficulté flyer"),
-            ("canStartFlow", "peut commencer un flow"), ("canEndFlow", "peut terminer un flow"),
+            ("canStartFlow", "peut commencer un flow"), ("canEndFlow", "peut terminer un flow"), ("tags", "étiquettes"),
         ];
         foreach (var (json, label) in fields)
         {
@@ -266,6 +279,10 @@ public sealed partial class PoseRevisionSteps(
     {
         JsonValueKind.True => "peut",
         JsonValueKind.False => "ne peut pas",
+        // Story 9a: the tags, in catalog order, or « aucune ».
+        JsonValueKind.Array => value.GetArrayLength() == 0
+            ? "aucune"
+            : string.Join(", ", value.EnumerateArray().Select(t => t.GetProperty("name").GetString())),
         _ => DifficultyLabels.ToLabelOrAsIs(value.GetString()!),
     };
 
@@ -335,6 +352,7 @@ public sealed partial class PoseRevisionSteps(
         var client = await people.SignedInClient(name);
         var current = await ReadPublishedPose(client, pose);
         var request = WithChange(new RevisionRequest(current.Id, current.Version), change);
+        if (request.TagNames is { } tags) request = request with { TagIds = [.. (await TagNames.IdsOf(client, tags)).Select(t => t.Value)] };
         var response = await client.PostAsJsonAsync(PoseRevisionProposals, request);
         if (response.StatusCode == HttpStatusCode.Created)
         {
@@ -369,6 +387,10 @@ public sealed partial class PoseRevisionSteps(
             return WithChange(request, withMessage.Groups["change"].Value) with { Message = message };
         }
 
+        // Story 9a: « les étiquettes en "lunaire" et "inversion" », « toutes ses étiquettes » removed.
+        if (change.StartsWith("les étiquettes en ", StringComparison.Ordinal))
+            return request with { TagNames = TagNames.In(change["les étiquettes en ".Length..]) };
+        if (change == "toutes ses étiquettes") return request with { TagNames = [] };
         if (NameOfLength().Match(change) is { Success: true } length)
             return request with { Name = "Pose " + new string('x', int.Parse(length.Groups[1].Value, CultureInfo.InvariantCulture) - "Pose ".Length) };
         if (Change().Match(change) is not { Success: true } match)
@@ -410,7 +432,16 @@ public sealed partial class PoseRevisionSteps(
         string? FlyerDifficulty = null,
         bool? CanStartFlow = null,
         bool? CanEndFlow = null,
-        string? Message = null);
+        string? Message = null)
+    {
+        /// <summary>The tags of the revised pose (story 9a), by identifier; absent keeps those of the pose.</summary>
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+        public IReadOnlyList<Guid>? TagIds { get; init; }
+
+        /// <summary>The tags as named by the scenario, resolved to identifiers before sending.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public IReadOnlyList<string>? TagNames { get; init; }
+    }
 
     private sealed record RevisionResponse(Guid Id, string Status);
 }

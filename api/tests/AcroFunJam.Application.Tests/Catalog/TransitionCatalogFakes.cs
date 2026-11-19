@@ -48,6 +48,16 @@ internal sealed class FakeTagCarriersReader : ITagCarriersReader
 
     public Task<IReadOnlyList<CarryingTransition>> TransitionsCarrying(TagId tag, CancellationToken ct) =>
         Task.FromResult<IReadOnlyList<CarryingTransition>>(Carriers.GetValueOrDefault(tag) ?? []);
+
+    public Dictionary<TagId, int> PoseCounts { get; } = [];
+
+    public Task<IReadOnlyDictionary<TagId, int>> PublishedPoseCounts(CancellationToken ct) =>
+        Task.FromResult<IReadOnlyDictionary<TagId, int>>(PoseCounts);
+
+    public Dictionary<TagId, List<CarryingPose>> Poses { get; } = [];
+
+    public Task<IReadOnlyList<CarryingPose>> PosesCarrying(TagId tag, CancellationToken ct) =>
+        Task.FromResult<IReadOnlyList<CarryingPose>>(Poses.GetValueOrDefault(tag) ?? []);
 }
 
 /// <summary>In-memory fake of <see cref="IPendingTagCarriers"/>: the pending proposals carrying each tag.</summary>
@@ -57,4 +67,10 @@ internal sealed class FakePendingTagCarriers : IPendingTagCarriers
 
     public Task<IReadOnlyList<PendingTagCarrier>> ProposalsCarrying(TagId tag, CancellationToken ct) =>
         Task.FromResult<IReadOnlyList<PendingTagCarrier>>(Carriers.GetValueOrDefault(tag) ?? []);
+
+    /// <summary>The pending proposals about a pose carrying each tag (story 9a).</summary>
+    public Dictionary<TagId, List<CarryingPendingPose>> PoseCarriers { get; } = [];
+
+    public Task<IReadOnlyList<CarryingPendingPose>> PosesCarrying(TagId tag, CancellationToken ct) =>
+        Task.FromResult<IReadOnlyList<CarryingPendingPose>>(PoseCarriers.GetValueOrDefault(tag) ?? []);
 }

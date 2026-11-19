@@ -44,4 +44,10 @@ public sealed class PoseProposalRecord
 
     /// <summary>The acceptance is a direct publication (ADR 0023): recorded when it happens, never deduced.</summary>
     public bool PublishedDirectly { get; set; }
+
+    /// <summary>The proposed tags (story 9a, ADR 0036), by identifier; none for a pose proposed without.</summary>
+    public Guid[] ProposedTagIds { get; set; } = [];
+
+    /// <summary>The retained tags, once accepted (story 9a); null while pending or once rejected.</summary>
+    public Guid[]? RetainedTagIds { get; set; }
 }

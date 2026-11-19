@@ -25,7 +25,7 @@ public sealed class GetPosePageHandlerTests
 
     public GetPosePageHandlerTests() => _poses.Add(Star);
 
-    private GetPosePageHandler Handler() => new(_poses, _transitions, new FakeTagListRepository());
+    private GetPosePageHandler Handler() => new(_poses, _transitions, new FakeTagListRepository(), new FakePendingPoseRevisions());
 
     [Fact]
     public async Task Handle_Should_PresentThePoseWithItsVersion_When_ItIsPublished()

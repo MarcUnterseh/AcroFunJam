@@ -9,6 +9,9 @@ namespace AcroFunJam.Domain.Contribution;
 /// </summary>
 public sealed record RetainedPose(PoseName Name, Difficulty Difficulty, FlowBoundaries Flow)
 {
+    /// <summary>The tags it is published with (story 9a): the proposed ones, or those retained by the validator.</summary>
+    public TagSet Tags { get; init; } = TagSet.Empty;
+
     /// <summary>
     /// A retained pose read back as such (storage): it follows the content rules of a pose, as a proposed pose does
     /// (story 3, ADR 0018), the name checked first, then the difficulty, then the flow boundaries.
@@ -44,6 +47,8 @@ public sealed record RetainedPose(PoseName Name, Difficulty Difficulty, FlowBoun
             .. Adjustment(proposed.Difficulty.Flyer, Difficulty.Flyer, (p, r) => new FlyerDifficultyAdjustment(p, r)),
             .. Adjustment(proposed.Flow.CanStartFlow, Flow.CanStartFlow, (p, r) => new CanStartFlowAdjustment(p, r)),
             .. Adjustment(proposed.Flow.CanEndFlow, Flow.CanEndFlow, (p, r) => new CanEndFlowAdjustment(p, r)),
+            // Story 9a: a set of tags, the order not counting (TagSet equality).
+            .. Adjustment(proposed.Tags, Tags, (p, r) => new PoseTagsAdjustment(p, r)),
         ];
     }
 

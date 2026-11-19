@@ -8,8 +8,9 @@ Deux usages, un seul rendu :
 |---|---|---|
 | Groupe de cases (formulaire, zone « Étiqueter », zone d'ajustement) | « Ce que veulent dire les étiquettes » | **toutes** les étiquettes de la liste |
 | Transition de la page d'une pose (une par transition étiquetée) | « Ce que veulent dire ces étiquettes » | les étiquettes **de cette transition** |
+| **Page d'une pose, en tête du corps** (story 9a) | « Ce que veulent dire les étiquettes de la pose » | les étiquettes **de la pose** (pas celles de ses transitions) |
 
-Une transition sans étiquette n'a pas de repli.
+Une transition sans étiquette n'a pas de repli ; une pose non plus. Sur la page d'une pose, le repli est sur le fond de page (`background`) : son contenu `surfaceHover` y reste distinct, le résumé `primary` y fait 6,4:1 / 8,9:1. Les formulaires de pose et la zone « Étiquettes de la pose » gardent le résumé « Ce que veulent dire les étiquettes » (toutes les étiquettes **applicables aux poses**). Écran : `../ecrans/9a-etiquettes-des-poses.md`.
 
 ## Structure
 

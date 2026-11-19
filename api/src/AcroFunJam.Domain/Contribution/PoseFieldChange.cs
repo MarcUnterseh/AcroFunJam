@@ -23,3 +23,6 @@ public sealed record FlyerDifficultyChange(DifficultyLevel Before, DifficultyLev
 public sealed record CanStartFlowChange(bool Before, bool After) : PoseFieldChange;
 
 public sealed record CanEndFlowChange(bool Before, bool After) : PoseFieldChange;
+
+/// <summary>The tags of the pose (story 9a, Q172): a set, the order not counting.</summary>
+public sealed record PoseTagsChange(TagSet Before, TagSet After) : PoseFieldChange;

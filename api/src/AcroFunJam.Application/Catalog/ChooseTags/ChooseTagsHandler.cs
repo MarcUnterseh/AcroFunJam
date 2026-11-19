@@ -10,6 +10,6 @@ internal sealed class ChooseTagsHandler(ITagListRepository lists) : IQueryHandle
     public async Task<Result<TagChoice>> Handle(ChooseTags query, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(query);
-        return Result<TagChoice>.Success((await lists.Get(ct) ?? TagList.Empty()).Choose(query.Tags));
+        return Result<TagChoice>.Success((await lists.Get(ct) ?? TagList.Empty()).Choose(query.Tags, query.Target));
     }
 }

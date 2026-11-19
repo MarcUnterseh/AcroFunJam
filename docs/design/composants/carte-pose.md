@@ -12,6 +12,8 @@ Story 5 : la carte « ma proposition » (`carte-ma-proposition.md`) reprend auss
 
 Story 6 : la carte de modification de la file (`carte-modification.md`) reprend la `dl` pour « La pose après modification » ; le lien « Proposer une modification » (ci-dessous) n'appartient qu'au catalogue.
 
+**Story 9a** : la `dl` reçoit un troisième groupe, la **ligne « Étiquettes »** (`pilule-etiquette.md`, « Ligne d'une pose »), après les bornes de flow, même écart `spacing.md`. Catalogue et ciel de la page d'une pose : **rien** quand la pose n'a pas d'étiquette (aucun vide réservé, pas de « aucune ») ; cartes de la file de validation et de modification : « Étiquettes aucune ». Sur la carte cliquable, la ligne fait partie de la zone étendue du nom (les pilules ne sont pas interactives) ; au survol (`surfaceHover`), la pilule opaque garde `text` sur `tagSurface` (14,1:1 / 12,2:1). Le lien « Proposer une modification » reste calé en bas. Écran : `../ecrans/9a-etiquettes-des-poses.md`.
+
 ## Structure
 
 ```

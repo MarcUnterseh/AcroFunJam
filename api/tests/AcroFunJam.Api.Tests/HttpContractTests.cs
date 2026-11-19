@@ -60,7 +60,7 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
         var pose = document.GetProperty("components").GetProperty("schemas").GetProperty("PoseSummaryResponse");
 
         pose.GetProperty("required").EnumerateArray().Select(p => p.GetString())
-            .ShouldBe(["id", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow"], ignoreOrder: true);
+            .ShouldBe(["id", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "tags"], ignoreOrder: true);
         pose.GetProperty("properties").GetProperty("canStartFlow").GetProperty("type").GetString().ShouldBe("boolean");
         pose.GetProperty("properties").GetProperty("canEndFlow").GetProperty("type").GetString().ShouldBe("boolean");
     }
@@ -84,7 +84,7 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
 
         responses.GetProperty("409").GetProperty("content").TryGetProperty("application/problem+json", out _).ShouldBeTrue();
         schemas.GetProperty("PoseProposalResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
-            .ShouldBe(["id", "status", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow"], ignoreOrder: true);
+            .ShouldBe(["id", "status", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "tags"], ignoreOrder: true);
         schemas.GetProperty("ProposalStatusCode").GetProperty("enum").EnumerateArray().Select(v => v.GetString())
             .ShouldBe(["pending", "accepted", "rejected"], ignoreOrder: true);
     }
@@ -129,7 +129,7 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
         (body.TryGetProperty("required", out var required) && required.GetBoolean()).ShouldBeFalse();
         var adjustments = schemas.GetProperty("AcceptPoseProposalRequest");
         adjustments.GetProperty("properties").EnumerateObject().Select(p => p.Name)
-            .ShouldBe(["name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "message"], ignoreOrder: true);
+            .ShouldBe(["name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "message", "tagIds"], ignoreOrder: true);
         adjustments.TryGetProperty("required", out _).ShouldBeFalse("every field may be absent");
         schemas.GetProperty("AcceptedPoseProposalResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
             .ShouldBe(["id", "status", "adjusted", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow"], ignoreOrder: true);
@@ -148,13 +148,13 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
             .ShouldBe(
                 [
                     "id", "status", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "submittedAt", "decidedAt",
-                    "adjustments", "message", "reason",
+                    "adjustments", "message", "reason", "tags",
                 ],
                 ignoreOrder: true);
         schemas.GetProperty("MyProposalStatusCode").GetProperty("enum").EnumerateArray().Select(v => v.GetString())
             .ShouldBe(["pending", "accepted", "accepted-with-adjustments", "rejected", "published-directly"], ignoreOrder: true);
         schemas.GetProperty("PoseAdjustmentsResponse").GetProperty("properties").EnumerateObject().Select(p => p.Name)
-            .ShouldBe(["name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow"], ignoreOrder: true);
+            .ShouldBe(["name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "tags"], ignoreOrder: true);
     }
 
     /// <summary>Story 7 (ADR 0030): deciding on a transition proposal, and its kind in the queue and in « Mes propositions ».</summary>
@@ -198,7 +198,8 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
 
         schemas.GetProperty("PublishedPoseResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
             .ShouldBe(
-                ["id", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "version", "transitionsFrom", "transitionsTo"],
+                ["id", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "version", "transitionsFrom", "transitionsTo",
+                    "tags", "pendingRevision"],
                 ignoreOrder: true);
         schemas.GetProperty("LinkedTransitionResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
             .ShouldBe(["id", "otherPose", "name", "baseDifficulty", "flyerDifficulty", "description", "tags"], ignoreOrder: true);

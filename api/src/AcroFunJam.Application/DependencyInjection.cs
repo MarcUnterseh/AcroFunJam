@@ -4,9 +4,12 @@ using AcroFunJam.Application.Catalog.ChangeTag;
 using AcroFunJam.Application.Catalog.ListTags;
 using AcroFunJam.Application.Catalog.RemoveTag;
 using AcroFunJam.Application.Catalog.SeedInitialTagList;
+using AcroFunJam.Application.Catalog.TagPose;
 using AcroFunJam.Application.Catalog.TagTransition;
 using AcroFunJam.Application.Catalog.GetTagNames;
 using AcroFunJam.Application.Catalog.ChooseTags;
+using AcroFunJam.Application.Contribution.GetPendingPoseProposalsCarryingTag;
+using AcroFunJam.Application.Contribution.GetPendingPoseRevisionsCarryingTag;
 using AcroFunJam.Application.Contribution.GetPendingTransitionProposalsCarryingTag;
 using AcroFunJam.Application.Catalog.GetPublishedPoseNames;
 using AcroFunJam.Application.Catalog.GetPosePage;
@@ -49,7 +52,7 @@ public static class DependencyInjection
     /// <summary>Registers the use case handlers (explicitly, one line per handler).</summary>
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddScoped<IQueryHandler<ListPublishedPoses, IReadOnlyList<PublishedPoseSummary>>, ListPublishedPosesHandler>();
+        services.AddScoped<IQueryHandler<ListPublishedPoses, IReadOnlyList<CatalogPose>>, ListPublishedPosesHandler>();
         services.AddScoped<ICommandHandler<PublishPose, PoseId>, PublishPoseHandler>();
         services.AddScoped<IQueryHandler<IsPoseNamePublished, bool>, IsPoseNamePublishedHandler>();
         services.AddScoped<IQueryHandler<GetMyAccount, MyAccountDto>, GetMyAccountHandler>();
@@ -81,10 +84,15 @@ public static class DependencyInjection
         services.AddScoped<ICommandHandler<RemoveTag, bool>, RemoveTagHandler>();
         services.AddScoped<ICommandHandler<SeedInitialTagList, bool>, SeedInitialTagListHandler>();
         services.AddScoped<ICommandHandler<TagTransition, TagSet>, TagTransitionHandler>();
+        services.AddScoped<ICommandHandler<TagPose, TagSet>, TagPoseHandler>();
         services.AddScoped<IQueryHandler<GetTagNames, IReadOnlyList<NamedTag>>, GetTagNamesHandler>();
         services.AddScoped<IQueryHandler<ChooseTags, TagChoice>, ChooseTagsHandler>();
         services.AddScoped<IQueryHandler<GetPendingTransitionProposalsCarryingTag, IReadOnlyList<TransitionProposal>>,
             GetPendingTransitionProposalsCarryingTagHandler>();
+        services.AddScoped<IQueryHandler<GetPendingPoseProposalsCarryingTag, IReadOnlyList<PoseProposal>>,
+            GetPendingPoseProposalsCarryingTagHandler>();
+        services.AddScoped<IQueryHandler<GetPendingPoseRevisionsCarryingTag, IReadOnlyList<PoseRevisionProposal>>,
+            GetPendingPoseRevisionsCarryingTagHandler>();
         return services;
     }
 }

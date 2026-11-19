@@ -2,6 +2,8 @@
 
 Une **proposition de modification** en attente, dans la page « Propositions à valider », mêlée aux propositions de pose (même file, même ordre, même nombre : ADR 0027). Elle **reprend la carte de proposition** (`carte-proposition.md`) : conteneur, ligne du contributeur, zone de décision, zones de refus et d'ajustement, alertes, état en cours, compte rendu. Ce document ne décrit que ce qui change. Écran : `../ecrans/6-proposer-une-modification.md`, « File de validation ».
 
+**Story 9a** : « Ce qui change dans la pose » peut contenir la ligne « Étiquettes ~~aucune~~ → lunaire » (mots dans une phrase, `recapitulatif-modification.md`), et « La pose après modification » la ligne « Étiquettes » de la `dl` (pilules, ou « aucune »). L'ajustement permet d'ajouter des étiquettes à une modification qui ne les changeait pas. Écran : `../ecrans/9a-etiquettes-des-poses.md`.
+
 ## Structure (repos)
 
 ```

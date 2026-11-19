@@ -12,6 +12,9 @@ public sealed record ProposedPose
 
     public FlowBoundaries Flow { get; }
 
+    /// <summary>Its tags, chosen through the list of the Catalog (story 9a, ADR 0036); none unless chosen.</summary>
+    public TagSet Tags { get; private init; } = TagSet.Empty;
+
     private ProposedPose(PoseName name, Difficulty difficulty, FlowBoundaries flow)
     {
         Name = name;
@@ -35,13 +38,26 @@ public sealed record ProposedPose
         return Result<ProposedPose>.Success(new ProposedPose(poseName.Value!, difficulty.Value!, flow.Value!));
     }
 
-    /// <summary>The pose to publish: each adjusted value replaces the proposed one, the others are kept (ADR 0022).</summary>
-    public RetainedPose Retain(PoseAdjustments adjustments)
+    /// <summary>The same pose carrying these tags (story 9a).</summary>
+    public ProposedPose Tagged(TagSet tags)
+    {
+        ArgumentNullException.ThrowIfNull(tags);
+        return this with { Tags = tags };
+    }
+
+    /// <summary>
+    /// The pose to publish: each adjusted value replaces the proposed one, the others are kept (ADR 0022); the retained tags,
+    /// when given, replace the proposed ones (story 9a).
+    /// </summary>
+    public RetainedPose Retain(PoseAdjustments adjustments, TagSet? retainedTags = null)
     {
         ArgumentNullException.ThrowIfNull(adjustments);
         return new RetainedPose(
             adjustments.Name ?? Name,
             Difficulty.Create(adjustments.BaseDifficulty ?? Difficulty.Base, adjustments.FlyerDifficulty ?? Difficulty.Flyer).Value!,
-            FlowBoundaries.Create(adjustments.CanStartFlow ?? Flow.CanStartFlow, adjustments.CanEndFlow ?? Flow.CanEndFlow).Value!);
+            FlowBoundaries.Create(adjustments.CanStartFlow ?? Flow.CanStartFlow, adjustments.CanEndFlow ?? Flow.CanEndFlow).Value!)
+        {
+            Tags = retainedTags ?? Tags,
+        };
     }
 }

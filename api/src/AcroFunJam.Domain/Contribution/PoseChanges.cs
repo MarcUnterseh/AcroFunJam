@@ -19,6 +19,12 @@ public sealed record PoseChanges
 
     public bool? CanEndFlow { get; private init; }
 
+    /// <summary>The tags chosen through the list for a pose (story 9a); none keeps the tags of the pose.</summary>
+    public TagChoice? Tags { get; private init; }
+
+    /// <summary>The same changes, with the tags chosen through the list of the Catalog (story 9a, ADR 0036).</summary>
+    public PoseChanges Tagged(TagChoice? tags) => this with { Tags = tags };
+
     private PoseChanges()
     {
     }

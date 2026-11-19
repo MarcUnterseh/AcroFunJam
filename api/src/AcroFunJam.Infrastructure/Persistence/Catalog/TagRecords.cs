@@ -7,6 +7,9 @@ public sealed class TagListRecord
 
     /// <summary>When the initial tags were seeded; none for a list started empty (the scenarios).</summary>
     public DateTimeOffset? SeededAt { get; set; }
+
+    /// <summary>The revision of the initial list it is at (ADR 0035); none for a list started empty.</summary>
+    public int? SeedRevision { get; set; }
 }
 
 /// <summary>Persistence shape of a tag of the list (table catalog.tags, ADR 0032), removed ones included.</summary>
@@ -23,6 +26,9 @@ public sealed class TagRecord
 
     /// <summary>The tag this one implies, a foreign key towards catalog.tags.</summary>
     public Guid? ImpliedTagId { get; set; }
+
+    /// <summary>What the tag applies to, by code (<c>poses</c>, <c>transitions</c>, <c>poses-and-transitions</c>, ADR 0035).</summary>
+    public required string Scope { get; set; }
 
     public DateTimeOffset? RemovedAt { get; set; }
 }

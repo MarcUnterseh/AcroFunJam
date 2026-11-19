@@ -39,13 +39,20 @@ public sealed class PoseProposal : AggregateRoot<PoseProposalId>, IPendingPropos
         SubmittedAt = submittedAt;
     }
 
+    /// <summary>
+    /// Submits a pose, with the tags chosen through the list of the Catalog (story 9a): checked before the name, as the content
+    /// of the pose.
+    /// </summary>
     public static Result<PoseProposal> Submit(
-        PoseProposalId id, Contributor contributor, ProposedPose pose, NameAvailability availability, DateTimeOffset now)
+        PoseProposalId id, Contributor contributor, ProposedPose pose, NameAvailability availability, DateTimeOffset now,
+        TagChoice? tags = null)
     {
         ArgumentNullException.ThrowIfNull(contributor);
         ArgumentNullException.ThrowIfNull(pose);
+        if (ProposedTagsNotApplicableError.Of(tags) is { } refused) return refused;
         // The name is checked for everyone, validators included.
         if (NameRefusals.Of(availability) is { } taken) return taken;
+        pose = pose.Tagged(tags?.Tags ?? pose.Tags);
 
         var proposal = new PoseProposal(id, contributor.Id, pose, now);
         proposal.Raise(new PoseProposed(id, contributor.Id, pose.Name, now));
@@ -77,10 +84,14 @@ public sealed class PoseProposal : AggregateRoot<PoseProposalId>, IPendingPropos
     /// A validator accepts the proposal, so that its retained pose is published: the proposed pose, or the pose with the
     /// validator's adjustments, then possibly explained by a note (ADR 0022). The availability is that of the retained name.
     /// </summary>
-    public Result<Acceptance> Accept(Validator by, RetainedPose retained, AdjustmentNote? note, NameAvailability availability, DateTimeOffset now)
+    /// <remarks>Story 9a: the retained tags, chosen through the list, replace the proposed ones when given.</remarks>
+    public Result<Acceptance> Accept(
+        Validator by, RetainedPose retained, AdjustmentNote? note, NameAvailability availability, DateTimeOffset now, TagChoice? retainedTags = null)
     {
         ArgumentNullException.ThrowIfNull(retained);
         if (DecisionRules.CannotBeDecided(by, Decision) is { } refusal) return refusal;
+        if (ProposedTagsNotApplicableError.Of(retainedTags) is { } refusedTags) return refusedTags;
+        if (retainedTags is not null) retained = retained with { Tags = retainedTags.Tags };
         // The acceptance protects its own coherence (a note only with adjustments), checked before the name.
         var acceptance = Acceptance.Of(Pose, retained, note, by.Id, now);
         if (acceptance.IsFailure) return acceptance;

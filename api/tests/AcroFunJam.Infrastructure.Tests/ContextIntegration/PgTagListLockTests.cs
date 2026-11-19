@@ -126,4 +126,74 @@ public sealed class PgTagListLockTests(PostgreSqlFixture database) : IClassFixtu
         (await reservation).IsSuccess.ShouldBeTrue();
         (await removal).IsSuccess.ShouldBeTrue();
     }
+
+    /// <summary>The direct tagging of a pose holds the lock of the pose (ADR 0036): a revision of the pose waits for it.</summary>
+    [Fact]
+    public async Task PoseTagging_Should_MakeARevisionOfThePoseWait_When_ItIsHeld()
+    {
+        var pose = Guid.NewGuid();
+        var held = new TaskCompletionSource();
+        var release = new TaskCompletionSource();
+        var tagging = Task.Run(async () =>
+        {
+            await using var context = database.CreateDbContext();
+            return await new PgPoseTaggingLock(context).Run(new AcroFunJam.Domain.Catalog.PoseId(pose), async _ =>
+            {
+                held.SetResult();
+                await release.Task;
+                return Result<bool>.Success(true);
+            }, Ct);
+        }, Ct);
+        await held.Task;
+
+        var revision = Task.Run(async () =>
+        {
+            await using var context = database.CreateDbContext();
+            return await new PgPoseReservation(context).Run(
+                new PublishedPoseId(pose), key: null, _ => Task.FromResult(Result<bool>.Success(true)), Ct);
+        }, Ct);
+        try
+        {
+            (await Task.WhenAny(revision, Task.Delay(Blocked, Ct))).ShouldNotBe(revision);
+        }
+        finally
+        {
+            release.TrySetResult();
+        }
+
+        (await tagging).IsSuccess.ShouldBeTrue();
+        (await revision).IsSuccess.ShouldBeTrue();
+    }
+
+    /// <summary>The direct tagging of a pose holds the list of tags shared (ADR 0036): a removal waits for it.</summary>
+    [Fact]
+    public async Task Exclusive_Should_WaitForATaggingOfAPose_When_ItIsHeld()
+    {
+        var held = new TaskCompletionSource();
+        var release = new TaskCompletionSource();
+        var tagging = Task.Run(async () =>
+        {
+            await using var context = database.CreateDbContext();
+            return await new PgPoseTaggingLock(context).Run(new AcroFunJam.Domain.Catalog.PoseId(Guid.NewGuid()), async _ =>
+            {
+                held.SetResult();
+                await release.Task;
+                return Result<bool>.Success(true);
+            }, Ct);
+        }, Ct);
+        await held.Task;
+
+        var removal = Taking((l, w) => l.Exclusive(w, Ct));
+        try
+        {
+            (await Task.WhenAny(removal, Task.Delay(Blocked, Ct))).ShouldNotBe(removal);
+        }
+        finally
+        {
+            release.TrySetResult();
+        }
+
+        (await tagging).IsSuccess.ShouldBeTrue();
+        (await removal).IsSuccess.ShouldBeTrue();
+    }
 }

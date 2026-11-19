@@ -45,7 +45,7 @@ public sealed class PublishPoseHandlerTests
         var unitOfWork = new FakeUnitOfWork();
         var source = new SourceProposalId(Guid.NewGuid());
 
-        var result = await new PublishPoseHandler(poses, unitOfWork, new FixedTimeProvider(Now)).Handle(Publishing("Throne", source), Ct);
+        var result = await new PublishPoseHandler(poses, unitOfWork, new FixedTimeProvider(Now), new FakeTagListRepository()).Handle(Publishing("Throne", source), Ct);
 
         result.IsSuccess.ShouldBeTrue();
         var added = poses.Added.ShouldHaveSingleItem();
@@ -62,7 +62,7 @@ public sealed class PublishPoseHandlerTests
         // A concurrent publication of the same name, outside any reservation: the unique index decides (ADR 0017).
         var unitOfWork = new FakeUnitOfWork(CatalogErrors.PoseNameTaken);
 
-        var result = await new PublishPoseHandler(new FakePoseRepository(), unitOfWork, new FixedTimeProvider(Now)).Handle(Publishing("Throne"), Ct);
+        var result = await new PublishPoseHandler(new FakePoseRepository(), unitOfWork, new FixedTimeProvider(Now), new FakeTagListRepository()).Handle(Publishing("Throne"), Ct);
 
         result.Error.ShouldBe(CatalogErrors.PoseNameTaken);
     }
@@ -73,10 +73,40 @@ public sealed class PublishPoseHandlerTests
         var poses = new FakePoseRepository("High Bird");
         var unitOfWork = new FakeUnitOfWork();
 
-        var result = await new PublishPoseHandler(poses, unitOfWork, new FixedTimeProvider(Now)).Handle(Publishing("high bird"), Ct);
+        var result = await new PublishPoseHandler(poses, unitOfWork, new FixedTimeProvider(Now), new FakeTagListRepository()).Handle(Publishing("high bird"), Ct);
 
         result.Error.ShouldBe(CatalogErrors.PoseNameTaken);
         poses.Added.ShouldBeEmpty();
         unitOfWork.Saves.ShouldBe(0);
+    }
+
+    // --- Story 9a: the tags of a published pose, chosen again by the list (ADR 0036) ------------------
+
+    [Fact]
+    public async Task Handle_Should_PublishThePoseWithTheTagsThatApplyToPoses_When_SomeAreGiven()
+    {
+        var lists = new FakeTagListRepository { Stored = TagList.Seed(InitialTagList.Current, () => new TagId(Guid.NewGuid()), Now) };
+        var lunar = lists.Stored.Tags.Single(t => t.Name.Value == "lunaire").Id;
+        var poses = new FakePoseRepository();
+
+        var result = await new PublishPoseHandler(poses, new FakeUnitOfWork(), new FixedTimeProvider(Now), lists)
+            .Handle(Publishing("Folded Leaf") with { Tags = TagSet.Of([lunar]) }, Ct);
+
+        result.IsSuccess.ShouldBeTrue();
+        poses.Added.ShouldHaveSingleItem().Tags.ShouldBe(TagSet.Of([lunar]));
+    }
+
+    [Fact]
+    public async Task Handle_Should_RefuseATagThatDoesNotApplyToPoses_When_ItIsGiven()
+    {
+        var lists = new FakeTagListRepository { Stored = TagList.Seed(InitialTagList.Current, () => new TagId(Guid.NewGuid()), Now) };
+        var pop = lists.Stored.Tags.Single(t => t.Name.Value == "pop").Id;
+        var poses = new FakePoseRepository();
+
+        var result = await new PublishPoseHandler(poses, new FakeUnitOfWork(), new FixedTimeProvider(Now), lists)
+            .Handle(Publishing("Folded Leaf") with { Tags = TagSet.Of([pop]) }, Ct);
+
+        result.Error.ShouldBeOfType<TagNotApplicableError>();
+        poses.Added.ShouldBeEmpty();
     }
 }

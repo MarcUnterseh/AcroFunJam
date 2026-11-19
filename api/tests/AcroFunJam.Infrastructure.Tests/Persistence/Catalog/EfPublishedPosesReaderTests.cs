@@ -20,8 +20,8 @@ public sealed class EfPublishedPosesReaderTests(PostgreSqlFixture database) : IC
             await arrangeContext.Set<PoseRecord>().ExecuteDeleteAsync(ct);
             await arrangeContext.Database.ExecuteSqlRawAsync(
                 """
-                INSERT INTO catalog.poses (id, name, name_key, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow, published_at, version)
-                VALUES (gen_random_uuid(), '---', 'x', 'discovery', 'discovery', true, true, now(), 1)
+                INSERT INTO catalog.poses (id, name, name_key, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow, published_at, version, tag_ids)
+                VALUES (gen_random_uuid(), '---', 'x', 'discovery', 'discovery', true, true, now(), 1, ARRAY[]::uuid[])
                 """, ct);
         }
 
@@ -56,5 +56,27 @@ public sealed class EfPublishedPosesReaderTests(PostgreSqlFixture database) : IC
             poses.Select(p => new PublishedPoseSummary(
                 p.Id, p.Name, DifficultyLevel.Intermediate, DifficultyLevel.Advanced, FlowBoundaries.Create(canStartFlow: true, canEndFlow: false).Value!)),
             ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task GetPublishedPoses_Should_ReadTheTagsOfEachPose_When_TheyCarrySome()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var lunar = new TagId(Guid.NewGuid());
+        var pose = Pose.Publish(new PoseId(Guid.NewGuid()), PoseName.Create("Folded Leaf").Value!,
+            Difficulty.Create(DifficultyLevel.Beginner, DifficultyLevel.Discovery).Value!, FlowBoundaries.Create(false, true).Value!, null,
+            nameAlreadyPublished: false, DateTimeOffset.UtcNow, new TagChoice(TagSet.Of([lunar]), TagSet.Empty)).Value!;
+        await using (var arrangeContext = database.CreateDbContext())
+        {
+            await arrangeContext.Database.MigrateAsync(ct);
+            await arrangeContext.Set<PoseRecord>().ExecuteDeleteAsync(ct);
+            var aggregates = new TrackedAggregates();
+            new EfPoseRepository(arrangeContext, aggregates).Add(pose);
+            await UnitOfWorks.For(arrangeContext, aggregates).SaveChanges(ct);
+        }
+
+        await using var context = database.CreateDbContext();
+
+        (await new EfPublishedPosesReader(context).GetPublishedPoses(ct)).ShouldHaveSingleItem().Tags.ShouldBe(TagSet.Of([lunar]));
     }
 }

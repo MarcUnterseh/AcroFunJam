@@ -62,11 +62,12 @@ public sealed class TransitionProposalTagSteps(
     [Then(@"^la proposition garde les étiquettes proposées ""([^""]*)"" et les étiquettes retenues ""([^""]*)""$")]
     public async Task ThenTheProposalKeepsBothSets(string proposed, string retained)
     {
-        var id = decisions.OnTransition.ShouldNotBeNull();
+        // Story 9a: the last acceptance may be on a pose proposal.
+        var (id, table) = decisions.OnPose is { } pose ? (pose, "pose_proposals") : (decisions.OnTransition.ShouldNotBeNull(), "transition_proposals");
         await using var connection = new NpgsqlConnection(IntegrationDatabase.ConnectionString);
         await connection.OpenAsync();
         await using var command = new NpgsqlCommand(
-            "SELECT proposed_tag_ids, retained_tag_ids FROM contribution.transition_proposals WHERE id = @id", connection);
+            $"SELECT proposed_tag_ids, retained_tag_ids FROM contribution.{table} WHERE id = @id", connection);
         command.Parameters.AddWithValue("id", id);
         await using var reader = await command.ExecuteReaderAsync();
         (await reader.ReadAsync()).ShouldBeTrue();

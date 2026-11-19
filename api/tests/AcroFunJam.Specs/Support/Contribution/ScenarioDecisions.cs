@@ -14,7 +14,17 @@ public sealed class ScenarioDecisions
             field = value;
             OnRevision = false;
             OnTransition = null;
+            OnPose = null;
         }
+    }
+
+    /// <summary>The pose proposal the last acceptance was on (story 9a), if it was on one.</summary>
+    public Guid? OnPose { get; private set; }
+
+    public void OnPoseProposal(HttpResponseMessage response, Guid proposal)
+    {
+        Last = response;
+        OnPose = proposal;
     }
 
     /// <summary>The transition proposal the last decision was on (story 7), if it was on one.</summary>

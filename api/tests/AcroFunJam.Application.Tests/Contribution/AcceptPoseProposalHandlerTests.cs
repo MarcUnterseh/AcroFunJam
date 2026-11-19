@@ -44,7 +44,7 @@ public sealed class AcceptPoseProposalHandlerTests
         PoseAdjustments.Create(name, baseDifficulty: null, flyerDifficulty, canStartFlow: null, canEndFlow: null).Value!;
 
     private AcceptPoseProposalHandler Handler(IPoseProposalRepository? proposals = null, ICatalogPoseNames? catalog = null) =>
-        new(_validators, proposals ?? _proposals, _revisions, catalog ?? _catalog, _reservation, _publisher, _unitOfWork, new FixedTimeProvider(Now));
+        new(_validators, proposals ?? _proposals, _revisions, catalog ?? _catalog, _reservation, _publisher, _unitOfWork, new FixedTimeProvider(Now), new FakeCatalogTags(null));
 
     [Fact]
     public async Task Handle_Should_FailWithUnknownValidator_When_TheValidatorAccountNoLongerExists()
@@ -111,7 +111,7 @@ public sealed class AcceptPoseProposalHandlerTests
         // Another decision was saved since the proposal was loaded: the conditional update finds it no longer pending.
         var handler = new AcceptPoseProposalHandler(
             _validators, _proposals, _revisions, _catalog, _reservation, _publisher, new FakeUnitOfWork(ContributionErrors.ProposalAlreadyDecided),
-            new FixedTimeProvider(Now));
+            new FixedTimeProvider(Now), new FakeCatalogTags(null));
 
         var result = await handler.Handle(AsProposed(_throne.Id, Bruno.Id), Ct);
 
@@ -125,7 +125,7 @@ public sealed class AcceptPoseProposalHandlerTests
         // A pose of the same name was published in between: the reservation rolls the whole acceptance back (ADR 0022).
         var handler = new AcceptPoseProposalHandler(
             _validators, _proposals, _revisions, _catalog, _reservation, new FakeCatalogPublisher(ContributionErrors.PoseNameAlreadyInCatalog), _unitOfWork,
-            new FixedTimeProvider(Now));
+            new FixedTimeProvider(Now), new FakeCatalogTags(null));
 
         var result = await handler.Handle(AsProposed(_throne.Id, Bruno.Id), Ct);
 

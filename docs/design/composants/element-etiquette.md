@@ -20,7 +20,27 @@ Liste : `ul role="list"`, un `li` par étiquette, écart `spacing.sm` (comme `el
 | Nom (`h2`) | `fontFamilyDisplayWeb`, `weight.medium`, `size.lg`, `text`, interligne `tight` ; `overflow-wrap: anywhere` ; casse telle que saisie |
 | Description (`p`) | `size.md`, `regular`, `text` ; `overflow-wrap: anywhere` |
 
-Le nom n'est **pas** dessiné en pilule ici : c'est un titre de glossaire ; la pilule reste la forme « portée par une transition ».
+Le nom n'est **pas** dessiné en pilule ici : c'est un titre de glossaire ; la pilule reste la forme « portée par une pose ou une transition ».
+
+### Champ d'application (story 9a, pour tous)
+
+Juste sous le nom, avant la description : « S'applique aux poses » / « S'applique aux transitions » / « S'applique aux poses et aux transitions ».
+
+| Élément | Tokens |
+|---|---|
+| Ligne (`p.tag__scope`) | `size.sm`, `weight.semibold`, `textMuted` (7,0:1 sur `surface`, 7,3:1 la nuit) ; marge nulle (l'écart `spacing.sm` de l'élément suffit) ; une phrase, pas de pilule ni d'icône (la pilule est réservée aux étiquettes portées) |
+
+Compteur des validateurs (même rendu que « Portée par N transitions ») : « Portée par 1 pose et 2 transitions », « Portée par 2 transitions », « Portée par 1 pose », « Portée par aucune pose ni aucune transition », « Portée par aucune pose »… selon le champ d'application (libellés : scénarios A7).
+
+### Groupe « S'applique à » (story 9a)
+
+Dans le panneau d'ajout (après la description, avant le bouton) et dans la modification en place (après la description, avant les actions) : `groupe-tuiles-radio.md`, variante **neutre** (cochée : `selected` / `selectedSurface`, bordure 2 px, semi-gras), legend « S'applique à », tuiles « Aux poses », « Aux transitions », « Aux poses et aux transitions ».
+
+| Point | Règle |
+|---|---|
+| Valeur initiale | ajout : **aucune tuile cochée** ; modification : la valeur actuelle |
+| Colonnes (`tile-group__tiles--scope`) | une colonne sous 39,5em de conteneur, **trois** au-delà (pas de quatrième colonne vide) ; « Aux poses et aux transitions » passe sur deux lignes dans sa tuile si besoin (hauteur min. `sizes.control`) |
+| Erreur à l'envoi | « Choisis à quoi s'applique l'étiquette. » entre la legend et les tuiles (icône erreur + texte `danger` semi-gras), tuiles en bordure 2 px `danger` (6,6:1 sur `surface`) ; focus sur la première tuile |
 
 ## Gestion (validateur, administrateur)
 
@@ -103,6 +123,18 @@ Après confirmation, si l'étiquette est portée : la zone de confirmation est r
 | Sous-titres de listes | `size.sm`, `weight.semibold`, `text` ; marge haute `spacing.sm` |
 | Listes | `ul`, puces natives ; écart `spacing.xs` ; texte `size.sm` `text` |
 | Lien vers la pose | `text` souligné, `weight.semibold` (règle de l'alerte : pas de `primary` sur une surface colorée), zone cliquable ≥ 44 px de haut ; texte « Voir Bird » (proposé), nom accessible « Voir la pose Bird » |
+
+### Porteurs d'une étiquette : poses, transitions, propositions (story 9a)
+
+Le refus de retrait et le **refus de changement du champ d'application** utilisent la même alerte erreur, avec trois listes au plus, dans cet ordre et seulement si elles ont des éléments :
+
+| Sous-titre | Élément | Lien |
+|---|---|---|
+| « Poses du catalogue » | nom de la pose | **le nom est le lien** vers sa page (`text` souligné, semi-gras, ≥ 44 px de haut) |
+| « Transitions du catalogue » | « de Bird vers Folded Leaf » / « Lunar Roll, de … » | « Voir Bird » (story 8) |
+| « Propositions en attente » | « Proposition de la pose Candlestick », « Modification de Throne », « de Bird vers Folded Leaf » | aucun |
+
+Messages (proposés) : retrait « « lunaire » ne peut pas être retirée : ces éléments la portent. » ; changement « « lunaire » ne peut pas cesser de s'appliquer aux poses : ces éléments la portent. ». Le refus de changement s'affiche **en tête de la zone de modification**, qui reste ouverte avec la saisie (l'utilisateur peut choisir une autre valeur ou annuler).
 
 ## États de la liste
 

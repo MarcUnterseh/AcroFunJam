@@ -102,11 +102,12 @@ public sealed class AcroFunJamDbContextTests(PostgreSqlFixture database) : IClas
             INSERT INTO contribution.pose_proposals
                 (id, contributor_id, name, name_key, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow, status, submitted_at,
                  decided_by, decided_at, rejection_reason,
-                 retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow, adjustment_note)
+                 retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow, adjustment_note,
+                 retained_tag_ids)
             VALUES ({id}, {Guid.NewGuid()}, 'Throne', 'throne', 'beginner', 'beginner', true, true, {status}, {DateTimeOffset.UtcNow},
                     {Guid.NewGuid()}, {DateTimeOffset.UtcNow}, {rejectionReason},
                     {retainedName}, {(retainedName is null ? null : retainedBaseDifficulty)}, {(retainedName is null ? null : "beginner")},
-                    {retainedFlow}, {retainedFlow}, {adjustmentNote})
+                    {retainedFlow}, {retainedFlow}, {adjustmentNote}, {(retainedName is null ? null : Array.Empty<Guid>())})
             """,
             TestContext.Current.CancellationToken);
         return id;

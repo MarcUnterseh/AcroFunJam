@@ -10,6 +10,10 @@ public static class CatalogErrors
     public static readonly Error PoseVersionMismatch =
         new("catalog.pose-version-mismatch", "Cette pose a changé depuis la version attendue.");
 
+    /// <summary>A revision of the pose waits for a decision: the pose is not tagged directly meanwhile (story 9a, D4).</summary>
+    public static readonly Error PoseRevisionPending =
+        new("catalog.pose-revision-pending", "Une modification de cette pose attend déjà d'être validée.");
+
     public static readonly Error PoseNotFound = new("catalog.pose-not-found", "Cette pose n'est pas dans le catalogue.");
 
     public static readonly Error FromPoseNotFound = new("catalog.from-pose-not-found", "La pose de départ n'est pas dans le catalogue.");
@@ -21,6 +25,10 @@ public static class CatalogErrors
 
     public static readonly Error UnnamedTransitionTaken =
         new("catalog.unnamed-transition-taken", "Une transition sans nom relie déjà ces poses dans le catalogue.");
+
+    /// <summary>The tag would apply where the tag it implies does not (« pop » extended to the poses, story 9a, A5).</summary>
+    public static readonly Error TagScopeExceedsImplied =
+        new("catalog.tag-scope-exceeds-implied", "L'étiquette que celle-ci ajoute ne s'applique pas à tous ces éléments.");
 
     public static readonly Error TransitionNotFound = new("catalog.transition-not-found", "Cette transition n'est pas dans le catalogue.");
 

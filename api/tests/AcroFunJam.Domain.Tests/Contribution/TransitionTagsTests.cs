@@ -43,6 +43,20 @@ public sealed class TransitionTagsTests
     }
 
     [Fact]
+    public void Submit_Should_FailWithTagNotApplicable_When_AChosenTagDoesNotApplyToTransitions()
+    {
+        var counterbalance = new TagId(Guid.NewGuid());
+
+        var error = TransitionProposal.Submit(
+                new TransitionProposalId(Guid.NewGuid()), Alice, ThroneToBird, PopToBird, fromPosePublished: true, toPosePublished: true,
+                TransitionSlotAvailability.Available, Now, new TagChoice(TagSet.Empty, TagSet.Empty, TagSet.Of([counterbalance])))
+            .Error.ShouldBeOfType<ProposedTagsNotApplicableError>();
+
+        error.Code.ShouldBe("contribution.tag-not-applicable");
+        error.Tags.ShouldBe(TagSet.Of([counterbalance]));
+    }
+
+    [Fact]
     public void Submit_Should_FailWithTagNotInList_When_AChosenTagIsNotInTheList_AfterThePosesAndBeforeThePlace()
     {
         var classique = new TagId(Guid.NewGuid());

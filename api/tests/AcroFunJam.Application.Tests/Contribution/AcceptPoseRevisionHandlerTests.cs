@@ -42,7 +42,7 @@ public sealed class AcceptPoseRevisionHandlerTests
 
     private AcceptPoseRevisionHandler Handler(FakeCatalogPublisher? publisher = null) =>
         new(_validators, _revisions, _catalogPoseNames, _poseProposals, _reservation, publisher ?? _publisher,
-            _unitOfWork, new FixedTimeProvider(Now));
+            _unitOfWork, new FixedTimeProvider(Now), new FakeCatalogTags(null));
 
     private AcceptPoseRevision AsProposed(PoseRevisionProposalId? id = null) => new(id ?? _revision.Id, Bruno.Id, PoseAdjustments.None, Note: null);
 

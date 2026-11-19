@@ -1,3 +1,5 @@
+using AcroFunJam.Application.Contribution;
+using AcroFunJam.Domain.SharedKernel;
 using System.Security.Claims;
 using AcroFunJam.Api.Authorization;
 using AcroFunJam.Api.Endpoints.Common;
@@ -91,7 +93,11 @@ internal static class PoseRevisionEndpoints
         if (note.IsFailure) return note.Error!.ToProblem();
 
         var result = await handler.Handle(
-            new AcceptPoseRevision(new PoseRevisionProposalId(id), ContributionEndpoints.ValidatorOf(validator), adjustments.Value!, note.Value), ct);
+            new AcceptPoseRevision(new PoseRevisionProposalId(id), ContributionEndpoints.ValidatorOf(validator), adjustments.Value!, note.Value)
+            {
+                Tags = request?.TagIds is null ? null : [.. request.TagIds.Select(t => new TagId(t))],
+            },
+            ct);
         if (result.IsFailure) return result.Error!.ToProblem();
 
         var accepted = result.Value!;
@@ -123,7 +129,12 @@ internal static class PoseRevisionEndpoints
         return TypedResults.Ok(new RejectedPoseProposalResponse(result.Value!.Id.Value, ProposalStatusCodes.From(result.Value.Status)));
     }
 
-    internal static MyPoseRevisionResponse ToResponse(MyPoseRevision revision) =>
+    /// <summary>The sets of tags a revision of « Mes propositions » presents (story 9a): its change and its adjustment.</summary>
+    internal static IEnumerable<TagSet> TagSetsOf(MyPoseRevision revision) =>
+        revision.Changes.OfType<PoseTagsChange>().SelectMany(c => new[] { c.Before, c.After })
+            .Concat(revision.Adjustments.OfType<PoseTagsAdjustment>().SelectMany(a => new[] { a.Proposed, a.Retained }));
+
+    internal static MyPoseRevisionResponse ToResponse(MyPoseRevision revision, TagNames names) =>
         new(
             revision.Id.Value,
             MyProposalStatusCodes.From(revision.Status),
@@ -137,12 +148,13 @@ internal static class PoseRevisionEndpoints
                 revision.Changes.OfType<FlyerDifficultyChange>()
                     .Select(c => new DifficultyValueChangeResponse(DifficultyCodes.From(c.Before), DifficultyCodes.From(c.After))).SingleOrDefault(),
                 revision.Changes.OfType<CanStartFlowChange>().Select(c => new FlowValueChangeResponse(c.Before, c.After)).SingleOrDefault(),
-                revision.Changes.OfType<CanEndFlowChange>().Select(c => new FlowValueChangeResponse(c.Before, c.After)).SingleOrDefault()),
-            ContributionEndpoints.ToResponse(revision.Adjustments),
+                revision.Changes.OfType<CanEndFlowChange>().Select(c => new FlowValueChangeResponse(c.Before, c.After)).SingleOrDefault(),
+                revision.Changes.OfType<PoseTagsChange>().Select(c => new TagsValueChangeResponse(names.Of(c.Before), names.Of(c.After))).SingleOrDefault()),
+            ContributionEndpoints.ToResponse(revision.Adjustments, names),
             revision.Note?.Value,
             revision.Reason?.Value);
 
-    internal static PendingPoseRevisionResponse ToResponse(PendingPoseRevisionDto revision)
+    internal static PendingPoseRevisionResponse ToResponse(PendingPoseRevisionDto revision, TagNames names)
     {
         var current = revision.Current;
         return new PendingPoseRevisionResponse(
@@ -161,7 +173,8 @@ internal static class PoseRevisionEndpoints
                 revision.Changes.OfType<FlyerDifficultyChange>()
                     .Select(c => new DifficultyChangeResponse(DifficultyCodes.From(c.Before), DifficultyCodes.From(c.After))).SingleOrDefault(),
                 revision.Changes.OfType<CanStartFlowChange>().Select(c => new FlowChangeResponse(c.Before, c.After)).SingleOrDefault(),
-                revision.Changes.OfType<CanEndFlowChange>().Select(c => new FlowChangeResponse(c.Before, c.After)).SingleOrDefault()),
+                revision.Changes.OfType<CanEndFlowChange>().Select(c => new FlowChangeResponse(c.Before, c.After)).SingleOrDefault(),
+                revision.Changes.OfType<PoseTagsChange>().Select(c => new TagsChangeResponse(names.Of(c.Before), names.Of(c.After))).SingleOrDefault()),
             revision.Message?.Value,
             new ProposalContributorResponse(revision.ContributorEmail, revision.IsYou),
             revision.SubmittedAt);
@@ -175,6 +188,7 @@ internal static class PoseRevisionEndpoints
         ProposePoseRevisionRequest request,
         ClaimsPrincipal contributor,
         ICommandHandler<ProposePoseRevision, PoseRevisionProposalDto> handler,
+        ICatalogTags tagNames,
         CancellationToken ct)
     {
         var changes = PoseChanges.Create(request.Name, request.BaseDifficulty, request.FlyerDifficulty, request.CanStartFlow, request.CanEndFlow);
@@ -189,11 +203,15 @@ internal static class PoseRevisionEndpoints
             new PublishedPoseId(request.PoseId),
             version.Value,
             changes.Value!,
-            message.Value);
+            message.Value)
+        {
+            Tags = request.TagIds is null ? null : [.. request.TagIds.Select(t => new TagId(t))],
+        };
         var result = await handler.Handle(command, ct);
         if (result.IsFailure) return result.Error!.ToProblem();
 
         var revision = result.Value!;
+        var names = await TagNames.Of(tagNames, [revision.Pose.Tags], ct);
         return TypedResults.Created((string?)null, new PoseRevisionProposalResponse(
             revision.Id.Value,
             ProposalStatusCodes.From(revision.Status),
@@ -202,7 +220,8 @@ internal static class PoseRevisionEndpoints
             DifficultyCodes.From(revision.Pose.Difficulty.Base),
             DifficultyCodes.From(revision.Pose.Difficulty.Flyer),
             revision.Pose.Flow.CanStartFlow,
-            revision.Pose.Flow.CanEndFlow));
+            revision.Pose.Flow.CanEndFlow,
+            names.Of(revision.Pose.Tags)));
     }
 }
 
@@ -218,7 +237,11 @@ public sealed record ProposePoseRevisionRequest(
     string? FlyerDifficulty,
     bool? CanStartFlow,
     bool? CanEndFlow,
-    string? Message);
+    string? Message)
+{
+    /// <summary>The tags of the revised pose, by identifier (story 9a, Q172): absent or null keeps those of the pose; empty removes them.</summary>
+    public IReadOnlyList<Guid>? TagIds { get; init; }
+}
 
 /// <summary>The pending revision of a pose, or null when it has none (story 6, decision D).</summary>
 public sealed record PendingRevisionOfPoseResponse(PendingRevisionResponse? PendingRevision);
@@ -235,7 +258,8 @@ public sealed record PoseRevisionProposalResponse(
     DifficultyCode BaseDifficulty,
     DifficultyCode FlyerDifficulty,
     bool CanStartFlow,
-    bool CanEndFlow);
+    bool CanEndFlow,
+    IReadOnlyList<ProposalTagResponse> Tags);
 
 /// <summary>
 /// A revision proposal pending validation (story 6, ADR 0027): the pose with its current values, the changed fields (current →
@@ -259,13 +283,17 @@ public sealed record RevisionChangesResponse(
     DifficultyChangeResponse? BaseDifficulty,
     DifficultyChangeResponse? FlyerDifficulty,
     FlowChangeResponse? CanStartFlow,
-    FlowChangeResponse? CanEndFlow);
+    FlowChangeResponse? CanEndFlow,
+    TagsChangeResponse? Tags);
 
 public sealed record NameChangeResponse(string Current, string Proposed);
 
 public sealed record DifficultyChangeResponse(DifficultyCode Current, DifficultyCode Proposed);
 
 public sealed record FlowChangeResponse(bool Current, bool Proposed);
+
+/// <summary>The tags of the pose (story 9a), current then proposed, in catalog order.</summary>
+public sealed record TagsChangeResponse(IReadOnlyList<ProposalTagResponse> Current, IReadOnlyList<ProposalTagResponse> Proposed);
 
 /// <summary>
 /// One of their revision proposals, as its contributor sees it (story 6, ADR 0027): the pose by its name when proposed, its
@@ -289,10 +317,14 @@ public sealed record PoseChangesResponse(
     DifficultyValueChangeResponse? BaseDifficulty,
     DifficultyValueChangeResponse? FlyerDifficulty,
     FlowValueChangeResponse? CanStartFlow,
-    FlowValueChangeResponse? CanEndFlow);
+    FlowValueChangeResponse? CanEndFlow,
+    TagsValueChangeResponse? Tags);
 
 public sealed record NameValueChangeResponse(string Before, string After);
 
 public sealed record DifficultyValueChangeResponse(DifficultyCode Before, DifficultyCode After);
 
 public sealed record FlowValueChangeResponse(bool Before, bool After);
+
+/// <summary>The tags of the pose (story 9a), before then after, in catalog order.</summary>
+public sealed record TagsValueChangeResponse(IReadOnlyList<ProposalTagResponse> Before, IReadOnlyList<ProposalTagResponse> After);

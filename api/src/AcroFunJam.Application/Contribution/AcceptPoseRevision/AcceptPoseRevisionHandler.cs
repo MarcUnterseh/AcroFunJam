@@ -13,7 +13,8 @@ internal sealed class AcceptPoseRevisionHandler(
     IPoseReservation reservation,
     ICatalogPublisher catalogPublisher,
     IUnitOfWork unitOfWork,
-    TimeProvider clock) : ICommandHandler<AcceptPoseRevision, DecidedPoseRevisionDto>
+    TimeProvider clock,
+    ICatalogTags catalogTags) : ICommandHandler<AcceptPoseRevision, DecidedPoseRevisionDto>
 {
     public async Task<Result<DecidedPoseRevisionDto>> Handle(AcceptPoseRevision command, CancellationToken ct)
     {
@@ -35,7 +36,9 @@ internal sealed class AcceptPoseRevisionHandler(
 
             var availability = key is null ? Result<NameAvailability>.Success(NameAvailability.Available) : await NameAvailabilityOf(proposal, key, transactionCt);
             if (availability.IsFailure) return availability.Error!;
-            var accepted = proposal.Accept(validator, command.Adjustments, command.Note, availability.Value, clock.GetUtcNow());
+            // Story 9a: the retained tags, chosen for a pose by the list of the Catalog, inside the reservation (ADR 0036).
+            var retainedTags = command.Tags is null ? null : await catalogTags.ChooseForPose(command.Tags, transactionCt);
+            var accepted = proposal.Accept(validator, command.Adjustments, command.Note, availability.Value, clock.GetUtcNow(), retainedTags);
             if (accepted.IsFailure) return accepted.Error!;
             var acceptance = accepted.Value!;
 

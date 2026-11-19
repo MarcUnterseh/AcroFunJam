@@ -73,6 +73,14 @@ public static class ProblemResults
         // A tag chosen for a transition that is not in the list (any longer): the site names it (ADR 0034).
         ["catalog.tag-not-in-list"] = StatusCodes.Status409Conflict,
         ["contribution.tag-not-in-list"] = StatusCodes.Status409Conflict,
+        // Story 9a (ADR 0035): what a tag applies to.
+        ["tag.scope-required"] = StatusCodes.Status400BadRequest,
+        ["tag.unknown-scope"] = StatusCodes.Status400BadRequest,
+        ["catalog.tag-not-applicable"] = StatusCodes.Status409Conflict,
+        ["contribution.tag-not-applicable"] = StatusCodes.Status409Conflict,
+        ["catalog.tag-scope-exceeds-implied"] = StatusCodes.Status409Conflict,
+        ["catalog.tag-scope-needed-by-impliers"] = StatusCodes.Status409Conflict,
+        ["catalog.pose-revision-pending"] = StatusCodes.Status409Conflict,
     };
 
     /// <summary>
@@ -99,10 +107,20 @@ public static class ProblemResults
     {
         TagNotInListError notInList => new() { ["tagIds"] = notInList.Tags.Ids.Select(t => t.Value).ToList() },
         ProposedTagsNotInListError notInList => new() { ["tagIds"] = notInList.Tags.Ids.Select(t => t.Value).ToList() },
+        TagNotApplicableError notApplicable => new() { ["tagIds"] = notApplicable.Tags.Ids.Select(t => t.Value).ToList() },
+        ProposedTagsNotApplicableError notApplicable => new() { ["tagIds"] = notApplicable.Tags.Ids.Select(t => t.Value).ToList() },
         TagCarriedError carried => new()
         {
+            ["poses"] = carried.Carriers.Poses.Select(p => new { id = p.Id.Value, name = p.Name.Value }).ToList(),
             ["transitions"] = carried.Carriers.Transitions.Select(Carrier).ToList(),
             ["pendingProposals"] = carried.Carriers.PendingProposals.Select(Carrier).ToList(),
+            // Story 9a: the pending proposals about a pose (new poses and revisions), apart, so the transitions keep their shape.
+            ["pendingPoses"] = carried.Carriers.PendingPoses.Select(p => new
+            {
+                id = p.Id,
+                kind = p.Kind == PendingPoseKind.Proposal ? "pose-proposal" : "pose-revision",
+                name = p.Name.Value,
+            }).ToList(),
         },
         _ => null,
     };

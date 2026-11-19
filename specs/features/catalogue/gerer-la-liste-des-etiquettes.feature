@@ -23,6 +23,11 @@ Fonctionnalité: Gérer la liste des étiquettes
   # - retrait impossible tant qu'une transition publiée ou une proposition en attente porte l'étiquette ; le refus
   #   les liste (Q132, Q155).
   #
+  # Story 9a « Étiqueter les poses » (2026-11-18) : chaque étiquette a un champ d'application (poses, transitions, ou
+  # les deux), voir catalogue/etiquettes-applicables-aux-poses.feature. Dans ce fichier, les étapes qui ajoutent une
+  # étiquette à la liste (« Bruno ajoute à la liste l'étiquette … », « l'étiquette … dans la liste des étiquettes »,
+  # « … sur le site ») ajoutent une étiquette qui **s'applique aux transitions**, sauf mention contraire.
+  #
   # Personnages : Alice est utilisatrice, Bruno validateur, Paul administrateur.
   # Hors périmètre : proposer une étiquette (utilisateurs), hiérarchie ou exclusivité entre étiquettes (Q122), fusion
   # d'étiquettes, étiquettes des poses (Q120, Q139), filtre par étiquette, étiquette de sécurité (Q146), mobile.
@@ -34,6 +39,8 @@ Fonctionnalité: Gérer la liste des étiquettes
   # Q117, Q118, Q119, Q145 : ni « classique », ni « envol », ni « contrôlé », ni « fluide », ni « washing machine ».
   Règle: La liste des étiquettes est amorcée une seule fois, au premier déploiement, avec les étiquettes de l'expert acroyoga
 
+    # Story 9a (2026-11-18) : nouvelles descriptions amorcées de « inversion » et « lunaire », valables pour les poses
+    # et les transitions (révision 2 de la liste amorcée, ADR 0035).
     @api
     Scénario: Au premier déploiement, la liste présente les étiquettes amorcées et leurs descriptions
       Soit AcroFunJam est déployé pour la première fois
@@ -42,8 +49,8 @@ Fonctionnalité: Gérer la liste des étiquettes
         | étiquette | description                                                                                                       |
         | dynamique | Le passage se fait avec de l'élan : base et flyer se lancent dans le mouvement au lieu de le dérouler lentement. |
         | icarien   | Style où la base, le plus souvent en L-basing, lance, fait tourner et rattrape le flyer surtout avec les pieds.  |
-        | inversion | Le flyer passe la tête en bas pendant la transition.                                                             |
-        | lunaire   | Pratique thérapeutique : le flyer, détendu et passif, se laisse porter, étirer ou retourner lentement par la base. |
+        | inversion | La tête du flyer est plus basse que ses hanches, dans la pose ou à un moment de la transition. Ex. : Candlestick, Straddle Bat. |
+        | lunaire   | Pratique thérapeutique : le flyer, détendu et passif, se laisse porter et étirer par la base ; les passages se font lentement. Ex. : Folded Leaf, Straddle Bat. |
         | pop       | La base propulse le flyer, qui quitte un instant tout contact avec elle avant d'être rattrapé.                   |
         | vrille    | Le flyer tourne sur lui-même autour de l'axe de son corps, par exemple du ventre vers le dos.                    |
         | whip      | La base balance le flyer et l'élan le fait pivoter d'une prise à l'autre, vers l'avant ou vers l'arrière.        |

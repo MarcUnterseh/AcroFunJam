@@ -76,7 +76,8 @@ public sealed class MyPoseRevision : IMyProposal
         Status = acceptance.HasAdjustments ? MyProposalStatus.AcceptedWithAdjustments : MyProposalStatus.Accepted,
         SubmittedAt = revision.SubmittedAt,
         DecidedAt = acceptance.At,
-        Changes = PoseFieldChanges.Between(revision.Revision.Before, acceptance.Retained.Name, acceptance.Retained.Difficulty, acceptance.Retained.Flow),
+        Changes = PoseFieldChanges.Between(revision.Revision.Before, acceptance.Retained.Name, acceptance.Retained.Difficulty, acceptance.Retained.Flow,
+            acceptance.Retained.Tags),
         Adjustments = acceptance.Retained.AdjustmentsFrom(revision.Revision.After),
         Note = acceptance.Note,
     };

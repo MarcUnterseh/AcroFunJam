@@ -65,6 +65,11 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("source_proposal_id");
 
+                    b.PrimitiveCollection<Guid[]>("TagIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("tag_ids");
+
                     b.Property<int>("Version")
                         .IsConcurrencyToken()
                         .HasColumnType("integer")
@@ -75,6 +80,11 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                     b.HasIndex("NameKey")
                         .IsUnique()
                         .HasDatabaseName("ix_poses_name_key");
+
+                    b.HasIndex("TagIds")
+                        .HasDatabaseName("ix_poses_tag_ids");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("TagIds"), "gin");
 
                     b.ToTable("poses", "catalog", t =>
                         {
@@ -95,6 +105,10 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<int?>("SeedRevision")
+                        .HasColumnType("integer")
+                        .HasColumnName("seed_revision");
 
                     b.Property<DateTimeOffset?>("SeededAt")
                         .HasColumnType("timestamp with time zone")
@@ -134,6 +148,11 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("removed_at");
 
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("scope");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ImpliedTagId");
@@ -152,6 +171,8 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_tags_name_key", "name_key <> ''");
 
                             t.HasCheckConstraint("ck_tags_name_length", "char_length(name) <= 30");
+
+                            t.HasCheckConstraint("ck_tags_scope", "scope IN ('poses', 'transitions', 'poses-and-transitions')");
                         });
                 });
 
@@ -294,6 +315,13 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name_key");
 
+                    b.PrimitiveCollection<Guid[]>("ProposedTagIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("proposed_tag_ids")
+                        .HasDefaultValueSql("'{}'");
+
                     b.Property<bool>("PublishedDirectly")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -324,6 +352,10 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("retained_name");
 
+                    b.PrimitiveCollection<Guid[]>("RetainedTagIds")
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("retained_tag_ids");
+
                     b.Property<string>("Status")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -344,6 +376,12 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_pose_proposals_pending_name_key")
                         .HasFilter("status = 'pending'");
 
+                    b.HasIndex("ProposedTagIds")
+                        .HasDatabaseName("ix_pose_proposals_pending_tag_ids")
+                        .HasFilter("status = 'pending'");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("ProposedTagIds"), "gin");
+
                     b.HasIndex("SubmittedAt")
                         .HasDatabaseName("ix_pose_proposals_pending_submitted_at")
                         .HasFilter("status = 'pending'");
@@ -354,7 +392,7 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_pose_proposals_adjustment_note_length", "char_length(adjustment_note) <= 500");
 
-                            t.HasCheckConstraint("ck_pose_proposals_adjustment_note_with_adjustments", "adjustment_note IS NULL OR (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow) IS DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow)");
+                            t.HasCheckConstraint("ck_pose_proposals_adjustment_note_with_adjustments", "adjustment_note IS NULL OR (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow) IS DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow) OR NOT (retained_tag_ids @> proposed_tag_ids AND retained_tag_ids <@ proposed_tag_ids)");
 
                             t.HasCheckConstraint("ck_pose_proposals_base_difficulty", "base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
 
@@ -366,7 +404,7 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_pose_proposals_name_length", "char_length(name) <= 60");
 
-                            t.HasCheckConstraint("ck_pose_proposals_published_directly", "NOT published_directly OR (status = 'accepted' AND decided_by = contributor_id AND decided_at = submitted_at AND adjustment_note IS NULL AND (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow) IS NOT DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow))");
+                            t.HasCheckConstraint("ck_pose_proposals_published_directly", "NOT published_directly OR (status = 'accepted' AND decided_by = contributor_id AND decided_at = submitted_at AND adjustment_note IS NULL AND (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow) IS NOT DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow) AND retained_tag_ids @> proposed_tag_ids AND retained_tag_ids <@ proposed_tag_ids)");
 
                             t.HasCheckConstraint("ck_pose_proposals_rejection_reason", "(status = 'rejected') = (rejection_reason IS NOT NULL)");
 
@@ -378,7 +416,7 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_pose_proposals_retained_name_length", "char_length(retained_name) <= 60");
 
-                            t.HasCheckConstraint("ck_pose_proposals_retained_pose", "(status = 'accepted') = (retained_name IS NOT NULL) AND (status = 'accepted') = (retained_base_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_flyer_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_can_start_flow IS NOT NULL) AND (status = 'accepted') = (retained_can_end_flow IS NOT NULL)");
+                            t.HasCheckConstraint("ck_pose_proposals_retained_pose", "(status = 'accepted') = (retained_name IS NOT NULL) AND (status = 'accepted') = (retained_base_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_flyer_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_can_start_flow IS NOT NULL) AND (status = 'accepted') = (retained_can_end_flow IS NOT NULL) AND (status = 'accepted') = (retained_tag_ids IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_pose_proposals_status", "status IN ('pending', 'accepted', 'rejected')");
                         });
@@ -465,6 +503,13 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("prior_name");
 
+                    b.PrimitiveCollection<Guid[]>("PriorTagIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("prior_tag_ids")
+                        .HasDefaultValueSql("'{}'");
+
                     b.Property<bool>("PublishedDirectly")
                         .HasColumnType("boolean")
                         .HasColumnName("published_directly");
@@ -497,6 +542,10 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("retained_name");
 
+                    b.PrimitiveCollection<Guid[]>("RetainedTagIds")
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("retained_tag_ids");
+
                     b.Property<string>("Status")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -506,6 +555,13 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("SubmittedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("submitted_at");
+
+                    b.PrimitiveCollection<Guid[]>("TagIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("tag_ids")
+                        .HasDefaultValueSql("'{}'");
 
                     b.HasKey("Id");
 
@@ -521,6 +577,12 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_pose_revision_proposals_pending_reserved_name_key")
                         .HasFilter("status = 'pending'");
+
+                    b.HasIndex("TagIds")
+                        .HasDatabaseName("ix_pose_revision_proposals_pending_tag_ids")
+                        .HasFilter("status = 'pending'");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("TagIds"), "gin");
 
                     b.ToTable("pose_revision_proposals", "contribution", t =>
                         {
@@ -546,7 +608,7 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_pose_revision_proposals_prior_name_length", "char_length(prior_name) <= 60");
 
-                            t.HasCheckConstraint("ck_pose_revision_proposals_published_directly", "NOT published_directly OR (status = 'accepted' AND decided_by = contributor_id AND decided_at = submitted_at AND adjustment_note IS NULL AND (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow) IS NOT DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow))");
+                            t.HasCheckConstraint("ck_pose_revision_proposals_published_directly", "NOT published_directly OR (status = 'accepted' AND decided_by = contributor_id AND decided_at = submitted_at AND adjustment_note IS NULL AND (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow) IS NOT DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow) AND retained_tag_ids @> tag_ids AND retained_tag_ids <@ tag_ids)");
 
                             t.HasCheckConstraint("ck_pose_revision_proposals_rejection_reason", "(status = 'rejected') = (rejection_reason IS NOT NULL)");
 
@@ -556,13 +618,13 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_pose_revision_proposals_retained_base_difficulty", "retained_base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
 
-                            t.HasCheckConstraint("ck_pose_revision_proposals_retained_changes_the_pose", "status <> 'accepted' OR (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow) IS DISTINCT FROM (prior_name, prior_base_difficulty, prior_flyer_difficulty, prior_can_start_flow, prior_can_end_flow)");
+                            t.HasCheckConstraint("ck_pose_revision_proposals_retained_changes_the_pose", "status <> 'accepted' OR (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow) IS DISTINCT FROM (prior_name, prior_base_difficulty, prior_flyer_difficulty, prior_can_start_flow, prior_can_end_flow) OR NOT (retained_tag_ids @> prior_tag_ids AND retained_tag_ids <@ prior_tag_ids)");
 
                             t.HasCheckConstraint("ck_pose_revision_proposals_retained_flyer_difficulty", "retained_flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
 
                             t.HasCheckConstraint("ck_pose_revision_proposals_retained_name_length", "char_length(retained_name) <= 60");
 
-                            t.HasCheckConstraint("ck_pose_revision_proposals_retained_pose", "(status = 'accepted') = (retained_name IS NOT NULL) AND (status = 'accepted') = (retained_base_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_flyer_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_can_start_flow IS NOT NULL) AND (status = 'accepted') = (retained_can_end_flow IS NOT NULL)");
+                            t.HasCheckConstraint("ck_pose_revision_proposals_retained_pose", "(status = 'accepted') = (retained_name IS NOT NULL) AND (status = 'accepted') = (retained_base_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_flyer_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_can_start_flow IS NOT NULL) AND (status = 'accepted') = (retained_can_end_flow IS NOT NULL) AND (status = 'accepted') = (retained_tag_ids IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_pose_revision_proposals_status", "status IN ('pending', 'accepted', 'rejected')");
                         });
@@ -719,9 +781,9 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_transition_proposals_retained_flyer_difficulty", "retained_flyer_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
 
-                            t.HasCheckConstraint("ck_transition_proposals_retained_tags", "(status = 'accepted') = (retained_tag_ids IS NOT NULL)");
-
                             t.HasCheckConstraint("ck_transition_proposals_retained_name_length", "char_length(retained_name) <= 60");
+
+                            t.HasCheckConstraint("ck_transition_proposals_retained_tags", "(status = 'accepted') = (retained_tag_ids IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_transition_proposals_retained_transition", "(status = 'accepted') = (retained_base_difficulty IS NOT NULL) AND (status = 'accepted') = (retained_flyer_difficulty IS NOT NULL) AND (status = 'accepted' OR (retained_name IS NULL AND retained_description IS NULL))");
 

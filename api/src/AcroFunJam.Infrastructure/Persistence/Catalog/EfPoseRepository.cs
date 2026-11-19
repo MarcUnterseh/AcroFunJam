@@ -28,6 +28,7 @@ public sealed class EfPoseRepository(AcroFunJamDbContext context, TrackedAggrega
         entry.Property(p => p.FlyerDifficulty).IsModified = true;
         entry.Property(p => p.CanStartFlow).IsModified = true;
         entry.Property(p => p.CanEndFlow).IsModified = true;
+        entry.Property(p => p.TagIds).IsModified = true;
         aggregates.Track(pose);
     }
 
@@ -43,6 +44,7 @@ public sealed class EfPoseRepository(AcroFunJamDbContext context, TrackedAggrega
         SourceProposalId = pose.SourceProposalId?.Value,
         PublishedAt = pose.PublishedAt,
         Version = pose.Version.Value,
+        TagIds = [.. pose.Tags.Ids.Select(t => t.Value)],
     };
 
     public async Task<IReadOnlyDictionary<PoseId, PoseName>> NamesOf(IReadOnlyCollection<PoseId> ids, CancellationToken ct)
@@ -70,7 +72,8 @@ public sealed class EfPoseRepository(AcroFunJamDbContext context, TrackedAggrega
             FlowBoundaries.Create(record.CanStartFlow, record.CanEndFlow).Value!,
             record.SourceProposalId is { } source ? new SourceProposalId(source) : null,
             record.PublishedAt,
-            PoseVersion.Of(record.Version));
+            PoseVersion.Of(record.Version),
+            TagSet.Of(record.TagIds.Select(t => new TagId(t))));
         aggregates.Track(pose);
         return pose;
     }

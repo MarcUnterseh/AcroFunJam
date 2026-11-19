@@ -16,6 +16,7 @@ public sealed class TagListRecordConfiguration : IEntityTypeConfiguration<TagLis
         builder.HasKey(l => l.Id);
         builder.Property(l => l.Id).HasColumnName("id").ValueGeneratedNever();
         builder.Property(l => l.SeededAt).HasColumnName("seeded_at");
+        builder.Property(l => l.SeedRevision).HasColumnName("seed_revision");
     }
 }
 
@@ -35,6 +36,7 @@ public sealed class TagRecordConfiguration : IEntityTypeConfiguration<TagRecord>
             table.HasCheckConstraint("ck_tags_name_key", "name_key <> ''");
             table.HasCheckConstraint("ck_tags_description", "description <> ''");
             table.HasCheckConstraint("ck_tags_description_length", $"char_length(description) <= {TagDescription.MaxLength}");
+            table.HasCheckConstraint("ck_tags_scope", "scope IN ('poses', 'transitions', 'poses-and-transitions')");
         });
         builder.HasKey(t => t.Id);
         builder.Property(t => t.Id).HasColumnName("id").ValueGeneratedNever();
@@ -42,6 +44,7 @@ public sealed class TagRecordConfiguration : IEntityTypeConfiguration<TagRecord>
         builder.Property(t => t.NameKey).HasColumnName("name_key").IsRequired();
         builder.Property(t => t.Description).HasColumnName("description").IsRequired();
         builder.Property(t => t.ImpliedTagId).HasColumnName("implied_tag_id");
+        builder.Property(t => t.Scope).HasColumnName("scope").IsRequired();
         builder.Property(t => t.RemovedAt).HasColumnName("removed_at");
 
         // Tags are removed logically, never deleted: the foreign key forbids any silent deletion.

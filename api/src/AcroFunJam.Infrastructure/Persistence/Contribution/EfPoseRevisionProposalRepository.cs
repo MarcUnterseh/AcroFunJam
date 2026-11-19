@@ -31,6 +31,7 @@ public sealed class EfPoseRevisionProposalRepository(AcroFunJamDbContext context
         entry.Property(p => p.RetainedCanStartFlow).IsModified = true;
         entry.Property(p => p.RetainedCanEndFlow).IsModified = true;
         entry.Property(p => p.AdjustmentNote).IsModified = true;
+        entry.Property(p => p.RetainedTagIds).IsModified = true;
         aggregates.Track(proposal);
     }
 

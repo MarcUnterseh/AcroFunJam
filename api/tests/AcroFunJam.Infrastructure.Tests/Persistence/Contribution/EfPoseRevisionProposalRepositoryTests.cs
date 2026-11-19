@@ -237,4 +237,67 @@ public sealed class EfPoseRevisionProposalRepositoryTests(PostgreSqlFixture data
 
         saved.Error.ShouldBe(ContributionErrors.ProposalAlreadyDecided);
     }
+
+    // --- Story 9a: the tags of the pose before, proposed and retained (ADR 0036) -------------------
+
+    private static readonly TagId Lunar = new(Guid.NewGuid());
+    private static readonly TagId Inversion = new(Guid.NewGuid());
+
+    private static TagChoice Chosen(params TagId[] tags) => new(TagSet.Of(tags), TagSet.Empty);
+
+    private static PoseRevisionProposal ARetaggingRevision(bool byAValidator = false)
+    {
+        var foldedLeaf = new PublishedPose(
+            new PublishedPoseId(Guid.NewGuid()),
+            new PriorPose(
+                PoseName.Create("Folded Leaf").Value!,
+                Difficulty.Create(DifficultyLevel.Beginner, DifficultyLevel.Discovery).Value!,
+                FlowBoundaries.Create(canStartFlow: true, canEndFlow: true).Value!) { Tags = TagSet.Of([Inversion]) },
+            new PublishedPoseVersion(2));
+        return PoseRevisionProposal.Submit(
+            new PoseRevisionProposalId(Guid.NewGuid()),
+            new Contributor(new ContributorId(Guid.NewGuid()), IsValidator: byAValidator),
+            foldedLeaf,
+            foldedLeaf.Version,
+            PoseChanges.Create(null, null, null, null, null).Value!.Tagged(Chosen(Lunar, Inversion)),
+            message: null,
+            revisionAlreadyPending: false,
+            NameAvailability.Available,
+            Now).Value!;
+    }
+
+    [Fact]
+    public async Task GetById_Should_RestoreTheTagsBeforeAndProposed_When_TheRevisionChangesTheTags()
+    {
+        var revision = ARetaggingRevision();
+        await Save(revision);
+
+        (await Restored(revision.Id)).Revision.ShouldSatisfyAllConditions(
+            r => r.Before.Tags.ShouldBe(TagSet.Of([Inversion])),
+            r => r.After.Tags.ShouldBe(TagSet.Of([Lunar, Inversion])));
+    }
+
+    [Fact]
+    public async Task Update_Should_RecordTheRetainedTags_When_AcceptedWithOtherTagsOnly()
+    {
+        var revision = ARetaggingRevision();
+        await Save(revision);
+
+        (await Decide(revision.Id, p => p.Accept(Bruno, PoseAdjustments.None, note: null, NameAvailability.Available, Later, Chosen(Lunar))
+            .IsSuccess.ShouldBeTrue())).IsSuccess.ShouldBeTrue();
+
+        var acceptance = (await Restored(revision.Id)).Decision.ShouldBeOfType<Acceptance>();
+        acceptance.Retained.Tags.ShouldBe(TagSet.Of([Lunar]));
+        acceptance.HasAdjustments.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Add_Should_StoreTheTagsOfADirectPublication_When_AValidatorRevises()
+    {
+        var revision = ARetaggingRevision(byAValidator: true);
+
+        (await Save(revision)).IsSuccess.ShouldBeTrue();
+
+        (await Restored(revision.Id)).Decision.ShouldBeOfType<Acceptance>().Retained.Tags.ShouldBe(TagSet.Of([Lunar, Inversion]));
+    }
 }

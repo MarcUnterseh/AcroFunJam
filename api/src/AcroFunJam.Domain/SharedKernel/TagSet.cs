@@ -34,10 +34,14 @@ public sealed class TagSet : IEquatable<TagSet>
 }
 
 /// <summary>
-/// The tags chosen through the list (ADR 0033): those of the list, completed with the tags they imply (« dynamique » for
-/// « pop »), and those that are not in the list.
+/// The tags chosen through the list for an element (ADR 0033, ADR 0035): those of the list that apply to it, completed with
+/// the tags they imply (« dynamique » for « pop »), those that are not in the list, and those that do not apply to it.
 /// </summary>
-public sealed record TagChoice(TagSet Tags, TagSet NotInList)
+public sealed record TagChoice(TagSet Tags, TagSet NotInList, TagSet NotApplicable)
 {
-    public bool IsValid => NotInList.Count == 0;
+    public TagChoice(TagSet tags, TagSet notInList) : this(tags, notInList, TagSet.Empty)
+    {
+    }
+
+    public bool IsValid => NotInList.Count == 0 && NotApplicable.Count == 0;
 }

@@ -25,7 +25,9 @@ public sealed class CatalogPoses(
 
         var pose = found.Value!;
         return Result<PublishedPose>.Success(new PublishedPose(
-            id, new PriorPose(pose.Name, pose.Difficulty, pose.Flow), new PublishedPoseVersion(pose.Version.Value)));
+            id,
+            new PriorPose(pose.Name, pose.Difficulty, pose.Flow) { Tags = TagSet.Of(pose.PoseTags.Select(t => t.Id)) },
+            new PublishedPoseVersion(pose.Version.Value)));
     }
 
     public async Task<Result<IReadOnlyDictionary<PublishedPoseId, PoseName>>> NamesOf(IReadOnlyCollection<PublishedPoseId> ids, CancellationToken ct)

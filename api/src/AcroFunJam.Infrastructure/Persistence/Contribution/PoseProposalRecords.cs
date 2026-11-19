@@ -46,8 +46,10 @@ internal static class PoseProposalRecords
         RetainedPose.Create(
                 record.RetainedName, record.RetainedBaseDifficulty, record.RetainedFlyerDifficulty, record.RetainedCanStartFlow,
                 record.RetainedCanEndFlow) is { IsSuccess: true } retained
-            ? retained.Value!
+            ? retained.Value! with { Tags = ToTags(record.RetainedTagIds ?? throw Invalid(record, "retained tags")) }
             : throw Invalid(record, "retained pose");
+
+    private static TagSet ToTags(IEnumerable<Guid> ids) => TagSet.Of(ids.Select(id => new TagId(id)));
 
     private static AdjustmentNote? ToAdjustmentNote(PoseProposalRecord record) =>
         AdjustmentNote.Create(record.AdjustmentNote) is { IsSuccess: true } note ? note.Value : throw Invalid(record, "adjustment note");
@@ -55,7 +57,7 @@ internal static class PoseProposalRecords
     private static ProposedPose ToProposedPose(PoseProposalRecord record) =>
         ProposedPose.Create(record.Name, record.BaseDifficulty, record.FlyerDifficulty, record.CanStartFlow, record.CanEndFlow) is
             { IsSuccess: true } pose
-            ? pose.Value!
+            ? pose.Value!.Tagged(ToTags(record.ProposedTagIds))
             : throw Invalid(record, "proposed pose");
 
     private static InvalidOperationException Invalid(PoseProposalRecord record, string what) =>
@@ -97,6 +99,8 @@ internal static class PoseProposalRecords
             RetainedCanStartFlow = acceptance?.Retained.Flow.CanStartFlow,
             RetainedCanEndFlow = acceptance?.Retained.Flow.CanEndFlow,
             AdjustmentNote = acceptance?.Note?.Value,
+            ProposedTagIds = [.. proposal.Pose.Tags.Ids.Select(t => t.Value)],
+            RetainedTagIds = acceptance is null ? null : [.. acceptance.Retained.Tags.Ids.Select(t => t.Value)],
             PublishedDirectly = acceptance?.IsDirectPublication ?? false,
         };
     }

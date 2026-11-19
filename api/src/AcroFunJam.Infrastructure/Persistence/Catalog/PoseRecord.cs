@@ -25,4 +25,7 @@ public sealed class PoseRecord
 
     /// <summary>Version of the pose, 1 at publication, incremented at each revision (ADR 0024).</summary>
     public int Version { get; set; }
+
+    /// <summary>Its tags (story 9a, ADR 0036), by identifier; none for a pose published before them.</summary>
+    public Guid[] TagIds { get; set; } = [];
 }

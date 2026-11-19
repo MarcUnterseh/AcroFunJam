@@ -1,0 +1,1825 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette : étiqueter les poses (story 9a)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap">
+<style>
+/* Maquette statique de la story 9a (docs/design/ecrans/9a-etiquettes-des-poses.md).
+   Valeurs : @acrofunjam/ui-tokens (front/packages/ui-tokens/src/index.ts), mêmes noms de variables que le site
+   (--afj-*). Aucune valeur nouvelle : la story n'ajoute pas de token. Les classes reprennent celles du site
+   (front/apps/web/src/index.css) ; les nouvelles sont proposées dans la spécification (.pose-tags,
+   .pose-tags__manage, .pose-tagging-zone, .tag__scope, .tile-group__tiles--scope).
+   Les cadres réagissent à leur propre largeur (requêtes de conteneur), comme le site réagit à la fenêtre :
+   40em = breakpoints.md, 64em = breakpoints.lg. */
+
+:root {
+  color-scheme: light;
+  --afj-color-primary: #5B3FC4;
+  --afj-color-primary-hover: #47309F;
+  --afj-color-primary-active: #38267E;
+  --afj-color-primary-contrast: #FFFFFF;
+  --afj-color-background: #F5F2FA;
+  --afj-color-surface: #FFFFFF;
+  --afj-color-surface-hover: #EDE8F7;
+  --afj-color-text: #211C3B;
+  --afj-color-text-muted: #5B5577;
+  --afj-color-border: #8F87A8;
+  --afj-color-divider: #DCD5EA;
+  --afj-color-focus: #1D69AE;
+  --afj-color-danger: #B42318;
+  --afj-color-danger-surface: #FDECEA;
+  --afj-color-success: #2C6A4C;
+  --afj-color-success-surface: #DCEFE3;
+  --afj-color-info: #1D69AE;
+  --afj-color-info-surface: #DFEAFA;
+  --afj-color-disabled-surface: #EDE8F7;
+  --afj-color-selected: #47309F;
+  --afj-color-selected-surface: #EBE5FB;
+  --afj-color-badge: #211C3B;
+  --afj-color-badge-contrast: #FFFFFF;
+  --afj-color-base: #2C6A4C;
+  --afj-color-base-surface: #DCEFE3;
+  --afj-color-flyer: #1D69AE;
+  --afj-color-flyer-surface: #DFEAFA;
+  --afj-color-sun: #E8961E;
+  --afj-color-sun-strong: #A15C00;
+  --afj-color-sun-surface: #FFEBC4;
+  --afj-color-sky-text: #211C3B;
+  --afj-color-tag-surface: #F2EFEA;
+  --afj-color-tag-border: #CFC8BD;
+
+  --afj-sky-gradient: linear-gradient(172deg, #FFE1A0 0%, #FBC0A4 36%, #D3C1F1 72%, #A797E6 100%);
+  --afj-sky-orb: radial-gradient(circle at 50% 50%, #FFF6D8 0%, #FFD36B 38%, #F6A43A 70%, rgba(246, 164, 58, 0) 71%);
+  --afj-sky-orb-glow: rgba(255, 196, 92, 0.55);
+  --afj-sky-grain-opacity: 0.18;
+
+  --afj-spacing-xs: 4px;
+  --afj-spacing-sm: 8px;
+  --afj-spacing-md: 16px;
+  --afj-spacing-lg: 24px;
+  --afj-spacing-xl: 32px;
+  --afj-spacing-xxl: 48px;
+
+  --afj-radius-sm: 10px;
+  --afj-radius-md: 16px;
+  --afj-radius-lg: 26px;
+  --afj-radius-pill: 9999px;
+
+  --afj-font-family: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --afj-font-family-display: "Unbounded", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --afj-font-size-xs: 0.75rem;
+  --afj-font-size-sm: 0.875rem;
+  --afj-font-size-md: 1rem;
+  --afj-font-size-lg: 1.25rem;
+  --afj-font-size-xl: 1.75rem;
+  --afj-font-size-xxl: 2.5rem;
+  --afj-font-size-display: 4rem;
+  --afj-font-size-display-large: 6rem;
+  --afj-font-weight-regular: 400;
+  --afj-font-weight-medium: 500;
+  --afj-font-weight-semibold: 600;
+  --afj-font-weight-bold: 700;
+  --afj-line-height-display: 1;
+  --afj-line-height-tight: 1.25;
+  --afj-line-height-normal: 1.5;
+
+  --afj-size-touch-target: 44px;
+  --afj-size-control: 48px;
+  --afj-size-border-width: 1px;
+  --afj-size-border-width-strong: 2px;
+  --afj-size-accent-bar: 4px;
+  --afj-size-focus-ring-width: 3px;
+  --afj-size-focus-ring-offset: 2px;
+  --afj-size-form-wide-max-width: 640px;
+  --afj-size-tile-min-width: 152px;
+  --afj-size-content-max-width: 1040px;
+  --afj-size-icon: 20px;
+  --afj-size-moon: 18px;
+  --afj-size-moon-large: 24px;
+  --afj-size-trajectory-width: 46px;
+  --afj-size-trajectory-height: 20px;
+  --afj-size-glyph: 52px;
+  --afj-size-avatar: 36px;
+  --afj-size-logo: 30px;
+  --afj-size-orb: 180px;
+  --afj-size-orb-large: 300px;
+  --afj-size-horizon: 26px;
+}
+
+/* La nuit (colorsDark, skyDark) : suit le système, sauf choix explicite dans la barre de la maquette. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --afj-color-primary: #B6A6FF;
+    --afj-color-primary-hover: #CDC2FF;
+    --afj-color-primary-active: #E0D9FF;
+    --afj-color-primary-contrast: #15122B;
+    --afj-color-background: #110F24;
+    --afj-color-surface: #1A1733;
+    --afj-color-surface-hover: #252148;
+    --afj-color-text: #ECE8F8;
+    --afj-color-text-muted: #ABA4C8;
+    --afj-color-border: #6F6896;
+    --afj-color-divider: #322D57;
+    --afj-color-focus: #8FC1F3;
+    --afj-color-danger: #FF9C8F;
+    --afj-color-danger-surface: #3A1714;
+    --afj-color-success: #82CDA2;
+    --afj-color-success-surface: #163024;
+    --afj-color-info: #8FC1F3;
+    --afj-color-info-surface: #13283F;
+    --afj-color-disabled-surface: #252148;
+    --afj-color-selected: #CDC2FF;
+    --afj-color-selected-surface: #2A2456;
+    --afj-color-badge: #ECE8F8;
+    --afj-color-badge-contrast: #15122B;
+    --afj-color-base: #82CDA2;
+    --afj-color-base-surface: #163024;
+    --afj-color-flyer: #8FC1F3;
+    --afj-color-flyer-surface: #13283F;
+    --afj-color-sun: #F5C15A;
+    --afj-color-sun-strong: #F5C15A;
+    --afj-color-sun-surface: #3A2E14;
+    --afj-color-sky-text: #F3F0FF;
+    --afj-color-tag-surface: #2A2733;
+    --afj-color-tag-border: #4D4858;
+    --afj-sky-gradient: linear-gradient(172deg, #2E2670 0%, #211C55 45%, #151233 100%);
+    --afj-sky-orb: radial-gradient(circle at 42% 40%, #FFFDF2 0%, #EDE6CF 45%, #CFC6AC 70%, rgba(207, 198, 172, 0) 71%);
+    --afj-sky-orb-glow: rgba(220, 214, 255, 0.28);
+    --afj-sky-grain-opacity: 0.12;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --afj-color-primary: #B6A6FF;
+  --afj-color-primary-hover: #CDC2FF;
+  --afj-color-primary-active: #E0D9FF;
+  --afj-color-primary-contrast: #15122B;
+  --afj-color-background: #110F24;
+  --afj-color-surface: #1A1733;
+  --afj-color-surface-hover: #252148;
+  --afj-color-text: #ECE8F8;
+  --afj-color-text-muted: #ABA4C8;
+  --afj-color-border: #6F6896;
+  --afj-color-divider: #322D57;
+  --afj-color-focus: #8FC1F3;
+  --afj-color-danger: #FF9C8F;
+  --afj-color-danger-surface: #3A1714;
+  --afj-color-success: #82CDA2;
+  --afj-color-success-surface: #163024;
+  --afj-color-info: #8FC1F3;
+  --afj-color-info-surface: #13283F;
+  --afj-color-disabled-surface: #252148;
+  --afj-color-selected: #CDC2FF;
+  --afj-color-selected-surface: #2A2456;
+  --afj-color-badge: #ECE8F8;
+  --afj-color-badge-contrast: #15122B;
+  --afj-color-base: #82CDA2;
+  --afj-color-base-surface: #163024;
+  --afj-color-flyer: #8FC1F3;
+  --afj-color-flyer-surface: #13283F;
+  --afj-color-sun: #F5C15A;
+  --afj-color-sun-strong: #F5C15A;
+  --afj-color-sun-surface: #3A2E14;
+  --afj-color-sky-text: #F3F0FF;
+  --afj-color-tag-surface: #2A2733;
+  --afj-color-tag-border: #4D4858;
+  --afj-sky-gradient: linear-gradient(172deg, #2E2670 0%, #211C55 45%, #151233 100%);
+  --afj-sky-orb: radial-gradient(circle at 42% 40%, #FFFDF2 0%, #EDE6CF 45%, #CFC6AC 70%, rgba(207, 198, 172, 0) 71%);
+  --afj-sky-orb-glow: rgba(220, 214, 255, 0.28);
+  --afj-sky-grain-opacity: 0.12;
+}
+
+/* ---------- Base ---------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: var(--afj-spacing-lg) var(--afj-spacing-md) var(--afj-spacing-xxl);
+  font-family: var(--afj-font-family);
+  font-size: var(--afj-font-size-md);
+  line-height: var(--afj-line-height-normal);
+  color: var(--afj-color-text);
+  background: var(--afj-color-background);
+}
+
+h1, h2, h3 { text-wrap: balance; }
+
+h1 {
+  margin: 0 0 var(--afj-spacing-lg);
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-xl);
+  font-weight: var(--afj-font-weight-semibold);
+  line-height: var(--afj-line-height-tight);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+a { color: var(--afj-color-primary); }
+
+:focus-visible {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus);
+  outline-offset: var(--afj-size-focus-ring-offset);
+}
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+
+.icon { inline-size: var(--afj-size-icon); block-size: var(--afj-size-icon); flex-shrink: 0; }
+.moon { inline-size: var(--afj-size-moon); block-size: var(--afj-size-moon); flex-shrink: 0; }
+
+/* ---------- Habillage de la maquette (hors site) ---------- */
+
+.mq-intro { max-width: 1120px; margin: 0 auto var(--afj-spacing-xl); }
+.mq-intro h1 { margin-bottom: var(--afj-spacing-sm); }
+.mq-intro p { margin: 0 0 var(--afj-spacing-sm); max-width: 80ch; color: var(--afj-color-text-muted); }
+.mq-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-sm); margin-top: var(--afj-spacing-md); }
+.mq-theme[aria-pressed="true"] {
+  background: var(--afj-color-selected-surface);
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-selected);
+}
+
+.mq-section { max-width: 1440px; margin: 0 auto var(--afj-spacing-xxl); }
+.mq-section > h2 {
+  margin: 0 0 var(--afj-spacing-xs);
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-medium);
+  line-height: var(--afj-line-height-tight);
+}
+.mq-section > p { margin: 0 0 var(--afj-spacing-md); max-width: 90ch; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.mq-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--afj-spacing-lg); margin-bottom: var(--afj-spacing-lg); }
+.mq-frame { margin: 0; min-width: 0; }
+.mq-frame--mobile { flex: 0 0 320px; width: 320px; max-width: 100%; }
+.mq-frame--wide { width: min(100%, 1074px); }
+.mq-frame figcaption {
+  margin-bottom: var(--afj-spacing-xs);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text-muted);
+}
+.mq-screen {
+  container: screen / inline-size;
+  overflow: hidden;
+  background: var(--afj-color-background);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md);
+}
+/* Contenu inchangé, omis pour alléger : un repère, pas un élément du site. */
+.mq-omitted {
+  margin: 0;
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+  font-size: var(--afj-font-size-sm);
+  font-style: italic;
+  color: var(--afj-color-text-muted);
+  border: var(--afj-size-border-width) dashed var(--afj-color-border);
+  border-radius: var(--afj-radius-sm);
+}
+
+/* ---------- En-tête du site ---------- */
+
+.site-header { background: var(--afj-color-background); border-bottom: var(--afj-size-border-width) solid var(--afj-color-divider); }
+.site-header__inner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-md);
+  max-width: var(--afj-size-content-max-width); margin-inline: auto; padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+}
+.site-header__brand {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); min-height: var(--afj-size-touch-target);
+  font-family: var(--afj-font-family-display); font-weight: var(--afj-font-weight-semibold); letter-spacing: -0.01em;
+  color: var(--afj-color-text); text-decoration: none;
+}
+.logo { inline-size: var(--afj-size-logo); block-size: var(--afj-size-logo); flex-shrink: 0; }
+.site-header__account { display: flex; align-items: center; gap: var(--afj-spacing-sm); margin-inline-start: auto; }
+.site-header__avatar {
+  display: inline-grid; place-items: center; inline-size: var(--afj-size-avatar); block-size: var(--afj-size-avatar);
+  border-radius: 50%; font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-bold);
+  color: var(--afj-color-text); background: var(--afj-color-sun-surface);
+}
+.site-header .button {
+  min-height: var(--afj-size-touch-target); padding: 0 var(--afj-spacing-md); font-size: var(--afj-font-size-sm);
+  background: var(--afj-color-surface-hover); border-color: transparent;
+}
+
+main { max-width: var(--afj-size-content-max-width); margin: 0 auto; padding: var(--afj-spacing-lg) var(--afj-spacing-md); }
+
+/* ---------- Boutons ---------- */
+
+.button {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--afj-spacing-xs);
+  min-height: var(--afj-size-touch-target); padding: 0 var(--afj-spacing-lg);
+  border: var(--afj-size-border-width) solid transparent; border-radius: var(--afj-radius-pill);
+  font: inherit; font-weight: var(--afj-font-weight-semibold); text-align: center; text-decoration: none; cursor: pointer;
+}
+.button--primary {
+  min-height: var(--afj-size-control); width: 100%;
+  color: var(--afj-color-primary-contrast); background: var(--afj-color-primary);
+}
+.button--secondary { color: var(--afj-color-text); background: transparent; border-color: var(--afj-color-border); }
+.link-button { min-height: var(--afj-size-control); }
+@media (hover: hover) {
+  .button--primary:hover { background: var(--afj-color-primary-hover); }
+  .button--secondary:hover { background: var(--afj-color-surface-hover); border-color: var(--afj-color-text); }
+}
+.button--primary:active { background: var(--afj-color-primary-active); }
+
+/* ---------- Formulaires : champ, alerte, tuiles ---------- */
+
+.field { display: grid; gap: var(--afj-spacing-xs); }
+.field label { margin-bottom: var(--afj-spacing-xs); font-weight: var(--afj-font-weight-semibold); }
+.field input, .field textarea {
+  width: 100%; min-width: 0; min-height: var(--afj-size-control); padding: 0 var(--afj-spacing-md);
+  font: inherit; color: var(--afj-color-text); background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-border); border-radius: var(--afj-radius-md);
+}
+.field textarea { padding: var(--afj-spacing-sm) var(--afj-spacing-md); resize: vertical; }
+.field__help { margin: 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.field__counter {
+  margin: 0; text-align: end; font-size: var(--afj-font-size-sm); font-variant-numeric: tabular-nums; color: var(--afj-color-text-muted);
+}
+.field__error {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-xs); margin: 0;
+  font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-danger);
+}
+
+.form-alert {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-sm);
+  padding: var(--afj-spacing-md); padding-inline-start: var(--afj-spacing-lg);
+  background: var(--afj-color-danger-surface); border-left: var(--afj-size-accent-bar) solid var(--afj-color-danger);
+  border-radius: var(--afj-radius-md);
+}
+.form-alert .icon { color: var(--afj-color-danger); }
+.form-alert--info { background: var(--afj-color-info-surface); border-left-color: var(--afj-color-info); }
+.form-alert--info .icon { color: var(--afj-color-info); }
+.form-alert__content { display: flex; flex-direction: column; align-items: flex-start; gap: var(--afj-spacing-sm); min-width: 0; }
+.form-alert__content p { margin: 0; }
+.form-alert__content a {
+  display: inline-flex; align-items: center; min-height: var(--afj-size-touch-target);
+  color: var(--afj-color-text); font-weight: var(--afj-font-weight-semibold); border-radius: var(--afj-radius-sm);
+}
+
+.tile-group { min-inline-size: 0; margin: 0; padding: 0; border: none; }
+.tile-group__container { container-type: inline-size; }
+.tile-group legend { margin-bottom: var(--afj-spacing-sm); padding: 0; font-weight: var(--afj-font-weight-semibold); }
+.tile-group__help { margin: 0 0 var(--afj-spacing-sm); font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.tile-group__error { margin-bottom: var(--afj-spacing-sm); }
+.tile-group__tiles { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--afj-spacing-sm); }
+.tile {
+  position: relative; display: flex; align-items: center; gap: var(--afj-spacing-sm);
+  min-block-size: var(--afj-size-control); min-inline-size: 0; padding: var(--afj-spacing-xs) var(--afj-spacing-sm);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md); cursor: pointer;
+}
+.tile span { overflow-wrap: anywhere; }
+.tile input {
+  flex-shrink: 0; inline-size: var(--afj-size-icon); block-size: var(--afj-size-icon); margin: 0;
+  accent-color: var(--afj-color-selected);
+}
+.tile input:focus-visible { outline: none; }
+.tile:has(input:focus-visible) {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus); outline-offset: var(--afj-size-focus-ring-offset);
+}
+.tile:has(input:checked) {
+  padding: calc(var(--afj-spacing-xs) - var(--afj-size-border-width)) calc(var(--afj-spacing-sm) - var(--afj-size-border-width));
+  background: var(--afj-color-selected-surface);
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-selected);
+  font-weight: var(--afj-font-weight-semibold);
+}
+.tile-group--invalid .tile {
+  padding: calc(var(--afj-spacing-xs) - var(--afj-size-border-width)) calc(var(--afj-spacing-sm) - var(--afj-size-border-width));
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-danger);
+}
+@media (hover: hover) {
+  .tile:not(:has(input:checked)):hover { background: var(--afj-color-surface-hover); border-color: var(--afj-color-text); }
+  .tile-group--invalid .tile:hover { border-color: var(--afj-color-danger); }
+}
+/* 19.5em = 2 × tileMinWidth + spacing.sm ; 39.5em = 4 × tileMinWidth + 3 × spacing.sm (règles du site). */
+@container (width >= 19.5em) {
+  .tile-group__tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Champ d'application (story 9a) : une colonne tant que trois tuiles ne tiennent pas côte à côte. */
+  .tile-group__tiles--scope { grid-template-columns: minmax(0, 1fr); }
+}
+@container (width >= 39.5em) {
+  .tile-group__tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .tile-group__tiles--scope { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Marque « Modifiée » (marque-modifiee.md) dans une legend. */
+.legend--marked { display: inline-flex; flex-wrap: wrap; align-items: center; column-gap: var(--afj-spacing-sm); }
+.modified-mark {
+  display: inline-block; padding: 0 var(--afj-spacing-xs);
+  font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-tight);
+  color: var(--afj-color-text); background: var(--afj-color-selected-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-selected); border-radius: var(--afj-radius-pill);
+}
+
+/* ---------- Rôles, bornes de flow ---------- */
+
+.pose-card__details { display: grid; gap: var(--afj-spacing-md); margin: 0; }
+.pose-card__roles { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-sm); }
+.pose-card__flow { display: grid; gap: var(--afj-spacing-xs); }
+.role-pill {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); max-width: 100%;
+  padding: var(--afj-spacing-xs) var(--afj-spacing-md) var(--afj-spacing-xs) var(--afj-spacing-xs);
+  border-radius: var(--afj-radius-pill); font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold);
+  line-height: var(--afj-line-height-tight);
+}
+.role-pill--base { color: var(--afj-color-base); background: var(--afj-color-base-surface); }
+.role-pill--flyer { color: var(--afj-color-flyer); background: var(--afj-color-flyer-surface); }
+.role-pill__word {
+  padding: 0.125rem var(--afj-spacing-sm); border-radius: var(--afj-radius-pill);
+  font-size: var(--afj-font-size-xs); font-weight: var(--afj-font-weight-bold); color: var(--afj-color-surface);
+}
+.role-pill--base .role-pill__word { background: var(--afj-color-base); }
+.role-pill--flyer .role-pill__word { background: var(--afj-color-flyer); }
+.role-pill__level { display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); margin: 0; color: var(--afj-color-text); }
+.flow-boundary { display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-sm); font-size: var(--afj-font-size-sm); }
+.flow-boundary dt { display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); }
+.flow-boundary dd { margin: 0; padding: 0 var(--afj-spacing-sm); border-radius: var(--afj-radius-pill); font-weight: var(--afj-font-weight-semibold); }
+.flow-boundary--yes dt { font-weight: var(--afj-font-weight-semibold); }
+.flow-boundary--yes .icon { color: var(--afj-color-sun-strong); }
+.flow-boundary--yes dd { color: var(--afj-color-text); background: var(--afj-color-sun-surface); }
+.flow-boundary--no { color: var(--afj-color-text-muted); }
+.flow-boundary--no .flow-boundary__question { text-decoration: line-through; text-decoration-color: var(--afj-color-border); }
+.flow-boundary--no dd { background: var(--afj-color-surface-hover); }
+
+/* ---------- Étiquettes : pilule, repli, cases (story 8, inchangés) ---------- */
+
+.tag-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-sm); margin: 0; }
+.tag-line__term { font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text-muted); }
+.tag-line__value { margin: 0; font-size: var(--afj-font-size-sm); }
+.tag-line__list { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-xs) var(--afj-spacing-sm); margin: 0; padding: 0; list-style: none; }
+.tag-pill {
+  display: inline-flex; align-items: center; max-inline-size: 100%;
+  padding: var(--afj-spacing-xs) calc(var(--afj-spacing-sm) + var(--afj-spacing-xs));
+  background: var(--afj-color-tag-surface); border: var(--afj-size-border-width) solid var(--afj-color-tag-border);
+  border-radius: var(--afj-radius-pill); font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-medium);
+  line-height: var(--afj-line-height-tight); color: var(--afj-color-text); overflow-wrap: anywhere;
+}
+
+.tag-meanings__summary {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); min-block-size: var(--afj-size-touch-target);
+  font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-primary);
+  list-style: none; cursor: pointer;
+}
+.tag-meanings__summary::-webkit-details-marker { display: none; }
+.tag-meanings__summary:focus-visible { border-radius: var(--afj-radius-sm); }
+.tag-meanings__summary:active { color: var(--afj-color-primary-active); }
+.tag-meanings[open] > .tag-meanings__summary .icon { transform: rotate(180deg); }
+.tag-meanings__list {
+  display: grid; gap: var(--afj-spacing-sm); margin: var(--afj-spacing-xs) 0 0; padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface-hover); border-radius: var(--afj-radius-sm); font-size: var(--afj-font-size-sm);
+}
+.tag-meanings__list dt { font-weight: var(--afj-font-weight-semibold); }
+.tag-meanings__list dd { margin: 0; overflow-wrap: anywhere; }
+@media (hover: hover) {
+  .tag-meanings__summary:hover { color: var(--afj-color-primary-hover); text-decoration: underline; }
+}
+
+.tag-choice { min-inline-size: 0; margin: 0; padding: 0; border: 0; }
+.tag-choice__legend {
+  margin-bottom: var(--afj-spacing-xs); padding: 0;
+  font-size: var(--afj-font-size-md); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text);
+}
+.tag-choice__help { margin: 0 0 var(--afj-spacing-sm); font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.tag-choice__boxes { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-sm); }
+.tag-choice__box {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); min-block-size: var(--afj-size-touch-target);
+  max-inline-size: 100%; padding: 0 var(--afj-spacing-md) 0 calc(var(--afj-spacing-sm) + var(--afj-spacing-xs));
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-pill); overflow-wrap: anywhere; cursor: pointer;
+}
+.tag-choice__box input {
+  inline-size: var(--afj-size-icon); block-size: var(--afj-size-icon); margin: 0; flex: none; accent-color: var(--afj-color-selected);
+}
+.tag-choice__box input:focus-visible { outline: none; }
+.tag-choice__box:has(input:focus-visible) {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus); outline-offset: var(--afj-size-focus-ring-offset);
+}
+.tag-choice__box:has(input:checked) {
+  padding: 0 calc(var(--afj-spacing-md) - var(--afj-size-border-width)) 0
+    calc(var(--afj-spacing-sm) + var(--afj-spacing-xs) - var(--afj-size-border-width));
+  background: var(--afj-color-selected-surface);
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-selected);
+  font-weight: var(--afj-font-weight-semibold);
+}
+@media (hover: hover) {
+  .tag-choice__box:not(:has(input:checked)):hover { background: var(--afj-color-surface-hover); border-color: var(--afj-color-text); }
+}
+.tag-choice .tag-meanings { margin-top: var(--afj-spacing-sm); }
+
+.tagging-zone__actions { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-sm); }
+.tagging-zone__actions .button { inline-size: 100%; }
+@container screen (width >= 40em) {
+  .tagging-zone__actions .button { inline-size: auto; }
+}
+
+/* ---------- Catalogue : carte de pose ---------- */
+
+.page-header { display: flex; flex-direction: column; gap: var(--afj-spacing-md); margin-bottom: var(--afj-spacing-lg); }
+.page-header h1 { margin: 0; line-height: var(--afj-line-height-display); }
+.page-header__actions { display: flex; flex-direction: column; gap: var(--afj-spacing-sm); }
+.catalog__count { margin: 0 0 var(--afj-spacing-lg); color: var(--afj-color-text-muted); }
+.pose-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--afj-spacing-md); margin: 0; padding: 0; list-style: none; }
+.pose-card {
+  position: relative; display: flex; flex-direction: column; padding: var(--afj-spacing-lg);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-lg);
+}
+.pose-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--afj-spacing-md); margin-bottom: var(--afj-spacing-md); }
+.pose-card__name {
+  margin: 0; min-width: 0; font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-tight); letter-spacing: -0.01em; overflow-wrap: anywhere;
+}
+.pose-card__link { color: var(--afj-color-text); text-decoration: none; }
+.pose-card__link::after { content: ''; position: absolute; inset: 0; border-radius: var(--afj-radius-lg); }
+.pose-card__link:focus-visible { outline: none; }
+.pose-card:has(.pose-card__link:focus-visible) {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus); outline-offset: var(--afj-size-focus-ring-offset);
+}
+.pose-card__glyph { inline-size: var(--afj-size-glyph); block-size: var(--afj-size-glyph); flex-shrink: 0; }
+.pose-card .pose-card__details { margin-bottom: var(--afj-spacing-md); }
+.pose-card__revision { display: flex; margin: auto 0 0; padding-top: var(--afj-spacing-xs); }
+.pose-card__revision-link {
+  position: relative; z-index: 1; display: inline-flex; align-items: center; min-block-size: var(--afj-size-touch-target);
+  font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-primary);
+  text-decoration: underline; text-decoration-thickness: var(--afj-size-border-width);
+}
+@media (hover: hover) {
+  .pose-card:hover:not(:has(.pose-card__revision-link:hover)) {
+    border-color: var(--afj-color-text); box-shadow: 0 0.625rem 1.875rem -1.125rem var(--afj-color-primary);
+  }
+  .pose-card:hover:not(:has(.pose-card__revision-link:hover)) .pose-card__link {
+    text-decoration: underline; text-decoration-thickness: var(--afj-size-border-width-strong);
+  }
+}
+
+/* ---------- Page d'une pose : le ciel ---------- */
+
+.back-link {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); min-block-size: var(--afj-size-touch-target);
+  margin-bottom: var(--afj-spacing-xs); color: var(--afj-color-primary);
+  text-decoration: underline; text-decoration-thickness: var(--afj-size-border-width); justify-self: start;
+}
+.pose-hero {
+  position: relative; isolation: isolate; overflow: hidden; display: grid; gap: var(--afj-spacing-md);
+  margin-bottom: var(--afj-spacing-lg);
+  padding: var(--afj-spacing-md) var(--afj-spacing-md) calc(var(--afj-size-horizon) + var(--afj-spacing-lg));
+  color: var(--afj-color-sky-text); background: var(--afj-sky-gradient); border-radius: var(--afj-radius-lg);
+}
+.pose-hero::before {
+  content: ''; position: absolute; z-index: -1;
+  top: calc(var(--afj-spacing-md) + var(--afj-size-touch-target) - var(--afj-size-orb));
+  right: calc(var(--afj-size-orb) / -3);
+  width: var(--afj-size-orb); height: var(--afj-size-orb); border-radius: 50%;
+  background: var(--afj-sky-orb); box-shadow: 0 0 5rem 1.875rem var(--afj-sky-orb-glow);
+  animation: orb-rise 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.pose-hero::after {
+  content: ''; position: absolute; z-index: -1; inset: 0; opacity: var(--afj-sky-grain-opacity);
+  mix-blend-mode: overlay; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@keyframes orb-rise { from { opacity: 0.2; transform: translateY(4.5rem); } to { opacity: 1; transform: none; } }
+.pose-hero__horizon {
+  position: absolute; z-index: -1; right: 0; bottom: 0; left: 0; width: 100%; height: var(--afj-size-horizon);
+  fill: var(--afj-color-background);
+}
+.pose-hero .back-link { margin: 0; color: var(--afj-color-sky-text); }
+.pose-hero :focus-visible { outline-color: var(--afj-color-sky-text); }
+.pose-hero h1 {
+  margin: 0; font-size: var(--afj-font-size-xxl); font-weight: var(--afj-font-weight-bold); line-height: 0.95;
+  letter-spacing: -0.04em; overflow-wrap: break-word; hyphens: auto;
+}
+.pose-hero .flow-boundary--no,
+.pose-hero .flow-boundary--yes .icon { color: var(--afj-color-sky-text); }
+.pose-hero .flow-boundary--no .flow-boundary__question { text-decoration-color: currentcolor; }
+/* Story 9a : sur le ciel, le terme « Étiquettes » est en skyText (textMuted descendrait à 2,7:1 au bas de l'aube).
+   La pilule reste opaque : son mot garde 14,1:1 / 12,2:1 quel que soit l'arrêt du ciel. */
+.pose-hero .tag-line__term { color: var(--afj-color-sky-text); }
+
+/* ---------- Page d'une pose : le corps ---------- */
+
+.pose-page__body { display: grid; gap: var(--afj-spacing-lg); align-items: start; }
+.pose-page__actions { display: flex; flex-direction: column; gap: var(--afj-spacing-sm); }
+
+/* Story 9a : bloc des étiquettes de la pose, en tête du corps (pose-tags). */
+.pose-tags { display: grid; gap: var(--afj-spacing-sm); min-width: 0; max-inline-size: var(--afj-size-form-wide-max-width); }
+.pose-tags__manage { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-sm); }
+.tag-meanings + .pose-tags__manage {
+  padding-top: var(--afj-spacing-sm);
+  border-top: var(--afj-size-border-width) dotted var(--afj-color-divider);
+}
+/* La zone est sur le fond de page : elle prend le rendu d'un élément (surface, contour divider, radius.md). */
+.pose-tagging-zone {
+  display: grid; gap: var(--afj-spacing-md); min-width: 0; margin: 0; padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
+}
+.pose-tagging-zone__title { margin: 0; font-weight: var(--afj-font-weight-semibold); }
+
+.pose-page__section { min-width: 0; }
+.pose-page__section-title {
+  margin: 0 0 var(--afj-spacing-sm); font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-medium); line-height: var(--afj-line-height-tight); overflow-wrap: anywhere;
+}
+.transition-list { display: grid; gap: var(--afj-spacing-sm); margin: 0; padding: 0; list-style: none; }
+.transition {
+  display: grid; gap: var(--afj-spacing-sm); padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider); border-radius: var(--afj-radius-md);
+}
+.transition__title {
+  margin: 0; display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-sm);
+  font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-md); font-weight: var(--afj-font-weight-medium);
+  line-height: var(--afj-line-height-tight);
+}
+.icon--trajectory { inline-size: var(--afj-size-trajectory-width); block-size: var(--afj-size-trajectory-height); color: var(--afj-color-sun-strong); }
+.transition__other-pose { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--afj-spacing-xs); margin: 0; color: var(--afj-color-text-muted); }
+.transition__other-pose a {
+  display: inline-flex; align-items: center; min-block-size: var(--afj-size-touch-target);
+  font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-primary);
+}
+.transition__manage { padding-top: var(--afj-spacing-sm); border-top: var(--afj-size-border-width) dotted var(--afj-color-divider); }
+
+/* ---------- Page « Étiquettes » ---------- */
+
+.tags-page { max-width: calc(var(--afj-size-form-wide-max-width) + 2 * var(--afj-spacing-lg) + 2 * var(--afj-size-border-width)); }
+.tags-page__intro { margin: 0; color: var(--afj-color-text-muted); }
+.tags-page h1 { margin-bottom: var(--afj-spacing-sm); }
+.tag-panel {
+  display: grid; gap: var(--afj-spacing-lg); margin-top: var(--afj-spacing-lg); padding: var(--afj-spacing-lg);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider); border-radius: var(--afj-radius-lg);
+}
+.tag-panel h2, .tags-page__list-title {
+  margin: 0; font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-medium); line-height: var(--afj-line-height-tight);
+}
+.tags-page__list-title { margin-top: var(--afj-spacing-xl); margin-bottom: var(--afj-spacing-sm); }
+.tag-form { display: grid; gap: var(--afj-spacing-lg); }
+.tag-form__actions, .tag__actions { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-sm); }
+.tag-list { display: grid; gap: var(--afj-spacing-sm); margin: var(--afj-spacing-lg) 0 0; padding: 0; list-style: none; }
+.tags-page__list-title + .tag-list { margin-top: 0; }
+.tag {
+  display: grid; gap: var(--afj-spacing-sm); padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider); border-radius: var(--afj-radius-md);
+}
+.tag__name {
+  margin: 0; font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-medium); line-height: var(--afj-line-height-tight); overflow-wrap: anywhere;
+}
+/* Story 9a : le champ d'application, pour tous, sous le nom. */
+.tag__scope { margin: 0; font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text-muted); }
+.tag__description { margin: 0; overflow-wrap: anywhere; }
+.tag__count { margin: 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.tag__actions { padding-top: var(--afj-spacing-sm); border-top: var(--afj-size-border-width) dotted var(--afj-color-divider); }
+.tag__zone {
+  display: grid; gap: var(--afj-spacing-md); padding: var(--afj-spacing-md);
+  background: var(--afj-color-background); border-radius: var(--afj-radius-sm);
+}
+.tag__carriers-title { margin: var(--afj-spacing-xs) 0 0; font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); }
+.form-alert__content .tag__carriers-title { margin-top: var(--afj-spacing-xs); }
+.tag__carriers {
+  display: grid; gap: 0; margin: 0; padding-inline-start: var(--afj-spacing-lg); font-size: var(--afj-font-size-sm); align-self: stretch;
+}
+.tag__carriers li { min-block-size: var(--afj-size-touch-target); display: list-item; padding-block: calc((var(--afj-size-touch-target) - 1.3125rem) / 2); }
+.tag__carriers li:not(:has(a)) { min-block-size: 0; padding-block: var(--afj-spacing-xs); }
+.tag__carrier-link { font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text); text-decoration: underline; }
+.form-alert__content .tag__carriers a { display: inline; min-height: 0; }
+.tag__carrier-extra { margin-inline-start: var(--afj-spacing-sm); }
+
+/* ---------- Formulaires « Proposer une pose » / « Proposer une modification » ---------- */
+
+.proposal-page { max-width: var(--afj-size-form-wide-max-width); margin: 0 auto; }
+.proposal-page h1 { margin-bottom: var(--afj-spacing-sm); }
+.revision-page h1 { margin-bottom: var(--afj-spacing-xs); }
+.revision-page__pose { margin: 0 0 var(--afj-spacing-sm); color: var(--afj-color-text-muted); }
+.revision-page__pose strong { color: var(--afj-color-text); font-weight: var(--afj-font-weight-semibold); }
+.proposal-page__introduction { margin: 0 0 var(--afj-spacing-lg); color: var(--afj-color-text-muted); }
+.proposal-form { display: grid; gap: var(--afj-spacing-lg); }
+.proposal-form > .form-alert { margin-bottom: 0; }
+.flow-questions { display: grid; gap: var(--afj-spacing-md); }
+.flow-questions__help { margin: 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.form-actions { display: flex; flex-direction: column; gap: var(--afj-spacing-md); }
+
+/* ---------- File de validation, « Mes propositions » ---------- */
+
+.proposal-card {
+  display: grid; gap: var(--afj-spacing-md); padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider); border-radius: var(--afj-radius-lg);
+}
+.proposal-card h2 {
+  margin: 0; font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-medium); line-height: var(--afj-line-height-tight);
+}
+.proposal-card__meta { margin: 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); overflow-wrap: anywhere; }
+.proposal-card__decision {
+  display: grid; gap: var(--afj-spacing-md); padding-top: var(--afj-spacing-md);
+  border-top: var(--afj-size-border-width) dotted var(--afj-color-divider);
+}
+.proposal-card__decision .button { width: 100%; }
+.proposal-status {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-sm); margin: 0; padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+  background: var(--afj-color-success-surface); border-radius: var(--afj-radius-md); font-weight: var(--afj-font-weight-semibold);
+}
+.proposal-status .icon { color: var(--afj-color-success); }
+.change-list-title { margin: 0; font-size: var(--afj-font-size-md); font-weight: var(--afj-font-weight-semibold); }
+.change-list-key { margin: 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.change-list { margin: 0; padding: var(--afj-spacing-md); background: var(--afj-color-background); border-radius: var(--afj-radius-sm); }
+.change-list dt { font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); }
+.change-list dd { margin: 0; display: flex; flex-wrap: wrap; gap: 0 var(--afj-spacing-xs); }
+.change-list del { color: var(--afj-color-text-muted); }
+.change-list ins { text-decoration: none; font-weight: var(--afj-font-weight-semibold); }
+
+/* ---------- Grand écran (par cadre) ---------- */
+
+@container screen (width >= 40em) {
+  .site-header__inner { padding-inline: var(--afj-spacing-lg); }
+  main { padding-inline: var(--afj-spacing-lg); }
+  .page-header { flex-flow: row wrap; align-items: center; justify-content: space-between; margin-bottom: var(--afj-spacing-md); }
+  .page-header__actions { flex-direction: row; }
+  .page-header__actions .button { width: auto; }
+  .pose-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--afj-spacing-lg); }
+  .pose-hero {
+    gap: var(--afj-spacing-lg);
+    padding: var(--afj-spacing-lg) var(--afj-spacing-xl) calc(var(--afj-size-horizon) + var(--afj-spacing-xl));
+  }
+  .pose-hero h1 { font-size: var(--afj-font-size-display); }
+  .pose-page__actions { flex-flow: row wrap; gap: var(--afj-spacing-md); }
+  .pose-page__actions .button, .form-actions .button, .tag-form__actions .button { width: auto; }
+  .tag-panel { padding: var(--afj-spacing-xl); }
+  .proposal-page--carded {
+    margin-top: var(--afj-spacing-xl); padding: var(--afj-spacing-xl);
+    max-width: calc(var(--afj-size-form-wide-max-width) + 2 * var(--afj-spacing-xl));
+    background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider); border-radius: var(--afj-radius-lg);
+  }
+  .form-actions { flex-flow: row wrap; }
+  .proposal-card { padding: var(--afj-spacing-lg); }
+  .proposal-card__decision { grid-auto-flow: column; justify-content: start; }
+  .proposal-card__decision .button { width: auto; }
+}
+
+@container screen (width >= 64em) {
+  .pose-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pose-hero::before { top: var(--afj-spacing-md); right: 6%; width: var(--afj-size-orb-large); height: var(--afj-size-orb-large); }
+  .pose-hero > h1, .pose-hero > .pose-card__details { max-inline-size: calc(100% - var(--afj-size-orb-large) - 10%); }
+  .pose-hero h1 { font-size: var(--afj-font-size-display-large); }
+  .pose-page__body { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--afj-spacing-xl); }
+  .pose-tags, .pose-page__actions, .pose-page__body > .mq-omitted { grid-column: 1 / -1; }
+}
+
+@media (forced-colors: active) {
+  .pose-card, .tag, .tag-panel, .transition, .proposal-card { border-color: CanvasText; }
+  .pose-hero { border: var(--afj-size-border-width) solid CanvasText; }
+  .pose-hero::before, .pose-hero::after, .pose-hero__horizon { display: none; }
+  .pose-hero .back-link, .pose-card__link, .tag__carrier-link { color: LinkText; }
+  .tag-pill, .tag-meanings__list, .pose-tagging-zone, .role-pill, .flow-boundary dd, .modified-mark { border: var(--afj-size-border-width) solid CanvasText; }
+  .tag-choice__box { border-color: CanvasText; }
+  .tag-choice__box:has(input:checked) { border-color: Highlight; }
+  .tag-meanings__summary { color: LinkText; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pose-hero::before { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="logo" viewBox="0 0 30 30">
+      <circle cx="15" cy="11" r="6" style="fill: var(--afj-color-sun)"/>
+      <path d="M3 27a12 12 0 0 1 24 0z" style="fill: var(--afj-color-base)"/>
+    </symbol>
+    <symbol id="m1" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16a4.5 8 0 0 0 0-16z" fill="currentColor"/></symbol>
+    <symbol id="m2" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor"/></symbol>
+    <symbol id="m3" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16a4.5 8 0 0 1 0-16z" fill="currentColor"/></symbol>
+    <symbol id="i-rise" viewBox="0 0 20 20"><path d="M4 14a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 2v5M7.5 4.5 10 2l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-set" viewBox="0 0 20 20"><path d="M4 14a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 2v5M7.5 4.5 10 7l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 20 20"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 20 20"><path d="M4.5 7.5 10 13l5.5-5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-info" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 9v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="6.2" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="i-error" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 5.5v5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="14.2" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 20 20"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 20 20"><path d="M4 10.5 8 14.5 16 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-trajectory" viewBox="0 0 46 20"><path d="M3 16C12 2 34 2 43 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 5"/><path d="M38 15.5 43 16l-.8-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="horizon" viewBox="0 0 1200 26" preserveAspectRatio="none"><path d="M0 14C150 0 300 26 450 13S750 0 900 13s200 11 300-3V26H0z"/></symbol>
+  </defs>
+</svg>
+
+<div class="mq-intro">
+  <h1>Story 9a « Étiqueter les poses » : maquette</h1>
+  <p>Écrans de <code>docs/design/ecrans/9a-etiquettes-des-poses.md</code>, avec les valeurs de <code>@acrofunjam/ui-tokens</code> (aucun token nouveau). Chaque état est montré à 320 px puis sur grand écran ; les cadres réagissent à leur propre largeur. Les pilules et les cases d'étiquettes sont celles de la story 8.</p>
+  <p>Libellés : ceux validés le 2026-11-18 ; ceux marqués « proposé » dans la spécification restent à confirmer. Le contenu inchangé est remplacé par un repère en pointillés.</p>
+  <div class="mq-toolbar" role="group" aria-label="Thème de la maquette">
+    <button type="button" class="button button--secondary mq-theme" data-theme-choice="light" aria-pressed="false">Aube (clair)</button>
+    <button type="button" class="button button--secondary mq-theme" data-theme-choice="dark" aria-pressed="false">Nuit (sombre)</button>
+  </div>
+</div>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-pose">
+  <h2 id="mq-pose">1. Page d'une pose : étiquettes sur le ciel et en tête du corps</h2>
+  <p>Pilules opaques sous les bornes de flow, terme « Étiquettes » en <code>skyText</code>. En tête du corps : le repli « Ce que veulent dire les étiquettes de la pose » et, pour un validateur, le pied de gestion « Étiqueter la pose ». Les étiquettes d'une transition restent dans son élément : même pilule, autre place, autres mots.</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Visiteur, Folded Leaf étiquetée, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><a class="button button--secondary" href="#">Se connecter</a></div>
+        </div></header>
+        <main>
+          <div class="pose-hero">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+            <h1>Folded Leaf</h1>
+            <dl class="pose-card__details">
+              <div class="pose-card__roles">
+                <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+              </div>
+              <div class="pose-card__flow">
+                <div class="flow-boundary flow-boundary--no"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Non</dd></div>
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+              </div>
+              <div class="tag-line">
+                <dt class="tag-line__term">Étiquettes</dt>
+                <dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">inversion</li><li class="tag-pill">lunaire</li></ul></dd>
+              </div>
+            </dl>
+            <svg class="pose-hero__horizon" aria-hidden="true"><use href="#horizon"/></svg>
+          </div>
+          <div class="pose-page__body">
+            <div class="pose-tags">
+              <details class="tag-meanings" open>
+                <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes de la pose<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                <dl class="tag-meanings__list">
+                  <div><dt>inversion</dt><dd>La tête du flyer est plus basse que ses hanches, dans la pose ou à un moment de la transition. Ex. : Candlestick, Straddle Bat.</dd></div>
+                  <div><dt>lunaire</dt><dd>Pratique thérapeutique : le flyer, détendu et passif, se laisse porter et étirer par la base ; les passages se font lentement. Ex. : Folded Leaf, Straddle Bat.</dd></div>
+                </dl>
+              </details>
+            </div>
+            <p class="mq-omitted">Légende de l'échelle, note de sécurité (inchangées)</p>
+            <section class="pose-page__section" aria-labelledby="t1">
+              <h2 id="t1" class="pose-page__section-title">Transitions vers Folded Leaf</h2>
+              <ul class="transition-list" role="list">
+                <li class="transition">
+                  <h3 class="transition__title">Bird <svg class="icon--trajectory" aria-hidden="true"><use href="#i-trajectory"/></svg> Folded Leaf</h3>
+                  <p class="transition__other-pose">Depuis <a href="#">Bird</a></p>
+                  <dl class="pose-card__details">
+                    <div class="pose-card__roles">
+                      <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                      <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                    </div>
+                  </dl>
+                  <dl class="tag-line"><dt class="tag-line__term">Étiquettes</dt><dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">lunaire</li></ul></dd></dl>
+                  <details class="tag-meanings">
+                    <summary class="tag-meanings__summary">Ce que veulent dire ces étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                    <dl class="tag-meanings__list"><div><dt>lunaire</dt><dd>Pratique thérapeutique : …</dd></div></dl>
+                  </details>
+                </li>
+              </ul>
+            </section>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Validateur, Throne sans étiquette, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <div class="pose-hero">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+            <h1>Throne</h1>
+            <dl class="pose-card__details">
+              <div class="pose-card__roles">
+                <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+              </div>
+              <div class="pose-card__flow">
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Oui</dd></div>
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+              </div>
+            </dl>
+            <svg class="pose-hero__horizon" aria-hidden="true"><use href="#horizon"/></svg>
+          </div>
+          <div class="pose-page__body">
+            <div class="pose-tags">
+              <div class="pose-tags__manage">
+                <button type="button" class="button button--secondary">Étiqueter la pose<span class="visually-hidden"> Throne</span></button>
+              </div>
+            </div>
+            <div class="pose-page__actions">
+              <a class="button button--primary link-button" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Proposer une transition depuis Throne</a>
+              <a class="button button--secondary link-button" href="#">Proposer une modification</a>
+            </div>
+            <p class="mq-omitted">Légende, note de sécurité, transitions (inchangées)</p>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Validateur, Straddle Bat, zone ouverte, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <div class="pose-hero">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+            <h1>Straddle Bat</h1>
+            <dl class="pose-card__details">
+              <div class="pose-card__roles">
+                <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+              </div>
+              <div class="pose-card__flow">
+                <div class="flow-boundary flow-boundary--no"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Non</dd></div>
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+              </div>
+              <div class="tag-line">
+                <dt class="tag-line__term">Étiquettes</dt>
+                <dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">inversion</li></ul></dd>
+              </div>
+            </dl>
+            <svg class="pose-hero__horizon" aria-hidden="true"><use href="#horizon"/></svg>
+          </div>
+          <div class="pose-page__body">
+            <div class="pose-tags">
+              <details class="tag-meanings">
+                <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes de la pose<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                <dl class="tag-meanings__list"><div><dt>inversion</dt><dd>La tête du flyer est plus basse que ses hanches…</dd></div></dl>
+              </details>
+              <div class="pose-tags__manage">
+                <form class="pose-tagging-zone" style="inline-size: 100%">
+                  <fieldset class="tag-choice">
+                    <legend class="tag-choice__legend">Étiquettes de la pose</legend>
+                    <div class="tag-choice__boxes">
+                      <label class="tag-choice__box"><input type="checkbox" checked>inversion</label>
+                      <label class="tag-choice__box"><input type="checkbox" checked>lunaire</label>
+                    </div>
+                    <details class="tag-meanings">
+                      <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                      <dl class="tag-meanings__list">
+                        <div><dt>inversion</dt><dd>La tête du flyer est plus basse que ses hanches, dans la pose ou à un moment de la transition. Ex. : Candlestick, Straddle Bat.</dd></div>
+                        <div><dt>lunaire</dt><dd>Pratique thérapeutique : le flyer, détendu et passif, se laisse porter et étirer par la base ; les passages se font lentement. Ex. : Folded Leaf, Straddle Bat.</dd></div>
+                      </dl>
+                    </details>
+                  </fieldset>
+                  <div class="tagging-zone__actions">
+                    <button type="button" class="button button--primary">Enregistrer les étiquettes</button>
+                    <button type="button" class="button button--secondary">Annuler</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div class="pose-page__actions">
+              <a class="button button--primary link-button" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Proposer une transition depuis Straddle Bat</a>
+            </div>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Validateur, Folded Leaf, modification en attente, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <p class="mq-omitted">Ciel de Folded Leaf (comme le premier cadre)</p>
+          <div class="pose-page__body" style="margin-top: var(--afj-spacing-lg)">
+            <div class="pose-tags">
+              <details class="tag-meanings">
+                <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes de la pose<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+              </details>
+              <div class="pose-tags__manage">
+                <div class="pose-tagging-zone" style="inline-size: 100%">
+                  <p class="pose-tagging-zone__title">Étiquettes de la pose</p>
+                  <div class="form-alert form-alert--info">
+                    <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+                    <div class="form-alert__content">
+                      <p>Une modification de Folded Leaf attend déjà d'être validée. Décide d'abord de cette modification, puis étiquette la pose.</p>
+                      <a href="#">Propositions à valider</a>
+                    </div>
+                  </div>
+                  <div class="tagging-zone__actions">
+                    <button type="button" class="button button--secondary">Annuler</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="pose-page__actions">
+              <a class="button button--primary link-button" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Proposer une transition depuis Folded Leaf</a>
+            </div>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <figure class="mq-frame mq-frame--wide">
+    <figcaption>Validateur, Folded Leaf étiquetée, repli ouvert, grand écran (≥ 1024 px)</figcaption>
+    <div class="mq-screen">
+      <header class="site-header"><div class="site-header__inner">
+        <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+        <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+      </div></header>
+      <main>
+        <div class="pose-hero">
+          <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+          <h1>Folded Leaf</h1>
+          <dl class="pose-card__details">
+            <div class="pose-card__roles">
+              <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+              <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+            </div>
+            <div class="pose-card__flow">
+              <div class="flow-boundary flow-boundary--no"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Non</dd></div>
+              <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+            </div>
+            <div class="tag-line">
+              <dt class="tag-line__term">Étiquettes</dt>
+              <dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">inversion</li><li class="tag-pill">lunaire</li></ul></dd>
+            </div>
+          </dl>
+          <svg class="pose-hero__horizon" aria-hidden="true"><use href="#horizon"/></svg>
+        </div>
+        <div class="pose-page__body">
+          <div class="pose-tags">
+            <details class="tag-meanings" open>
+              <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes de la pose<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+              <dl class="tag-meanings__list">
+                <div><dt>inversion</dt><dd>La tête du flyer est plus basse que ses hanches, dans la pose ou à un moment de la transition. Ex. : Candlestick, Straddle Bat.</dd></div>
+                <div><dt>lunaire</dt><dd>Pratique thérapeutique : le flyer, détendu et passif, se laisse porter et étirer par la base ; les passages se font lentement. Ex. : Folded Leaf, Straddle Bat.</dd></div>
+              </dl>
+            </details>
+            <div class="pose-tags__manage">
+              <button type="button" class="button button--secondary">Étiqueter la pose<span class="visually-hidden"> Folded Leaf</span></button>
+            </div>
+          </div>
+          <div class="pose-page__actions">
+            <a class="button button--primary link-button" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Proposer une transition depuis Folded Leaf</a>
+            <a class="button button--secondary link-button" href="#">Proposer une modification</a>
+          </div>
+          <p class="mq-omitted">Légende de l'échelle, note de sécurité (inchangées)</p>
+          <section class="pose-page__section" aria-labelledby="t2">
+            <h2 id="t2" class="pose-page__section-title">Transitions depuis Folded Leaf</h2>
+            <p class="mq-omitted">Aucune transition (inchangé)</p>
+          </section>
+          <section class="pose-page__section" aria-labelledby="t3">
+            <h2 id="t3" class="pose-page__section-title">Transitions vers Folded Leaf</h2>
+            <ul class="transition-list" role="list">
+              <li class="transition">
+                <h3 class="transition__title">Bird <svg class="icon--trajectory" aria-hidden="true"><use href="#i-trajectory"/></svg> Folded Leaf</h3>
+                <p class="transition__other-pose">Depuis <a href="#">Bird</a></p>
+                <dl class="tag-line"><dt class="tag-line__term">Étiquettes</dt><dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">lunaire</li></ul></dd></dl>
+                <div class="transition__manage"><button type="button" class="button button--secondary">Étiqueter</button></div>
+              </li>
+            </ul>
+          </section>
+        </div>
+      </main>
+    </div>
+  </figure>
+
+  <figure class="mq-frame mq-frame--wide" style="margin-top: var(--afj-spacing-lg)">
+    <figcaption>Validateur, Straddle Bat, zone ouverte, grand écran : la zone reste dans 640 px</figcaption>
+    <div class="mq-screen">
+      <main>
+        <p class="mq-omitted">En-tête du site et ciel de Straddle Bat (comme ci-dessus)</p>
+        <div class="pose-page__body" style="margin-top: var(--afj-spacing-lg)">
+          <div class="pose-tags">
+            <details class="tag-meanings">
+              <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes de la pose<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+            </details>
+            <div class="pose-tags__manage">
+              <form class="pose-tagging-zone" style="inline-size: 100%">
+                <fieldset class="tag-choice">
+                  <legend class="tag-choice__legend">Étiquettes de la pose</legend>
+                  <div class="tag-choice__boxes">
+                    <label class="tag-choice__box"><input type="checkbox" checked>inversion</label>
+                    <label class="tag-choice__box"><input type="checkbox">lunaire</label>
+                  </div>
+                  <details class="tag-meanings">
+                    <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                  </details>
+                </fieldset>
+                <div class="tagging-zone__actions">
+                  <button type="button" class="button button--primary">Enregistrer les étiquettes</button>
+                  <button type="button" class="button button--secondary">Annuler</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="pose-page__actions">
+            <a class="button button--primary link-button" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Proposer une transition depuis Straddle Bat</a>
+            <a class="button button--secondary link-button" href="#">Proposer une modification</a>
+          </div>
+        </div>
+      </main>
+    </div>
+  </figure>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-catalog">
+  <h2 id="mq-catalog">2. Catalogue : ligne « Étiquettes » sur les cartes</h2>
+  <p>Après les bornes de flow, sans description ; rien pour une pose sans étiquette (Bird, Folded Leaf, Throne). Les liens « Proposer une modification » restent alignés en bas des rangées.</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Personne connectée, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="page-header">
+            <h1>Catalogue des poses</h1>
+            <div class="page-header__actions">
+              <a class="button button--primary link-button" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Proposer une pose</a>
+            </div>
+          </div>
+          <p class="catalog__count">5 poses, par ordre alphabétique</p>
+          <ul class="pose-grid" role="list">
+            <li class="pose-card">
+              <div class="pose-card__top"><h2 class="pose-card__name"><a class="pose-card__link" href="#">Candlestick</a></h2><svg class="pose-card__glyph" aria-hidden="true"></svg></div>
+              <dl class="pose-card__details">
+                <div class="pose-card__roles">
+                  <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                  <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                </div>
+                <div class="pose-card__flow">
+                  <div class="flow-boundary flow-boundary--no"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Non</dd></div>
+                  <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+                </div>
+                <div class="tag-line"><dt class="tag-line__term">Étiquettes</dt><dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">inversion</li></ul></dd></div>
+              </dl>
+              <p class="pose-card__revision"><a class="pose-card__revision-link" href="#">Proposer une modification<span class="visually-hidden"> de Candlestick</span></a></p>
+            </li>
+            <li class="pose-card">
+              <div class="pose-card__top"><h2 class="pose-card__name"><a class="pose-card__link" href="#">Straddle Bat</a></h2><svg class="pose-card__glyph" aria-hidden="true"></svg></div>
+              <dl class="pose-card__details">
+                <div class="pose-card__roles">
+                  <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                  <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                </div>
+                <div class="pose-card__flow">
+                  <div class="flow-boundary flow-boundary--no"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Non</dd></div>
+                  <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+                </div>
+                <div class="tag-line"><dt class="tag-line__term">Étiquettes</dt><dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">inversion</li><li class="tag-pill">lunaire</li></ul></dd></div>
+              </dl>
+              <p class="pose-card__revision"><a class="pose-card__revision-link" href="#">Proposer une modification<span class="visually-hidden"> de Straddle Bat</span></a></p>
+            </li>
+            <li class="pose-card">
+              <div class="pose-card__top"><h2 class="pose-card__name"><a class="pose-card__link" href="#">Throne</a></h2><svg class="pose-card__glyph" aria-hidden="true"></svg></div>
+              <dl class="pose-card__details">
+                <div class="pose-card__roles">
+                  <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                  <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                </div>
+                <div class="pose-card__flow">
+                  <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Oui</dd></div>
+                  <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+                </div>
+              </dl>
+              <p class="pose-card__revision"><a class="pose-card__revision-link" href="#">Proposer une modification<span class="visually-hidden"> de Throne</span></a></p>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <figure class="mq-frame mq-frame--wide">
+    <figcaption>Visiteur, grand écran (3 colonnes)</figcaption>
+    <div class="mq-screen">
+      <main>
+        <div class="page-header">
+          <h1>Catalogue des poses</h1>
+          <div class="page-header__actions"><a class="button button--secondary link-button" href="#">Étiquettes</a></div>
+        </div>
+        <p class="catalog__count">5 poses, par ordre alphabétique</p>
+        <ul class="pose-grid" role="list">
+          <li class="pose-card">
+            <div class="pose-card__top"><h2 class="pose-card__name"><a class="pose-card__link" href="#">Bird</a></h2><svg class="pose-card__glyph" aria-hidden="true"></svg></div>
+            <dl class="pose-card__details">
+              <div class="pose-card__roles">
+                <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+              </div>
+              <div class="pose-card__flow">
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Oui</dd></div>
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+              </div>
+            </dl>
+          </li>
+          <li class="pose-card">
+            <div class="pose-card__top"><h2 class="pose-card__name"><a class="pose-card__link" href="#">Candlestick</a></h2><svg class="pose-card__glyph" aria-hidden="true"></svg></div>
+            <dl class="pose-card__details">
+              <div class="pose-card__roles">
+                <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+              </div>
+              <div class="pose-card__flow">
+                <div class="flow-boundary flow-boundary--no"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Non</dd></div>
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+              </div>
+              <div class="tag-line"><dt class="tag-line__term">Étiquettes</dt><dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">inversion</li></ul></dd></div>
+            </dl>
+          </li>
+          <li class="pose-card">
+            <div class="pose-card__top"><h2 class="pose-card__name"><a class="pose-card__link" href="#">Folded Leaf</a></h2><svg class="pose-card__glyph" aria-hidden="true"></svg></div>
+            <dl class="pose-card__details">
+              <div class="pose-card__roles">
+                <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+              </div>
+              <div class="pose-card__flow">
+                <div class="flow-boundary flow-boundary--no"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Non</dd></div>
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+              </div>
+            </dl>
+          </li>
+          <li class="pose-card">
+            <div class="pose-card__top"><h2 class="pose-card__name"><a class="pose-card__link" href="#">Straddle Bat</a></h2><svg class="pose-card__glyph" aria-hidden="true"></svg></div>
+            <dl class="pose-card__details">
+              <div class="pose-card__roles">
+                <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+              </div>
+              <div class="pose-card__flow">
+                <div class="flow-boundary flow-boundary--no"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Non</dd></div>
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+              </div>
+              <div class="tag-line"><dt class="tag-line__term">Étiquettes</dt><dd class="tag-line__value"><ul class="tag-line__list" role="list"><li class="tag-pill">inversion</li><li class="tag-pill">lunaire</li></ul></dd></div>
+            </dl>
+          </li>
+          <li class="pose-card">
+            <div class="pose-card__top"><h2 class="pose-card__name"><a class="pose-card__link" href="#">Throne</a></h2><svg class="pose-card__glyph" aria-hidden="true"></svg></div>
+            <dl class="pose-card__details">
+              <div class="pose-card__roles">
+                <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+              </div>
+              <div class="pose-card__flow">
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Oui</dd></div>
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+              </div>
+            </dl>
+          </li>
+        </ul>
+      </main>
+    </div>
+  </figure>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-tags">
+  <h2 id="mq-tags">3. Page « Étiquettes » : champ d'application, ajout, refus</h2>
+  <p>« S'applique à… » sous le nom, pour tous. Ajout : trois tuiles radio, aucune cochée ; à l'envoi sans choix, l'erreur et la bordure 2 px. Refus : poses (nom en lien), transitions, propositions en attente.</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Visiteur, 320 px</figcaption>
+      <div class="mq-screen">
+        <main class="tags-page">
+          <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+          <h1>Étiquettes</h1>
+          <p class="tags-page__intro">Les étiquettes décrivent les poses et les transitions. Le futur générateur de flow s'en servira.</p>
+          <ul class="tag-list" role="list">
+            <li class="tag">
+              <h2 class="tag__name">inversion</h2>
+              <p class="tag__scope">S'applique aux poses et aux transitions</p>
+              <p class="tag__description">La tête du flyer est plus basse que ses hanches, dans la pose ou à un moment de la transition. Ex. : Candlestick, Straddle Bat.</p>
+            </li>
+            <li class="tag">
+              <h2 class="tag__name">lunaire</h2>
+              <p class="tag__scope">S'applique aux poses et aux transitions</p>
+              <p class="tag__description">Pratique thérapeutique : le flyer, détendu et passif, se laisse porter et étirer par la base ; les passages se font lentement. Ex. : Folded Leaf, Straddle Bat.</p>
+            </li>
+            <li class="tag">
+              <h2 class="tag__name">pop</h2>
+              <p class="tag__scope">S'applique aux transitions</p>
+              <p class="tag__description">La base propulse le flyer, qui quitte un instant tout contact avec elle avant d'être rattrapé.</p>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Validateur, ajout envoyé sans champ, 320 px</figcaption>
+      <div class="mq-screen">
+        <main class="tags-page">
+          <p class="mq-omitted">Retour, titre, introduction</p>
+          <section class="tag-panel" aria-labelledby="add1">
+            <h2 id="add1">Ajouter une étiquette</h2>
+            <form class="tag-form">
+              <div class="field">
+                <label for="n1">Nom</label>
+                <input id="n1" value="contrepoids">
+                <p class="field__counter">11 / 30</p>
+              </div>
+              <div class="field">
+                <label for="d1">Description</label>
+                <textarea id="d1" rows="3">Base et flyer s'équilibrent en tirant l'un contre l'autre.</textarea>
+                <p class="field__counter">58 / 200</p>
+              </div>
+              <fieldset class="tile-group tile-group--invalid">
+                <div class="tile-group__container">
+                  <legend>S'applique à</legend>
+                  <p class="field__error tile-group__error"><svg class="icon" aria-hidden="true"><use href="#i-error"/></svg>Choisis à quoi s'applique l'étiquette.</p>
+                  <div class="tile-group__tiles tile-group__tiles--scope">
+                    <label class="tile"><input type="radio" name="s1"><span>Aux poses</span></label>
+                    <label class="tile"><input type="radio" name="s1"><span>Aux transitions</span></label>
+                    <label class="tile"><input type="radio" name="s1"><span>Aux poses et aux transitions</span></label>
+                  </div>
+                </div>
+              </fieldset>
+              <div class="tag-form__actions"><button type="button" class="button button--primary">Ajouter l'étiquette</button></div>
+            </form>
+          </section>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Validateur, « lunaire » restreinte aux transitions : refusé, 320 px</figcaption>
+      <div class="mq-screen">
+        <main class="tags-page">
+          <ul class="tag-list" role="list" style="margin-top: 0">
+            <li class="tag">
+              <h2 class="tag__name">lunaire</h2>
+              <p class="tag__scope">S'applique aux poses et aux transitions</p>
+              <form class="tag__zone">
+                <div class="form-alert" role="alert">
+                  <svg class="icon" aria-hidden="true"><use href="#i-error"/></svg>
+                  <div class="form-alert__content">
+                    <p>« lunaire » ne peut pas cesser de s'appliquer aux poses : ces éléments la portent.</p>
+                    <p class="tag__carriers-title">Poses du catalogue</p>
+                    <ul class="tag__carriers">
+                      <li><a class="tag__carrier-link" href="#">Folded Leaf</a></li>
+                    </ul>
+                    <p class="tag__carriers-title">Propositions en attente</p>
+                    <ul class="tag__carriers">
+                      <li>Proposition de la pose Candlestick</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="n2">Nom</label>
+                  <input id="n2" value="lunaire">
+                  <p class="field__counter">7 / 30</p>
+                </div>
+                <p class="mq-omitted">Description et son compteur</p>
+                <fieldset class="tile-group">
+                  <div class="tile-group__container">
+                    <legend>S'applique à</legend>
+                    <div class="tile-group__tiles tile-group__tiles--scope">
+                      <label class="tile"><input type="radio" name="s2"><span>Aux poses</span></label>
+                      <label class="tile"><input type="radio" name="s2" checked><span>Aux transitions</span></label>
+                      <label class="tile"><input type="radio" name="s2"><span>Aux poses et aux transitions</span></label>
+                    </div>
+                  </div>
+                </fieldset>
+                <div class="tag-form__actions">
+                  <button type="button" class="button button--primary">Enregistrer</button>
+                  <button type="button" class="button button--secondary">Annuler</button>
+                </div>
+              </form>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Validateur, retrait de « lunaire » impossible, 320 px</figcaption>
+      <div class="mq-screen">
+        <main class="tags-page">
+          <ul class="tag-list" role="list" style="margin-top: 0">
+            <li class="tag">
+              <h2 class="tag__name">lunaire</h2>
+              <p class="tag__scope">S'applique aux poses et aux transitions</p>
+              <p class="tag__description">Pratique thérapeutique : le flyer, détendu et passif, se laisse porter…</p>
+              <p class="tag__count">Portée par 2 poses et 1 transition</p>
+              <div class="form-alert" role="alert">
+                <svg class="icon" aria-hidden="true"><use href="#i-error"/></svg>
+                <div class="form-alert__content">
+                  <p>« lunaire » ne peut pas être retirée : ces éléments la portent.</p>
+                  <p class="tag__carriers-title">Poses du catalogue</p>
+                  <ul class="tag__carriers">
+                    <li><a class="tag__carrier-link" href="#">Folded Leaf</a></li>
+                    <li><a class="tag__carrier-link" href="#">Straddle Bat</a></li>
+                  </ul>
+                  <p class="tag__carriers-title">Transitions du catalogue</p>
+                  <ul class="tag__carriers">
+                    <li>de Bird vers Folded Leaf <a class="tag__carrier-link tag__carrier-extra" href="#">Voir Bird<span class="visually-hidden">, la pose de départ</span></a></li>
+                  </ul>
+                  <p class="tag__carriers-title">Propositions en attente</p>
+                  <ul class="tag__carriers">
+                    <li>Modification de Throne</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="tag__actions"><button type="button" class="button button--secondary">Fermer</button></div>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <figure class="mq-frame mq-frame--wide">
+    <figcaption>Validateur, grand écran : panneau d'ajout (trois tuiles sur une ligne, « Aux poses » choisie), liste avec compteurs</figcaption>
+    <div class="mq-screen">
+      <main class="tags-page">
+        <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+        <h1>Étiquettes</h1>
+        <p class="tags-page__intro">Les étiquettes décrivent les poses et les transitions. Le futur générateur de flow s'en servira.</p>
+        <section class="tag-panel" aria-labelledby="add2">
+          <h2 id="add2">Ajouter une étiquette</h2>
+          <form class="tag-form">
+            <div class="field">
+              <label for="n3">Nom</label>
+              <input id="n3" value="contrepoids">
+              <p class="field__counter">11 / 30</p>
+            </div>
+            <div class="field">
+              <label for="d3">Description</label>
+              <textarea id="d3" rows="3">Base et flyer s'équilibrent en tirant l'un contre l'autre.</textarea>
+              <p class="field__counter">58 / 200</p>
+            </div>
+            <fieldset class="tile-group">
+              <div class="tile-group__container">
+                <legend>S'applique à</legend>
+                <div class="tile-group__tiles tile-group__tiles--scope">
+                  <label class="tile"><input type="radio" name="s3" checked><span>Aux poses</span></label>
+                  <label class="tile"><input type="radio" name="s3"><span>Aux transitions</span></label>
+                  <label class="tile"><input type="radio" name="s3"><span>Aux poses et aux transitions</span></label>
+                </div>
+              </div>
+            </fieldset>
+            <div class="tag-form__actions"><button type="button" class="button button--primary">Ajouter l'étiquette</button></div>
+          </form>
+        </section>
+        <h2 class="tags-page__list-title">Les étiquettes</h2>
+        <ul class="tag-list" role="list">
+          <li class="tag">
+            <h2 class="tag__name">contrepoids</h2>
+            <p class="tag__scope">S'applique aux poses</p>
+            <p class="tag__description">Base et flyer s'équilibrent en tirant l'un contre l'autre.</p>
+            <p class="tag__count">Portée par aucune pose</p>
+            <div class="tag__actions">
+              <button type="button" class="button button--secondary">Modifier<span class="visually-hidden"> contrepoids</span></button>
+              <button type="button" class="button button--secondary">Retirer<span class="visually-hidden"> contrepoids</span></button>
+            </div>
+          </li>
+          <li class="tag">
+            <h2 class="tag__name">lunaire</h2>
+            <p class="tag__scope">S'applique aux poses et aux transitions</p>
+            <p class="tag__description">Pratique thérapeutique : le flyer, détendu et passif, se laisse porter et étirer par la base ; les passages se font lentement. Ex. : Folded Leaf, Straddle Bat.</p>
+            <p class="tag__count">Portée par 1 pose et 2 transitions</p>
+            <div class="tag__actions">
+              <button type="button" class="button button--secondary">Modifier<span class="visually-hidden"> lunaire</span></button>
+              <button type="button" class="button button--secondary">Retirer<span class="visually-hidden"> lunaire</span></button>
+            </div>
+          </li>
+          <li class="tag">
+            <h2 class="tag__name">pop</h2>
+            <p class="tag__scope">S'applique aux transitions</p>
+            <p class="tag__description">La base propulse le flyer, qui quitte un instant tout contact avec elle avant d'être rattrapé.</p>
+            <p class="tag__count">Portée par 2 transitions</p>
+            <div class="tag__actions">
+              <button type="button" class="button button--secondary">Modifier<span class="visually-hidden"> pop</span></button>
+              <button type="button" class="button button--secondary">Retirer<span class="visually-hidden"> pop</span></button>
+            </div>
+          </li>
+        </ul>
+      </main>
+    </div>
+  </figure>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-propose">
+  <h2 id="mq-propose">4. Formulaire « Proposer une pose » : groupe « Étiquettes (facultatives) »</h2>
+  <p>Après les questions de flow ; seules les étiquettes applicables aux poses. Deuxième cadre : une étiquette a cessé de s'appliquer aux poses pendant la saisie (alerte information, saisie gardée).</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Utilisatrice, « lunaire » cochée, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="proposal-page">
+            <h1>Proposer une pose</h1>
+            <p class="proposal-page__introduction">Les étiquettes sont facultatives ; les autres champs sont obligatoires.</p>
+            <form class="proposal-form">
+              <div class="field">
+                <label for="p1">Nom de la pose</label>
+                <input id="p1" value="Folded Leaf">
+                <p class="field__help">Le nom usuel de la pose, par exemple Throne ou High Bird. 60 caractères au maximum.</p>
+              </div>
+              <p class="mq-omitted">Difficulté base, difficulté flyer (inchangées)</p>
+              <div class="flow-questions">
+                <p class="flow-questions__help">Commencer : le duo s'installe dans la pose depuis le sol. Terminer : le flyer redescend au sol directement et sans danger.</p>
+                <fieldset class="tile-group"><div class="tile-group__container">
+                  <legend>Peut-on commencer un flow sur cette pose ?</legend>
+                  <div class="tile-group__tiles">
+                    <label class="tile"><input type="radio" name="c1"><span>Oui</span></label>
+                    <label class="tile"><input type="radio" name="c1" checked><span>Non</span></label>
+                  </div>
+                </div></fieldset>
+                <fieldset class="tile-group"><div class="tile-group__container">
+                  <legend>Peut-on terminer un flow sur cette pose ?</legend>
+                  <div class="tile-group__tiles">
+                    <label class="tile"><input type="radio" name="e1" checked><span>Oui</span></label>
+                    <label class="tile"><input type="radio" name="e1"><span>Non</span></label>
+                  </div>
+                </div></fieldset>
+              </div>
+              <fieldset class="tag-choice">
+                <legend class="tag-choice__legend">Étiquettes (facultatives)</legend>
+                <p class="tag-choice__help">Choisis celles qui décrivent la pose.</p>
+                <div class="tag-choice__boxes">
+                  <label class="tag-choice__box"><input type="checkbox">inversion</label>
+                  <label class="tag-choice__box"><input type="checkbox" checked>lunaire</label>
+                </div>
+                <details class="tag-meanings">
+                  <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                  <dl class="tag-meanings__list">
+                    <div><dt>inversion</dt><dd>La tête du flyer est plus basse que ses hanches…</dd></div>
+                    <div><dt>lunaire</dt><dd>Pratique thérapeutique : …</dd></div>
+                  </dl>
+                </details>
+              </fieldset>
+              <button type="button" class="button button--primary">Proposer la pose</button>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>« vrille » ne s'applique plus aux poses, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="proposal-page">
+            <h1>Proposer une pose</h1>
+            <p class="proposal-page__introduction">Les étiquettes sont facultatives ; les autres champs sont obligatoires.</p>
+            <form class="proposal-form">
+              <div class="form-alert form-alert--info" role="alert">
+                <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+                <div class="form-alert__content"><p>L'étiquette « vrille » ne s'applique plus aux poses. Vérifie tes étiquettes, puis envoie de nouveau ta pose.</p></div>
+              </div>
+              <p class="mq-omitted">Nom « Straddle Bat », difficultés, questions de flow : saisie gardée</p>
+              <fieldset class="tag-choice">
+                <legend class="tag-choice__legend">Étiquettes (facultatives)</legend>
+                <p class="tag-choice__help">Choisis celles qui décrivent la pose.</p>
+                <div class="tag-choice__boxes">
+                  <label class="tag-choice__box"><input type="checkbox">inversion</label>
+                  <label class="tag-choice__box"><input type="checkbox" checked>lunaire</label>
+                </div>
+                <details class="tag-meanings">
+                  <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                </details>
+              </fieldset>
+              <button type="button" class="button button--primary">Proposer la pose</button>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <figure class="mq-frame mq-frame--wide">
+    <figcaption>Grand écran : la carte du formulaire (640 px)</figcaption>
+    <div class="mq-screen">
+      <main>
+        <div class="proposal-page proposal-page--carded">
+          <h1>Proposer une pose</h1>
+          <p class="proposal-page__introduction">Les étiquettes sont facultatives ; les autres champs sont obligatoires.</p>
+          <form class="proposal-form">
+            <p class="mq-omitted">Nom, difficultés (inchangés)</p>
+            <div class="flow-questions">
+              <fieldset class="tile-group"><div class="tile-group__container">
+                <legend>Peut-on terminer un flow sur cette pose ?</legend>
+                <div class="tile-group__tiles">
+                  <label class="tile"><input type="radio" name="e2" checked><span>Oui</span></label>
+                  <label class="tile"><input type="radio" name="e2"><span>Non</span></label>
+                </div>
+              </div></fieldset>
+            </div>
+            <fieldset class="tag-choice">
+              <legend class="tag-choice__legend">Étiquettes (facultatives)</legend>
+              <p class="tag-choice__help">Choisis celles qui décrivent la pose.</p>
+              <div class="tag-choice__boxes">
+                <label class="tag-choice__box"><input type="checkbox" checked>inversion</label>
+                <label class="tag-choice__box"><input type="checkbox" checked>lunaire</label>
+              </div>
+              <details class="tag-meanings" open>
+                <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                <dl class="tag-meanings__list">
+                  <div><dt>inversion</dt><dd>La tête du flyer est plus basse que ses hanches, dans la pose ou à un moment de la transition. Ex. : Candlestick, Straddle Bat.</dd></div>
+                  <div><dt>lunaire</dt><dd>Pratique thérapeutique : le flyer, détendu et passif, se laisse porter et étirer par la base ; les passages se font lentement. Ex. : Folded Leaf, Straddle Bat.</dd></div>
+                </dl>
+              </details>
+            </fieldset>
+            <button type="button" class="button button--primary">Proposer la pose</button>
+          </form>
+        </div>
+      </main>
+    </div>
+  </figure>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-revision">
+  <h2 id="mq-revision">5. Formulaire « Proposer une modification » : « Actuellement » et « Modifiée »</h2>
+  <p>Folded Leaf porte « lunaire » ; Alice coche aussi « inversion » : la marque « Modifiée » apparaît dans la legend, le rappel garde la valeur actuelle.</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Utilisatrice, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="proposal-page revision-page">
+            <h1>Proposer une modification</h1>
+            <p class="revision-page__pose">Pose : <strong>Folded Leaf</strong></p>
+            <p class="proposal-page__introduction">Change seulement ce qui doit l'être. La valeur actuelle est rappelée pour chaque champ.</p>
+            <form class="proposal-form">
+              <p class="mq-omitted">Nom, difficultés, questions de flow (avec leur rappel)</p>
+              <fieldset class="tag-choice">
+                <legend class="tag-choice__legend legend--marked">Étiquettes <span class="modified-mark">Modifiée</span></legend>
+                <p class="tag-choice__help">Actuellement : lunaire</p>
+                <div class="tag-choice__boxes">
+                  <label class="tag-choice__box"><input type="checkbox" checked>inversion</label>
+                  <label class="tag-choice__box"><input type="checkbox" checked>lunaire</label>
+                </div>
+                <details class="tag-meanings">
+                  <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                </details>
+              </fieldset>
+              <div class="field">
+                <label for="m1">Message pour le validateur (facultatif)</label>
+                <textarea id="m1" rows="4"></textarea>
+                <p class="field__help">Explique-lui pourquoi tu proposes cette modification. 500 caractères au maximum.</p>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="button button--primary">Proposer la modification</button>
+                <a class="button button--secondary link-button" href="#">Annuler</a>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>À l'ouverture, pose sans étiquette, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="proposal-page revision-page">
+            <p class="mq-omitted">Titre, pose « Throne », introduction, autres champs</p>
+            <form class="proposal-form" style="margin-top: var(--afj-spacing-lg)">
+              <fieldset class="tag-choice">
+                <legend class="tag-choice__legend">Étiquettes</legend>
+                <p class="tag-choice__help">Actuellement : aucune</p>
+                <div class="tag-choice__boxes">
+                  <label class="tag-choice__box"><input type="checkbox">inversion</label>
+                  <label class="tag-choice__box"><input type="checkbox">lunaire</label>
+                </div>
+                <details class="tag-meanings">
+                  <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+                </details>
+              </fieldset>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <figure class="mq-frame mq-frame--wide">
+    <figcaption>Grand écran : carte du formulaire, actions en ligne</figcaption>
+    <div class="mq-screen">
+      <main>
+        <div class="proposal-page proposal-page--carded revision-page">
+          <h1>Proposer une modification</h1>
+          <p class="revision-page__pose">Pose : <strong>Folded Leaf</strong></p>
+          <p class="proposal-page__introduction">Change seulement ce qui doit l'être. La valeur actuelle est rappelée pour chaque champ.</p>
+          <form class="proposal-form">
+            <p class="mq-omitted">Nom, difficultés, questions de flow (avec leur rappel)</p>
+            <fieldset class="tag-choice">
+              <legend class="tag-choice__legend legend--marked">Étiquettes <span class="modified-mark">Modifiée</span></legend>
+              <p class="tag-choice__help">Actuellement : lunaire</p>
+              <div class="tag-choice__boxes">
+                <label class="tag-choice__box"><input type="checkbox" checked>inversion</label>
+                <label class="tag-choice__box"><input type="checkbox" checked>lunaire</label>
+              </div>
+              <details class="tag-meanings">
+                <summary class="tag-meanings__summary">Ce que veulent dire les étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+              </details>
+            </fieldset>
+            <div class="form-actions">
+              <button type="button" class="button button--primary">Proposer la modification</button>
+              <a class="button button--secondary link-button" href="#">Annuler</a>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+  </figure>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-queue">
+  <h2 id="mq-queue">6. File de validation et « Mes propositions »</h2>
+  <p>Ligne « Étiquettes » dans la pose de la carte, « aucune » écrit dans la file ; les ajustements se comparent en mots.</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>File : proposition de Candlestick, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <article class="proposal-card">
+            <h2>Candlestick</h2>
+            <p class="proposal-card__meta">Proposée par alice@example.org le 18 novembre 2026</p>
+            <dl class="pose-card__details">
+              <div class="pose-card__roles">
+                <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+              </div>
+              <div class="pose-card__flow">
+                <div class="flow-boundary flow-boundary--no"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Non</dd></div>
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+              </div>
+              <div class="tag-line"><dt class="tag-line__term">Étiquettes</dt><dd class="tag-line__value">aucune</dd></div>
+            </dl>
+            <div class="proposal-card__decision">
+              <button type="button" class="button button--secondary">Accepter la proposition</button>
+              <button type="button" class="button button--secondary">Ajuster avant d'accepter</button>
+              <button type="button" class="button button--secondary">Refuser</button>
+            </div>
+          </article>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>« Mes propositions » : ajustement « aucune → inversion », 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <article class="proposal-card">
+            <h2>Candlestick</h2>
+            <p class="proposal-card__meta">Proposée le 18 novembre 2026</p>
+            <p class="proposal-status"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Acceptée avec ajustements</p>
+            <h3 class="change-list-title">Ajustements apportés</h3>
+            <p class="change-list-key">Proposé → retenu</p>
+            <dl class="change-list">
+              <dt>Étiquettes</dt>
+              <dd><span class="visually-hidden">Proposé : </span><del>aucune</del> <span aria-hidden="true">→</span><span class="visually-hidden">, retenu : </span> <ins>inversion</ins></dd>
+            </dl>
+          </article>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<script>
+  // Bascule du thème de la maquette : par défaut celui du système, puis le choix explicite.
+  (function () {
+    var root = document.documentElement;
+    var media = window.matchMedia('(prefers-color-scheme: dark)');
+    var buttons = document.querySelectorAll('[data-theme-choice]');
+    function effective() { return root.getAttribute('data-theme') || (media.matches ? 'dark' : 'light'); }
+    function sync() {
+      var current = effective();
+      buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.themeChoice === current)); });
+    }
+    buttons.forEach(function (b) {
+      b.addEventListener('click', function () { root.setAttribute('data-theme', b.dataset.themeChoice); sync(); });
+    });
+    media.addEventListener('change', sync);
+    sync();
+  })();
+</script>
+</body>
+</html>

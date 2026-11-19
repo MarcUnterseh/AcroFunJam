@@ -54,7 +54,7 @@ public sealed class Transition : AggregateRoot<TransitionId>
         ArgumentNullException.ThrowIfNull(tags);
         if (!fromPosePublished) return CatalogErrors.FromPoseNotFound;
         if (!toPosePublished) return CatalogErrors.ToPoseNotFound;
-        if (!tags.IsValid) return new TagNotInListError(tags.NotInList);
+        if (TagNotApplicableError.Of(tags) is { } refused) return refused;
         if (slotTaken) return name is null ? CatalogErrors.UnnamedTransitionTaken : CatalogErrors.TransitionNameTaken;
 
         var transition = new Transition(id, fromPose, toPose, name, difficulty, description, tags.Tags, source, now);
@@ -69,7 +69,7 @@ public sealed class Transition : AggregateRoot<TransitionId>
     public Result<TagSet> Tag(TagChoice tags, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(tags);
-        if (!tags.IsValid) return new TagNotInListError(tags.NotInList);
+        if (TagNotApplicableError.Of(tags) is { } refused) return refused;
 
         Tags = tags.Tags;
         Raise(new TransitionTagged(Id, Tags, now));

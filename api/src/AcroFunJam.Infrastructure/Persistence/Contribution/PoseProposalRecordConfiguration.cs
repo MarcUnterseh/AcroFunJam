@@ -36,7 +36,8 @@ public sealed class PoseProposalRecordConfiguration : IEntityTypeConfiguration<P
                 "(status = 'accepted') = (retained_name IS NOT NULL) AND (status = 'accepted') = (retained_base_difficulty IS NOT NULL)"
                 + " AND (status = 'accepted') = (retained_flyer_difficulty IS NOT NULL)"
                 + " AND (status = 'accepted') = (retained_can_start_flow IS NOT NULL)"
-                + " AND (status = 'accepted') = (retained_can_end_flow IS NOT NULL)");
+                + " AND (status = 'accepted') = (retained_can_end_flow IS NOT NULL)"
+                + " AND (status = 'accepted') = (retained_tag_ids IS NOT NULL)");
             table.HasCheckConstraint(
                 "ck_pose_proposals_retained_base_difficulty", "retained_base_difficulty IN ('discovery', 'beginner', 'intermediate', 'advanced')");
             table.HasCheckConstraint(
@@ -50,16 +51,23 @@ public sealed class PoseProposalRecordConfiguration : IEntityTypeConfiguration<P
                 "ck_pose_proposals_adjustment_note_with_adjustments",
                 "adjustment_note IS NULL"
                 + " OR (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow)"
-                + " IS DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow)");
+                + " IS DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow)"
+                + " OR NOT (retained_tag_ids @> proposed_tag_ids AND retained_tag_ids <@ proposed_tag_ids)");
             // A direct publication retains the proposed pose as is, without note, decided by its contributor when submitted (ADR 0023).
             table.HasCheckConstraint(
                 "ck_pose_proposals_published_directly",
                 "NOT published_directly OR (status = 'accepted' AND decided_by = contributor_id AND decided_at = submitted_at"
                 + " AND adjustment_note IS NULL"
                 + " AND (retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow)"
-                + " IS NOT DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow))");
+                + " IS NOT DISTINCT FROM (name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow)"
+                + " AND retained_tag_ids @> proposed_tag_ids AND retained_tag_ids <@ proposed_tag_ids)");
         });
         builder.HasKey(p => p.Id);
+        // Story 9a: the tags of the proposed and of the retained pose; the pending proposals carrying a tag (its removal, ADR 0036).
+        builder.Property(p => p.ProposedTagIds).HasColumnName("proposed_tag_ids").HasDefaultValueSql("'{}'").IsRequired();
+        builder.Property(p => p.RetainedTagIds).HasColumnName("retained_tag_ids");
+        builder.HasIndex(p => p.ProposedTagIds).HasDatabaseName("ix_pose_proposals_pending_tag_ids").HasMethod("gin")
+            .HasFilter("status = 'pending'");
         builder.Property(p => p.Id).HasColumnName("id");
         builder.Property(p => p.ContributorId).HasColumnName("contributor_id");
         builder.Property(p => p.Name).HasColumnName("name").IsRequired();

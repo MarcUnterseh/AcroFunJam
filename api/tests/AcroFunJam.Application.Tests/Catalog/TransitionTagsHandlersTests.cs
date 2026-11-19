@@ -28,7 +28,7 @@ public sealed class TransitionTagsHandlersTests
     private readonly Pose _bird = APose("Bird");
     private readonly FakePoseRepository _poses = new();
     private readonly FakeTransitionRepository _transitions = new();
-    private readonly FakeTagListRepository _lists = new() { Stored = TagList.Seed(InitialTagList.Tags, () => new TagId(Guid.NewGuid()), Now) };
+    private readonly FakeTagListRepository _lists = new() { Stored = TagList.Seed(InitialTagList.Current, () => new TagId(Guid.NewGuid()), Now) };
     private readonly FakeUnitOfWork _unitOfWork = new();
     private readonly FixedTimeProvider _clock = new(Now);
 
@@ -44,7 +44,7 @@ public sealed class TransitionTagsHandlersTests
     {
         var transition = Transition.Publish(
             new TransitionId(Guid.NewGuid()), _throne.Id, _bird.Id, TransitionName.CreateOptional("Pop to Bird").Value, Beginner, description: null,
-            _lists.Stored!.Choose(tags.Select(IdOf)), source: null, fromPosePublished: true, toPosePublished: true, slotTaken: false, Now).Value!;
+            _lists.Stored!.Choose(tags.Select(IdOf), TagTarget.Transition), source: null, fromPosePublished: true, toPosePublished: true, slotTaken: false, Now).Value!;
         _transitions.Add(transition);
         return transition;
     }
@@ -129,7 +129,7 @@ public sealed class TransitionTagsHandlersTests
             new TransitionId(Guid.NewGuid()), _bird.Id, _bird.Name, Name: null, Beginner, Description: null, TagSet.Of([IdOf("pop"), IdOf("dynamique")]));
         reader.From[_throne.Id] = [linked];
 
-        var page = (await new GetPosePageHandler(_poses, reader, _lists).Handle(new GetPosePage(_throne.Id), Ct)).Value!;
+        var page = (await new GetPosePageHandler(_poses, reader, _lists, new FakePendingPoseRevisions()).Handle(new GetPosePage(_throne.Id), Ct)).Value!;
 
         page.TagsOf(page.TransitionsFrom.Single()).Select(t => t.Name.Value).ShouldBe(["dynamique", "pop"]);
         page.TagsOf(page.TransitionsFrom.Single()).Single(t => t.Name.Value == "pop").Description.Value

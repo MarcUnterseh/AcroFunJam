@@ -74,7 +74,7 @@ public static class PoseProposalsInDatabase
             """
             select name, base_difficulty, flyer_difficulty, can_start_flow, can_end_flow,
                    retained_name, retained_base_difficulty, retained_flyer_difficulty, retained_can_start_flow, retained_can_end_flow,
-                   adjustment_note
+                   adjustment_note, proposed_tag_ids, retained_tag_ids
             from contribution.pose_proposals
             where id = @id
             """,
@@ -83,10 +83,15 @@ public static class PoseProposalsInDatabase
 
         await using var reader = await command.ExecuteReaderAsync();
         (await reader.ReadAsync()).ShouldBeTrue($"Aucune proposition {proposal}.");
-        var proposed = new StoredPose(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetBoolean(3), reader.GetBoolean(4));
+        // Story 9a: the tags compared as sets (their order does not count).
+        static string TagsIn(Guid[] ids) => string.Join(",", ids.Order());
+        var proposed = new StoredPose(
+            reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetBoolean(3), reader.GetBoolean(4), TagsIn(reader.GetFieldValue<Guid[]>(11)));
         var retained = reader.IsDBNull(5)
             ? null
-            : new StoredPose(reader.GetString(5), reader.GetString(6), reader.GetString(7), reader.GetBoolean(8), reader.GetBoolean(9));
+            : new StoredPose(
+                reader.GetString(5), reader.GetString(6), reader.GetString(7), reader.GetBoolean(8), reader.GetBoolean(9),
+                TagsIn(reader.GetFieldValue<Guid[]>(12)));
         return new RecordedPoses(proposed, retained, reader.IsDBNull(10) ? null : reader.GetString(10));
     }
 
@@ -123,8 +128,8 @@ public static class PoseProposalsInDatabase
 /// <summary>A proposal as stored: status, validator who decided (address), decision date, rejection reason.</summary>
 public sealed record RecordedDecision(string Status, string? DecidedBy, DateTimeOffset? DecidedAt, string? RejectionReason);
 
-/// <summary>A pose as stored: name, difficulty codes and flow indicators.</summary>
-public sealed record StoredPose(string Name, string BaseDifficulty, string FlyerDifficulty, bool CanStartFlow, bool CanEndFlow);
+/// <summary>A pose as stored: name, difficulty codes, flow indicators and tags (story 9a: identifiers, ordered, comma separated).</summary>
+public sealed record StoredPose(string Name, string BaseDifficulty, string FlyerDifficulty, bool CanStartFlow, bool CanEndFlow, string Tags = "");
 
 /// <summary>The proposed pose, the retained pose (none unless accepted) and the adjustment note of a proposal.</summary>
 public sealed record RecordedPoses(StoredPose Proposed, StoredPose? Retained, string? AdjustmentNote)

@@ -28,7 +28,7 @@ public sealed class RevisePoseHandlerTests
         _poses.Add(_thron);
     }
 
-    private RevisePoseHandler Handler() => new(_poses, _unitOfWork, new FixedTimeProvider(Now));
+    private RevisePoseHandler Handler() => new(_poses, _unitOfWork, new FixedTimeProvider(Now), new FakeTagListRepository());
 
     private RevisePose Renaming(string name, PoseVersion? expected = null) =>
         new(_thron.Id, PoseName.Create(name).Value!, BeginnerOnDiscovery, StartsAndEnds, expected ?? PoseVersion.Initial, ARevision);

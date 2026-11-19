@@ -68,6 +68,12 @@ public sealed class TransitionTagSteps(People people, Deployment deployment, Tag
             "la transition est introuvable dans le catalogue" => (HttpStatusCode.NotFound, "catalog.transition-not-found"),
             _ when reason.EndsWith("n'est pas dans la liste des étiquettes", StringComparison.Ordinal) =>
                 (HttpStatusCode.Conflict, "catalog.tag-not-in-list"),
+            _ when reason.EndsWith("ne s'applique pas aux transitions", StringComparison.Ordinal) ||
+                   reason.EndsWith("ne s'applique pas aux poses", StringComparison.Ordinal) =>
+                (HttpStatusCode.Conflict, "catalog.tag-not-applicable"),
+            // Story 9a: tagging a published pose directly.
+            "la pose est introuvable dans le catalogue" => (HttpStatusCode.NotFound, "catalog.pose-not-found"),
+            "une modification de cette pose est déjà en attente de validation" => (HttpStatusCode.Conflict, "catalog.pose-revision-pending"),
             _ => throw new ArgumentOutOfRangeException(nameof(reason), reason, "Motif de refus inconnu."),
         };
         var response = responses.Last.ShouldNotBeNull();

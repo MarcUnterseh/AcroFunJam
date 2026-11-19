@@ -34,7 +34,7 @@ public sealed class ProposePoseRevisionHandlerTests
     public ProposePoseRevisionHandlerTests() => _catalogPoses = new FakeCatalogPoses(Throne) { Reservation = _reservation };
 
     private ProposePoseRevisionHandler Handler() =>
-        new(_contributors, _catalogPoses, _catalogPoseNames, _poseProposals, _revisions, _reservation, _publisher, _unitOfWork, new FixedTimeProvider(Now));
+        new(_contributors, _catalogPoses, _catalogPoseNames, _poseProposals, _revisions, _reservation, _publisher, _unitOfWork, new FixedTimeProvider(Now), new FakeCatalogTags(null));
 
     private static ProposePoseRevision OfThrone(string? name = null, string? flyerDifficulty = null) => new(
         Alice.Id, Throne.Id, Throne.Version,

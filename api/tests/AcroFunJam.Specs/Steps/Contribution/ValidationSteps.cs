@@ -130,8 +130,11 @@ public sealed class ValidationSteps(
         decisions.Last = await Accept(await people.SignedInClient(name), proposals.IdOf(pose, contributor));
 
     [When("^(\\w+) accepte " + Proposal + " en corrigeant " + Adjustment + "$")]
-    public async Task WhenSomeoneAcceptsWithAnAdjustment(string name, string pose, string contributor, string adjustment) =>
-        decisions.Last = await Accept(await people.SignedInClient(name), proposals.IdOf(pose, contributor), Adjusting(adjustment));
+    public async Task WhenSomeoneAcceptsWithAnAdjustment(string name, string pose, string contributor, string adjustment)
+    {
+        var id = proposals.IdOf(pose, contributor);
+        decisions.OnPoseProposal(await Accept(await people.SignedInClient(name), id, Adjusting(adjustment)), id);
+    }
 
     [When("^(\\w+) accepte " + Proposal + " en corrigeant " + Adjustment + ", avec le message " + Reason + "$")]
     public async Task WhenSomeoneAcceptsWithAnAdjustmentAndANote(string name, string pose, string contributor, string adjustment, string note) =>
@@ -399,6 +402,9 @@ public sealed class ValidationSteps(
         _ when reason.StartsWith("l'étiquette ", StringComparison.Ordinal) && reason.EndsWith("n'est pas dans la liste des étiquettes", StringComparison.Ordinal) =>
             (HttpStatusCode.Conflict, "contribution.tag-not-in-list"),
         "une pose de ce nom est déjà en attente de validation" => (HttpStatusCode.Conflict, "contribution.pose-name-already-pending"),
+        // Story 9a: a retained tag that does not apply to the poses.
+        _ when reason.StartsWith("l'étiquette ", StringComparison.Ordinal) && reason.EndsWith("ne s'applique pas aux poses", StringComparison.Ordinal) =>
+            (HttpStatusCode.Conflict, "contribution.tag-not-applicable"),
         // Adjustments (step B): the retained values follow the content rules of a pose (story 3).
         "le nom de la pose est obligatoire" => (HttpStatusCode.BadRequest, "pose.name-required"),
         "le nom de la pose est trop long" => (HttpStatusCode.BadRequest, "pose.name-too-long"),
@@ -444,9 +450,14 @@ public sealed class ValidationSteps(
     // --- HTTP ---------------------------------------------------------------------------------
 
     /// <summary>Without adjustment, every value is absent: each one is the proposed value.</summary>
-    private static Task<HttpResponseMessage> Accept(HttpClient client, Guid proposal, AcceptanceRequest? acceptance = null) =>
-        client.PostAsJsonAsync(
-            new Uri($"/contribution/pose-proposals/{proposal}/acceptance", UriKind.Relative), acceptance ?? new AcceptanceRequest());
+    /// <summary>Story 9a: the retained tags, named by the scenario, are sent by identifier once read in the list.</summary>
+    private static async Task<HttpResponseMessage> Accept(HttpClient client, Guid proposal, AcceptanceRequest? acceptance = null)
+    {
+        acceptance ??= new AcceptanceRequest();
+        if (acceptance.RetainedTagNames is { } names)
+            acceptance = acceptance with { TagIds = [.. (await TagNames.IdsOf(client, names)).Select(t => t.Value)] };
+        return await client.PostAsJsonAsync(new Uri($"/contribution/pose-proposals/{proposal}/acceptance", UriKind.Relative), acceptance);
+    }
 
     /// <summary>
     /// « la difficulté flyer en "découverte" », « le nom en "Throne" », « le nom en un nom de 61 caractères »,
@@ -465,6 +476,9 @@ public sealed class ValidationSteps(
         }
 
         if (Regex.Match(adjustment, @"^le nom en ""([^""]*)""$") is { Success: true } name) return new AcceptanceRequest { Name = name.Groups[1].Value };
+        // Story 9a: « les étiquettes en "lunaire" et "vrille" ».
+        if (Regex.Match(adjustment, @"^les étiquettes en (.+)$") is { Success: true } tags)
+            return new AcceptanceRequest { RetainedTagNames = TagNames.In(tags.Groups[1].Value) };
         if (Regex.Match(adjustment, @"^le nom en un nom de (\d+) caractères$") is { Success: true } longName)
         {
             var length = int.Parse(longName.Groups[1].Value, CultureInfo.InvariantCulture);
@@ -488,6 +502,7 @@ public sealed class ValidationSteps(
         CanStartFlow = left.CanStartFlow ?? right.CanStartFlow,
         CanEndFlow = left.CanEndFlow ?? right.CanEndFlow,
         Message = left.Message ?? right.Message,
+        RetainedTagNames = right.RetainedTagNames ?? left.RetainedTagNames,
     };
 
     private static Task<HttpResponseMessage> Reject(HttpClient client, Guid proposal, RejectionRequest rejection) =>
@@ -560,6 +575,14 @@ public sealed class ValidationSteps(
         public bool? CanEndFlow { get; init; }
 
         public string? Message { get; init; }
+
+        /// <summary>The retained tags (story 9a), by identifier; absent keeps the proposed ones.</summary>
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+        public IReadOnlyList<Guid>? TagIds { get; init; }
+
+        /// <summary>The retained tags as named by the scenario, resolved to identifiers before sending.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public IReadOnlyList<string>? RetainedTagNames { get; init; }
     }
 
     private sealed record AcceptedResponse(

@@ -24,10 +24,16 @@ public sealed class CatalogPublisher(
     {
         ArgumentNullException.ThrowIfNull(pose);
         var published = await publishPose.Handle(
-            new PublishPose(pose.Name, pose.Difficulty, pose.Flow, new SourceProposalId(source.Value)), ct);
+            new PublishPose(pose.Name, pose.Difficulty, pose.Flow, new SourceProposalId(source.Value)) { Tags = pose.Tags }, ct);
         if (published.IsSuccess) return Result<bool>.Success(true);
 
-        return published.Error == CatalogErrors.PoseNameTaken ? ContributionErrors.PoseNameAlreadyInCatalog : published.Error!;
+        return published.Error switch
+        {
+            var e when e == CatalogErrors.PoseNameTaken => ContributionErrors.PoseNameAlreadyInCatalog,
+            TagNotInListError notInList => new ProposedTagsNotInListError(notInList.Tags),
+            TagNotApplicableError notApplicable => new ProposedTagsNotApplicableError(notApplicable.Tags),
+            _ => published.Error!,
+        };
     }
 
     public async Task<Result<bool>> RevisePose(
@@ -37,7 +43,7 @@ public sealed class CatalogPublisher(
         var revised = await revisePose.Handle(
             new RevisePose(
                 new PoseId(pose.Value), retained.Name, retained.Difficulty, retained.Flow, PoseVersion.Of(expected.Value),
-                new SourceProposalId(source.Value)),
+                new SourceProposalId(source.Value)) { Tags = retained.Tags },
             ct);
         if (revised.IsSuccess) return Result<bool>.Success(true);
 
@@ -46,6 +52,8 @@ public sealed class CatalogPublisher(
             var e when e == CatalogErrors.PoseNameTaken => ContributionErrors.PoseNameAlreadyInCatalog,
             var e when e == CatalogErrors.PoseVersionMismatch => ContributionErrors.PoseChangedSinceRevisionStarted,
             var e when e == CatalogErrors.PoseNotFound => ContributionErrors.PoseNotFound,
+            TagNotInListError notInList => new ProposedTagsNotInListError(notInList.Tags),
+            TagNotApplicableError notApplicable => new ProposedTagsNotApplicableError(notApplicable.Tags),
             _ => revised.Error!,
         };
     }

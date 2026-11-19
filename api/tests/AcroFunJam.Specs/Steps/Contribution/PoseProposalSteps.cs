@@ -201,6 +201,9 @@ public sealed class PoseProposalSteps(People people, Deployment deployment, Scen
         // Story 8: a proposed tag that is not in the list.
         _ when reason.StartsWith("l'étiquette ", StringComparison.Ordinal) && reason.EndsWith("n'est pas dans la liste des étiquettes", StringComparison.Ordinal) =>
             (HttpStatusCode.Conflict, "contribution.tag-not-in-list"),
+        // Story 9a: a proposed tag that does not apply to the element.
+        _ when reason.StartsWith("l'étiquette ", StringComparison.Ordinal) && reason.Contains("ne s'applique pas aux", StringComparison.Ordinal) =>
+            (HttpStatusCode.Conflict, "contribution.tag-not-applicable"),
         "le nom de la pose est trop long" => (HttpStatusCode.BadRequest, "pose.name-too-long"),
         "la difficulté base est obligatoire" => (HttpStatusCode.BadRequest, "pose.base-difficulty-required"),
         "la difficulté flyer est obligatoire" => (HttpStatusCode.BadRequest, "pose.flyer-difficulty-required"),

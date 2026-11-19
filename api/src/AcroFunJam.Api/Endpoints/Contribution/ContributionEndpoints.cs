@@ -76,7 +76,7 @@ public static class ContributionEndpoints
         return app;
     }
 
-    private static MyPoseProposalResponse ToResponse(MyPoseProposal proposal) =>
+    private static MyPoseProposalResponse ToResponse(MyPoseProposal proposal, TagNames names) =>
         new(
             proposal.Id.Value,
             MyProposalStatusCodes.From(proposal.Status),
@@ -87,9 +87,10 @@ public static class ContributionEndpoints
             proposal.Flow.CanEndFlow,
             proposal.SubmittedAt,
             proposal.DecidedAt,
-            ToResponse(proposal.Adjustments),
+            ToResponse(proposal.Adjustments, names),
             proposal.Note?.Value,
-            proposal.Reason?.Value);
+            proposal.Reason?.Value,
+            names.Of(proposal.Tags));
 
     /// <summary>Each kind of proposal with its own shape, told apart by <c>kind</c> (ADR 0027).</summary>
     private static async Task<Results<Ok<MyProposalsResponse>, ProblemHttpResult>> GetMyProposals(
@@ -102,25 +103,35 @@ public static class ContributionEndpoints
         if (result.IsFailure) return result.Error!.ToProblem();
         // The names of every tag of the list, in one batch (ADR 0033).
         var transitions = result.Value!.OfType<MyTransitionProposal>().ToList();
+        var poses = result.Value!.OfType<MyPoseProposal>().ToList();
         var names = await TagNames.Of(
-            tagNames, transitions.Select(t => t.Tags).Concat(transitions.SelectMany(t => t.Adjustments.OfType<TransitionTagsAdjustment>().Select(a => a.Proposed))), ct);
+            tagNames,
+            transitions.Select(t => t.Tags)
+                .Concat(transitions.SelectMany(t => t.Adjustments.OfType<TransitionTagsAdjustment>().Select(a => a.Proposed)))
+                .Concat(poses.Select(p => p.Tags))
+                .Concat(poses.SelectMany(p => p.Adjustments.OfType<PoseTagsAdjustment>().Select(a => a.Proposed)))
+                .Concat(result.Value!.OfType<MyPoseRevision>().SelectMany(PoseRevisionEndpoints.TagSetsOf)),
+            ct);
         return TypedResults.Ok(new MyProposalsResponse([.. result.Value!.Select(p => ToResponse(p, names))]));
     }
 
     private static MyProposalResponse ToResponse(IMyProposal proposal, TagNames names) => proposal switch
     {
-        MyPoseProposal pose => ToResponse(pose),
-        MyPoseRevision revision => PoseRevisionEndpoints.ToResponse(revision),
+        MyPoseProposal pose => ToResponse(pose, names),
+        MyPoseRevision revision => PoseRevisionEndpoints.ToResponse(revision, names),
         MyTransitionProposal transition => TransitionEndpoints.ToResponse(transition, names),
         _ => throw new UnreachableException($"Unknown kind of proposal: {proposal.GetType().Name}."),
     };
 
     /// <summary>Each adjusted field in its member, with both values; null when nothing was adjusted.</summary>
-    internal static PoseAdjustmentsResponse? ToResponse(IReadOnlyList<PoseFieldAdjustment> adjustments) =>
-        adjustments.Count == 0 ? null : adjustments.Aggregate(new PoseAdjustmentsResponse(null, null, null, null, null), Adjusted);
+    internal static PoseAdjustmentsResponse? ToResponse(IReadOnlyList<PoseFieldAdjustment> adjustments, TagNames names) =>
+        adjustments.Count == 0
+            ? null
+            : adjustments.Aggregate(new PoseAdjustmentsResponse(null, null, null, null, null, null), (r, a) => Adjusted(r, a, names));
 
-    private static PoseAdjustmentsResponse Adjusted(PoseAdjustmentsResponse response, PoseFieldAdjustment adjustment) => adjustment switch
+    private static PoseAdjustmentsResponse Adjusted(PoseAdjustmentsResponse response, PoseFieldAdjustment adjustment, TagNames names) => adjustment switch
     {
+        PoseTagsAdjustment tags => response with { Tags = new TagsAdjustmentResponse(names.Of(tags.Proposed), names.Of(tags.Retained)) },
         NameAdjustment name => response with { Name = new(name.Proposed.Value, name.Retained.Value) },
         BaseDifficultyAdjustment difficulty => response with { BaseDifficulty = ToResponse(difficulty.Proposed, difficulty.Retained) },
         FlyerDifficultyAdjustment difficulty => response with { FlyerDifficulty = ToResponse(difficulty.Proposed, difficulty.Retained) },
@@ -140,16 +151,19 @@ public static class ContributionEndpoints
         ProposePoseRequest request,
         ClaimsPrincipal contributor,
         ICommandHandler<ProposePose, PoseProposalDto> handler,
+        ICatalogTags tagNames,
         CancellationToken ct)
     {
         var pose = ProposedPose.Create(request.Name, request.BaseDifficulty, request.FlyerDifficulty, request.CanStartFlow, request.CanEndFlow);
         if (pose.IsFailure) return pose.Error!.ToProblem();
 
-        var result = await handler.Handle(new ProposePose(ContributorOf(contributor), pose.Value!), ct);
+        var tags = request.TagIds is null ? null : (IReadOnlyCollection<TagId>)[.. request.TagIds.Select(t => new TagId(t))];
+        var result = await handler.Handle(new ProposePose(ContributorOf(contributor), pose.Value!, tags), ct);
         if (result.IsFailure) return result.Error!.ToProblem();
 
         // No Location header: a proposal cannot be read back yet (ADR 0018).
-        return TypedResults.Created((string?)null, ToResponse(result.Value!));
+        var names = await TagNames.Of(tagNames, [result.Value!.Pose.Tags], ct);
+        return TypedResults.Created((string?)null, ToResponse(result.Value!, names));
     }
 
     private static async Task<Results<Ok<ValidationQueueResponse>, ProblemHttpResult>> GetValidationQueue(
@@ -161,7 +175,12 @@ public static class ContributionEndpoints
         var result = await handler.Handle(new GetPendingPoseProposals(ValidatorOf(validator)), ct);
         if (result.IsFailure) return result.Error!.ToProblem();
         // The names of every tag of the queue, in one batch (ADR 0033).
-        var names = await TagNames.Of(tagNames, result.Value!.OfType<PendingTransitionProposalDto>().Select(t => t.Transition.Tags), ct);
+        var names = await TagNames.Of(
+            tagNames,
+            result.Value!.OfType<PendingTransitionProposalDto>().Select(t => t.Transition.Tags)
+                .Concat(result.Value!.OfType<PendingPoseProposalDto>().Select(p => p.ProposedPose.Tags))
+                .Concat(result.Value!.OfType<PendingPoseRevisionDto>().SelectMany(r => r.Changes.OfType<PoseTagsChange>().SelectMany(c => new[] { c.Before, c.After }))),
+            ct);
         return TypedResults.Ok(new ValidationQueueResponse([.. result.Value!.Select(p => ToResponse(p, names))]));
     }
 
@@ -191,8 +210,9 @@ public static class ContributionEndpoints
         var note = AdjustmentNote.Create(request?.Message);
         if (note.IsFailure) return note.Error!.ToProblem();
 
+        var tags = request?.TagIds is null ? null : (IReadOnlyCollection<TagId>)[.. request.TagIds.Select(t => new TagId(t))];
         var result = await handler.Handle(
-            new AcceptPoseProposal(new PoseProposalId(id), ValidatorOf(validator), adjustments.Value!, note.Value), ct);
+            new AcceptPoseProposal(new PoseProposalId(id), ValidatorOf(validator), adjustments.Value!, note.Value, tags), ct);
         if (result.IsFailure) return result.Error!.ToProblem();
 
         var accepted = result.Value!;
@@ -228,13 +248,13 @@ public static class ContributionEndpoints
     /// <summary>Each kind of proposal with its own shape, told apart by <c>kind</c> (ADR 0027).</summary>
     private static PendingProposalResponse ToResponse(PendingProposalDto proposal, TagNames names) => proposal switch
     {
-        PendingPoseProposalDto pose => ToResponse(pose),
-        PendingPoseRevisionDto revision => PoseRevisionEndpoints.ToResponse(revision),
+        PendingPoseProposalDto pose => ToResponse(pose, names),
+        PendingPoseRevisionDto revision => PoseRevisionEndpoints.ToResponse(revision, names),
         PendingTransitionProposalDto transition => TransitionEndpoints.ToResponse(transition, names),
         _ => throw new UnreachableException($"Unknown kind of pending proposal: {proposal.GetType().Name}."),
     };
 
-    private static PendingPoseProposalResponse ToResponse(PendingPoseProposalDto proposal) =>
+    private static PendingPoseProposalResponse ToResponse(PendingPoseProposalDto proposal, TagNames names) =>
         new(
             proposal.Id.Value,
             proposal.ProposedPose.Name.Value,
@@ -243,7 +263,8 @@ public static class ContributionEndpoints
             proposal.ProposedPose.Flow.CanStartFlow,
             proposal.ProposedPose.Flow.CanEndFlow,
             new ProposalContributorResponse(proposal.ContributorEmail, proposal.IsYou),
-            proposal.SubmittedAt);
+            proposal.SubmittedAt,
+            names.Of(proposal.ProposedPose.Tags));
 
     internal static ContributorId ContributorOf(ClaimsPrincipal principal) => new(AccountIdOf(principal));
 
@@ -251,7 +272,7 @@ public static class ContributionEndpoints
     private static Guid AccountIdOf(ClaimsPrincipal principal) =>
         Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-    private static PoseProposalResponse ToResponse(PoseProposalDto proposal) =>
+    private static PoseProposalResponse ToResponse(PoseProposalDto proposal, TagNames names) =>
         new(
             proposal.Id.Value,
             ProposalStatusCodes.From(proposal.Status),
@@ -259,14 +280,19 @@ public static class ContributionEndpoints
             DifficultyCodes.From(proposal.Pose.Difficulty.Base),
             DifficultyCodes.From(proposal.Pose.Difficulty.Flyer),
             proposal.Pose.Flow.CanStartFlow,
-            proposal.Pose.Flow.CanEndFlow);
+            proposal.Pose.Flow.CanEndFlow,
+            names.Of(proposal.Pose.Tags));
 }
 
 /// <summary>
 /// A pose proposal. Deliberately permissive (strings and nullable booleans): a missing or unknown value is
 /// refused with a business code (<c>pose.*</c>) rather than by the JSON deserialiser (ADR 0018).
 /// </summary>
-public sealed record ProposePoseRequest(string? Name, string? BaseDifficulty, string? FlyerDifficulty, bool? CanStartFlow, bool? CanEndFlow);
+public sealed record ProposePoseRequest(string? Name, string? BaseDifficulty, string? FlyerDifficulty, bool? CanStartFlow, bool? CanEndFlow)
+{
+    /// <summary>The chosen tags, by identifier (story 9a, ADR 0036): absent, null or empty for none.</summary>
+    public IReadOnlyList<Guid>? TagIds { get; init; }
+}
 
 /// <summary>The received proposal; its name is the normalised name.</summary>
 public sealed record PoseProposalResponse(
@@ -276,7 +302,8 @@ public sealed record PoseProposalResponse(
     DifficultyCode BaseDifficulty,
     DifficultyCode FlyerDifficulty,
     bool CanStartFlow,
-    bool CanEndFlow);
+    bool CanEndFlow,
+    IReadOnlyList<ProposalTagResponse> Tags);
 
 /// <summary>The validation queue: pending proposals, the oldest first (ADR 0007: lists are wrapped).</summary>
 public sealed record ValidationQueueResponse(IReadOnlyList<PendingProposalResponse> Proposals);
@@ -301,7 +328,8 @@ public sealed record PendingPoseProposalResponse(
     bool CanStartFlow,
     bool CanEndFlow,
     ProposalContributorResponse Contributor,
-    DateTimeOffset SubmittedAt) : PendingProposalResponse;
+    DateTimeOffset SubmittedAt,
+    IReadOnlyList<ProposalTagResponse> Tags) : PendingProposalResponse;
 
 /// <summary>
 /// The acceptance of a proposal, with the values the validator adjusts (story 4, step B): each field optional, absent or
@@ -323,6 +351,9 @@ public sealed record AcceptPoseProposalRequest
     public bool? CanEndFlow { get; init; }
 
     public string? Message { get; init; }
+
+    /// <summary>The retained tags, by identifier (story 9a): absent or null keeps the proposed ones; empty removes them.</summary>
+    public IReadOnlyList<Guid>? TagIds { get; init; }
 }
 
 /// <summary>An accepted proposal: the retained pose, published in the catalog, and whether the validator adjusted it.</summary>
@@ -426,7 +457,8 @@ public sealed record MyPoseProposalResponse(
     DateTimeOffset? DecidedAt,
     PoseAdjustmentsResponse? Adjustments,
     string? Message,
-    string? Reason) : MyProposalResponse;
+    string? Reason,
+    IReadOnlyList<ProposalTagResponse> Tags) : MyProposalResponse;
 
 /// <summary>The fields a validator adjusted, each with its proposed and retained values; null when not adjusted.</summary>
 public sealed record PoseAdjustmentsResponse(
@@ -434,7 +466,8 @@ public sealed record PoseAdjustmentsResponse(
     DifficultyAdjustmentResponse? BaseDifficulty,
     DifficultyAdjustmentResponse? FlyerDifficulty,
     FlowAdjustmentResponse? CanStartFlow,
-    FlowAdjustmentResponse? CanEndFlow);
+    FlowAdjustmentResponse? CanEndFlow,
+    TagsAdjustmentResponse? Tags);
 
 public sealed record NameAdjustmentResponse(string Proposed, string Retained);
 

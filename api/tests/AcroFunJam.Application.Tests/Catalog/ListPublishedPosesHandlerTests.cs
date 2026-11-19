@@ -16,20 +16,20 @@ public sealed class ListPublishedPosesHandlerTests
             APublishedPose.Named("Star").WithBaseDifficulty(DifficultyLevel.Intermediate).WithFlyerDifficulty(DifficultyLevel.Advanced).Build(),
         ];
         var reader = new FakePublishedPosesReader(publishedPoses);
-        var handler = new ListPublishedPosesHandler(reader);
+        var handler = new ListPublishedPosesHandler(reader, new FakeTagListRepository());
 
         // Act
         var result = await handler.Handle(new ListPublishedPoses(), TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.ShouldBe(publishedPoses, ignoreOrder: true);
+        result.Value!.Select(p => p.Pose).ShouldBe(publishedPoses, ignoreOrder: true);
     }
 
     [Fact]
     public async Task Handle_Should_ReturnEmptyList_When_CatalogHasNoPose()
     {
-        var handler = new ListPublishedPosesHandler(new FakePublishedPosesReader([]));
+        var handler = new ListPublishedPosesHandler(new FakePublishedPosesReader([]), new FakeTagListRepository());
 
         var result = await handler.Handle(new ListPublishedPoses(), TestContext.Current.CancellationToken);
 
@@ -45,12 +45,12 @@ public sealed class ListPublishedPosesHandlerTests
                 APublishedPose.Named("Throne").Build(), APublishedPose.Named("Folded Leaf").Build(), APublishedPose.Named("bird").Build(),
                 APublishedPose.Named("Handstand").Build(), APublishedPose.Named("Étoile").Build(), APublishedPose.Named("Hand-to-Hand").Build(),
             ]);
-        var handler = new ListPublishedPosesHandler(reader);
+        var handler = new ListPublishedPosesHandler(reader, new FakeTagListRepository());
 
         var result = await handler.Handle(new ListPublishedPoses(), TestContext.Current.CancellationToken);
 
         // Comparison key (ADR 0017): accents ignored, a hyphen counts as a space.
-        result.Value.ShouldNotBeNull().Select(p => p.Name.Value)
+        result.Value.ShouldNotBeNull().Select(p => p.Pose.Name.Value)
             .ShouldBe(["bird", "Étoile", "Folded Leaf", "Hand-to-Hand", "Handstand", "Throne"]);
     }
 }

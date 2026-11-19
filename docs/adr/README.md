@@ -36,3 +36,5 @@
 | [0032](0032-liste-des-etiquettes.md) | Liste des étiquettes : agrégat `TagList` du Catalogue, implication portée par l'étiquette, retrait logique, amorçage unique au démarrage, capacité `manage-tags` | proposé |
 | [0033](0033-etiquettes-d-une-transition-et-retrait-conditionnel.md) | Étiquettes d'une transition : ensemble choisi par la liste (`TagChoice`), ajustement, étiquetage direct, retrait conditionnel entre contextes sous verrou `tag-list` partagé ou exclusif, erreurs porteuses de détails | proposé |
 | [0034](0034-contrat-http-des-etiquettes.md) | Contrat HTTP des étiquettes (`/catalog/tags`, `/catalog/transitions/{id}/tags`, `tagIds` et `tags` dans Contribution) | proposé |
+| [0035](0035-champ-d-application-des-etiquettes-et-amorcage-versionne.md) | Champ d'application des étiquettes (`TagScope`), choix par cible (`TagChoice.NotApplicable`), amorçage versionné de la liste (`SeedRevision`, `Upgrade`) | proposé |
+| [0036](0036-etiquettes-d-une-pose-et-contrat-http.md) | Étiquettes d'une pose : étiquetage direct par le Catalogue (version, modification en attente, verrou `pose:<id>` partagé), porteurs entre contextes, contrat HTTP | proposé |

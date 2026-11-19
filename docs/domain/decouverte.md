@@ -613,7 +613,7 @@ Carte d'example mapping du 2026-11-13, **révisée le même jour** avec les déc
 **Hors périmètre** : étiquettes des poses ; proposer une étiquette (utilisateurs) ; hiérarchie, exclusivité ou maximum ; fusion d'étiquettes ; filtre par étiquette (catalogue, page d'une pose) ; modification des étiquettes d'une transition publiée par un utilisateur ; historique ; notification ; écran mobile.
 
 **À venir**
-- **Prérequis de la story 9** : étiqueter aussi les poses, au moins « inversion » et « lunaire », dont le générateur aura besoin.
+- **Prérequis de la story 9** : étiqueter aussi les poses, au moins « inversion » et « lunaire », dont le générateur aura besoin. → **Story 9a « Étiqueter les poses »**, validée le 2026-11-18.
 - Story 9 « Générer un flow » : critères d'étiquettes (OU / ET), rappel du spotter (Q146) ; « washing machine » déduite (pose de départ = pose d'arrivée).
 - Glossaire (domain-expert) : réviser « Washing machine » (pas une étiquette), « Étiquette » (exemples, « classique » retiré), « Liste des étiquettes » (validateurs et administrateurs, page publique) ; ajouter nom et description d'une étiquette, clé de comparaison du nom d'une étiquette, étiqueter (une transition), capacité « gérer les étiquettes », étiquettes proposées / retenues, « dynamique » implicite.
 - Story « Modifier une transition » (symétrique de la story 6), étiquettes comprises.
@@ -625,6 +625,67 @@ Carte d'example mapping du 2026-11-13, **révisée le même jour** avec les déc
 3. API, contribution : E1 à E4, puis E5, E6, E7, puis E8.
 4. API, cycle de vie : L8, L9, L10 (retrait conditionnel et sa liste).
 5. Site : L11 (page « Étiquettes »), C3, C4, P6, puis E9.
+
+### Story 9a « Étiqueter les poses » (validée le 2026-11-18)
+Carte d'example mapping du 2026-11-18 (bdd-analyst), recommandations validées le même jour par le porteur du produit, avec les avis de l'ux-expert et de l'expert acroyoga (Q164 à Q181). Prérequis de la story 9 « Générer un flow ». Scénarios (tous `@wip`) : `specs/features/catalogue/etiquettes-applicables-aux-poses.feature` (A), `specs/features/catalogue/consulter-les-etiquettes-des-poses.feature` (V), `specs/features/catalogue/etiqueter-une-pose-publiee.feature` (D), `specs/features/contribution/etiqueter-une-pose.feature` (E pour la proposition, M pour la modification). Contextes Catalogue et Contribution, cibles @api et @web (pas de mobile).
+
+**Story** : en tant que validateur ou administrateur, je précise à quoi s'applique chaque étiquette (poses, transitions, les deux) ; tout contributeur choisit les étiquettes de la pose qu'il propose ou modifie, que le validateur retient ou ajuste ; un validateur étiquette directement les poses publiées ; tout visiteur voit les étiquettes des poses dans le catalogue et sur la page d'une pose.
+
+**Décisions du porteur du produit (2026-11-18)**
+1. **Champ d'application** (Q164, Q165) : chaque étiquette s'applique aux poses, aux transitions, ou aux deux. À l'amorçage, « inversion » et « lunaire » s'appliquent aux poses et aux transitions ; « dynamique », « pop », « whip », « icarien » et « vrille » aux transitions seulement, comme toute étiquette ajoutée par un validateur avant la story.
+2. **Descriptions amorcées** (Q166) :
+   - « inversion » : « La tête du flyer est plus basse que ses hanches, dans la pose ou à un moment de la transition. Ex. : Candlestick, Straddle Bat. » ;
+   - « lunaire » : « Pratique thérapeutique : le flyer, détendu et passif, se laisse porter et étirer par la base ; les passages se font lentement. Ex. : Folded Leaf, Straddle Bat. ».
+   Règle d'amorçage : une liste amorcée après la story les reçoit directement ; une liste amorcée avant reçoit ces deux descriptions à la mise en production, **sauf si un validateur les a changées** depuis l'amorçage (elles sont alors conservées). Glossaire : inversion partielle ou complète ; lunaire sans exclusivité ; « torsion » n'est pas « vrille ».
+3. **Saisie du champ** (Q167, Q178) : obligatoire, sans valeur par défaut ; trois boutons radio (légende « S'applique à » : « Aux poses », « Aux transitions », « Aux poses et aux transitions »), aucun choisi d'avance, erreur « Choisis à quoi s'applique l'étiquette. ». Présenté à tous : « S'applique aux poses », « S'applique aux transitions », « S'applique aux poses et aux transitions ». Introduction de la page « Étiquettes » : « Les étiquettes décrivent les poses et les transitions. Le futur générateur de flow s'en servira. ».
+4. **Changer le champ** (Q168) : permis, sauf retirer une cible encore portée ; le refus liste les porteurs (poses, transitions, propositions en attente).
+5. **Implication** (Q169) : une étiquette qui en implique une autre ne s'applique que là où l'autre s'applique ; on ne peut pas retirer à l'étiquette impliquée une cible où l'impliquante s'applique (« dynamique » restreinte aux poses : refusé ; « pop » étendue aux poses : refusé).
+6. **Étiquetage direct** (Q170, Q171) : par un validateur ou un administrateur, sans proposition, sur une pose publiée ; il change la version de la pose (une modification commencée avant devient irrecevable) ; impossible tant qu'une modification de la pose est en attente ; entre deux validateurs, la dernière action l'emporte. La page d'une pose (API) indique qu'une modification de la pose est en attente ; le site en prévient le validateur à l'ouverture de la zone : « Une modification de Folded Leaf attend déjà d'être validée. Décide d'abord de cette modification, puis étiquette la pose. », lien « Propositions à valider », pas de bouton « Enregistrer ».
+7. **Modification** (Q172) : les étiquettes sont un champ de la modification d'une pose (story 6), ajustable par le validateur ; un autre ordre ne change rien.
+8. **Présentation** (Q173, Q174, Q177) : étiquettes sur les cartes du catalogue, sans description ni « aucune » ; sur la page d'une pose, pastilles dans l'en-tête, repli « Ce que veulent dire les étiquettes de la pose », bouton « Étiqueter la pose » (nom accessible « Étiqueter la pose Folded Leaf ») juste sous l'en-tête, zone de légende « Étiquettes de la pose », annonce « Étiquettes de la pose enregistrées. ». Les étiquettes d'une pose et de ses transitions sont indépendantes.
+9. **Retrait et compteur** (Q175, Q176) : retrait impossible tant qu'une pose publiée, une proposition de pose ou une modification en attente porte l'étiquette (en plus des porteurs de la story 8). Compteur selon le champ d'application, éléments publiés seulement : « Portée par 1 pose et 2 transitions », « Portée par 2 transitions », « Portée par aucune pose ni aucune transition »…
+10. **Formulaires** (Q181) : formulaire de pose, groupe « Étiquettes » après les indicateurs de flow, aide « Choisis celles qui décrivent la pose. », introduction « Les étiquettes sont facultatives ; les autres champs sont obligatoires. » ; formulaire de modification, légende « Étiquettes », rappel « Actuellement : … », marque « Modifiée ». Si aucune étiquette ne s'applique aux poses, le groupe et le bouton « Étiqueter la pose » sont masqués. Étiquette qui cesse de s'appliquer aux poses pendant la saisie : « L'étiquette « vrille » ne s'applique plus aux poses. Vérifie tes étiquettes, puis envoie de nouveau ta pose. », saisie conservée.
+11. **Hors périmètre** (Q179, Q180) : filtre par étiquette dans le catalogue ; écran mobile.
+
+**Règles et exemples** (A, V, D, E, M : fichiers ci-dessus)
+- **A1. Amorçage du champ** : « inversion », « lunaire » sur poses et transitions, les autres sur transitions ; « salto » ajoutée avant la story : transitions seulement.
+- **A2. Descriptions amorcées** : nouvelles descriptions au premier déploiement ; reçues par une liste déjà amorcée ; conservées si un validateur les a changées.
+- **A3. Champ obligatoire à l'ajout** : « contrepoids » sur poses, transitions ou les deux ; sans champ : impossible.
+- **A4. Changer le champ** : « vrille » étendue aux poses ; « lunaire » portée par Folded Leaf, par une proposition de Candlestick ou par une transition de Bird vers Folded Leaf : impossible, avec la liste.
+- **A5. Implication** : « dynamique » restreinte aux poses ; « pop » étendue aux poses : impossible.
+- **A6. Retrait** : « lunaire » portée par Folded Leaf et Straddle Bat, « inversion » par une proposition de Candlestick, « lunaire » par une modification de Throne : impossible, avec la liste.
+- **A7. Compteur** : poses et transitions publiées seulement (1 pose et 1 transition, la proposition de Straddle Bat ne compte pas) ; étiquette réservée aux poses : « Portée par 1 pose », « Portée par aucune pose ».
+- **A9. Étiquette réservée aux poses sur une transition** : « contrepoids » refusée en étiquetage direct et en proposition (« ne s'applique pas aux transitions », distinct de « absente de la liste ») ; ni le formulaire de transition ni la zone « Étiqueter » d'une transition ne la proposent.
+- **A8. Site** : introduction, libellés du champ, ajout, ajout sans champ, changement du champ et son refus (lien vers la pose), compteurs, retrait impossible avec lien vers la pose.
+- **V1. Poses publiées avant la story : sans étiquette.**
+- **V2. Page d'une pose** : Folded Leaf « inversion, lunaire » ; ordre du catalogue ; nom actuel après renommage.
+- **V3. Cartes du catalogue** : Candlestick « inversion », Straddle Bat « inversion, lunaire », rien pour Throne.
+- **V4. Description dans le repli de la page.**
+- **V5. Indépendance** : une transition vers Folded Leaf « lunaire » ne porte aucune étiquette.
+- **D1. Étiquetage direct** : validateur et administrateur ; remplace l'ensemble ; tout retirer est permis.
+- **D2. Droits** : utilisateur refusé, visiteur.
+- **D3. Étiquettes de la liste qui s'appliquent aux poses, pose publiée** : « classique », « pop », pose inconnue.
+- **D4. Modification en attente** : étiquetage impossible ; modification commencée avant : pose changée entre-temps ; le même ensemble dans un autre ordre ne change pas la version (la modification commencée reste recevable) ; la page d'une pose l'indique.
+- **D5. Site** : bouton pour un validateur (même sans étiquette), pas pour un utilisateur, masqué si aucune étiquette ne s'applique aux poses ; étiquettes présentées aussitôt ; annonce ; seules « inversion » et « lunaire » proposées ; avertissement de modification en attente.
+- **E1. Proposer une pose** : Folded Leaf « lunaire, inversion » ; sans étiquette ; doublon ; « classique », « pop », « dynamique », « vrille » irrecevables.
+- **E2. Publication directe avec les étiquettes** : Candlestick « inversion ».
+- **E3. File de validation** : étiquettes proposées, nom actuel.
+- **E4. Accepter** publie les étiquettes ; **ajustement** : retirer « inversion » ; autre ordre : pas un ajustement ; « vrille » : impossible ; Candlestick aucune → « inversion ».
+- **E5. « Mes propositions »** : étiquettes en attente ; ajustement « inversion, lunaire » → « lunaire ».
+- **E6. Site** : formulaire (étiquettes applicables, descriptions, introduction, aide, groupe masqué), envoi, étiquette qui ne s'applique plus aux poses pendant la saisie ; file (« Étiquettes : aucune »), récapitulatif « aucune → inversion » ; « Mes propositions ».
+- **M1. Modification des étiquettes** : ne changer que les étiquettes ; accepter ajoute ou retire ; publication directe (validateur, administrateur).
+- **M2. Règles** : même ensemble dans un autre ordre ne change rien ; « pop », « classique » irrecevables.
+- **M3. Validateur** : file « aucune → lunaire » ; ajuster ; ajouter des étiquettes à une modification qui ne les changeait pas ; « Mes propositions » (ce qui change, ajustements apportés).
+- **M4. Site** : étiquettes actuelles dans le formulaire, rappel « Actuellement : … » et marque « Modifiée », envoi, file.
+
+**Story 8 révisée** : le tableau d'amorçage de `gerer-la-liste-des-etiquettes.feature` porte les nouvelles descriptions (scénario `@wip` le temps de la story 9a) ; ses étapes d'ajout ajoutent une étiquette qui s'applique aux transitions.
+
+**Ordre d'implémentation conseillé**
+1. API, liste et champ d'application : A1, A3 (champ), A2 (descriptions), A4, A5, A9, A6, A7.
+2. API, page, cartes et étiquetage direct : V1, V2, V3, V5, puis D1 à D4.
+3. API, proposition : E1, E2, E3, E4, E5.
+4. API, modification : M1, M2, M3.
+5. Site : A8, V2 à V4, D5, E6, M4.
 
 ### Découpage des stories suivantes (décidé le 2026-11-02)
 1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.
@@ -653,7 +714,7 @@ Le marqueur **[bloquant]** signale une question à trancher avant la story conce
 - Que devient une pose retirée ou fusionnée qui a des transitions ? Peut-on retirer un élément publié ?
 - ~~Que devient une étiquette retirée de la liste alors que des transitions la portent ?~~ Tranché (story 8, 2026-11-13) : le retrait est impossible tant qu'une transition publiée ou une proposition en attente la porte ; le refus les liste.
 - ~~Une transition doit-elle porter au moins une étiquette ?~~ Tranché (story 8, 2026-11-13) : non, de 0 à n, sans exigence d'étiquetage complet, même avant le générateur.
-- Les étiquettes s'appliquent-elles aussi aux poses ? Story 8 : transitions seulement. **[bloquant : génération]** Étiqueter les poses (au moins « inversion » et « lunaire ») est un prérequis de la story 9.
+- ~~Les étiquettes s'appliquent-elles aussi aux poses ?~~ Tranché (story 9a, 2026-11-18) : oui, selon le champ d'application de chaque étiquette ; à l'amorçage, « inversion » et « lunaire » s'appliquent aux poses et aux transitions, les autres aux transitions seulement.
 
 ### Génération de flow
 - **[bloquant : génération]** Que signifie le critère « difficulté » ? Un niveau maximal unique appliqué à la base et au flyer, ou deux niveaux maximaux distincts ? Les difficultés des poses comptent-elles, ou seulement celles des transitions ? S'agit-il d'un niveau maximal ou d'une plage ?

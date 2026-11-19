@@ -18,7 +18,7 @@ internal sealed class TagTransitionHandler(
         {
             if (await transitions.GetById(command.Transition, lockedCt) is not { } transition) return CatalogErrors.TransitionNotFound;
 
-            var choice = (await tagLists.Get(lockedCt) ?? TagList.Empty()).Choose(command.Tags);
+            var choice = (await tagLists.Get(lockedCt) ?? TagList.Empty()).Choose(command.Tags, TagTarget.Transition);
             var tagged = transition.Tag(choice, clock.GetUtcNow());
             if (tagged.IsFailure) return tagged.Error!;
 

@@ -174,7 +174,7 @@ public sealed class MyProposalsSteps(People people, Deployment deployment, Consu
     private static readonly string[] ContractMembers =
     [
         "kind", "id", "status", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "submittedAt", "decidedAt",
-        "adjustments", "message", "reason",
+        "adjustments", "message", "reason", "tags",
     ];
 
     private async Task<string> SuccessfulBody()

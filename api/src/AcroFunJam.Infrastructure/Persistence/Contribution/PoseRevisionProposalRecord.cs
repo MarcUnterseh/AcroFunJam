@@ -67,4 +67,13 @@ public sealed class PoseRevisionProposalRecord
 
     /// <summary>The acceptance is a direct publication (ADR 0023, ADR 0026): recorded when it happens, never deduced.</summary>
     public bool PublishedDirectly { get; set; }
+
+    /// <summary>The tags of the pose before the revision (story 9a, ADR 0036), by identifier.</summary>
+    public Guid[] PriorTagIds { get; set; } = [];
+
+    /// <summary>The tags of the revised pose, by identifier (story 9a).</summary>
+    public Guid[] TagIds { get; set; } = [];
+
+    /// <summary>The retained tags, once accepted (story 9a); null while pending or once rejected.</summary>
+    public Guid[]? RetainedTagIds { get; set; }
 }

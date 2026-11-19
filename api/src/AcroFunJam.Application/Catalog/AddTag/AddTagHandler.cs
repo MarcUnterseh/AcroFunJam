@@ -14,7 +14,7 @@ internal sealed class AddTagHandler(ITagListRepository lists, IUnitOfWork unitOf
         var stored = await lists.Get(ct);
         var list = stored ?? TagList.Empty();
 
-        var tag = list.Add(new TagId(Guid.CreateVersion7()), command.Name, command.Description, clock.GetUtcNow());
+        var tag = list.Add(new TagId(Guid.CreateVersion7()), command.Name, command.Description, command.Scope, clock.GetUtcNow());
         if (tag.IsFailure) return tag.Error!;
 
         if (stored is null) lists.Add(list);

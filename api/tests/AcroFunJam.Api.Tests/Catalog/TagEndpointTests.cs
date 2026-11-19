@@ -59,7 +59,7 @@ public sealed class TagEndpointTests(ApiWithDatabase api) : IClassFixture<ApiWit
         using var _ = bruno;
 
         var response = await bruno.PutAsJsonAsync(
-            new Uri($"/catalog/tags/{Guid.NewGuid()}", UriKind.Relative), new { name = "pop", description = "La base propulse le flyer." }, Ct);
+            new Uri($"/catalog/tags/{Guid.NewGuid()}", UriKind.Relative), new { name = "pop", description = "La base propulse le flyer.", scope = "transitions" }, Ct);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         (await response.Content.ReadFromJsonAsync<JsonElement>(Ct)).GetProperty("title").GetString().ShouldBe("catalog.tag-not-found");

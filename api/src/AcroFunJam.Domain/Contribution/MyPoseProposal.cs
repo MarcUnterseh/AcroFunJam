@@ -18,6 +18,9 @@ public sealed class MyPoseProposal : IMyProposal
 
     public required FlowBoundaries Flow { get; init; }
 
+    /// <summary>The tags of the presented pose (story 9a): retained once accepted, proposed otherwise.</summary>
+    public TagSet Tags { get; init; } = TagSet.Empty;
+
     public required MyProposalStatus Status { get; init; }
 
     public required DateTimeOffset SubmittedAt { get; init; }
@@ -66,6 +69,7 @@ public sealed class MyPoseProposal : IMyProposal
         Name = proposal.Pose.Name,
         Difficulty = proposal.Pose.Difficulty,
         Flow = proposal.Pose.Flow,
+        Tags = proposal.Pose.Tags,
         Status = status,
         SubmittedAt = proposal.SubmittedAt,
         DecidedAt = status == MyProposalStatus.PublishedDirectly ? null : proposal.Decision?.At,
@@ -79,6 +83,7 @@ public sealed class MyPoseProposal : IMyProposal
         Name = acceptance.Retained.Name,
         Difficulty = acceptance.Retained.Difficulty,
         Flow = acceptance.Retained.Flow,
+        Tags = acceptance.Retained.Tags,
         Status = acceptance.HasAdjustments ? MyProposalStatus.AcceptedWithAdjustments : MyProposalStatus.Accepted,
         SubmittedAt = proposal.SubmittedAt,
         DecidedAt = acceptance.At,

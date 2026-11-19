@@ -15,7 +15,7 @@ internal sealed class PublishTransitionHandler(
         var published = await poses.NamesOf([command.FromPose, command.ToPose], ct);
         var slotTaken = await transitions.IsSlotTaken(command.FromPose, command.ToPose, command.Name?.Key, ct);
         // The tags are chosen again through the list (ADR 0033): idempotent for a set already completed by Contribution.
-        var tags = (await tagLists.Get(ct) ?? TagList.Empty()).Choose(command.Tags);
+        var tags = (await tagLists.Get(ct) ?? TagList.Empty()).Choose(command.Tags, TagTarget.Transition);
         var transition = Transition.Publish(
             new TransitionId(Guid.CreateVersion7()), command.FromPose, command.ToPose, command.Name, command.Difficulty, command.Description,
             tags, command.Source, published.ContainsKey(command.FromPose), published.ContainsKey(command.ToPose), slotTaken, clock.GetUtcNow());

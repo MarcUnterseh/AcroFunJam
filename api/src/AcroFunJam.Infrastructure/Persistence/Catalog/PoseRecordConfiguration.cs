@@ -35,5 +35,8 @@ public sealed class PoseRecordConfiguration : IEntityTypeConfiguration<PoseRecor
         builder.Property(pose => pose.Version).HasColumnName("version").IsConcurrencyToken();
 
         builder.HasIndex(pose => pose.NameKey).HasDatabaseName(NameKeyIndex).IsUnique();
+        // Story 9a: the tags of the pose; « which poses carry this tag » (removal, scope, counts) reads this index.
+        builder.Property(pose => pose.TagIds).HasColumnName("tag_ids").IsRequired();
+        builder.HasIndex(pose => pose.TagIds).HasDatabaseName("ix_poses_tag_ids").HasMethod("gin");
     }
 }

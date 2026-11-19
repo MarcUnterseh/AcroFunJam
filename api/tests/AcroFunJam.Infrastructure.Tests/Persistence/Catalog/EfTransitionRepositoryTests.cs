@@ -178,5 +178,40 @@ public sealed class EfTransitionRepositoryTests(PostgreSqlFixture database) : IC
         carriers.ShouldHaveSingleItem().ShouldBe(
             new CarryingTransition(popToBird.Id.Value, _throne.Id, _throne.Name, _bird.Id, _bird.Name, popToBird.Name));
     }
-}
 
+    // --- Story 9a: the poses carrying a tag (ADR 0036) -------------------------------------------
+
+    private async Task Tag(Pose pose, params TagId[] tags)
+    {
+        await using var context = database.CreateDbContext();
+        var aggregates = new TrackedAggregates();
+        var repository = new EfPoseRepository(context, aggregates);
+        var read = (await repository.GetById(pose.Id, Ct))!;
+        read.Tag(new TagChoice(TagSet.Of(tags), TagSet.Empty), revisionPending: false, DateTimeOffset.UtcNow).IsSuccess.ShouldBeTrue();
+        repository.Update(read);
+        (await UnitOfWorks.For(context, aggregates).SaveChanges(Ct)).IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task PublishedPoseCounts_Should_CountThePosesCarryingEachTag_When_SomeDo()
+    {
+        await Tag(_throne, Lunar);
+        await Tag(_bird, Lunar, Pop);
+
+        await using var context = database.CreateDbContext();
+        var counts = await new EfTagCarriersReader(context).PublishedPoseCounts(Ct);
+
+        counts.ShouldBe(new Dictionary<TagId, int> { [Lunar] = 2, [Pop] = 1 }, ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task PosesCarrying_Should_GiveThePosesCarryingTheTagWithTheirNames_When_SomeDo()
+    {
+        await Tag(_bird, Lunar);
+
+        await using var context = database.CreateDbContext();
+        var carriers = await new EfTagCarriersReader(context).PosesCarrying(Lunar, Ct);
+
+        carriers.ShouldHaveSingleItem().ShouldBe(new CarryingPose(_bird.Id, _bird.Name));
+    }
+}

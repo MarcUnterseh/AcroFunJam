@@ -31,6 +31,9 @@ internal static class PoseRevisionProposalRecords
             FlyerDifficulty = after.Difficulty.Flyer.ToCode(),
             CanStartFlow = after.Flow.CanStartFlow,
             CanEndFlow = after.Flow.CanEndFlow,
+            PriorTagIds = [.. before.Tags.Ids.Select(t => t.Value)],
+            TagIds = [.. after.Tags.Ids.Select(t => t.Value)],
+            RetainedTagIds = acceptance is null ? null : [.. acceptance.Retained.Tags.Ids.Select(t => t.Value)],
             ReservedNameKey = proposal.Revision.ReservedNameKey?.Value,
             Message = proposal.Message?.Value,
             Status = ToCode(proposal.Status),
@@ -55,9 +58,9 @@ internal static class PoseRevisionProposalRecords
         var before = new PriorPose(
             PoseName.Create(record.PriorName).Value ?? throw Invalid(record, "prior name"),
             Difficulty.FromCodes(record.PriorBaseDifficulty, record.PriorFlyerDifficulty).Value ?? throw Invalid(record, "prior difficulty"),
-            FlowBoundaries.Create(record.PriorCanStartFlow, record.PriorCanEndFlow).Value!);
-        var after = ProposedPose.Create(record.Name, record.BaseDifficulty, record.FlyerDifficulty, record.CanStartFlow, record.CanEndFlow)
-            .Value ?? throw Invalid(record, "revised pose");
+            FlowBoundaries.Create(record.PriorCanStartFlow, record.PriorCanEndFlow).Value!) { Tags = ToTags(record.PriorTagIds) };
+        var after = (ProposedPose.Create(record.Name, record.BaseDifficulty, record.FlyerDifficulty, record.CanStartFlow, record.CanEndFlow)
+            .Value ?? throw Invalid(record, "revised pose")).Tagged(ToTags(record.TagIds));
         return PoseRevisionProposal.Rehydrate(
             new PoseRevisionProposalId(record.Id),
             new ContributorId(record.ContributorId),
@@ -96,8 +99,10 @@ internal static class PoseRevisionProposalRecords
         RetainedPose.Create(
                 record.RetainedName, record.RetainedBaseDifficulty, record.RetainedFlyerDifficulty, record.RetainedCanStartFlow,
                 record.RetainedCanEndFlow) is { IsSuccess: true } retained
-            ? retained.Value!
+            ? retained.Value! with { Tags = ToTags(record.RetainedTagIds ?? throw Invalid(record, "retained tags")) }
             : throw Invalid(record, "retained pose");
+
+    private static TagSet ToTags(IEnumerable<Guid> ids) => TagSet.Of(ids.Select(id => new TagId(id)));
 
     private static AdjustmentNote? ToAdjustmentNote(PoseRevisionProposalRecord record) =>
         AdjustmentNote.Create(record.AdjustmentNote) is { IsSuccess: true } note ? note.Value : throw Invalid(record, "adjustment note");

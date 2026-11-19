@@ -30,4 +30,24 @@ public sealed class EfTagCarriersReader(AcroFunJamDbContext context) : ITagCarri
             r.Id, new PoseId(r.FromPoseId), PoseName.Create(r.FromName).Value!, new PoseId(r.ToPoseId), PoseName.Create(r.ToName).Value!,
             TransitionName.CreateOptional(r.Name).Value))];
     }
+
+    public async Task<IReadOnlyDictionary<TagId, int>> PublishedPoseCounts(CancellationToken ct)
+    {
+        var counts = await context.Set<PoseRecord>().AsNoTracking()
+            .SelectMany(p => p.TagIds)
+            .GroupBy(tag => tag)
+            .Select(g => new { Tag = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+        return counts.ToDictionary(c => new TagId(c.Tag), c => c.Count);
+    }
+
+    public async Task<IReadOnlyList<CarryingPose>> PosesCarrying(TagId tag, CancellationToken ct)
+    {
+        var rows = await context.Set<PoseRecord>().AsNoTracking()
+            .Where(p => p.TagIds.Contains(tag.Value))
+            .Select(p => new { p.Id, p.Name })
+            .ToListAsync(ct);
+        // Stored names always met the rules when written.
+        return [.. rows.Select(r => new CarryingPose(new PoseId(r.Id), PoseName.Create(r.Name).Value!))];
+    }
 }

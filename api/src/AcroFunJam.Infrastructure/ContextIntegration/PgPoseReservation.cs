@@ -28,8 +28,19 @@ public sealed class PgPoseReservation(AcroFunJamDbContext context) : IPoseReserv
 
     /// <summary>The pose first, then the name: always in this order, so that two use cases never wait for each other (ADR 0025).</summary>
     public Task<Result<T>> Run<T>(PublishedPoseId pose, PoseNameKey? key, Func<CancellationToken, Task<Result<T>>> work, CancellationToken ct) =>
-        RunLocked(key is null ? [PoseLockKeyPrefix + pose.Value] : [PoseLockKeyPrefix + pose.Value, LockKeyPrefix + key.Value], work, ct);
+        RunLocked(key is null ? [PoseLockKey(pose.Value)] : [PoseLockKey(pose.Value), LockKeyPrefix + key.Value], work, ct);
 
+    /// <summary>The key of the lock of a published pose, shared with its direct tagging in the Catalog (ADR 0036).</summary>
+    internal static string PoseLockKey(Guid pose) => PoseLockKeyPrefix + pose;
+
+    /// <summary>
+    /// Then the list of tags, shared (ADR 0036): a pose proposed, accepted or revised chooses its tags meanwhile, and a removal of a
+    /// tag waits for it, as for a couple of poses (ADR 0033).
+    /// </summary>
     private Task<Result<T>> RunLocked<T>(string[] lockKeys, Func<CancellationToken, Task<Result<T>>> work, CancellationToken ct) =>
-        AdvisoryLocks.RunLocked(context, lockKeys, work, ct);
+        AdvisoryLocks.RunLocked(context, lockKeys, async lockedCt =>
+        {
+            await PgTagListLock.TakeShared(context, lockedCt);
+            return await work(lockedCt);
+        }, ct);
 }

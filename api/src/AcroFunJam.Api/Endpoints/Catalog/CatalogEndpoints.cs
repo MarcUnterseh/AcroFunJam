@@ -28,7 +28,7 @@ public static class CatalogEndpoints
     }
 
     private static async Task<Results<Ok<PoseListResponse>, ProblemHttpResult>> ListPublishedPoses(
-        IQueryHandler<ListPublishedPoses, IReadOnlyList<PublishedPoseSummary>> handler,
+        IQueryHandler<ListPublishedPoses, IReadOnlyList<CatalogPose>> handler,
         CancellationToken ct)
     {
         var result = await handler.Handle(new ListPublishedPoses(), ct);
@@ -62,7 +62,9 @@ public static class CatalogEndpoints
             pose.Flow.CanEndFlow,
             pose.Version.Value,
             [.. pose.TransitionsFrom.Select(t => ToResponse(pose, t))],
-            [.. pose.TransitionsTo.Select(t => ToResponse(pose, t))]));
+            [.. pose.TransitionsTo.Select(t => ToResponse(pose, t))],
+            [.. pose.PoseTags.Select(ToResponse)],
+            pose.HasPendingRevision));
     }
 
     private static LinkedTransitionResponse ToResponse(PosePage page, LinkedTransition transition) =>
@@ -73,14 +75,20 @@ public static class CatalogEndpoints
             DifficultyCodes.From(transition.Difficulty.Base),
             DifficultyCodes.From(transition.Difficulty.Flyer),
             transition.Description?.Value,
-            [.. page.TagsOf(transition).Select(t => new TransitionTagResponse(t.Id.Value, t.Name.Value, t.Description.Value))]);
+            [.. page.TagsOf(transition).Select(ToResponse)]);
 
-    private static PoseSummaryResponse ToResponse(PublishedPoseSummary pose) =>
-        new(
+    private static TransitionTagResponse ToResponse(PresentedTag tag) => new(tag.Id.Value, tag.Name.Value, tag.Description.Value);
+
+    private static PoseSummaryResponse ToResponse(CatalogPose catalogPose)
+    {
+        var pose = catalogPose.Pose;
+        return new(
             pose.Id.Value,
             pose.Name.Value,
             DifficultyCodes.From(pose.BaseDifficulty),
             DifficultyCodes.From(pose.FlyerDifficulty),
             pose.Flow.CanStartFlow,
-            pose.Flow.CanEndFlow);
+            pose.Flow.CanEndFlow,
+            [.. catalogPose.Tags.Select(t => new NamedTagResponse(t.Id.Value, t.Name.Value))]);
+    }
 }

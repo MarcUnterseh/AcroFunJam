@@ -114,6 +114,28 @@ public sealed class TransitionTests
     }
 
     [Fact]
+    public void Publish_Should_FailWithTagNotApplicable_When_AChosenTagDoesNotApplyToTransitions()
+    {
+        var counterbalance = new TagId(Guid.NewGuid());
+
+        var error = Publish(tags: new TagChoice(TagSet.Empty, TagSet.Empty, TagSet.Of([counterbalance])))
+            .Error.ShouldBeOfType<TagNotApplicableError>();
+
+        error.Code.ShouldBe("catalog.tag-not-applicable");
+        error.Tags.ShouldBe(TagSet.Of([counterbalance]));
+    }
+
+    [Fact]
+    public void Tag_Should_FailWithTagNotApplicable_When_AChosenTagDoesNotApplyToTransitions()
+    {
+        var transition = Publish(tags: PopChosen).Value!;
+
+        transition.Tag(new TagChoice(TagSet.Empty, TagSet.Empty, TagSet.Of([new TagId(Guid.NewGuid())])), Now)
+            .Error.ShouldBeOfType<TagNotApplicableError>();
+        transition.Tags.ShouldBe(TagSet.Of([Pop, Dynamic]));
+    }
+
+    [Fact]
     public void Tag_Should_FailWithTagNotInListAndKeepItsTags_When_AChosenTagIsNotInTheList()
     {
         var transition = Publish(tags: PopChosen).Value!;

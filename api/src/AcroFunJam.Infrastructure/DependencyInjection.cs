@@ -75,7 +75,9 @@ public static class DependencyInjection
         services.AddScoped<ICatalogPoses, CatalogPoses>();
         services.AddScoped<ICatalogTransitions, CatalogTransitions>();
         services.AddScoped<ICatalogTags, CatalogTags>();
-        services.AddScoped<IPendingTagCarriers, ContributionPendingTagCarriers>(); // read by the Catalog removing a tag (ADR 0033)
+        services.AddScoped<IPendingTagCarriers, ContributionPendingTagCarriers>();
+        services.AddScoped<IPendingPoseRevisions, ContributionPendingPoseRevisions>(); // read by the Catalog tagging a pose (ADR 0036)
+        services.AddScoped<IPoseTaggingLock, PgPoseTaggingLock>(); // read by the Catalog removing a tag (ADR 0033)
         services.AddScoped<IPoseReservation, PgPoseReservation>(); // names of both contexts (ADR 0017)
         services.AddScoped<ITransitionReservation, PgTransitionReservation>(); // places between poses of both contexts (ADR 0029)
 

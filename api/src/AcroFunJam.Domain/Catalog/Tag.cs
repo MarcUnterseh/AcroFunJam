@@ -17,19 +17,26 @@ public sealed class Tag : Entity<TagId>
     /// <summary>The tag this one adds when chosen, if any (ADR 0032); inert once that tag has been removed.</summary>
     public TagId? ImpliedTag { get; }
 
+    /// <summary>What the tag applies to: the poses, the transitions, or both (story 9a, ADR 0035).</summary>
+    public TagScope Scope { get; private set; }
+
     public DateTimeOffset? RemovedAt { get; private set; }
 
     public bool IsInTheList => RemovedAt is null;
 
-    private Tag(TagId id, TagName name, TagDescription description, TagId? impliedTag, DateTimeOffset? removedAt) : base(id)
+    private Tag(TagId id, TagName name, TagDescription description, TagId? impliedTag, TagScope scope, DateTimeOffset? removedAt) : base(id)
     {
         Name = name;
         Description = description;
         ImpliedTag = impliedTag;
+        Scope = scope;
         RemovedAt = removedAt;
     }
 
-    internal static Tag New(TagId id, TagName name, TagDescription description, TagId? impliedTag) => new(id, name, description, impliedTag, null);
+    internal static Tag New(TagId id, TagName name, TagDescription description, TagId? impliedTag, TagScope scope) =>
+        new(id, name, description, impliedTag, scope, null);
+
+    internal void ApplyTo(TagScope scope) => Scope = scope;
 
     internal void Rename(TagName name) => Name = name;
 
@@ -38,10 +45,10 @@ public sealed class Tag : Entity<TagId>
     internal void Remove(DateTimeOffset now) => RemovedAt = now;
 
     /// <summary>Restores a tag loaded from storage.</summary>
-    public static Tag Rehydrate(TagId id, TagName name, TagDescription description, TagId? impliedTag, DateTimeOffset? removedAt)
+    public static Tag Rehydrate(TagId id, TagName name, TagDescription description, TagId? impliedTag, TagScope scope, DateTimeOffset? removedAt)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(description);
-        return new Tag(id, name, description, impliedTag, removedAt);
+        return new Tag(id, name, description, impliedTag, scope, removedAt);
     }
 }

@@ -22,3 +22,6 @@ public sealed record FlyerDifficultyAdjustment(DifficultyLevel Proposed, Difficu
 public sealed record CanStartFlowAdjustment(bool Proposed, bool Retained) : PoseFieldAdjustment;
 
 public sealed record CanEndFlowAdjustment(bool Proposed, bool Retained) : PoseFieldAdjustment;
+
+/// <summary>Story 9a: the tags retained by the validator differ from the proposed ones (as sets).</summary>
+public sealed record PoseTagsAdjustment(TagSet Proposed, TagSet Retained) : PoseFieldAdjustment;

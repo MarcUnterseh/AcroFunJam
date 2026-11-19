@@ -24,11 +24,17 @@ public sealed class TagListHandlersTests
 
     private static TagDescription Description(string description) => TagDescription.Create(description).Value!;
 
+    private readonly FakeTagCarriersReader _carriers = new();
+    private readonly FakeTagListLock _lock = new();
+
+    private ChangeTagHandler ChangeHandler() =>
+        new(_repository, _carriers, new FakePendingTagCarriers(), new FakePoseRepository(), _lock, _unitOfWork, _clock);
+
     private TagId Stored(string name)
     {
         _repository.Stored ??= TagList.Empty();
         var id = new TagId(Guid.NewGuid());
-        _repository.Stored.Add(id, Name(name), Description($"Ce que veut dire {name}."), Now);
+        _repository.Stored.Add(id, Name(name), Description($"Ce que veut dire {name}."), TagScope.Transitions, Now);
         return id;
     }
 
@@ -89,7 +95,7 @@ public sealed class TagListHandlersTests
     [Fact]
     public async Task AddTag_Should_StartTheListAndSaveIt_When_NoListExists()
     {
-        var result = await new AddTagHandler(_repository, _unitOfWork, _clock).Handle(new AddTag(Name("vrille"), Description("Le flyer tourne.")), Ct);
+        var result = await new AddTagHandler(_repository, _unitOfWork, _clock).Handle(new AddTag(Name("vrille"), Description("Le flyer tourne."), TagScope.Transitions), Ct);
 
         result.Value!.Name.ShouldBe(Name("vrille"));
         _repository.Adds.ShouldBe(1);
@@ -102,7 +108,7 @@ public sealed class TagListHandlersTests
     {
         Stored("pop");
 
-        await new AddTagHandler(_repository, _unitOfWork, _clock).Handle(new AddTag(Name("vrille"), Description("Le flyer tourne.")), Ct);
+        await new AddTagHandler(_repository, _unitOfWork, _clock).Handle(new AddTag(Name("vrille"), Description("Le flyer tourne."), TagScope.Transitions), Ct);
 
         _repository.Updates.ShouldBe(1);
         _repository.Stored!.Tags.Select(t => t.Name.Value).ShouldBe(["pop", "vrille"]);
@@ -113,7 +119,7 @@ public sealed class TagListHandlersTests
     {
         Stored("pop");
 
-        var result = await new AddTagHandler(_repository, _unitOfWork, _clock).Handle(new AddTag(Name("POP"), Description("D.")), Ct);
+        var result = await new AddTagHandler(_repository, _unitOfWork, _clock).Handle(new AddTag(Name("POP"), Description("D."), TagScope.Transitions), Ct);
 
         result.Error.ShouldBe(CatalogErrors.TagNameTaken);
         _unitOfWork.Saves.ShouldBe(0);
@@ -124,7 +130,7 @@ public sealed class TagListHandlersTests
     {
         var unitOfWork = new FakeUnitOfWork(CatalogErrors.TagNameTaken);
 
-        var result = await new AddTagHandler(_repository, unitOfWork, _clock).Handle(new AddTag(Name("pop"), Description("D.")), Ct);
+        var result = await new AddTagHandler(_repository, unitOfWork, _clock).Handle(new AddTag(Name("pop"), Description("D."), TagScope.Transitions), Ct);
 
         result.Error.ShouldBe(CatalogErrors.TagNameTaken);
     }
@@ -136,7 +142,7 @@ public sealed class TagListHandlersTests
     {
         var id = Stored("lunnaire");
 
-        var result = await new ChangeTagHandler(_repository, new FakeTagCarriersReader(), _unitOfWork, _clock).Handle(new ChangeTag(id, Name("lunaire"), Description("Pratique thérapeutique.")), Ct);
+        var result = await ChangeHandler().Handle(new ChangeTag(id, Name("lunaire"), Description("Pratique thérapeutique."), TagScope.Transitions), Ct);
 
         result.Value!.ShouldSatisfyAllConditions(
             t => t.Name.ShouldBe(Name("lunaire")),
@@ -153,7 +159,7 @@ public sealed class TagListHandlersTests
         var id = Stored("pop");
         _repository.Stored!.ClearDomainEvents();
 
-        await new ChangeTagHandler(_repository, new FakeTagCarriersReader(), _unitOfWork, _clock).Handle(new ChangeTag(id, Name("pop"), Description("La base propulse le flyer.")), Ct);
+        await ChangeHandler().Handle(new ChangeTag(id, Name("pop"), Description("La base propulse le flyer."), TagScope.Transitions), Ct);
 
         _repository.Stored.DomainEvents.ShouldHaveSingleItem().ShouldBeOfType<TagDescribed>();
     }
@@ -164,7 +170,7 @@ public sealed class TagListHandlersTests
         var id = Stored("Pop");
         _repository.Stored!.ClearDomainEvents();
 
-        await new ChangeTagHandler(_repository, new FakeTagCarriersReader(), _unitOfWork, _clock).Handle(new ChangeTag(id, Name("pop"), Description("Ce que veut dire Pop.")), Ct);
+        await ChangeHandler().Handle(new ChangeTag(id, Name("pop"), Description("Ce que veut dire Pop."), TagScope.Transitions), Ct);
 
         _repository.Stored.DomainEvents.ShouldHaveSingleItem().ShouldBeOfType<TagRenamed>();
     }
@@ -175,7 +181,7 @@ public sealed class TagListHandlersTests
         var pop = Stored("pop");
         Stored("whip");
 
-        var result = await new ChangeTagHandler(_repository, new FakeTagCarriersReader(), _unitOfWork, _clock).Handle(new ChangeTag(pop, Name("Whip"), Description("D.")), Ct);
+        var result = await ChangeHandler().Handle(new ChangeTag(pop, Name("Whip"), Description("D."), TagScope.Transitions), Ct);
 
         result.Error.ShouldBe(CatalogErrors.TagNameTaken);
         _unitOfWork.Saves.ShouldBe(0);
@@ -184,12 +190,27 @@ public sealed class TagListHandlersTests
     [Fact]
     public async Task ChangeTag_Should_FailWithTagNotFound_When_NoListExists()
     {
-        var result = await new ChangeTagHandler(_repository, new FakeTagCarriersReader(), _unitOfWork, _clock).Handle(new ChangeTag(new TagId(Guid.NewGuid()), Name("pop"), Description("D.")), Ct);
+        var result = await ChangeHandler().Handle(new ChangeTag(new TagId(Guid.NewGuid()), Name("pop"), Description("D."), TagScope.Transitions), Ct);
 
         result.Error.ShouldBe(CatalogErrors.TagNotFound);
     }
 
     // --- Removing (L10) -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task RemoveTag_Should_RefuseListingThePendingPoseProposals_When_OneCarriesTheTag()
+    {
+        var id = Stored("lunaire");
+        var pending = new FakePendingTagCarriers();
+        var candlestick = new CarryingPendingPose(Guid.NewGuid(), PendingPoseKind.Proposal, PoseName.Create("Candlestick").Value!);
+        pending.PoseCarriers[id] = [candlestick];
+
+        var result = await new RemoveTagHandler(_repository, new FakeTagCarriersReader(), pending, new FakePoseRepository(), new FakeTagListLock(), _unitOfWork, _clock)
+            .Handle(new RemoveTag(id), Ct);
+
+        result.Error.ShouldBeOfType<TagCarriedError>().Carriers.PendingPoses.ShouldBe([candlestick]);
+        _unitOfWork.Saves.ShouldBe(0);
+    }
 
     [Fact]
     public async Task RemoveTag_Should_RemoveTheTagAndSave_When_NothingCarriesIt()
@@ -206,7 +227,7 @@ public sealed class TagListHandlersTests
     [Fact]
     public async Task RemoveTag_Should_FailWithTagImpliedAndSaveNothing_When_ATagOfTheListImpliesIt()
     {
-        _repository.Stored = TagList.Seed(InitialTagList.Tags, () => new TagId(Guid.NewGuid()), Now);
+        _repository.Stored = TagList.Seed(InitialTagList.Current, () => new TagId(Guid.NewGuid()), Now);
         var dynamic = _repository.Stored.Tags.Single(t => t.Name.Value == "dynamique").Id;
 
         var result = await new RemoveTagHandler(_repository, new FakeTagCarriersReader(), new FakePendingTagCarriers(), new FakePoseRepository(), new FakeTagListLock(), _unitOfWork, _clock).Handle(new RemoveTag(dynamic), Ct);
@@ -220,5 +241,66 @@ public sealed class TagListHandlersTests
     {
         (await new RemoveTagHandler(_repository, new FakeTagCarriersReader(), new FakePendingTagCarriers(), new FakePoseRepository(), new FakeTagListLock(), _unitOfWork, _clock).Handle(new RemoveTag(new TagId(Guid.NewGuid())), Ct))
             .Error.ShouldBe(CatalogErrors.TagNotFound);
+    }
+
+    // --- Story 9a: what a tag applies to (A1 to A5, ADR 0035) -----------------------------------
+
+    [Fact]
+    public async Task SeedInitialTagList_Should_SeedTheRevisionAsked_When_NoneExists()
+    {
+        await new SeedInitialTagListHandler(_repository, _unitOfWork, _clock).Handle(new SeedInitialTagList(Revision: 1), Ct);
+
+        _repository.Stored!.SeedRevision.ShouldBe(1);
+        _repository.Stored.Tags.ShouldAllBe(t => t.Scope == TagScope.Transitions);
+    }
+
+    [Fact]
+    public async Task SeedInitialTagList_Should_BringTheListUpToDateAndSaveIt_When_ItWasSeededAtAnOlderRevision()
+    {
+        _repository.Stored = TagList.Seed(InitialTagList.Revision(1), () => new TagId(Guid.NewGuid()), Now);
+
+        var result = await new SeedInitialTagListHandler(_repository, _unitOfWork, _clock).Handle(new SeedInitialTagList(), Ct);
+
+        result.Value.ShouldBeFalse();
+        _repository.Stored.SeedRevision.ShouldBe(InitialTagList.Current.Number);
+        _repository.Updates.ShouldBe(1);
+        _unitOfWork.Saves.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task AddTag_Should_KeepWhatTheTagAppliesTo_When_ItIsAdded()
+    {
+        var result = await new AddTagHandler(_repository, _unitOfWork, _clock)
+            .Handle(new AddTag(Name("contrepoids"), Description("Base et flyer s'équilibrent."), TagScope.Poses), Ct);
+
+        result.Value!.Scope.ShouldBe(TagScope.Poses);
+        _repository.Stored!.Tags.ShouldHaveSingleItem().Scope.ShouldBe(TagScope.Poses);
+    }
+
+    [Fact]
+    public async Task ChangeTag_Should_ChangeWhatTheTagAppliesToUnderTheExclusiveLock_When_NothingForbidsIt()
+    {
+        var id = Stored("vrille");
+
+        var result = await ChangeHandler().Handle(new ChangeTag(id, Name("vrille"), Description("Ce que veut dire vrille."), TagScope.PosesAndTransitions), Ct);
+
+        result.Value!.Scope.ShouldBe(TagScope.PosesAndTransitions);
+        _repository.Stored!.DomainEvents.OfType<TagScopeChanged>().ShouldHaveSingleItem();
+        _lock.Taken.ShouldBe(["exclusive"]);
+        _unitOfWork.Saves.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task ChangeTag_Should_RefuseListingTheTransitions_When_TheTagStopsApplyingToTransitionsCarryingIt()
+    {
+        var id = Stored("lunaire");
+        var birdToLeaf = new CarryingTransition(Guid.NewGuid(), new PoseId(Guid.NewGuid()), PoseName.Create("Bird").Value!,
+            new PoseId(Guid.NewGuid()), PoseName.Create("Folded Leaf").Value!, null);
+        _carriers.Carriers[id] = [birdToLeaf];
+
+        var result = await ChangeHandler().Handle(new ChangeTag(id, Name("lunaire"), Description("Ce que veut dire lunaire."), TagScope.Poses), Ct);
+
+        result.Error.ShouldBeOfType<TagCarriedError>().Carriers.Transitions.ShouldBe([birdToLeaf]);
+        _unitOfWork.Saves.ShouldBe(0);
     }
 }

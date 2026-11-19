@@ -6,6 +6,8 @@ Deux variantes, une seule **liste** (`dl` des ajustements, nom proposé dans le 
 
 Story 6 : la même liste sert à comparer la pose avant et après une **modification** (`recapitulatif-modification.md`) ; elle est devenue une liste de comparaison générique (`ValueChangeList`, `front/apps/web/src/contribution/ValueChangeList.tsx` ; `AdjustmentList` et `PoseChangeList` l'utilisent) dont les deux textes masqués sont des paramètres (« Proposé : » / « , retenu : » ici). Rendu inchangé. Pour une modification, les ajustements se lisent toujours ici (proposé → retenu), et les champs que la modification ne changeait pas y figurent avec la valeur actuelle comme valeur proposée.
 
+Story 9a : ligne « Étiquettes » pour une pose aussi, mêmes règles que pour une transition (story 8) : mots séparés par des virgules dans l'ordre du catalogue, « aucune » écrit, « ~~aucune~~ → inversion », « ~~inversion, lunaire~~ → lunaire » ; pas de pilules (on compare des mots). Un autre ordre du même ensemble n'est pas un ajustement : pas de ligne.
+
 ## Structure
 
 ```

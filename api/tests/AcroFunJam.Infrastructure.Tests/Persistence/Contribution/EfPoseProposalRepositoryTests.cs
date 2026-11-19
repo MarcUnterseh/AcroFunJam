@@ -341,4 +341,51 @@ public sealed class EfPoseProposalRepositoryTests(PostgreSqlFixture database) : 
             () => bug.Message.ShouldContain("direct publication"),
             () => bug.Message.ShouldContain(published.Id.Value.ToString()));
     }
+
+    // --- Story 9a: the tags of a proposed pose (ADR 0036) ------------------------------------------
+
+    private static readonly AcroFunJam.Domain.SharedKernel.TagId Lunar = new(Guid.NewGuid());
+    private static readonly AcroFunJam.Domain.SharedKernel.TagId Inversion = new(Guid.NewGuid());
+
+    private static PoseProposal ATaggedProposal(string name, params AcroFunJam.Domain.SharedKernel.TagId[] tags) =>
+        PoseProposal.Submit(new PoseProposalId(Guid.NewGuid()), new Contributor(new ContributorId(Guid.NewGuid()), IsValidator: false),
+            ProposedPose.Create(name, "beginner", "discovery", false, true).Value!, NameAvailability.Available, Now,
+            new AcroFunJam.Domain.SharedKernel.TagChoice(AcroFunJam.Domain.SharedKernel.TagSet.Of(tags), AcroFunJam.Domain.SharedKernel.TagSet.Empty)).Value!;
+
+    [Fact]
+    public async Task GetById_Should_RestoreTheProposedTags_When_TheProposalCarriesSome()
+    {
+        var proposal = ATaggedProposal("Folded Leaf", Lunar, Inversion);
+        await Save(proposal);
+
+        (await Load(proposal.Id))!.Pose.Tags.ShouldBe(AcroFunJam.Domain.SharedKernel.TagSet.Of([Lunar, Inversion]));
+    }
+
+    [Fact]
+    public async Task Update_Should_RecordTheRetainedTagsAndANote_When_AcceptedWithOtherTagsOnly()
+    {
+        var proposal = ATaggedProposal("Candlestick", Lunar, Inversion);
+        await Save(proposal);
+
+        (await Decide(proposal.Id, p => p.Accept(AValidator(), p.Pose.Retain(PoseAdjustments.None), AdjustmentNote.Create("Pas lunaire.").Value,
+            NameAvailability.Available, DecidedAt, new AcroFunJam.Domain.SharedKernel.TagChoice(
+                AcroFunJam.Domain.SharedKernel.TagSet.Of([Inversion]), AcroFunJam.Domain.SharedKernel.TagSet.Empty)).IsSuccess.ShouldBeTrue()))
+            .IsSuccess.ShouldBeTrue();
+
+        var acceptance = (await Load(proposal.Id))!.Decision.ShouldBeOfType<Acceptance>();
+        acceptance.Retained.Tags.ShouldBe(AcroFunJam.Domain.SharedKernel.TagSet.Of([Inversion]));
+        acceptance.HasAdjustments.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Add_Should_StoreTheTagsOfADirectPublication_When_AValidatorProposes()
+    {
+        var proposal = PoseProposal.Submit(new PoseProposalId(Guid.NewGuid()), new Contributor(new ContributorId(Guid.NewGuid()), IsValidator: true),
+            ProposedPose.Create("Straddle Bat", "intermediate", "intermediate", false, true).Value!, NameAvailability.Available, Now,
+            new AcroFunJam.Domain.SharedKernel.TagChoice(AcroFunJam.Domain.SharedKernel.TagSet.Of([Lunar]), AcroFunJam.Domain.SharedKernel.TagSet.Empty)).Value!;
+
+        await Save(proposal);
+
+        (await Load(proposal.Id))!.Decision.ShouldBeOfType<Acceptance>().Retained.Tags.ShouldBe(AcroFunJam.Domain.SharedKernel.TagSet.Of([Lunar]));
+    }
 }

@@ -174,4 +174,45 @@ public sealed class EfPoseRepositoryTests(PostgreSqlFixture database) : IClassFi
         // Without the declared translation, the unique index itself refuses the pose.
         await Should.ThrowAsync<DbUpdateException>(() => new EfUnitOfWork(context, aggregates, [], []).SaveChanges(Ct));
     }
+
+    // --- Story 9a: the tags of a pose (ADR 0036) -------------------------------------------------
+
+    private static readonly TagId Lunar = new(Guid.NewGuid());
+    private static readonly TagId Inversion = new(Guid.NewGuid());
+
+    [Fact]
+    public async Task GetById_Should_RestoreTheTagsOfThePose_When_ItWasPublishedWithSome()
+    {
+        var pose = Pose.Publish(new PoseId(Guid.NewGuid()), PoseName.Create("Folded Leaf").Value!,
+            Difficulty.Create(DifficultyLevel.Beginner, DifficultyLevel.Discovery).Value!, FlowBoundaries.Create(false, true).Value!, null,
+            nameAlreadyPublished: false, Now, new TagChoice(TagSet.Of([Lunar, Inversion]), TagSet.Empty)).Value!;
+        await Save(pose);
+
+        await using var context = database.CreateDbContext();
+        var restored = await new EfPoseRepository(context, new TrackedAggregates()).GetById(pose.Id, Ct);
+
+        restored.ShouldNotBeNull().Tags.ShouldBe(TagSet.Of([Lunar, Inversion]));
+    }
+
+    [Fact]
+    public async Task Update_Should_StoreTheTagsAndTheVersion_When_ThePoseIsTagged()
+    {
+        var pose = APublishedPose("Candlestick");
+        await Save(pose);
+
+        await using (var context = database.CreateDbContext())
+        {
+            var aggregates = new TrackedAggregates();
+            var repository = new EfPoseRepository(context, aggregates);
+            var read = (await repository.GetById(pose.Id, Ct))!;
+            read.Tag(new TagChoice(TagSet.Of([Inversion]), TagSet.Empty), revisionPending: false, Now).IsSuccess.ShouldBeTrue();
+            repository.Update(read);
+            (await UnitOfWorks.For(context, aggregates).SaveChanges(Ct)).IsSuccess.ShouldBeTrue();
+        }
+
+        await using var assert = database.CreateDbContext();
+        var stored = await assert.Set<PoseRecord>().SingleAsync(p => p.Id == pose.Id.Value, Ct);
+        stored.TagIds.ShouldBe([Inversion.Value]);
+        stored.Version.ShouldBe(2);
+    }
 }

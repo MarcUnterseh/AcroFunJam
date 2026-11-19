@@ -22,7 +22,9 @@ public sealed class CatalogPosesTests
         PoseVersion.Of(4),
         TransitionsFrom: [],
         TransitionsTo: [],
-        new Dictionary<TagId, PresentedTag>());
+        new Dictionary<TagId, PresentedTag>(),
+        PoseTags: [],
+        HasPendingRevision: false);
 
     /// <summary>Fake of the Catalog query: the published poses.</summary>
     private sealed class FakeGetPosePage(params PosePage[] poses) : IQueryHandler<GetPosePage, PosePage>

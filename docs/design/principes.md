@@ -52,7 +52,7 @@ Le ciel (`sky` / `skyDark`) : dégradé (aube : `#FFE1A0` → `#FBC0A4` → `#D3
 
 ## Vocabulaire : « étiquette » a un seul sens
 
-Depuis la story 8 (Q161), **« étiquette » désigne uniquement l'étiquette métier** d'une transition (« pop », « lunaire »…). Les éléments d'interface qui portaient ce nom sont renommés : la **marque « Modifiée »** (`composants/marque-modifiee.md`, anciennement « étiquette « Modifiée » ») et le **mot de la pastille** de rôle (« Base » / « Flyer »). Le code suivra à l'implémentation (`modified-tag`, `role-pill__tag`).
+Depuis la story 8 (Q161), **« étiquette » désigne uniquement l'étiquette métier** d'une transition ou, depuis la story 9a, d'une pose (« pop », « lunaire »…). Les éléments d'interface qui portaient ce nom sont renommés : la **marque « Modifiée »** (`composants/marque-modifiee.md`, anciennement « étiquette « Modifiée » ») et le **mot de la pastille** de rôle (« Base » / « Flyer »). Le code suivra à l'implémentation (`modified-tag`, `role-pill__tag`).
 
 ## Étiquettes des transitions (story 8)
 
@@ -65,6 +65,8 @@ Trois formes, qui ne se confondent ni entre elles ni avec les pastilles de rôle
 | **Mot dans une phrase** | récapitulatif des ajustements | texte simple, « aucune → dynamique, pop » (on compare des mots) |
 
 La pierre est le seul neutre **chaud** de la palette : elle sépare les étiquettes (qualités du mouvement) des rôles (terre, ciel), du choix (famille du primaire) et des boutons discrets (`surfaceHover`, violet froid).
+
+**Story 9a, étiquettes des poses** (`ecrans/9a-etiquettes-des-poses.md`) : les mêmes trois formes, sans nouveau token. Les étiquettes d'une pose et celles de ses transitions sont indépendantes ; on les distingue par **la place** (ciel et tête du corps pour la pose, élément de transition pour la transition) et **les mots** (« … les étiquettes de la pose »), jamais par la couleur. Sur le ciel, la pilule reste opaque et le terme « Étiquettes » est en `skyText` (`textMuted` y tomberait à 2,7:1). Le champ d'application d'une étiquette se dit en toutes lettres (« S'applique aux poses et aux transitions »), jamais par une icône ou une couleur.
 
 ## Difficulté en phases de lune
 

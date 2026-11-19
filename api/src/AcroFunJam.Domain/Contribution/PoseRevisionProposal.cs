@@ -83,15 +83,18 @@ public sealed class PoseRevisionProposal : AggregateRoot<PoseRevisionProposalId>
     /// pose with the validator's adjustments, then possibly explained by a note (ADR 0022, ADR 0026). The availability is
     /// that of the retained name.
     /// </summary>
-    public Result<Acceptance> Accept(Validator by, PoseAdjustments adjustments, AdjustmentNote? note, NameAvailability availability, DateTimeOffset now)
+    public Result<Acceptance> Accept(
+        Validator by, PoseAdjustments adjustments, AdjustmentNote? note, NameAvailability availability, DateTimeOffset now, TagChoice? retainedTags = null)
     {
         ArgumentNullException.ThrowIfNull(adjustments);
         if (DecisionRules.CannotBeDecided(by, Decision) is { } refusal) return refusal;
-        var retained = Revision.After.Retain(adjustments);
+        // Story 9a: the retained tags, chosen through the list for a pose; none keeps the proposed ones.
+        if (ProposedTagsNotApplicableError.Of(retainedTags) is { } refusedTags) return refusedTags;
+        var retained = Revision.After.Retain(adjustments, retainedTags?.Tags);
         var acceptance = Acceptance.Of(Revision.After, retained, note, by.Id, now);
         if (acceptance.IsFailure) return acceptance;
         // Bringing the pose back to its values amounts to rejecting the revision (story 6).
-        if (retained.Name == Revision.Before.Name && retained.Difficulty == Revision.Before.Difficulty && retained.Flow == Revision.Before.Flow)
+        if (Revision.Before.SameValuesAs(retained.Name, retained.Difficulty, retained.Flow, retained.Tags))
             return ContributionErrors.RetainedRevisionChangesNothing;
         if (NameRefusals.Of(availability) is { } taken) return taken;
 

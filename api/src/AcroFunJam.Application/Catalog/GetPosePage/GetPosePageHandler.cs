@@ -5,7 +5,8 @@ using AcroFunJam.Domain.SharedKernel;
 
 namespace AcroFunJam.Application.Catalog.GetPosePage;
 
-internal sealed class GetPosePageHandler(IPoseRepository poses, IPoseTransitionsReader transitions, ITagListRepository tagLists)
+internal sealed class GetPosePageHandler(
+    IPoseRepository poses, IPoseTransitionsReader transitions, ITagListRepository tagLists, IPendingPoseRevisions revisions)
     : IQueryHandler<GetPosePage, PosePage>
 {
     public async Task<Result<PosePage>> Handle(GetPosePage query, CancellationToken ct)
@@ -21,6 +22,7 @@ internal sealed class GetPosePageHandler(IPoseRepository poses, IPoseTransitions
                    ?? new Dictionary<TagId, PresentedTag>();
         return Result<PosePage>.Success(new PosePage(
             pose.Id, pose.Name, pose.Difficulty, pose.Flow, pose.Version,
-            [.. from.Order(LinkedTransitionsOrder.Instance)], [.. to.Order(LinkedTransitionsOrder.Instance)], tags));
+            [.. from.Order(LinkedTransitionsOrder.Instance)], [.. to.Order(LinkedTransitionsOrder.Instance)], tags,
+            PosePage.Presented(pose.Tags, tags), await revisions.IsPending(pose.Id, ct)));
     }
 }
