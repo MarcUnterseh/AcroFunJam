@@ -9,6 +9,7 @@ const throne: ValidPoseProposal = {
   flyerDifficulty: 'discovery',
   canStartFlow: true,
   canEndFlow: false,
+  tags: [],
 };
 
 const received = (status: 'pending' | 'accepted') => ({
@@ -45,7 +46,53 @@ describe('createContributionGateway', () => {
     expect(requests).toHaveLength(1);
     expect(requests[0]!.method).toBe('POST');
     expect(new URL(requests[0]!.url).pathname).toBe('/contribution/pose-proposals');
-    expect(await requests[0]!.json()).toEqual(throne);
+    expect(await requests[0]!.json()).toEqual({ ...throne, tags: undefined, tagIds: [] });
+  });
+
+  // Story 9a (ADR 0036): the chosen tags, by identifier.
+  it('should send the chosen tags by identifier', async () => {
+    const requests: Request[] = [];
+    const gateway = createContributionGateway(apiAnswering(201, received('pending'), requests));
+
+    await gateway.proposePose({ ...throne, tags: [{ id: 'tag-lunaire', name: 'lunaire' }] });
+
+    expect((await requests[0]!.json()).tagIds).toEqual(['tag-lunaire']);
+  });
+
+  it.each([
+    ['contribution.tag-not-applicable', 'tags-not-applicable'],
+    ['contribution.tag-not-in-list', 'tags-not-in-list'],
+  ] as const)('should tell the chosen tags refused when the API answers %s', async (code, kind) => {
+    const gateway = createContributionGateway(
+      apiAnswering(409, { title: code, status: 409, tagIds: ['tag-vrille'] }),
+    );
+
+    expect(await gateway.proposePose(throne)).toEqual(fail({ kind, tagIds: ['tag-vrille'] }));
+  });
+
+  it('should read the tags of the list, to choose those of a pose', async () => {
+    const lunaire = {
+      id: 'tag-lunaire',
+      name: 'lunaire',
+      description: 'Lent.',
+      scope: 'poses-and-transitions',
+      impliedTagId: null,
+      poseCount: 0,
+      transitionCount: 0,
+    };
+    const gateway = createContributionGateway(apiAnswering(200, { tags: [lunaire] }));
+
+    expect(await gateway.listTags()).toEqual(
+      ok([
+        {
+          id: 'tag-lunaire',
+          name: 'lunaire',
+          description: 'Lent.',
+          scope: 'poses-and-transitions',
+          impliedTagId: null,
+        },
+      ]),
+    );
   });
 
   it('should tell the proposal is pending when the API answers 201 "pending"', async () => {
@@ -147,6 +194,7 @@ describe('createContributionGateway', () => {
       'flyerDifficulty',
       'canStartFlow',
       'canEndFlow',
+      'tagIds',
     ]);
   });
 });

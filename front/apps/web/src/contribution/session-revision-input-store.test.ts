@@ -11,6 +11,7 @@ const kept: KeptRevisionInput = {
       flyerDifficulty: 'discovery',
       canStartFlow: true,
       canEndFlow: false,
+      tags: [],
     },
     message: 'Plus facile côté flyer.',
   },

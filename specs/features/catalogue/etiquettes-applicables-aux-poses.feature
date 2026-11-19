@@ -188,13 +188,13 @@ Fonctionnalité: Étiquettes applicables aux poses
       Quand Alice propose une transition sans nom de "Throne" vers "Bird", avec l'étiquette "contrepoids"
       Alors la proposition est irrecevable car l'étiquette "contrepoids" ne s'applique pas aux transitions
 
-    @web @wip
+    @web
     Scénario: Le formulaire de transition ne propose pas une étiquette réservée aux poses
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
       Quand Alice commence à proposer sur le site une transition depuis la pose "Throne"
       Alors le formulaire de transition ne propose pas l'étiquette "contrepoids"
 
-    @web @wip
+    @web
     Scénario: La zone « Étiqueter » d'une transition ne propose pas une étiquette réservée aux poses
       Soit Bruno est validateur, connecté sur le site
       Et la transition publiée sans nom de "Throne" vers "Bird" de difficulté base "débutant" et de difficulté flyer "débutant"
@@ -268,12 +268,12 @@ Fonctionnalité: Étiquettes applicables aux poses
 
   Règle: Sur le site, tout le monde voit à quoi s'applique chaque étiquette
 
-    @web @wip
+    @web
     Scénario: La page des étiquettes présente son introduction
       Quand un visiteur consulte la liste des étiquettes sur le site
       Alors le site présente « Les étiquettes décrivent les poses et les transitions. Le futur générateur de flow s'en servira. »
 
-    @web @wip
+    @web
     Plan du Scénario: Le site présente l'étiquette « <étiquette> » comme applicable <champ>
       Soit l'étiquette "<étiquette>" dans la liste des étiquettes, qui s'applique <champ>
       Quand un visiteur consulte la liste des étiquettes sur le site
@@ -290,23 +290,23 @@ Fonctionnalité: Étiquettes applicables aux poses
     Contexte:
       Soit Bruno est validateur, connecté sur le site
 
-    @web @wip
+    @web
     Scénario: Le validateur ajoute sur le site une étiquette applicable aux poses
       Quand Bruno ajoute sur le site l'étiquette "contrepoids" avec la description « Base et flyer s'équilibrent en tirant l'un contre l'autre. », qui s'applique aux poses seulement
       Alors le site présente l'étiquette "contrepoids" avec « S'applique aux poses »
 
-    @web @wip
+    @web
     Scénario: Le site demande de choisir à quoi s'applique une étiquette ajoutée
       Quand Bruno ajoute sur le site l'étiquette "contrepoids" avec la description « Base et flyer s'équilibrent en tirant l'un contre l'autre. », sans choisir à quoi elle s'applique
       Alors le site indique « Choisis à quoi s'applique l'étiquette. »
 
-    @web @wip
+    @web
     Scénario: Le validateur change sur le site à quoi s'applique une étiquette
       Soit la liste des étiquettes est la liste amorcée
       Quand Bruno change sur le site le champ d'application de l'étiquette "vrille" en « Aux poses et aux transitions »
       Alors le site présente l'étiquette "vrille" avec « S'applique aux poses et aux transitions »
 
-    @web @wip
+    @web
     Scénario: Le site liste les poses qui empêchent de changer à quoi s'applique une étiquette
       Soit la liste des étiquettes est la liste amorcée
       Et la pose publiée "Folded Leaf" de difficulté base "débutant" et de difficulté flyer "découverte"
@@ -321,7 +321,7 @@ Fonctionnalité: Étiquettes applicables aux poses
       Et la liste des étiquettes est la liste amorcée
       Et les poses publiées "Bird", "Folded Leaf" et "Throne" dans le catalogue
 
-    @web @wip
+    @web
     Plan du Scénario: Le site présente au validateur le nombre d'éléments qui portent une étiquette, selon son champ d'application
       Soit <poses> poses publiées et <transitions> transitions publiées portent l'étiquette "<étiquette>"
       Quand Bruno consulte la liste des étiquettes sur le site
@@ -333,7 +333,7 @@ Fonctionnalité: Étiquettes applicables aux poses
         | inversion | 0     | 0           | Portée par aucune pose ni aucune transition |
         | pop       | 0     | 2           | Portée par 2 transitions                    |
 
-    @web @wip
+    @web
     Plan du Scénario: Le site présente au validateur le nombre de poses qui portent une étiquette réservée aux poses
       Soit l'étiquette "contrepoids" dans la liste des étiquettes, qui s'applique aux poses seulement
       Et <poses> poses publiées portent l'étiquette "contrepoids"
@@ -345,7 +345,7 @@ Fonctionnalité: Étiquettes applicables aux poses
         | 1     | Portée par 1 pose      |
         | 0     | Portée par aucune pose |
 
-    @web @wip
+    @web
     Scénario: Le site liste les poses qui empêchent le retrait d'une étiquette, avec un lien vers leur page
       Soit la pose "Folded Leaf" porte l'étiquette "lunaire"
       Quand Bruno retire sur le site l'étiquette "lunaire" en confirmant le retrait

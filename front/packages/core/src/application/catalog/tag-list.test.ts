@@ -8,7 +8,9 @@ const pop: Tag = {
   id: 'tag-pop',
   name: 'pop',
   description: 'La base propulse le flyer.',
+  scope: 'transitions',
   impliedTagId: 'tag-dynamique',
+  poseCount: 0,
   transitionCount: 0,
 };
 
@@ -48,16 +50,22 @@ describe('addTag', () => {
   it('should send the normalised content when the input is valid', async () => {
     const gateway = new FakeTagListGateway();
 
-    const result = await addTag(gateway, { name: '  pop ', description: ' La base   propulse le flyer. ' });
+    const result = await addTag(gateway, {
+      name: '  pop ',
+      description: ' La base   propulse le flyer. ',
+      scope: 'transitions',
+    });
 
     expect(result).toEqual(ok(pop));
-    expect(gateway.added).toEqual([{ name: 'pop', description: 'La base propulse le flyer.' }]);
+    expect(gateway.added).toEqual([
+      { name: 'pop', description: 'La base propulse le flyer.', scope: 'transitions' },
+    ]);
   });
 
   it('should send nothing and report the fields in error when the input is invalid', async () => {
     const gateway = new FakeTagListGateway();
 
-    const result = await addTag(gateway, { name: '---', description: '' });
+    const result = await addTag(gateway, { name: '---', description: '', scope: 'transitions' });
 
     expect(result).toEqual(
       fail({
@@ -81,7 +89,9 @@ describe('addTag', () => {
     const gateway = new FakeTagListGateway();
     gateway.changeAnswer = fail(failure);
 
-    expect(await addTag(gateway, { name: 'pop', description: 'D.' })).toEqual(fail({ kind }));
+    expect(await addTag(gateway, { name: 'pop', description: 'D.', scope: 'transitions' })).toEqual(
+      fail({ kind }),
+    );
   });
 });
 
@@ -89,10 +99,17 @@ describe('changeTag', () => {
   it('should send the normalised content of the tag when the input is valid', async () => {
     const gateway = new FakeTagListGateway();
 
-    await changeTag(gateway, 'tag-pop', { name: 'Pop ', description: 'La base propulse le flyer.' });
+    await changeTag(gateway, 'tag-pop', {
+      name: 'Pop ',
+      description: 'La base propulse le flyer.',
+      scope: 'transitions',
+    });
 
     expect(gateway.changed).toEqual([
-      { id: 'tag-pop', content: { name: 'Pop', description: 'La base propulse le flyer.' } },
+      {
+        id: 'tag-pop',
+        content: { name: 'Pop', description: 'La base propulse le flyer.', scope: 'transitions' },
+      },
     ]);
   });
 
@@ -100,15 +117,36 @@ describe('changeTag', () => {
     const gateway = new FakeTagListGateway();
     gateway.changeAnswer = fail({ kind: 'not-found' });
 
-    expect(await changeTag(gateway, 'tag-pop', { name: 'pop', description: 'D.' })).toEqual(
-      fail({ kind: 'not-found' }),
-    );
+    expect(
+      await changeTag(gateway, 'tag-pop', { name: 'pop', description: 'D.', scope: 'transitions' }),
+    ).toEqual(fail({ kind: 'not-found' }));
+  });
+
+  // Story 9a: what it no longer applies to still carries it (A4).
+  it('should give the poses carrying the tag when they forbid narrowing what it applies to', async () => {
+    const gateway = new FakeTagListGateway();
+    const carried = {
+      kind: 'carried',
+      poses: [{ id: 'p-leaf', name: 'Folded Leaf' }],
+      transitions: [],
+      pendingProposals: [],
+      pendingPoses: [],
+    } as const;
+    gateway.changeAnswer = fail(carried);
+
+    expect(
+      await changeTag(gateway, 'tag-lunaire', { name: 'lunaire', description: 'D.', scope: 'transitions' }),
+    ).toEqual(fail(carried));
   });
 
   it('should send nothing when the input is invalid', async () => {
     const gateway = new FakeTagListGateway();
 
-    const result = await changeTag(gateway, 'tag-pop', { name: 'v'.repeat(31), description: 'D.' });
+    const result = await changeTag(gateway, 'tag-pop', {
+      name: 'v'.repeat(31),
+      description: 'D.',
+      scope: 'transitions',
+    });
 
     expect(result).toEqual(
       fail({ kind: 'invalid-input', errors: [{ field: 'name', code: 'tag.name-too-long' }] }),
@@ -137,6 +175,8 @@ describe('removeTag', () => {
         },
       ],
       pendingProposals: [],
+      poses: [],
+      pendingPoses: [],
     };
     const gateway = new FakeTagListGateway();
     gateway.removalAnswer = fail(carried);

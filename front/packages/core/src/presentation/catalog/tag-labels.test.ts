@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   carriedByLabel,
+  carriedRefusalLabel,
   impliedRefusalLabel,
+  pendingPoseCarrierLabel,
+  scopeCarriedRefusalLabel,
+  scopeNeededRefusalLabel,
+  tagScopeChoiceLabel,
+  tagScopeLabel,
   tagAnnouncements,
   tagCarrierLabel,
   tagCounterLabel,
@@ -27,7 +33,76 @@ describe('carriedByLabel', () => {
     [1, 'Portée par 1 transition'],
     [2, 'Portée par 2 transitions'],
   ])('should tell how many published transitions carry the tag when they are %i', (count, label) => {
-    expect(carriedByLabel(count)).toBe(label);
+    expect(carriedByLabel({ scope: 'transitions', poseCount: 0, transitionCount: count })).toBe(label);
+  });
+
+  // Story 9a (A7): the counter follows what the tag applies to.
+  it.each([
+    [0, 'Portée par aucune pose'],
+    [1, 'Portée par 1 pose'],
+    [3, 'Portée par 3 poses'],
+  ])('should tell how many published poses carry a tag of the poses when they are %i', (count, label) => {
+    expect(carriedByLabel({ scope: 'poses', poseCount: count, transitionCount: 0 })).toBe(label);
+  });
+
+  it.each([
+    [1, 2, 'Portée par 1 pose et 2 transitions'],
+    [0, 0, 'Portée par aucune pose ni aucune transition'],
+    [0, 1, 'Portée par aucune pose et 1 transition'],
+    [2, 0, 'Portée par 2 poses et aucune transition'],
+  ])(
+    'should count the poses and the transitions of a tag of both when %i poses and %i transitions carry it',
+    (poses, transitions, label) => {
+      expect(
+        carriedByLabel({ scope: 'poses-and-transitions', poseCount: poses, transitionCount: transitions }),
+      ).toBe(label);
+    },
+  );
+});
+
+describe('what a tag applies to', () => {
+  it.each([
+    ['poses', "S'applique aux poses", 'Aux poses'],
+    ['transitions', "S'applique aux transitions", 'Aux transitions'],
+    ['poses-and-transitions', "S'applique aux poses et aux transitions", 'Aux poses et aux transitions'],
+  ] as const)('should state and offer what a tag applying to %s applies to', (scope, statement, choice) => {
+    expect(tagScopeLabel(scope)).toBe(statement);
+    expect(tagScopeChoiceLabel(scope)).toBe(choice);
+  });
+
+  it('should ask to choose what a tag applies to when none is chosen', () => {
+    expect(tagFieldErrorMessage('tag.scope-required')).toBe("Choisis à quoi s'applique l'étiquette.");
+  });
+});
+
+describe('refusals of story 9a', () => {
+  it('should refuse the removal of a tag carried by any element', () => {
+    expect(carriedRefusalLabel('lunaire')).toBe(
+      '« lunaire » ne peut pas être retirée : ces éléments la portent.',
+    );
+  });
+
+  it.each([
+    ['poses', "« lunaire » ne peut pas cesser de s'appliquer aux poses : ces éléments la portent."],
+    [
+      'transitions',
+      "« lunaire » ne peut pas cesser de s'appliquer aux transitions : ces éléments la portent.",
+    ],
+  ] as const)('should refuse a tag ceasing to apply to %s that they carry', (target, label) => {
+    expect(scopeCarriedRefusalLabel('lunaire', target)).toBe(label);
+  });
+
+  it('should name the tags that still need what it applies to', () => {
+    expect(scopeNeededRefusalLabel('dynamique', [{ id: 't', name: 'pop' }])).toBe(
+      "« dynamique » doit garder ce champ d'application tant que « pop » l'ajoute.",
+    );
+  });
+
+  it.each([
+    ['pose-proposal', 'Proposition de la pose Candlestick'],
+    ['pose-revision', 'Modification de la pose Candlestick'],
+  ] as const)('should designate a pending %s carrying a tag', (kind, label) => {
+    expect(pendingPoseCarrierLabel({ id: 'x', kind, name: 'Candlestick' })).toBe(label);
   });
 });
 

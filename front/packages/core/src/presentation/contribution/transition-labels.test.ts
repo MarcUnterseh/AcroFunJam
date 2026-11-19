@@ -91,7 +91,9 @@ describe('transitionPlaceTakenLabel', () => {
   it('should tell, under the name, that a transition without a name already links these poses: name yours', () => {
     expect(
       transitionPlaceTakenLabel('unnamed-transition-already-in-catalog', { from: 'Throne', to: 'Bird' }),
-    ).toBe('Une transition sans nom va déjà de Throne vers Bird. Donne un nom à la tienne pour la distinguer.');
+    ).toBe(
+      'Une transition sans nom va déjà de Throne vers Bird. Donne un nom à la tienne pour la distinguer.',
+    );
   });
 
   it('should tell the same of a transition pending validation', () => {
@@ -311,7 +313,9 @@ describe('transitionNameHelp', () => {
 
 describe('after sending, the next transition', () => {
   it('should announce a blank form, from the pose of origin', () => {
-    expect(newTransitionFormAnnouncement('Throne')).toBe('Nouveau formulaire : la pose de départ est Throne.');
+    expect(newTransitionFormAnnouncement('Throne')).toBe(
+      'Nouveau formulaire : la pose de départ est Throne.',
+    );
   });
 
   it('should title the document after the sending, from the status returned by the API', () => {

@@ -15,15 +15,21 @@ export type PendingProposal = {
   flyerDifficulty: DifficultyCode;
   canStartFlow: boolean;
   canEndFlow: boolean;
+  /** Story 9a: its tags, by identifier (none: an empty list). */
+  tagIds?: string[];
   contributorEmail: string;
   submittedAt: string;
 };
 
-/** The values of a pose, as the API returns them. */
+/** The values of a pose, as the API returns them (its tags by identifier). */
 export type PoseValues = Pick<
   PendingProposal,
-  'name' | 'baseDifficulty' | 'flyerDifficulty' | 'canStartFlow' | 'canEndFlow'
+  'name' | 'baseDifficulty' | 'flyerDifficulty' | 'canStartFlow' | 'canEndFlow' | 'tagIds'
 >;
+
+/** Story 9a: the same tags, whatever their order (a set). */
+export const sameTagIds = (a: readonly string[] = [], b: readonly string[] = []) =>
+  a.length === b.length && a.every((id) => b.includes(id));
 
 /** What became of a proposal (story 5 reads it from « Mes propositions »); null while pending. */
 export type ProposalDecision =
@@ -119,7 +125,11 @@ export class ContributionApi {
     private readonly context: BrowserContext,
     private readonly identityApi: IdentityApi,
     private readonly catalogApi: CatalogApi,
-  ) {}
+  ) {
+    // Story 9a: a pose with a pending revision cannot be tagged directly (« pendingRevision » of its page).
+    catalogApi.hasPendingRevision = (poseId) =>
+      this.pendingRevisions.some((revision) => revision.poseId === poseId);
+  }
 
   setUnreachable(unreachable: boolean): void {
     this.unreachable = unreachable;
@@ -139,8 +149,15 @@ export class ContributionApi {
   /** A pose proposed by a validator or an administrator: published at once (glossary « Publication directe »). */
   addDirectPublication(proposal: Omit<PendingProposal, 'id' | 'submittedAt'>): void {
     this.submit(proposal, { kind: 'published-directly' });
-    const { name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow } = proposal;
-    this.catalogApi.publish({ name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow });
+    const { name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow, tagIds } = proposal;
+    this.catalogApi.publish({
+      name,
+      baseDifficulty,
+      flyerDifficulty,
+      canStartFlow,
+      canEndFlow,
+      tagIds: tagIds ?? [],
+    });
   }
 
   private submit(
@@ -256,6 +273,12 @@ export class ContributionApi {
     const key = keyOf(name);
     if (this.catalogApi.publishedNames.some((published) => keyOf(published) === key))
       return this.problem(route, 409, 'contribution.pose-name-already-in-catalog');
+    // Story 9a (ADR 0036): the tags chosen again by the list for a pose, before the name.
+    const chosen = this.catalogApi.tags.choose(request.tagIds ?? [], 'pose');
+    if (chosen.notInList.length > 0)
+      return this.problem(route, 409, 'contribution.tag-not-in-list', { tagIds: chosen.notInList });
+    if (chosen.notApplicable.length > 0)
+      return this.problem(route, 409, 'contribution.tag-not-applicable', { tagIds: chosen.notApplicable });
     if (this.isNamePending(name)) return this.problem(route, 409, 'contribution.pose-name-already-pending');
 
     const proposal: PoseProposalResponse = {
@@ -266,6 +289,9 @@ export class ContributionApi {
       flyerDifficulty: request.flyerDifficulty as DifficultyCode,
       canStartFlow: request.canStartFlow ?? false,
       canEndFlow: request.canEndFlow ?? false,
+      tags: this.catalogApi.tags
+        .describe(chosen.tagIds)
+        .map(({ id, name: tagName }) => ({ id, name: tagName })),
     };
     const submitted = {
       name,
@@ -273,6 +299,7 @@ export class ContributionApi {
       flyerDifficulty: proposal.flyerDifficulty,
       canStartFlow: proposal.canStartFlow,
       canEndFlow: proposal.canEndFlow,
+      tagIds: chosen.tagIds,
       contributorEmail: account.email,
     };
     if (proposal.status === 'pending') this.addPending(submitted);
@@ -280,8 +307,8 @@ export class ContributionApi {
     return route.fulfill({ status: 201, json: proposal });
   }
 
-  private problem(route: Route, status: number, title: string) {
-    const body: ProblemDetails = { title, status };
+  private problem(route: Route, status: number, title: string, extensions: Record<string, unknown> = {}) {
+    const body: ProblemDetails = { title, status, ...extensions };
     return route.fulfill({ status, contentType: 'application/problem+json', body: JSON.stringify(body) });
   }
 }

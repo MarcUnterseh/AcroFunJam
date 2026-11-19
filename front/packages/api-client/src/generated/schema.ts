@@ -100,6 +100,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/catalog/poses/{id}/tags': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations['TagPose'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/catalog/transitions/{id}/tags': {
     parameters: {
       query?: never;
@@ -824,6 +840,7 @@ export interface components {
       canStartFlow?: null | boolean;
       canEndFlow?: null | boolean;
       message?: null | string;
+      tagIds?: null | string[];
     };
     AcceptTransitionProposalRequest: {
       name?: null | string;
@@ -932,6 +949,7 @@ export interface components {
       adjustments: null | components['schemas']['PoseAdjustmentsResponse'];
       message: null | string;
       reason: null | string;
+      tags: components['schemas']['ProposalTagResponse'][];
     };
     MyProposalResponseMyPoseRevisionResponse: {
       /** @enum {string} */
@@ -1023,6 +1041,7 @@ export interface components {
       contributor: components['schemas']['ProposalContributorResponse'];
       /** Format: date-time */
       submittedAt: string;
+      tags: components['schemas']['ProposalTagResponse'][];
     };
     PendingProposalResponsePendingPoseRevisionResponse: {
       /** @enum {string} */
@@ -1064,6 +1083,7 @@ export interface components {
       flyerDifficulty: null | components['schemas']['DifficultyAdjustmentResponse'];
       canStartFlow: null | components['schemas']['FlowAdjustmentResponse'];
       canEndFlow: null | components['schemas']['FlowAdjustmentResponse'];
+      tags: null | components['schemas']['TagsAdjustmentResponse'];
     };
     PoseChangesResponse: {
       name: null | components['schemas']['NameValueChangeResponse'];
@@ -1071,6 +1091,7 @@ export interface components {
       flyerDifficulty: null | components['schemas']['DifficultyValueChangeResponse'];
       canStartFlow: null | components['schemas']['FlowValueChangeResponse'];
       canEndFlow: null | components['schemas']['FlowValueChangeResponse'];
+      tags: null | components['schemas']['TagsValueChangeResponse'];
     };
     PoseListResponse: {
       poses: components['schemas']['PoseSummaryResponse'][];
@@ -1084,6 +1105,7 @@ export interface components {
       flyerDifficulty: components['schemas']['DifficultyCode'];
       canStartFlow: boolean;
       canEndFlow: boolean;
+      tags: components['schemas']['ProposalTagResponse'][];
     };
     PoseReferenceResponse: {
       /** Format: uuid */
@@ -1101,6 +1123,7 @@ export interface components {
       flyerDifficulty: components['schemas']['DifficultyCode'];
       canStartFlow: boolean;
       canEndFlow: boolean;
+      tags: components['schemas']['ProposalTagResponse'][];
     };
     PoseSummaryResponse: {
       /** Format: uuid */
@@ -1110,6 +1133,7 @@ export interface components {
       flyerDifficulty: components['schemas']['DifficultyCode'];
       canStartFlow: boolean;
       canEndFlow: boolean;
+      tags: components['schemas']['NamedTagResponse'][];
     };
     ProblemDetails: {
       type?: null | string;
@@ -1136,6 +1160,7 @@ export interface components {
       flyerDifficulty: null | string;
       canStartFlow: null | boolean;
       canEndFlow: null | boolean;
+      tagIds?: null | string[];
     };
     ProposePoseRevisionRequest: {
       /** Format: uuid */
@@ -1148,6 +1173,7 @@ export interface components {
       canStartFlow: null | boolean;
       canEndFlow: null | boolean;
       message: null | string;
+      tagIds?: null | string[];
     };
     ProposeTransitionRequest: {
       /** Format: uuid */
@@ -1172,6 +1198,8 @@ export interface components {
       version: number | string;
       transitionsFrom: components['schemas']['LinkedTransitionResponse'][];
       transitionsTo: components['schemas']['LinkedTransitionResponse'][];
+      tags: components['schemas']['TransitionTagResponse'][];
+      pendingRevision: boolean;
     };
     RefreshRequest: {
       refreshToken: string;
@@ -1204,6 +1232,7 @@ export interface components {
       flyerDifficulty: components['schemas']['DifficultyCode'];
       canStartFlow: boolean;
       canEndFlow: boolean;
+      tags: components['schemas']['ProposalTagResponse'][];
     };
     RevisionChangesResponse: {
       name: null | components['schemas']['NameChangeResponse'];
@@ -1211,10 +1240,16 @@ export interface components {
       flyerDifficulty: null | components['schemas']['DifficultyChangeResponse'];
       canStartFlow: null | components['schemas']['FlowChangeResponse'];
       canEndFlow: null | components['schemas']['FlowChangeResponse'];
+      tags: null | components['schemas']['TagsChangeResponse'];
     };
     RoleChangeRequest: {
       email: null | string;
       role: null | string;
+    };
+    TaggedPoseResponse: {
+      /** Format: uuid */
+      id: string;
+      tags: components['schemas']['NamedTagResponse'][];
     };
     TaggedTransitionResponse: {
       /** Format: uuid */
@@ -1224,23 +1259,38 @@ export interface components {
     TagListResponse: {
       tags: components['schemas']['TagResponse'][];
     };
+    TagPoseRequest: {
+      tagIds: null | string[];
+    };
     TagRequest: {
       name: null | string;
       description: null | string;
+      scope: null | string;
     };
     TagResponse: {
       /** Format: uuid */
       id: string;
       name: string;
       description: string;
+      scope: string;
       /** Format: uuid */
       impliedTagId: null | string;
+      /** Format: int32 */
+      poseCount: number | string;
       /** Format: int32 */
       transitionCount: number | string;
     };
     TagsAdjustmentResponse: {
       proposed: components['schemas']['ProposalTagResponse'][];
       retained: components['schemas']['ProposalTagResponse'][];
+    };
+    TagsChangeResponse: {
+      current: components['schemas']['ProposalTagResponse'][];
+      proposed: components['schemas']['ProposalTagResponse'][];
+    };
+    TagsValueChangeResponse: {
+      before: components['schemas']['ProposalTagResponse'][];
+      after: components['schemas']['ProposalTagResponse'][];
     };
     TagTransitionRequest: {
       tagIds: null | string[];
@@ -1554,6 +1604,68 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  TagPose: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TagPoseRequest'];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['TaggedPoseResponse'];
+        };
       };
       /** @description Unauthorized */
       401: {

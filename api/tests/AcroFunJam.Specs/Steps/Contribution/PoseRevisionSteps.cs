@@ -238,6 +238,11 @@ public sealed partial class PoseRevisionSteps(
     public async Task ThenTheQueuePresentsTheTagsChange(string pose, string current, string proposed) =>
         Changes((await QueuedRevisionOf(pose)).GetProperty("changes"), "current", "proposed").ShouldContain(("étiquettes", current, proposed));
 
+    /// <summary>Story 9a: the current tags of the revised pose, under their current names (« aucune » without any).</summary>
+    [Then(@"^la file de validation présente la modification de la pose ""([^""]*)"" avec les étiquettes actuelles « (.*) »$")]
+    public async Task ThenTheQueuePresentsTheCurrentTags(string pose, string tags) =>
+        Label((await QueuedRevisionOf(pose)).GetProperty("pose").GetProperty("tags")).ShouldBe(tags);
+
     [Then(@"^la file de validation présente la modification de la pose ""([^""]*)""$")]
     public async Task ThenTheQueuePresentsTheRevision(string pose) => await QueuedRevisionOf(pose);
 

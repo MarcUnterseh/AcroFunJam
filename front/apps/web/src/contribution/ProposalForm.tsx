@@ -2,6 +2,8 @@ import {
   checkPoseName,
   emptyPoseProposalInput,
   keepProposalInput,
+  poseTagLabels,
+  poseTagsRefusedLabel,
   poseNameLength,
   proposalFieldErrorLabel,
   proposalLabels,
@@ -28,11 +30,19 @@ import { ProposalSuccess } from './ProposalSuccess';
 import { nameCounter, NameCounter } from './NameCounter';
 import { useCounterAnnouncement } from './useCounterAnnouncement';
 import { answerOf, answers, levels } from './pose-choices';
-import { TileRadioGroup } from './TileRadioGroup';
+import { TileRadioGroup } from '../layout/TileRadioGroup';
+import { TagChoiceGroup } from '../layout/tag-parts';
+import { poseTagsKey, usePoseTags } from './usePoseTags';
 
 type NameRefusal = 'name-already-in-catalog' | 'name-already-pending';
 /** Global failures, shown in an alert at the top of the form; the input is kept for each of them. */
 type Alert = 'unreachable' | 'outdated' | 'session-expired';
+
+/** Story 9a: chosen tags refused meanwhile, told in an information alert, the input kept without them. */
+type TagsRefusal = {
+  readonly kind: 'tags-not-applicable' | 'tags-not-in-list';
+  readonly names: readonly string[];
+};
 
 /**
  * Form « Proposer une pose » (docs/design/ecrans/3-proposer-une-pose.md): checked before sending with the rules
@@ -57,6 +67,9 @@ export function ProposalForm({
   const [errors, setErrors] = useState<readonly ProposalFieldError[]>([]);
   const [nameRefusal, setNameRefusal] = useState<NameRefusal | null>(null);
   const [alert, setAlert] = useState<Alert | null>(null);
+  const [tagsRefusal, setTagsRefusal] = useState<TagsRefusal | null>(null);
+  const tagList = usePoseTags();
+  const offersTags = (tagList?.length ?? 0) > 0;
   const [attempt, setAttempt] = useState(0);
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<ProposalOutcome | null>(null);
@@ -151,7 +164,18 @@ export function ProposalForm({
       return;
     }
     const failure = result.error;
+    setTagsRefusal(null);
     switch (failure.kind) {
+      case 'tags-not-applicable':
+      case 'tags-not-in-list': {
+        // The tags refused are taken out of the input, the rest is kept; the list is read again, without them.
+        const refused = new Set(failure.tags.map((tag) => tag.id));
+        setInput((current) => ({ ...current, tags: current.tags.filter((tag) => !refused.has(tag.id)) }));
+        setAlert(null);
+        setTagsRefusal({ kind: failure.kind, names: failure.tags.map((tag) => tag.name) });
+        void queryClient.invalidateQueries({ queryKey: poseTagsKey });
+        return;
+      }
       case 'invalid-input':
         setAlert(null);
         setErrors(failure.errors);
@@ -176,6 +200,7 @@ export function ProposalForm({
   };
 
   const proposeAnother = () => {
+    setTagsRefusal(null);
     setInput(emptyPoseProposalInput);
     setErrors([]);
     setNameRefusal(null);
@@ -195,7 +220,7 @@ export function ProposalForm({
         </div>
       )}
       <p id={ids.introduction} className="proposal-page__introduction">
-        {proposalLabels.introduction}
+        {offersTags ? poseTagLabels.introductionWithTags : proposalLabels.introduction}
       </p>
       <form
         aria-label={proposalLabels.title}
@@ -204,6 +229,14 @@ export function ProposalForm({
         noValidate
         onSubmit={(event) => void submit(event)}
       >
+        {tagsRefusal && (
+          <FormAlert key={`tags-${attempt}`} variant="info">
+            <Icon name="info" />
+            <div className="form-alert__content">
+              <p>{poseTagsRefusedLabel(tagsRefusal.kind, tagsRefusal.names, 'envoie de nouveau ta pose')}</p>
+            </div>
+          </FormAlert>
+        )}
         {expired ? (
           <FormAlert key={attempt} variant="info">
             <Icon name="info" />
@@ -304,6 +337,16 @@ export function ProposalForm({
             firstRadioRef={firstRadios.canEndFlow}
           />
         </div>
+        {/* Story 9a: after the flow questions; absent when no tag of the list applies to poses. */}
+        {tagList && offersTags && (
+          <TagChoiceGroup
+            list={tagList}
+            chosen={input.tags}
+            onChange={(tags) => setInput((current) => ({ ...current, tags }))}
+            legend={poseTagLabels.legend}
+            help={poseTagLabels.help}
+          />
+        )}
         <button type="submit" className="button button--primary" aria-disabled={busy || undefined}>
           {busy ? proposalLabels.submitting : proposalLabels.submit}
         </button>

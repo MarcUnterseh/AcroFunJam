@@ -3,6 +3,7 @@ import type { components } from '@acrofunjam/api-client/schema';
 import type { CatalogApi } from './catalog-api';
 import {
   poseFields,
+  sameTagIds,
   type ContributionApi,
   type SubmittedTransition,
   type TransitionValues,
@@ -44,10 +45,14 @@ const transitionAdjustmentsOf = (
 };
 type ProblemDetails = components['schemas']['ProblemDetails'];
 
+/** Story 9a: names the tags of the poses, set by MyProposalsApi (the simulated list of tags of its catalog). */
+let namedPoseTags: (ids: readonly string[]) => { id: string; name: string }[] = () => [];
+
 /** Only the adjusted fields, with the proposed and the retained value; null when nothing differs. */
 const adjustmentsOf = (proposed: PoseValues, retained: PoseValues): PoseAdjustmentsResponse | null => {
   const adjusted = poseFields.filter((field) => proposed[field] !== retained[field]);
-  if (adjusted.length === 0) return null;
+  const tagsAdjusted = !sameTagIds(proposed.tagIds, retained.tagIds);
+  if (adjusted.length === 0 && !tagsAdjusted) return null;
   const adjustment = <F extends (typeof poseFields)[number]>(field: F) =>
     adjusted.includes(field) ? { proposed: proposed[field], retained: retained[field] } : null;
   return {
@@ -56,15 +61,19 @@ const adjustmentsOf = (proposed: PoseValues, retained: PoseValues): PoseAdjustme
     flyerDifficulty: adjustment('flyerDifficulty'),
     canStartFlow: adjustment('canStartFlow'),
     canEndFlow: adjustment('canEndFlow'),
+    tags: tagsAdjusted
+      ? { proposed: namedPoseTags(proposed.tagIds ?? []), retained: namedPoseTags(retained.tagIds ?? []) }
+      : null,
   };
 };
 
-const poseOf = ({ name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow }: PoseValues) => ({
+const poseOf = ({ name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow, tagIds }: PoseValues) => ({
   name,
   baseDifficulty,
   flyerDifficulty,
   canStartFlow,
   canEndFlow,
+  tags: namedPoseTags(tagIds ?? []),
 });
 
 const none = { decidedAt: null, adjustments: null, message: null, reason: null };
@@ -116,6 +125,9 @@ const changesOf = (before: PoseValues, after: PoseValues): PoseChangesResponse =
     flyerDifficulty: change('flyerDifficulty'),
     canStartFlow: change('canStartFlow'),
     canEndFlow: change('canEndFlow'),
+    tags: sameTagIds(before.tagIds, after.tagIds)
+      ? null
+      : { before: namedPoseTags(before.tagIds ?? []), after: namedPoseTags(after.tagIds ?? []) },
   };
 };
 
@@ -219,7 +231,9 @@ export class MyProposalsApi {
     private readonly identityApi: IdentityApi,
     private readonly contributionApi: ContributionApi,
     private readonly catalogApi: CatalogApi,
-  ) {}
+  ) {
+    namedPoseTags = (ids) => catalogApi.tags.describe(ids).map(({ id, name }) => ({ id, name }));
+  }
 
   async start(): Promise<void> {
     await this.context.route('**/contribution/my-proposals', (route) => this.list(route));

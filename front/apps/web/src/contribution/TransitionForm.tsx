@@ -43,7 +43,7 @@ import { catalogPath, posePath, signInPath, transitionProposalPath } from '../pa
 import { descriptionCounter, DescriptionCounter } from './DescriptionCounter';
 import { nameCounter, NameCounter } from './NameCounter';
 import { levels } from './pose-choices';
-import { TileRadioGroup } from './TileRadioGroup';
+import { TileRadioGroup } from '../layout/TileRadioGroup';
 import { TransitionSuccess } from './TransitionSuccess';
 import { useCounterAnnouncement } from './useCounterAnnouncement';
 import { useTransitionProposal } from './TransitionProposalContext';

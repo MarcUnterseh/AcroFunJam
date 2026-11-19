@@ -10,6 +10,7 @@ const throne: PoseSummary = {
   flyerDifficulty: 'discovery',
   canStartFlow: true,
   canEndFlow: true,
+  tags: [],
 };
 
 const signedIn = () => {

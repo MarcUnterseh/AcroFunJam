@@ -21,6 +21,7 @@ const star = aPendingProposal({
     flyerDifficulty: 'intermediate',
     canStartFlow: true,
     canEndFlow: true,
+    tags: [],
   },
   submittedAt: new Date('2026-11-04T09:00:00Z'),
 });
@@ -68,8 +69,8 @@ describe('page « Propositions à valider »', () => {
     const values = within(card)
       .getAllByRole('definition')
       .map((value) => value.textContent);
-    expect(terms).toEqual(['Base', 'Flyer', 'Peut commencer un flow', 'Peut terminer un flow']);
-    expect(values).toEqual(['Débutant', 'Découverte', 'Oui', 'Non']);
+    expect(terms).toEqual(['Base', 'Flyer', 'Peut commencer un flow', 'Peut terminer un flow', 'Étiquettes']);
+    expect(values).toEqual(['Débutant', 'Découverte', 'Oui', 'Non', 'aucune']);
   });
 
   it('should present the own proposal of the validator as made by « toi »', async () => {

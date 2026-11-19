@@ -313,6 +313,9 @@ const displayed = ({ field, value }: PoseFieldValue): string => {
     case 'baseDifficulty':
     case 'flyerDifficulty':
       return difficultyLevelName(value);
+    // Story 9a: the tags, in catalog order, or « aucune ».
+    case 'tags':
+      return value.length === 0 ? 'aucune' : value.map((tag) => tag.name).join(', ');
     default:
       return value ? proposalLabels.yes : proposalLabels.no;
   }
@@ -321,6 +324,7 @@ const displayed = ({ field, value }: PoseFieldValue): string => {
 /** « Proposé : Thron », « Proposée : Débutant »: reminder under each field of the adjustment form. */
 export const proposedValueLabel = (proposed: PoseFieldValue): string => {
   const isDifficulty = proposed.field === 'baseDifficulty' || proposed.field === 'flyerDifficulty';
+  if (proposed.field === 'tags') return `Proposées : ${displayed(proposed)}`;
   return `${isDifficulty ? 'Proposée' : 'Proposé'} : ${displayed(proposed)}`;
 };
 
@@ -334,6 +338,7 @@ const adjustmentTerms: Readonly<Record<keyof PoseValues, string>> = {
   flyerDifficulty: 'Difficulté flyer',
   canStartFlow: 'Peut commencer un flow',
   canEndFlow: 'Peut terminer un flow',
+  tags: 'Étiquettes',
 };
 
 /**

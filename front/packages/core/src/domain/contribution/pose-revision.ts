@@ -2,6 +2,7 @@ import { fail, ok, type Result } from '../common/result';
 import { normalizePoseName } from '../shared-kernel/pose-name';
 import {
   poseFields,
+  sameFieldValue,
   validatePoseProposal,
   type PoseField,
   type PoseContent,
@@ -58,7 +59,9 @@ const typedValue = <F extends PoseField>(input: PoseProposalInput, field: F) =>
  * name is compared once normalised, as the API does: superfluous spaces change nothing, the case does.
  */
 export const changedFields = (current: PoseContent, input: PoseProposalInput): PoseField[] =>
-  poseFields.filter((field) => typedValue(input, field) !== current[field]);
+  poseFields.filter(
+    (field) => !sameFieldValue(field, typedValue(input, field) as PoseContent[typeof field], current[field]),
+  );
 
 /**
  * Same rules as the API, checked before sending: the content of a pose for every value (every error at once), the
@@ -77,7 +80,7 @@ export const validatePoseRevision = (
       ...(!message.ok && { message: message.error }),
     });
   const changes = poseFields
-    .filter((field) => values.value[field] !== pose[field])
+    .filter((field) => !sameFieldValue(field, values.value[field], pose[field]))
     .map((field) => ({ field, before: pose[field], after: values.value[field] }) as PoseValueChange);
   if (changes.length === 0) return fail({ kind: 'changes-nothing' });
   return ok({ poseId: pose.id, poseVersion: pose.version, changes, message: message.value });
@@ -116,5 +119,5 @@ export const retainedRevisionChangesNothing = (
     (pose, adjustment) => ({ ...pose, [adjustment.field]: adjustment.retained }),
     revisedPose(current, changes),
   );
-  return poseFields.every((field) => retained[field] === current[field]);
+  return poseFields.every((field) => sameFieldValue(field, retained[field], current[field]));
 };

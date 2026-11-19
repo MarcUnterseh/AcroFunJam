@@ -138,19 +138,19 @@ Fonctionnalité: Étiqueter une pose publiée
 
   Règle: Sur le site, seul un validateur ou un administrateur est invité à étiqueter une pose publiée
 
-    @web @wip
+    @web
     Scénario: Un validateur est invité à étiqueter une pose qui ne porte aucune étiquette
       Soit Bruno est validateur, connecté sur le site
       Quand Bruno consulte la pose "Folded Leaf" du catalogue
       Alors la page de la pose invite Bruno à « Étiqueter la pose Folded Leaf »
 
-    @web @wip
+    @web
     Scénario: Un utilisateur n'est pas invité à étiqueter directement une pose publiée
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
       Quand Alice consulte la pose "Folded Leaf" du catalogue
       Alors la page de la pose n'invite pas Alice à étiqueter la pose "Folded Leaf"
 
-    @web @wip
+    @web
     Scénario: Le validateur n'est pas invité à étiqueter une pose quand aucune étiquette ne s'applique aux poses
       Soit Bruno est validateur, connecté sur le site
       Et aucune étiquette de la liste ne s'applique aux poses
@@ -162,22 +162,22 @@ Fonctionnalité: Étiqueter une pose publiée
     Contexte:
       Soit Bruno est validateur, connecté sur le site
 
-    @web @wip
+    @web
     Scénario: La page de la pose présente aussitôt les étiquettes choisies par le validateur
       Quand Bruno étiquette sur le site la pose "Straddle Bat" avec les étiquettes "lunaire" et "inversion"
       Alors la page présente la pose "Straddle Bat" avec les étiquettes "inversion" et "lunaire"
 
-    @web @wip
+    @web
     Scénario: Le site annonce que les étiquettes de la pose sont enregistrées
       Quand Bruno étiquette sur le site la pose "Candlestick" avec les étiquettes "inversion"
       Alors le site annonce « Étiquettes de la pose enregistrées. »
 
-    @web @wip
+    @web
     Scénario: Le site ne propose pour une pose que les étiquettes qui s'appliquent aux poses
       Quand Bruno commence à étiqueter sur le site la pose "Folded Leaf"
       Alors le site propose exactement les étiquettes "inversion" et "lunaire"
 
-    @web @wip
+    @web
     Scénario: Le site prévient le validateur qu'une modification de la pose attend d'être validée
       Soit Alice est utilisateur
       Et Alice a proposé de modifier la pose "Folded Leaf" en changeant la difficulté flyer en "débutant"

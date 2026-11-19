@@ -17,10 +17,11 @@ export class TagListLoadingFailed extends Error {
 export const tagListKey = ['catalog', 'tags'] as const;
 
 /** The tags of the list (story 8), through the listTags use case of @acrofunjam/core. */
-export function useTags() {
+export function useTags({ enabled = true }: { readonly enabled?: boolean } = {}) {
   const gateway = useTagListGateway();
   return useQuery<readonly Tag[], TagListLoadingFailed>({
     queryKey: tagListKey,
+    enabled,
     queryFn: async () => {
       const result = await listTags(gateway);
       if (!result.ok) throw new TagListLoadingFailed(result.error);

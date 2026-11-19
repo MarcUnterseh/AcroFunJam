@@ -14,6 +14,7 @@ const pose = (name: string): PoseSummary => ({
   flyerDifficulty: 'discovery',
   canStartFlow: true,
   canEndFlow: true,
+  tags: [],
 });
 
 const renderWithGateway = (

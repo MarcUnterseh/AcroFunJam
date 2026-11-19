@@ -4,6 +4,8 @@ import {
   type PoseProposalInput,
   type ProposalFieldError,
 } from '../../domain/contribution/pose-proposal';
+import { tagAppliesToPoses } from '../../domain/shared-kernel/tag-scope';
+import type { ChoosableTag, TagReference } from '../../domain/shared-kernel/tags';
 import type { ContributionGateway, ProposalOutcome } from './ContributionGateway';
 import type { ProposalInputStore } from './ProposalInputStorePort';
 
@@ -11,6 +13,8 @@ export type ProposePoseError =
   | { readonly kind: 'invalid-input'; readonly errors: readonly ProposalFieldError[] }
   | { readonly kind: 'name-already-in-catalog' }
   | { readonly kind: 'name-already-pending' }
+  /** Story 9a: chosen tags refused meanwhile, named as the person chose them (the site takes them out of the input). */
+  | { readonly kind: 'tags-not-in-list' | 'tags-not-applicable'; readonly tags: readonly TagReference[] }
   | { readonly kind: 'session-expired' }
   | { readonly kind: 'unreachable' }
   | { readonly kind: 'outdated' };
@@ -44,9 +48,20 @@ export const proposePose = async (
     case 'outdated':
       keepProposalInput(store, input, owner);
       return fail({ kind: failure.kind });
+    case 'tags-not-in-list':
+    case 'tags-not-applicable':
+      return fail({ kind: failure.kind, tags: input.tags.filter((tag) => failure.tagIds.includes(tag.id)) });
     default:
       return fail(failure);
   }
+};
+
+/** Story 9a: the tags of the list that apply to poses, in catalog order, offered in the form of a pose (ADR 0035). */
+export const listPoseTags = async (
+  gateway: Pick<ContributionGateway, 'listTags'>,
+): Promise<Result<readonly ChoosableTag[], { readonly kind: 'unreachable' | 'outdated' }>> => {
+  const tags = await gateway.listTags();
+  return tags.ok ? ok(tags.value.filter(tagAppliesToPoses)) : tags;
 };
 
 /** Keeps the input for its owner, until the person finds it again (expired session, outage). */

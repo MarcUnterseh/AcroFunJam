@@ -86,6 +86,12 @@ export type TransitionTaggingFailure = {
     'session-expired' | 'role-withdrawn' | 'unreachable' | 'outdated' | 'not-found' | 'tags-not-in-list';
 };
 
+/** The failures of a zone « Étiqueter » whatever is tagged (a transition, a pose): the outage, an outdated site. */
+const commonTaggingFailureLabel = (kind: 'unreachable' | 'outdated'): string =>
+  kind === 'unreachable'
+    ? "Les étiquettes n'ont pas pu être enregistrées : impossible de joindre AcroFunJam. Vérifie ta connexion Internet, puis réessaie."
+    : "Les étiquettes n'ont pas pu être enregistrées : le site doit être mis à jour. Recharge la page.";
+
 /** The alert at the top of the zone « Étiqueter ». */
 export const tagTransitionFailureLabel = ({ kind }: TransitionTaggingFailure): string => {
   switch (kind) {
@@ -94,12 +100,69 @@ export const tagTransitionFailureLabel = ({ kind }: TransitionTaggingFailure): s
     case 'role-withdrawn':
       return 'Tu ne peux plus étiqueter les transitions : ton rôle a changé.';
     case 'unreachable':
-      return "Les étiquettes n'ont pas pu être enregistrées : impossible de joindre AcroFunJam. Vérifie ta connexion Internet, puis réessaie.";
     case 'outdated':
-      return "Les étiquettes n'ont pas pu être enregistrées : le site doit être mis à jour. Recharge la page.";
+      return commonTaggingFailureLabel(kind);
     case 'not-found':
       return "Cette transition n'est plus dans le catalogue. Recharge la page.";
     case 'tags-not-in-list':
       return 'Une étiquette choisie ne fait plus partie de la liste des étiquettes. Vérifie les étiquettes, puis enregistre de nouveau.';
+  }
+};
+
+/** Texts of the tags of a pose on its page (story 9a, 9a-etiquettes-des-poses.md § 1, zone-etiqueter.md « Variante pose »). */
+export const poseTaggingLabels = {
+  meanings: 'Ce que veulent dire les étiquettes de la pose',
+  tag: 'Étiqueter la pose',
+  legend: 'Étiquettes de la pose',
+  save: 'Enregistrer les étiquettes',
+  saving: 'Enregistrement…',
+  cancel: 'Annuler',
+  saved: 'Étiquettes de la pose enregistrées.',
+  loading: 'Chargement des étiquettes…',
+  loadingFailed:
+    'Impossible de charger la liste des étiquettes. Vérifie ta connexion Internet, puis réessaie.',
+  retry: 'Réessayer',
+  /** The link of the warning of a pending revision. */
+  validationLink: 'Propositions à valider',
+} as const;
+
+/** The accessible name of the button: « Étiqueter la pose Folded Leaf ». */
+export const tagPoseButtonName = (poseName: string): string => `${poseTaggingLabels.tag} ${poseName}`;
+
+/** The pose cannot be tagged while a revision of it is pending (ADR 0036). */
+export const pendingRevisionTaggingLabel = (poseName: string): string =>
+  `Une modification de ${poseName} attend déjà d'être validée. Décide d'abord de cette modification, puis étiquette la pose.`;
+
+/** Why the tags of a pose were not recorded, as the zone tells it (a pending revision is told apart). */
+export type PoseTaggingFailureKind = {
+  readonly kind:
+    | 'session-expired'
+    | 'role-withdrawn'
+    | 'unreachable'
+    | 'outdated'
+    | 'not-found'
+    | 'tags-not-in-list'
+    | 'tags-not-applicable'
+    | 'revision-pending';
+};
+
+/** The alert at the top of the zone « Étiquettes de la pose ». */
+export const tagPoseFailureLabel = ({ kind }: PoseTaggingFailureKind): string => {
+  switch (kind) {
+    case 'session-expired':
+      return 'Ta session a expiré. Connecte-toi de nouveau pour étiqueter cette pose.';
+    case 'role-withdrawn':
+      return 'Tu ne peux plus étiqueter les poses : ton rôle a changé.';
+    case 'not-found':
+      return "Cette pose n'est plus dans le catalogue. Recharge la page.";
+    case 'tags-not-applicable':
+      return "Une étiquette choisie ne s'applique plus aux poses. Vérifie les étiquettes, puis enregistre de nouveau.";
+    case 'revision-pending':
+      return "Une modification de cette pose attend déjà d'être validée. Décide d'abord de cette modification, puis étiquette la pose.";
+    case 'tags-not-in-list':
+      return 'Une étiquette choisie ne fait plus partie de la liste des étiquettes. Vérifie les étiquettes, puis enregistre de nouveau.';
+    case 'unreachable':
+    case 'outdated':
+      return commonTaggingFailureLabel(kind);
   }
 };

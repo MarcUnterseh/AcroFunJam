@@ -10,7 +10,9 @@ const pop: Tag = {
   id: 'tag-pop',
   name: 'pop',
   description: 'La base propulse le flyer.',
+  scope: 'transitions',
   impliedTagId: 'tag-dynamique',
+  poseCount: 0,
   transitionCount: 2,
 };
 
@@ -18,7 +20,9 @@ const vrille: Tag = {
   id: 'tag-vrille',
   name: 'vrille',
   description: 'Le flyer tourne sur lui-même.',
+  scope: 'transitions',
   impliedTagId: null,
+  poseCount: 0,
   transitionCount: 0,
 };
 
@@ -95,9 +99,12 @@ describe('page « Étiquettes »', () => {
 
       await person.type(within(panel).getByLabelText('Nom'), '  vrille ');
       await person.type(within(panel).getByLabelText('Description'), 'Le flyer tourne sur lui-même.');
+      await person.click(within(panel).getByRole('radio', { name: 'Aux transitions' }));
       await person.click(within(panel).getByRole('button', { name: "Ajouter l'étiquette" }));
 
-      expect(tags.added).toEqual([{ name: 'vrille', description: 'Le flyer tourne sur lui-même.' }]);
+      expect(tags.added).toEqual([
+        { name: 'vrille', description: 'Le flyer tourne sur lui-même.', scope: 'transitions' },
+      ]);
       expect(await screen.findByRole('heading', { level: 2, name: 'vrille' })).toBeInTheDocument();
       expect(within(panel).getByLabelText('Nom')).toHaveValue('');
       expect(within(panel).getByLabelText('Description')).toHaveValue('');
@@ -121,6 +128,7 @@ describe('page « Étiquettes »', () => {
 
       await person.type(within(panel).getByLabelText('Nom'), 'POP');
       await person.type(within(panel).getByLabelText('Description'), 'Le flyer décolle.');
+      await person.click(within(panel).getByRole('radio', { name: 'Aux transitions' }));
       await person.click(within(panel).getByRole('button', { name: "Ajouter l'étiquette" }));
 
       const name = within(panel).getByLabelText('Nom');
@@ -160,7 +168,10 @@ describe('page « Étiquettes »', () => {
       await person.click(within(item('lunnaire')).getByRole('button', { name: 'Enregistrer' }));
 
       expect(tags.changed).toEqual([
-        { id: 'tag-lunaire', content: { name: 'lunaire', description: lunaire.description } },
+        {
+          id: 'tag-lunaire',
+          content: { name: 'lunaire', description: lunaire.description, scope: 'transitions' },
+        },
       ]);
       expect(await screen.findByRole('heading', { level: 2, name: 'lunaire' })).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Enregistrer' })).not.toBeInTheDocument();
@@ -205,6 +216,8 @@ describe('page « Étiquettes »', () => {
             },
           ],
           pendingProposals: [],
+          poses: [],
+          pendingPoses: [],
         }),
       );
       const { user: person } = open(tags, validator());
@@ -212,7 +225,7 @@ describe('page « Étiquettes »', () => {
       await person.click(within(item('pop')).getByRole('button', { name: "Retirer l'étiquette" }));
 
       const alert = await within(item('pop')).findByRole('alert');
-      expect(alert).toHaveTextContent('« pop » ne peut pas être retirée : ces transitions la portent.');
+      expect(alert).toHaveTextContent('« pop » ne peut pas être retirée : ces éléments la portent.');
       expect(within(alert).getByText('de Bird vers Folded Leaf')).toBeInTheDocument();
       // jsdom trims the trailing space of the hidden text (« Voir la poseBird »); a browser reads « Voir la pose Bird »
       // (checked by the e2e scenario).

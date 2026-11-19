@@ -1,3 +1,4 @@
+import { tagAppliesToTransitions } from '../../domain/shared-kernel/tag-scope';
 import { fail, ok, type Result } from '../../domain/common/result';
 import {
   validateTransitionProposal,
@@ -5,7 +6,7 @@ import {
   type TransitionPose,
   type TransitionProposalInput,
 } from '../../domain/contribution/transition-proposal';
-import type { ChoosableTag, TagReference } from '../../domain/shared-kernel/transition-tags';
+import type { ChoosableTag, TagReference } from '../../domain/shared-kernel/tags';
 import { keepKeyedInput, restoreKeyedInput } from './keyed-input';
 import type { TransitionInputStore } from './TransitionInputStorePort';
 import type {
@@ -40,7 +41,10 @@ export const openTransitionProposal = async (
   if (!poses.ok) return poses;
   if (!tags.ok) return tags;
   const fromPose = poses.value.find((pose) => pose.id === fromPoseId);
-  return fromPose ? ok({ poses: poses.value, fromPose, tags: tags.value }) : fail({ kind: 'not-found' });
+  // Story 9a: only the tags that apply to transitions (ADR 0035).
+  return fromPose
+    ? ok({ poses: poses.value, fromPose, tags: tags.value.filter(tagAppliesToTransitions) })
+    : fail({ kind: 'not-found' });
 };
 
 export type ProposeTransitionError =
@@ -89,7 +93,10 @@ export const proposeTransition = async (
     case 'to-pose-not-found':
       return fail({ kind: 'pose-not-found', field: 'toPoseId' });
     case 'tags-not-in-list':
-      return fail({ kind: 'tags-not-in-list', tags: input.tags.filter((tag) => failure.tagIds.includes(tag.id)) });
+      return fail({
+        kind: 'tags-not-in-list',
+        tags: input.tags.filter((tag) => failure.tagIds.includes(tag.id)),
+      });
     default:
       return fail(failure);
   }

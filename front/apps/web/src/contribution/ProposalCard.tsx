@@ -12,8 +12,8 @@ import {
   type PendingPoseOrRevision,
   type PendingPoseRevision,
   type PoseContent,
+  type PoseField,
   type PoseFieldValue,
-  type ProposalField,
   type RecordedDecision,
 } from '@acrofunjam/core';
 import { useId, type Ref } from 'react';
@@ -42,8 +42,7 @@ function ContributorLine({ proposal }: { readonly proposal: PendingPoseOrRevisio
 }
 
 /** A value of a pose, as the labels of the presentation take it. */
-const valueOf = (pose: PoseContent, field: ProposalField) =>
-  ({ field, value: pose[field] }) as PoseFieldValue;
+const valueOf = (pose: PoseContent, field: PoseField) => ({ field, value: pose[field] }) as PoseFieldValue;
 
 /**
  * What a revision changes (carte-modification.md): « Valeur actuelle → valeur proposée » of the changed fields
@@ -99,7 +98,7 @@ export function ProposalCard({
   const revision = proposal.kind === 'pose-revision' ? proposal : null;
   const proposed = proposedPoseOf(proposal);
   // « Proposé : … » under each field; for a revision, « Actuellement : … » first, then « Proposé : … » when changed.
-  const reminders = (field: ProposalField): readonly string[] => {
+  const reminders = (field: PoseField): readonly string[] => {
     const proposedValue = proposedValueLabel(valueOf(proposed, field));
     if (!revision) return [proposedValue];
     const current = currentValueLabel(valueOf(revision.pose, field));
@@ -159,10 +158,10 @@ export function ProposalCard({
         (revision ? (
           <div className="revision-pose">
             <h3 className="revision-pose__title">{revisionCardLabels.revisedPose}</h3>
-            <PoseDetails pose={proposed} />
+            <PoseDetails pose={proposed} tags={proposed.tags} showNoTags />
           </div>
         ) : (
-          <PoseDetails pose={proposal.pose} />
+          <PoseDetails pose={proposal.pose} tags={proposal.pose.tags} showNoTags />
         ))}
       <div className="proposal-card__decision">
         {(closed || mode !== 'adjusting') && decisionAlert}

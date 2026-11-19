@@ -15,6 +15,8 @@ class FakeGateway implements ContributionGateway {
   async getMyProposals() {
     return this.myProposals;
   }
+
+  listTags = async () => ok([]);
 }
 
 const proposal = (name: string, submittedAt: string): MyProposal => ({
@@ -26,6 +28,7 @@ const proposal = (name: string, submittedAt: string): MyProposal => ({
     flyerDifficulty: 'discovery',
     canStartFlow: true,
     canEndFlow: true,
+    tags: [],
   },
   submittedAt: new Date(submittedAt),
   status: { kind: 'pending' },

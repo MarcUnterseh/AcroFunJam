@@ -7,6 +7,7 @@ import {
   type TagReference,
 } from '@acrofunjam/core';
 import { useId, type ReactNode, type Ref } from 'react';
+import { ModifiedTag } from './form-controls';
 import { Icon } from './Icon';
 
 // Story 8 « Étiquettes »: the tags of a transition, as the Catalog and Contribution present and choose them
@@ -19,14 +20,18 @@ import { Icon } from './Icon';
 export function TagLine({
   tags,
   showNone = false,
+  inList = false,
 }: {
   readonly tags: readonly TagReference[];
   readonly showNone?: boolean;
+  /** Story 9a: a group of the description list of a pose (a div inside its dl), not a list of its own. */
+  readonly inList?: boolean;
 }) {
   const termId = useId();
   if (tags.length === 0 && !showNone) return null;
+  const Root = inList ? 'div' : 'dl';
   return (
-    <dl className="tag-line">
+    <Root className="tag-line">
       <dt id={termId} className="tag-line__term">
         {transitionTagLabels.line}
       </dt>
@@ -44,7 +49,7 @@ export function TagLine({
           </ul>
         )}
       </dd>
-    </dl>
+    </Root>
   );
 }
 
@@ -89,6 +94,7 @@ export function TagChoiceGroup({
   legend,
   help,
   reminder,
+  tag,
   firstBoxRef,
 }: {
   readonly list: readonly ChoosableTag[];
@@ -98,9 +104,11 @@ export function TagChoiceGroup({
   readonly help?: string;
   /** « Proposées : dynamique, pop », in the adjustment zone. */
   readonly reminder?: ReactNode;
+  /** Story 9a: « Modifiée » in the legend, once the chosen set differs from the current one (form of a revision). */
+  readonly tag?: string | undefined;
   readonly firstBoxRef?: Ref<HTMLInputElement>;
 }) {
-  const ids = { help: useId(), reminder: useId(), note: useId(), meanings: useId() };
+  const ids = { help: useId(), reminder: useId(), note: useId(), meanings: useId(), tag: useId() };
   const chosenIds = new Set(chosen.map((tag) => tag.id));
   const toggle = (tag: ChoosableTag, checked: boolean) => {
     const next = checked ? [...chosenIds, tag.id] : [...chosenIds].filter((id) => id !== tag.id);
@@ -111,6 +119,7 @@ export function TagChoiceGroup({
     (tag) => chosenIds.has(tag.id) && list.some((t) => t.impliedTagId === tag.id && chosenIds.has(t.id)),
   );
   const describedBy = [
+    tag && ids.tag,
     help && ids.help,
     reminder && ids.reminder,
     implied.length > 0 && ids.note,
@@ -120,7 +129,10 @@ export function TagChoiceGroup({
     .join(' ');
   return (
     <fieldset className="tag-choice" aria-describedby={describedBy || undefined}>
-      <legend className="tag-choice__legend">{legend}</legend>
+      <legend className={`tag-choice__legend${tag ? ' tile-group__legend--tagged' : ''}`}>
+        {legend}
+        {tag && <ModifiedTag id={ids.tag} text={tag} />}
+      </legend>
       {help && (
         <p id={ids.help} className="tag-choice__help">
           {help}

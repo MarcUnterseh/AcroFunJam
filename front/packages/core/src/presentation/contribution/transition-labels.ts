@@ -3,7 +3,7 @@ import type { TransitionAdjustment } from '../../domain/contribution/transition-
 import type { TransitionContentErrorCode } from '../../domain/contribution/transition-proposal';
 import { transitionDescriptionPolicy } from '../../domain/shared-kernel/transition-description';
 import { transitionNamePolicy } from '../../domain/shared-kernel/transition-name';
-import type { TagReference } from '../../domain/shared-kernel/transition-tags';
+import type { TagReference } from '../../domain/shared-kernel/tags';
 import { difficultyLevelName } from '../shared-kernel/difficulty-level-labels';
 import { tagNamesSentence, transitionTagLabels } from '../shared-kernel/transition-tag-labels';
 

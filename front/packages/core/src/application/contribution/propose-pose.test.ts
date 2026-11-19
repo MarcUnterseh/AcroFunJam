@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { fail, ok, type Result } from '../../domain/common/result';
 import type { PoseProposalInput, ValidPoseProposal } from '../../domain/contribution/pose-proposal';
 import type { ContributionGateway, ProposalFailure, ProposalOutcome } from './ContributionGateway';
-import { keepProposalInput, proposePose, restoreProposalInput } from './propose-pose';
+import { keepProposalInput, listPoseTags, proposePose, restoreProposalInput } from './propose-pose';
 import type { KeptProposalInput, ProposalInputStore } from './ProposalInputStorePort';
 
 class FakeGateway implements ContributionGateway {
@@ -16,6 +16,12 @@ class FakeGateway implements ContributionGateway {
 
   async getMyProposals(): Promise<never> {
     throw new Error('Not expected in these tests');
+  }
+
+  tags: Awaited<ReturnType<ContributionGateway['listTags']>> = ok([]);
+
+  async listTags() {
+    return this.tags;
   }
 }
 
@@ -38,7 +44,11 @@ const throne: PoseProposalInput = {
   flyerDifficulty: 'discovery',
   canStartFlow: true,
   canEndFlow: true,
+  tags: [],
 };
+
+const lunaire = { id: 'tag-lunaire', name: 'lunaire' };
+const vrille = { id: 'tag-vrille', name: 'vrille' };
 
 const setUp = () => ({ gateway: new FakeGateway(), store: new FakeStore() });
 
@@ -120,6 +130,49 @@ describe('proposePose', () => {
       expect(store.kept).toEqual({ owner: alice, input: throne });
     },
   );
+});
+
+// Story 9a « Étiqueter les poses »: the tags of a proposed pose (ADR 0036).
+describe('the tags of a proposed pose', () => {
+  it('should send the chosen tags with the pose', async () => {
+    const { gateway, store } = setUp();
+
+    await proposePose(gateway, store, { ...throne, tags: [lunaire] }, alice);
+
+    expect(gateway.sent).toEqual([{ ...throne, name: 'Throne', tags: [lunaire] }]);
+  });
+
+  it.each(['tags-not-applicable', 'tags-not-in-list'] as const)(
+    'should name the chosen tags refused by the API (%s), as the person chose them',
+    async (kind) => {
+      const { gateway, store } = setUp();
+      gateway.answer = fail({ kind, tagIds: ['tag-vrille'] });
+
+      expect(await proposePose(gateway, store, { ...throne, tags: [lunaire, vrille] }, alice)).toEqual(
+        fail({ kind, tags: [vrille] }),
+      );
+    },
+  );
+
+  it('should offer only the tags of the list that apply to poses', async () => {
+    const gateway = new FakeGateway();
+    const choosable = (name: string, scope: 'poses' | 'transitions' | 'poses-and-transitions') => ({
+      id: `tag-${name}`,
+      name,
+      description: `${name}…`,
+      impliedTagId: null,
+      scope,
+    });
+    gateway.tags = ok([
+      choosable('inversion', 'poses-and-transitions'),
+      choosable('pop', 'transitions'),
+      choosable('contrepoids', 'poses'),
+    ]);
+
+    expect(await listPoseTags(gateway)).toEqual(
+      ok([choosable('inversion', 'poses-and-transitions'), choosable('contrepoids', 'poses')]),
+    );
+  });
 });
 
 describe('keepProposalInput', () => {

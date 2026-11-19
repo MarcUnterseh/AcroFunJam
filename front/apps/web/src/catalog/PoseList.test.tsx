@@ -16,6 +16,7 @@ const poses: PoseSummary[] = [
     flyerDifficulty: 'discovery',
     canStartFlow: true,
     canEndFlow: false,
+    tags: [],
   },
   {
     id: 'p-2',
@@ -24,6 +25,7 @@ const poses: PoseSummary[] = [
     flyerDifficulty: 'advanced',
     canStartFlow: false,
     canEndFlow: true,
+    tags: [],
   },
 ];
 
@@ -101,5 +103,28 @@ describe('PoseList', () => {
         .getAllByRole('link')
         .map((link) => link.getAttribute('href')),
     ).toEqual(['/poses/p-1', '/poses/p-1/proposer-une-modification']);
+  });
+
+  // Story 9a (9a-etiquettes-des-poses.md § 2): the tags of each pose, read at a glance; nothing without any.
+  it('should present the tags of a pose in a line « Étiquettes », and no line for a pose without tags', () => {
+    const tagged: PoseSummary = {
+      ...poses[0]!,
+      id: 'p-3',
+      name: 'Straddle Bat',
+      tags: [
+        { id: 'tag-inversion', name: 'inversion' },
+        { id: 'tag-lunaire', name: 'lunaire' },
+      ],
+    };
+    render(<PoseList poses={[tagged, poses[0]!]} />);
+
+    const cards = screen.getAllByRole('listitem').filter((item) => item.classList.contains('pose-card'));
+    const line = within(cards[0]!).getByRole('list', { name: 'Étiquettes' });
+    expect(
+      within(line)
+        .getAllByRole('listitem')
+        .map((pill) => pill.textContent),
+    ).toEqual(['inversion', 'lunaire']);
+    expect(within(cards[1]!).queryByText('Étiquettes')).not.toBeInTheDocument();
   });
 });

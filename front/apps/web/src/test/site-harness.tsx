@@ -62,6 +62,8 @@ import {
   type TagRemovalFailure,
   type ValidTagContent,
   type ChoosableTag,
+  type PoseTaggingFailure,
+  type PoseTaggingGateway,
   type TagTransitionFailure,
   type TransitionTaggingGateway,
 } from '@acrofunjam/core';
@@ -72,6 +74,7 @@ import { createMemoryRouter, RouterProvider, useLocation } from 'react-router';
 import { CatalogGatewayProvider } from '../catalog/CatalogGatewayContext';
 import { PosePageProvider } from '../catalog/PosePageContext';
 import { TagListProvider } from '../catalog/TagListContext';
+import { PoseTaggingProvider } from '../catalog/PoseTaggingContext';
 import { TransitionTaggingProvider } from '../catalog/TransitionTaggingContext';
 import { ContributionProvider } from '../contribution/ContributionContext';
 import { PoseRevisionProvider } from '../contribution/PoseRevisionContext';
@@ -91,6 +94,13 @@ export class FakeContributionGateway implements ContributionGateway {
   constructor(...answers: Array<ProposalAnswer | 'held'>) {
     this.answers = answers.length > 0 ? answers : [ok({ status: 'pending', name: 'Throne' })];
   }
+
+  /** Story 9a: the tags of the list, to choose those of a pose. */
+  readonly tags = new Answers<Result<readonly ChoosableTag[], { readonly kind: 'unreachable' | 'outdated' }>>(
+    [ok(seededTags)],
+  );
+
+  listTags = () => this.tags.next();
 
   async proposePose(proposal: ValidPoseProposal) {
     this.sent.push(proposal);
@@ -132,7 +142,10 @@ const listed = (name: string, description: string, impliedTagId: string | null =
   id: `tag-${name}`,
   name,
   description,
+  // Story 9a (ADR 0035): « inversion » and « lunaire » apply to the poses and the transitions, the others to the transitions.
+  scope: name === 'inversion' || name === 'lunaire' ? 'poses-and-transitions' : 'transitions',
   impliedTagId,
+  poseCount: 0,
   transitionCount: 0,
 });
 
@@ -202,6 +215,7 @@ export const aPendingProposal = (overrides: Partial<PendingPoseProposal> = {}): 
     flyerDifficulty: 'discovery',
     canStartFlow: true,
     canEndFlow: true,
+    tags: [],
   },
   contributor: { email: 'alice@example.org', isYou: false },
   submittedAt: new Date('2026-11-03T09:00:00Z'),
@@ -222,6 +236,7 @@ export const aPendingRevision = (overrides: Partial<PendingPoseRevision> = {}): 
     flyerDifficulty: 'intermediate',
     canStartFlow: true,
     canEndFlow: true,
+    tags: [],
   },
   changes: [{ field: 'flyerDifficulty', before: 'intermediate', after: 'discovery' }],
   message: null,
@@ -333,6 +348,7 @@ export const aRevisablePose = (overrides: Partial<RevisablePose> = {}): Revisabl
   flyerDifficulty: 'intermediate',
   canStartFlow: true,
   canEndFlow: true,
+  tags: [],
   version: 1,
   ...overrides,
 });
@@ -404,6 +420,17 @@ export class FakePosePageGateway implements PosePageGateway {
   getPosePage = (poseId: string) => {
     this.read.push(poseId);
     return this.page.next();
+  };
+}
+
+/** Story 9a: tagging a published pose directly (ADR 0036), the tags sent, answered in turn. */
+export class FakePoseTaggingGateway implements PoseTaggingGateway {
+  readonly answer = new Answers<Result<void, PoseTaggingFailure>>([ok(undefined)]);
+  readonly sent: Array<{ poseId: string; tagIds: readonly string[] }> = [];
+
+  tagPose = (poseId: string, tagIds: readonly string[]) => {
+    this.sent.push({ poseId, tagIds });
+    return this.answer.next();
   };
 }
 
@@ -552,6 +579,7 @@ export const renderSite = (
     posePage = new FakePosePageGateway(),
     tags = new FakeTagListGateway(),
     tagging = new FakeTransitionTaggingGateway(),
+    poseTagging = new FakePoseTaggingGateway(),
     transitions = new FakeTransitionProposalGateway(),
     transitionStore = new MemoryTransitionInputStore(),
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
@@ -568,6 +596,7 @@ export const renderSite = (
     posePage?: FakePosePageGateway;
     tags?: TagListGateway;
     tagging?: FakeTransitionTaggingGateway;
+    poseTagging?: FakePoseTaggingGateway;
     transitions?: FakeTransitionProposalGateway;
     transitionStore?: MemoryTransitionInputStore;
     queryClient?: QueryClient;
@@ -581,21 +610,23 @@ export const renderSite = (
         <PosePageProvider gateway={posePage}>
           <TagListProvider gateway={tags}>
             <TransitionTaggingProvider gateway={tagging}>
-              <ContributionProvider gateway={contribution} store={store}>
-                <ValidationProvider gateway={validation} store={decisionStore}>
-                  <PoseRevisionProvider gateway={revision} store={revisionStore}>
-                    <TransitionProposalProvider gateway={transitions} store={transitionStore}>
-                      <IdentityProvider
-                        gateway={gateway}
-                        memory={memory}
-                        forgetOnSignOut={[store, decisionStore, revisionStore, transitionStore]}
-                      >
-                        <RouterProvider router={router} />
-                      </IdentityProvider>
-                    </TransitionProposalProvider>
-                  </PoseRevisionProvider>
-                </ValidationProvider>
-              </ContributionProvider>
+              <PoseTaggingProvider gateway={poseTagging}>
+                <ContributionProvider gateway={contribution} store={store}>
+                  <ValidationProvider gateway={validation} store={decisionStore}>
+                    <PoseRevisionProvider gateway={revision} store={revisionStore}>
+                      <TransitionProposalProvider gateway={transitions} store={transitionStore}>
+                        <IdentityProvider
+                          gateway={gateway}
+                          memory={memory}
+                          forgetOnSignOut={[store, decisionStore, revisionStore, transitionStore]}
+                        >
+                          <RouterProvider router={router} />
+                        </IdentityProvider>
+                      </TransitionProposalProvider>
+                    </PoseRevisionProvider>
+                  </ValidationProvider>
+                </ContributionProvider>
+              </PoseTaggingProvider>
             </TransitionTaggingProvider>
           </TagListProvider>
         </PosePageProvider>

@@ -261,6 +261,13 @@ Fonctionnalité: Étiqueter une pose proposée ou modifiée
       Alors la file de validation présente la modification de la pose "Folded Leaf" avec les étiquettes « aucune » → « lunaire »
 
     @api
+    Scénario: La file de validation présente les étiquettes actuelles d'une pose dont la modification ne les change pas
+      Soit la pose "Folded Leaf" porte l'étiquette "lunaire"
+      Et Alice a proposé de modifier la pose "Folded Leaf" en changeant la difficulté flyer en "débutant"
+      Quand Bruno consulte la file de validation
+      Alors la file de validation présente la modification de la pose "Folded Leaf" avec les étiquettes actuelles « lunaire »
+
+    @api
     Scénario: Le validateur ajuste les étiquettes d'une modification avant de l'accepter
       Soit Alice a proposé de modifier la pose "Folded Leaf" en changeant les étiquettes en "lunaire"
       Et Bruno a accepté la proposition de modification de la pose "Folded Leaf" par Alice en corrigeant les étiquettes en "lunaire" et "inversion"
@@ -291,30 +298,30 @@ Fonctionnalité: Étiqueter une pose proposée ou modifiée
     Contexte:
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
 
-    @web @wip
+    @web
     Scénario: Le formulaire de proposition d'une pose ne propose que les étiquettes qui s'appliquent aux poses, avec leur description
       Quand Alice commence à proposer une pose sur le site
       Alors le formulaire de proposition propose exactement les étiquettes "inversion" et "lunaire"
       Et le formulaire de proposition permet de lire ce que veut dire chaque étiquette
 
-    @web @wip
+    @web
     Scénario: Le formulaire de proposition d'une pose indique que les étiquettes sont facultatives
       Quand Alice commence à proposer une pose sur le site
       Alors le formulaire de proposition présente « Les étiquettes sont facultatives ; les autres champs sont obligatoires. »
       Et le formulaire de proposition présente pour les étiquettes l'aide « Choisis celles qui décrivent la pose. »
 
-    @web @wip
+    @web
     Scénario: Le formulaire de proposition d'une pose ne présente pas d'étiquettes quand aucune ne s'applique aux poses
       Soit aucune étiquette de la liste ne s'applique aux poses
       Quand Alice commence à proposer une pose sur le site
       Alors le formulaire de proposition ne présente aucune étiquette
 
-    @web @wip
+    @web
     Scénario: Un utilisateur propose sur le site une pose étiquetée
       Quand Alice propose sur le site la pose "Folded Leaf", avec l'étiquette "lunaire"
       Alors le site indique à Alice que sa proposition de la pose "Folded Leaf" est en attente de validation
 
-    @web @wip
+    @web
     Scénario: Le site signale une étiquette qui ne s'applique plus aux poses pendant la saisie et conserve la pose saisie
       Soit Bruno est validateur
       Et l'étiquette "vrille" s'applique aux poses et aux transitions
@@ -330,20 +337,20 @@ Fonctionnalité: Étiqueter une pose proposée ou modifiée
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
       Et la pose publiée "Folded Leaf" de difficulté base "débutant" et de difficulté flyer "découverte"
 
-    @web @wip
+    @web
     Scénario: Le formulaire de modification présente les étiquettes actuelles de la pose
       Soit la pose "Folded Leaf" porte l'étiquette "lunaire"
       Quand Alice commence à proposer sur le site une modification de la pose "Folded Leaf"
       Alors le formulaire de modification présente la pose "Folded Leaf" avec l'étiquette « lunaire » choisie
 
-    @web @wip
+    @web
     Scénario: Le formulaire de modification rappelle les étiquettes actuelles et marque les étiquettes modifiées
       Soit la pose "Folded Leaf" porte l'étiquette "lunaire"
       Et Alice a commencé à proposer sur le site une modification de la pose "Folded Leaf"
       Quand Alice choisit l'étiquette "inversion"
       Alors le formulaire de modification présente pour les étiquettes le rappel « Actuellement : lunaire » et la marque « Modifiée »
 
-    @web @wip
+    @web
     Scénario: Un utilisateur propose sur le site une modification des étiquettes d'une pose
       Quand Alice propose sur le site de modifier la pose "Folded Leaf" en changeant les étiquettes en "lunaire"
       Alors le site indique « Merci, ta modification est envoyée. »
@@ -354,25 +361,25 @@ Fonctionnalité: Étiqueter une pose proposée ou modifiée
       Soit Alice est utilisateur avec l'adresse "alice@example.org"
       Et Bruno est validateur, connecté sur le site
 
-    @web @wip
+    @web
     Scénario: Le validateur voit sur le site les étiquettes d'une pose proposée
       Soit Alice a proposé la pose "Folded Leaf", avec l'étiquette "lunaire"
       Quand Bruno consulte la file de validation sur le site
       Alors le site présente la proposition de la pose "Folded Leaf" avec les étiquettes « lunaire »
 
-    @web @wip
+    @web
     Scénario: La file de validation indique qu'une pose proposée ne porte aucune étiquette
       Soit Alice a proposé la pose "Throne" de difficulté base "débutant" et de difficulté flyer "découverte"
       Quand Bruno consulte la file de validation sur le site
       Alors le site présente la proposition de la pose "Throne" avec « Étiquettes : aucune »
 
-    @web @wip
+    @web
     Scénario: Le récapitulatif du validateur présente l'ajustement des étiquettes d'une pose proposée
       Soit Alice a proposé la pose "Candlestick" de difficulté base "intermédiaire" et de difficulté flyer "intermédiaire"
       Quand Bruno ajuste sur le site la proposition de la pose "Candlestick" par Alice en corrigeant les étiquettes en "inversion"
       Alors le récapitulatif des ajustements présente les étiquettes « aucune » → « inversion »
 
-    @web @wip
+    @web
     Scénario: Le validateur voit sur le site le changement d'étiquettes d'une modification
       Soit la pose publiée "Folded Leaf" de difficulté base "débutant" et de difficulté flyer "découverte"
       Et Alice a proposé de modifier la pose "Folded Leaf" en changeant les étiquettes en "lunaire"
@@ -384,13 +391,13 @@ Fonctionnalité: Étiqueter une pose proposée ou modifiée
     Contexte:
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
 
-    @web @wip
+    @web
     Scénario: « Mes propositions » présente les étiquettes d'une pose en attente
       Soit Alice a proposé la pose "Folded Leaf", avec l'étiquette "lunaire"
       Quand Alice consulte ses propositions sur le site
       Alors le site présente la proposition de la pose "Folded Leaf" avec les étiquettes « lunaire »
 
-    @web @wip
+    @web
     Scénario: « Mes propositions » présente l'ajustement des étiquettes d'une pose
       Soit Bruno est validateur
       Et Alice a proposé la pose "Folded Leaf", avec les étiquettes "lunaire" et "inversion"

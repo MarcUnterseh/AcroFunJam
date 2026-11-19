@@ -1,4 +1,4 @@
-import type { ChoosableTag, TagReference } from '@acrofunjam/core';
+import { tagScopes, type ChoosableTag, type TagReference, type TagScope } from '@acrofunjam/core';
 
 // Reading the tags of a transition (story 8, ADR 0034), shared by the Catalog and Contribution adapters. The generated
 // types describe the contract, but the server may evolve before the client is regenerated: every value is checked,
@@ -21,13 +21,25 @@ export const toTagReference = (value: unknown): TagReference | null =>
     ? { id: value['id'], name: value['name'] }
     : null;
 
+/** Story 9a: a list of tags by identifier and name (the tags of a pose, proposed, retained or changed). */
+export const isTagList = (value: unknown): value is TagReference[] =>
+  everyItem(value, toTagReference) !== null;
+
+/** The same list, read: each tag by its identifier and its name only; null when it cannot be read. */
+export const toTagList = (value: unknown): TagReference[] | null => everyItem(value, toTagReference);
+
 /** A tag of the list (GET /catalog/tags), as offered to choose: its description and the tag it adds. */
 export const toChoosableTag = (value: unknown): ChoosableTag | null => {
   const tag = toTagReference(value);
   if (!tag || !isRecord(value)) return null;
-  const { description, impliedTagId } = value;
-  if (!isString(description) || !(impliedTagId === null || isString(impliedTagId))) return null;
-  return { ...tag, description, impliedTagId };
+  const { description, impliedTagId, scope } = value;
+  if (
+    !isString(description) ||
+    !(impliedTagId === null || isString(impliedTagId)) ||
+    !tagScopes.includes(scope as TagScope)
+  )
+    return null;
+  return { ...tag, description, impliedTagId, scope: scope as TagScope };
 };
 
 /** The tags of the list, from the answer of GET /catalog/tags. */

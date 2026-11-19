@@ -28,6 +28,7 @@ const throne: PoseProposalInput = {
   flyerDifficulty: 'discovery',
   canStartFlow: true,
   canEndFlow: false,
+  tags: [],
 };
 
 const openForm = async (options: Parameters<typeof renderSite>[1] = {}, extra?: React.ReactNode) => {

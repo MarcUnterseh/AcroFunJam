@@ -36,6 +36,8 @@ const star = {
   version: 2,
   transitionsFrom: [starToBird, ninjaStar],
   transitionsTo: [ninjaStar],
+  tags: [{ id: 'tag-inversion', name: 'inversion', description: 'La tête du flyer est plus basse.' }],
+  pendingRevision: true,
 };
 
 const apiAnswering = (status: number, body?: unknown, requests: Request[] = []) =>
@@ -75,6 +77,8 @@ describe('createPosePageGateway', () => {
         canEndFlow: false,
         transitionsFrom: [starToBird, ninjaStar],
         transitionsTo: [ninjaStar],
+        tags: [{ id: 'tag-inversion', name: 'inversion', description: 'La tête du flyer est plus basse.' }],
+        pendingRevision: true,
       }),
     );
     expect(new URL(requests[0]!.url).pathname).toBe(`/catalog/poses/${starId}`);
@@ -116,6 +120,9 @@ describe('createPosePageGateway', () => {
       { transitionsTo: [{ ...ninjaStar, tags: [{ id: 'tag-pop', name: 'pop' }] }] },
     ],
     ['no list of tags', { transitionsTo: [{ ...ninjaStar, tags: undefined }] }],
+    ['no list of tags of the pose', { tags: undefined }],
+    ['a tag of the pose without its description', { tags: [{ id: 'tag-pop', name: 'pop' }] }],
+    ['no pending revision', { pendingRevision: undefined }],
   ])('should report an answer it cannot read (%s) as an outdated site', async (_case, change) => {
     const gateway = createPosePageGateway(apiAnswering(200, { ...star, ...change }));
 

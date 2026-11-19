@@ -226,8 +226,9 @@ Then(
   },
 );
 
-When(/^(\S+) choisit l'étiquette "([^"]+)"$/, async ({ transitionForm }, _who: string, name: string) => {
-  await transitionForm.tag(name).check();
+// The form of a transition (story 8) or of a revision of a pose (story 9a): the one form of the page.
+When(/^(\S+) choisit l'étiquette "([^"]+)"$/, async ({ page }, _who: string, name: string) => {
+  await page.getByRole('main').getByRole('checkbox', { name, exact: true }).check();
 });
 
 Then(

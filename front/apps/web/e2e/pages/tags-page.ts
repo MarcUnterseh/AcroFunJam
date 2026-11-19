@@ -1,3 +1,4 @@
+import type { TagScope } from '../support/tag-api';
 import type { Locator, Page } from '@playwright/test';
 
 export const tagsPath = '/etiquettes';
@@ -40,18 +41,35 @@ export class TagsPage {
     return this.page.locator('.tag-list > li').getByRole('heading', { level: 2 }).allTextContents();
   }
 
-  async add(name: string, description: string): Promise<void> {
+  /** Story 9a: what the tag applies to, checked among the tiles « S'applique à » (null: none chosen). */
+  async add(name: string, description: string, scope: TagScope | null = 'transitions'): Promise<void> {
     await this.addPanel.getByLabel('Nom').fill(name);
     await this.addPanel.getByLabel('Description').fill(description);
+    if (scope) await this.scopeTile(this.addPanel, scope).check();
     await this.addPanel.getByRole('button', { name: "Ajouter l'étiquette" }).click();
   }
 
-  async change(name: string, values: { name?: string; description?: string }): Promise<void> {
+  async change(
+    name: string,
+    values: { name?: string; description?: string; scope?: TagScope },
+  ): Promise<void> {
     const tag = this.tag(name);
     await tag.getByRole('button', { name: `Modifier ${name}` }).click();
     if (values.name !== undefined) await tag.getByLabel('Nom').fill(values.name);
     if (values.description !== undefined) await tag.getByLabel('Description').fill(values.description);
+    if (values.scope !== undefined) await this.scopeTile(tag, values.scope).check();
     await tag.getByRole('button', { name: 'Enregistrer' }).click();
+  }
+
+  private scopeTile(container: Locator, scope: TagScope): Locator {
+    const labels: Record<TagScope, string> = {
+      poses: 'Aux poses',
+      transitions: 'Aux transitions',
+      'poses-and-transitions': 'Aux poses et aux transitions',
+    };
+    return container
+      .getByRole('group', { name: "S'applique à" })
+      .getByRole('radio', { name: labels[scope], exact: true });
   }
 
   async removeConfirming(name: string): Promise<void> {

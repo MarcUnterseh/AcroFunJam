@@ -1,6 +1,7 @@
 import { fail, ok, type Result } from '../common/result';
 import {
   poseFields,
+  sameFieldValue,
   validatePoseProposal,
   type PoseProposalInput,
   type ProposalFieldError,
@@ -29,7 +30,7 @@ export const adjustmentsOf = (
   const retained = validatePoseProposal(input);
   if (!retained.ok) return fail(retained.error);
   const adjustments = poseFields
-    .filter((field) => retained.value[field] !== proposed[field])
+    .filter((field) => !sameFieldValue(field, retained.value[field], proposed[field]))
     .map(
       (field) => ({ field, proposed: proposed[field], retained: retained.value[field] }) as PoseAdjustment,
     );

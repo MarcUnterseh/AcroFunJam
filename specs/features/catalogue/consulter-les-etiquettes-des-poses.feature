@@ -34,7 +34,7 @@ Fonctionnalité: Consulter les étiquettes des poses
 
   Règle: La page d'une pose présente les étiquettes de la pose
 
-    @api @web @wip
+    @api @web
     Scénario: Un visiteur voit les étiquettes d'une pose sur sa page
       Soit la pose "Folded Leaf" porte les étiquettes "lunaire" et "inversion"
       Quand un visiteur consulte la pose "Folded Leaf" du catalogue
@@ -42,7 +42,7 @@ Fonctionnalité: Consulter les étiquettes des poses
 
   Règle: Le catalogue présente les étiquettes de chaque pose
 
-    @api @web @wip
+    @api @web
     Scénario: Un visiteur voit les étiquettes des poses dans le catalogue
       Soit la pose "Straddle Bat" porte les étiquettes "lunaire" et "inversion"
       Et la pose "Candlestick" porte l'étiquette "inversion"
@@ -67,19 +67,19 @@ Fonctionnalité: Consulter les étiquettes des poses
   # Q173 : ni « aucune », ni ligne vide.
   Règle: Une pose sans étiquette n'en présente aucune
 
-    @web @wip
+    @web
     Scénario: Le site ne présente aucune étiquette sur la page d'une pose qui n'en porte pas
       Quand un visiteur consulte la pose "Throne" du catalogue
       Alors la page de la pose "Throne" ne présente aucune étiquette
 
-    @web @wip
+    @web
     Scénario: Le site ne présente aucune étiquette sur la carte d'une pose qui n'en porte pas
       Quand un visiteur consulte les poses du catalogue
       Alors la carte de la pose "Throne" ne présente aucune étiquette
 
   Règle: Le visiteur lit, depuis la page d'une pose, la description de ses étiquettes
 
-    @web @wip
+    @web
     Scénario: Un visiteur lit la description d'une étiquette de la pose
       Soit la pose "Folded Leaf" porte l'étiquette "lunaire"
       Quand un visiteur déplie « Ce que veulent dire les étiquettes de la pose » sur la page de la pose "Folded Leaf"

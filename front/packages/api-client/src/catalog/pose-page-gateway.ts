@@ -71,6 +71,8 @@ const toPosePage = (value: unknown): PosePage | null => {
   const { id, name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow } = value;
   const transitionsFrom = toTransitions(value['transitionsFrom']);
   const transitionsTo = toTransitions(value['transitionsTo']);
+  const tags = everyItem(value['tags'], toTransitionTag);
+  const { pendingRevision } = value;
   if (
     !isString(id) ||
     !isString(name) ||
@@ -79,7 +81,9 @@ const toPosePage = (value: unknown): PosePage | null => {
     !isBoolean(canStartFlow) ||
     !isBoolean(canEndFlow) ||
     !transitionsFrom ||
-    !transitionsTo
+    !transitionsTo ||
+    !tags ||
+    !isBoolean(pendingRevision)
   )
     return null;
   return {
@@ -91,6 +95,8 @@ const toPosePage = (value: unknown): PosePage | null => {
     canEndFlow,
     transitionsFrom,
     transitionsTo,
+    tags,
+    pendingRevision,
   };
 };
 

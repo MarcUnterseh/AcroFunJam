@@ -1,8 +1,8 @@
 import type { DifficultyLevel } from '@acrofunjam/core';
 import { useId, type Ref } from 'react';
 import { DifficultyMoon } from '../catalog/DifficultyMoon';
-import { helpIds, helpsOf, ModifiedTag, type Help } from '../layout/form-controls';
-import { Icon } from '../layout/Icon';
+import { helpIds, helpsOf, ModifiedTag, type Help } from './form-controls';
+import { Icon } from './Icon';
 
 export type TileOption<T extends string> = {
   readonly value: T;
@@ -30,7 +30,7 @@ type TileRadioGroupProps<T extends string> = {
   readonly tag?: string | undefined;
   /** Receives the first radio, to give it the focus when the group is the first one in error. */
   readonly firstRadioRef?: Ref<HTMLInputElement> | undefined;
-  readonly layout: 'levels' | 'yes-no';
+  readonly layout: 'levels' | 'yes-no' | 'scope';
   /** The role the group is about: a checked tile takes its colour (« Base » earth, « Flyer » sky). */
   readonly tone?: 'base' | 'flyer' | undefined;
 };

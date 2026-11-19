@@ -14,6 +14,7 @@ const kept: KeptDecisionInputs = {
         flyerDifficulty: 'discovery',
         canStartFlow: true,
         canEndFlow: false,
+        tags: [],
       },
       note: 'Throne se découvre dès la première séance côté flyer.',
     },
@@ -90,7 +91,7 @@ describe('createSessionDecisionInputStore', () => {
       decisions: {
         'proposal-2': {
           ...acceptance,
-          input: { name: 'Throne', baseDifficulty: 'expert', canStartFlow: 'yes' },
+          input: { name: 'Throne', baseDifficulty: 'expert', canStartFlow: 'yes', tags: [] },
         },
       },
     });
@@ -103,6 +104,7 @@ describe('createSessionDecisionInputStore', () => {
         flyerDifficulty: null,
         canStartFlow: null,
         canEndFlow: null,
+        tags: [],
       },
       note: 'Throne se découvre dès la première séance côté flyer.',
     });

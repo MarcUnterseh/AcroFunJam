@@ -1,5 +1,5 @@
 import { fail, ok, type Result } from '../common/result';
-import { sameTags } from '../shared-kernel/transition-tags';
+import { sameTags } from '../shared-kernel/tags';
 import {
   validateTransitionContent,
   type TransitionContent,

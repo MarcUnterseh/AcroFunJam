@@ -1,4 +1,10 @@
-import { checkTagContent, type Tag, type TagFieldError, type TagInput } from '../../domain/catalog/tag';
+import {
+  checkTagContent,
+  type Tag,
+  type TagFieldError,
+  type TagInput,
+  type ValidTagContent,
+} from '../../domain/catalog/tag';
 import { fail, type Result } from '../../domain/common/result';
 import type {
   TagAccessFailure,
@@ -23,8 +29,8 @@ export type TagAccessError =
 export type TagEditError =
   | TagAccessError
   | { readonly kind: 'invalid-input'; readonly errors: readonly TagFieldError[] }
-  | { readonly kind: 'name-taken' }
-  | { readonly kind: 'not-found' };
+  /** Name taken, tag no longer in the list, or (story 9a) a narrower scope refused. */
+  | Exclude<TagChangeFailure, TagAccessFailure>;
 
 export type TagRemovalError = TagAccessError | Exclude<TagRemovalFailure, TagAccessFailure>;
 
@@ -52,7 +58,7 @@ export const listTags = (gateway: TagListGateway): Promise<Result<readonly Tag[]
 
 const edited = async (
   input: TagInput,
-  send: (content: { name: string; description: string }) => ReturnType<TagListGateway['addTag']>,
+  send: (content: ValidTagContent) => ReturnType<TagListGateway['addTag']>,
 ): Promise<Result<Tag, TagEditError>> => {
   const content = checkTagContent(input);
   if (!content.ok) return fail({ kind: 'invalid-input', errors: content.error });
@@ -64,7 +70,7 @@ const edited = async (
 export const addTag = (gateway: TagListGateway, input: TagInput): Promise<Result<Tag, TagEditError>> =>
   edited(input, (content) => gateway.addTag(content));
 
-/** Renames a tag and changes its description, both sent (the unchanged one as it is), checked first. */
+/** Renames a tag and changes its description and what it applies to, all sent (unchanged ones as they are), checked first. */
 export const changeTag = (
   gateway: TagListGateway,
   id: string,

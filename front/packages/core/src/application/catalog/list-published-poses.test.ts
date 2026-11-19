@@ -11,6 +11,7 @@ const throne: PoseSummary = {
   flyerDifficulty: 'discovery',
   canStartFlow: true,
   canEndFlow: true,
+  tags: [],
 };
 const bird: PoseSummary = {
   id: 'p-2',
@@ -19,6 +20,7 @@ const bird: PoseSummary = {
   flyerDifficulty: 'discovery',
   canStartFlow: true,
   canEndFlow: true,
+  tags: [],
 };
 
 const gatewayAnswering = (answer: Result<readonly PoseSummary[]>): CatalogGateway => ({

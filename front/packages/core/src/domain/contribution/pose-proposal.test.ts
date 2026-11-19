@@ -12,6 +12,7 @@ const throne: PoseProposalInput = {
   flyerDifficulty: 'discovery',
   canStartFlow: true,
   canEndFlow: false,
+  tags: [],
 };
 
 describe('validatePoseProposal', () => {
@@ -24,6 +25,7 @@ describe('validatePoseProposal', () => {
         flyerDifficulty: 'discovery',
         canStartFlow: true,
         canEndFlow: false,
+        tags: [],
       },
     });
   });
@@ -67,6 +69,7 @@ describe('emptyPoseProposalInput', () => {
       flyerDifficulty: null,
       canStartFlow: null,
       canEndFlow: null,
+      tags: [],
     });
   });
 });

@@ -138,7 +138,7 @@ export function MyProposalCard({ proposal }: { readonly proposal: MyProposal }) 
       </div>
       {proposal.kind === 'pose-proposal' && (
         <div className="my-proposal__pose">
-          <PoseDetails pose={proposal.pose} />
+          <PoseDetails pose={proposal.pose} tags={proposal.pose.tags} />
         </div>
       )}
       {proposal.kind === 'transition-proposal' && (

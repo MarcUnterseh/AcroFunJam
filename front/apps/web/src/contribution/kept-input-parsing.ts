@@ -49,11 +49,15 @@ export const parseTransitionAdjustmentInput = (value: unknown): TransitionAdjust
 /** The values of a pose typed in a form, as stored: an unknown value is not trusted (left unanswered). */
 export const parseProposalInput = (value: unknown): PoseProposalInput | null => {
   if (!isRecord(value) || typeof value['name'] !== 'string') return null;
+  // Story 9a: tags that cannot be read would be taken for a choice (or an adjustment): the whole input is not trusted.
+  const tags = storedTags(value['tags']);
+  if (!tags) return null;
   return {
     name: value['name'],
     baseDifficulty: level(value['baseDifficulty']),
     flyerDifficulty: level(value['flyerDifficulty']),
     canStartFlow: answer(value['canStartFlow']),
     canEndFlow: answer(value['canEndFlow']),
+    tags,
   };
 };

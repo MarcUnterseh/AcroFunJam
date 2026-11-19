@@ -16,6 +16,7 @@ const pendingThrone = {
   flyerDifficulty: 'discovery',
   canStartFlow: true,
   canEndFlow: false,
+  tags: [],
   submittedAt: '2026-11-03T09:00:00+00:00',
   ...none,
 };
@@ -46,6 +47,7 @@ const thronePose = {
   flyerDifficulty: 'discovery',
   canStartFlow: true,
   canEndFlow: false,
+  tags: [],
 };
 
 const apiAnswering = (status: number, body?: unknown, requests: Request[] = []) =>

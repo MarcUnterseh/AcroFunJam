@@ -163,7 +163,7 @@ Pour **tous** (visiteur compris), juste sous le nom : « S'applique aux poses »
 
 ### Ajout : groupe « S'applique à »
 
-Dans le panneau « Ajouter une étiquette », **après la description**, avant le bouton : `groupe-tuiles-radio.md`, variante **neutre** (cochée = `selected` / `selectedSurface`, comme Oui / Non), **aucune tuile cochée** à l'ouverture. Trois tuiles « Aux poses », « Aux transitions », « Aux poses et aux transitions ». Colonnes : une colonne sous 39,5em de conteneur, **trois** à partir de 39,5em (variante `tile-group__tiles--scope`, pas la quatrième colonne vide des niveaux).
+Dans le panneau « Ajouter une étiquette », **après la description**, avant le bouton : `groupe-tuiles-radio.md`, variante **neutre** (cochée = `selected` / `selectedSurface`, comme Oui / Non), **aucune tuile cochée** à l'ouverture. Trois tuiles « Aux poses », « Aux transitions », « Aux poses et aux transitions ». Colonnes : une colonne sous 29,5em de conteneur, **trois** à partir de 29,5em (3 × `tileMinWidth` + 2 × `spacing.sm` ; revue visuelle du 2026-11-19) (variante `tile-group__tiles--scope`, pas la quatrième colonne vide des niveaux).
 
 ```
 │ Description                  │
@@ -182,7 +182,7 @@ Dans le panneau « Ajouter une étiquette », **après la description**, avant l
 │ [  Ajouter l'étiquette     ] │
 ```
 
-Modification en place : le même groupe, la valeur actuelle cochée, entre Description et les actions (une colonne : la zone fait moins de 39,5em).
+Modification en place : le même groupe, la valeur actuelle cochée, entre Description et les actions (trois colonnes dès 29,5em de zone, « Aux poses et aux transitions » sur deux lignes).
 
 ### Refus de changement ou de retrait : liste des porteurs
 

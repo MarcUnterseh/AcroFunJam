@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sameTags, tagsImplying, withImpliedTags, type ChoosableTag } from './transition-tags';
+import { sameTags, tagsImplying, withImpliedTags, type ChoosableTag } from './tags';
 
 // Story 8 « Étiquettes »: choosing the tags of a transition among the list, as the API does (ADR 0032).
 
@@ -8,6 +8,7 @@ const tag = (id: string, impliedTagId: string | null = null): ChoosableTag => ({
   name: id,
   description: `${id} …`,
   impliedTagId,
+  scope: 'transitions',
 });
 
 const list: readonly ChoosableTag[] = [

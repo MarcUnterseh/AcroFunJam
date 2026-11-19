@@ -1,3 +1,4 @@
+import { tagAppliesToTransitions } from '../../domain/shared-kernel/tag-scope';
 import { fail, ok, type Result } from '../../domain/common/result';
 import { checkAdjustmentNote, type AdjustmentNoteError } from '../../domain/contribution/adjustment-note';
 import { adjustmentsOf } from '../../domain/contribution/pose-adjustment';
@@ -13,7 +14,7 @@ import {
   type TransitionAdjustmentInput,
 } from '../../domain/contribution/transition-adjustment';
 import type { TransitionFieldError } from '../../domain/contribution/transition-proposal';
-import type { ChoosableTag } from '../../domain/shared-kernel/transition-tags';
+import type { ChoosableTag } from '../../domain/shared-kernel/tags';
 import type { TransitionPlaceTaken } from './TransitionProposalGateway';
 import type { DecisionInputStore, KeptDecision } from './DecisionInputStorePort';
 import type {
@@ -273,7 +274,13 @@ export const restoreDecisionInputs = (
   return kept?.owner === owner ? kept.decisions : {};
 };
 
-/** Story 8: the tags of the list, in catalog order, offered in the adjustment zone of a transition. */
+/**
+ * Story 8: the tags of the list, in catalog order, offered in the adjustment zone of a transition; story 9a: only those that
+ * apply to transitions (ADR 0035).
+ */
 export const listTransitionTags = async (
   gateway: ValidationGateway,
-): Promise<Result<readonly ChoosableTag[], AccessError>> => translated(await gateway.listTags());
+): Promise<Result<readonly ChoosableTag[], AccessError>> => {
+  const tags = translated(await gateway.listTags());
+  return tags.ok ? ok(tags.value.filter(tagAppliesToTransitions)) : tags;
+};

@@ -13,6 +13,8 @@ const throne: PosePage = {
   canEndFlow: true,
   transitionsFrom: [],
   transitionsTo: [],
+  tags: [],
+  pendingRevision: false,
 };
 
 const answering = (answer: Awaited<ReturnType<PosePageGateway['getPosePage']>>) => {

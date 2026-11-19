@@ -61,16 +61,26 @@ describe('checkTagDescription', () => {
 
 describe('checkTagContent', () => {
   it('should give the normalised name and description when both are valid', () => {
-    expect(checkTagContent({ name: ' vrille ', description: ' Le flyer tourne. ' })).toEqual(
-      ok({ name: 'vrille', description: 'Le flyer tourne.' }),
-    );
+    expect(
+      checkTagContent({ name: ' vrille ', description: ' Le flyer tourne. ', scope: 'transitions' }),
+    ).toEqual(ok({ name: 'vrille', description: 'Le flyer tourne.', scope: 'transitions' }));
   });
 
   it('should report every field in error, the name first, when both are invalid', () => {
-    expect(checkTagContent({ name: '', description: 'd'.repeat(201) })).toEqual(
+    expect(checkTagContent({ name: '', description: 'd'.repeat(201), scope: 'poses' })).toEqual(
       fail([
         { field: 'name', code: 'tag.name-required' },
         { field: 'description', code: 'tag.description-too-long' },
+      ]),
+    );
+  });
+
+  // Story 9a (ADR 0035): what a tag applies to is chosen when it is added, never by default.
+  it('should require what the tag applies to, after the description, when none is chosen', () => {
+    expect(checkTagContent({ name: 'contrepoids', description: '', scope: null })).toEqual(
+      fail([
+        { field: 'description', code: 'tag.description-required' },
+        { field: 'scope', code: 'tag.scope-required' },
       ]),
     );
   });

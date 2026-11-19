@@ -118,7 +118,7 @@ export function useProposalDecision({
     );
   const reject = () => card.reject(() => onDecided({ proposal: proposal.kind, decision: 'rejected', name }));
 
-  const change = <F extends ProposalField>(field: F, value: PoseProposalInput[F]) => {
+  const change = <F extends keyof PoseProposalInput>(field: F, value: PoseProposalInput[F]) => {
     if (field === 'name') announceNameCounter(poseNameLength(input.name), poseNameLength(value as string));
     setInput((current) => ({ ...current, [field]: value }));
     setInputErrors((current) => current.filter((error) => error.field !== field));

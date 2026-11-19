@@ -6,6 +6,8 @@ import {
   isSamePose,
   otherPoseLead,
   posePageLabels,
+  poseTaggingLabels,
+  poseTagChoices,
   proposeTransitionFromLabel,
   transitionsSectionTitle,
   transitionTagLabels,
@@ -27,6 +29,8 @@ import { catalogPath, posePath, revisionPath, transitionProposalPath } from '../
 import { DifficultyLegend } from './DifficultyLegend';
 import { DifficultyDetails, PoseDetails } from './PoseList';
 import { usePosePageGateway } from './PosePageContext';
+import { PoseTagging } from './PoseTagging';
+import { useTags } from './useTags';
 import { TransitionTagging } from './TransitionTagging';
 
 /** The page of a pose could not be read: carries the failure of the use case. */
@@ -209,10 +213,11 @@ function LoadedPage({
         <h1 tabIndex={-1} className="pose-page__title">
           {page.name}
         </h1>
-        <PoseDetails pose={page} />
+        <PoseDetails pose={page} tags={page.tags} />
         <Horizon />
       </div>
       <div className="pose-page__body">
+        <PoseTags page={page} manages={manages} />
         {/* Only for a person who may propose: absent otherwise, without any space kept for them. */}
         {canProposeHere && (
           <div className="pose-page__actions">
@@ -230,6 +235,23 @@ function LoadedPage({
         <TransitionSection page={page} direction="to" manages={manages} />
       </div>
     </>
+  );
+}
+
+/**
+ * Story 9a: the block of the tags of the pose, at the top of the body (9a-etiquettes-des-poses.md § 1): their meaning in a
+ * fold, and for a validator « Étiqueter la pose »; absent when there is nothing to show, without any space kept.
+ */
+function PoseTags({ page, manages }: { readonly page: PosePage; readonly manages: boolean }) {
+  // A validator is invited only when at least one tag of the list applies to poses (nothing to choose otherwise).
+  const { data: list } = useTags({ enabled: manages });
+  const tags = manages && poseTagChoices(list ?? []).length > 0;
+  if (page.tags.length === 0 && !tags) return null;
+  return (
+    <div className="pose-tags">
+      <TagMeanings tags={page.tags} summary={poseTaggingLabels.meanings} />
+      {tags && <PoseTagging page={page} />}
+    </div>
   );
 }
 

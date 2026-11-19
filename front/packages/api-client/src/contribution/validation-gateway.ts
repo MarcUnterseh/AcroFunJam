@@ -19,7 +19,7 @@ import {
 import type { ApiClient } from '../client';
 import type { components } from '../generated/schema';
 import { isDifficultyCode } from '../shared-kernel/difficulty-codes';
-import { toChoosableTags } from '../shared-kernel/tag-reading';
+import { toChoosableTags, isTagList, toTagList } from '../shared-kernel/tag-reading';
 import { toTransitionContent, toTransitionPose, transitionPlaceRefusals } from './transition-reading';
 
 type AcceptPoseProposalRequest = components['schemas']['AcceptPoseProposalRequest'];
@@ -34,16 +34,19 @@ const isDate = (value: unknown): value is string => isString(value) && !Number.i
 /** The values of a pose, or null when they cannot be read. */
 const poseOf = (value: Record<string, unknown>): PoseContent | null => {
   const { name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow } = value;
+  // Story 9a: the tags of the pose, under their current names.
+  const tags = toTagList(value['tags']);
   if (
     !isString(name) ||
     !isDifficultyCode(baseDifficulty) ||
     !isDifficultyCode(flyerDifficulty) ||
     !isBoolean(canStartFlow) ||
-    !isBoolean(canEndFlow)
+    !isBoolean(canEndFlow) ||
+    !tags
   )
     return null;
   // The API returns normalised names.
-  return { name: name as PoseName, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow };
+  return { name: name as PoseName, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow, tags };
 };
 
 const contributorOf = (value: unknown) =>
@@ -57,6 +60,7 @@ const checks = {
   flyerDifficulty: isDifficultyCode,
   canStartFlow: isBoolean,
   canEndFlow: isBoolean,
+  tags: isTagList,
 } as const;
 
 /** The changed fields, in the order of the form: current → proposed; null when they cannot be read or none. */
@@ -134,6 +138,9 @@ const toField = (adjustment: PoseAdjustment): AcceptPoseProposalRequest => {
       return { canStartFlow: adjustment.retained };
     case 'canEndFlow':
       return { canEndFlow: adjustment.retained };
+    // Story 9a: the retained tags, by identifier.
+    case 'tags':
+      return { tagIds: adjustment.retained.map((tag) => tag.id) };
   }
 };
 

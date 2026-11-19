@@ -41,11 +41,18 @@ const published: TransitionAcceptanceOutcome = {
   adjusted: false,
 };
 
-const pop = { id: 'tag-pop', name: 'pop', description: 'Propulsé.', impliedTagId: 'tag-dynamique' };
+const pop = {
+  id: 'tag-pop',
+  name: 'pop',
+  description: 'Propulsé.',
+  impliedTagId: 'tag-dynamique',
+  scope: 'transitions' as const,
+};
 
-class FakeGateway
-  implements Pick<ValidationGateway, 'acceptTransitionProposal' | 'rejectProposal' | 'listTags'>
-{
+class FakeGateway implements Pick<
+  ValidationGateway,
+  'acceptTransitionProposal' | 'rejectProposal' | 'listTags'
+> {
   answer: Result<TransitionAcceptanceOutcome, DecisionFailure> = ok(published);
   tags: Awaited<ReturnType<ValidationGateway['listTags']>> = ok([pop]);
   listTags = async () => this.tags;
@@ -144,7 +151,13 @@ describe('acceptTransitionProposal', () => {
     const gateway = new FakeGateway();
     gateway.answer = fail({ kind: 'tags-not-in-list' });
 
-    const result = await acceptTransitionProposal(gatewayOf(gateway), new MemoryStore(), ninjaStar, null, owner);
+    const result = await acceptTransitionProposal(
+      gatewayOf(gateway),
+      new MemoryStore(),
+      ninjaStar,
+      null,
+      owner,
+    );
 
     expect(result).toEqual(fail({ kind: 'tags-not-in-list' }));
   });
@@ -226,5 +239,27 @@ describe('rejectProposal of a transition', () => {
 describe('listTransitionTags', () => {
   it('should give the tags of the list, to adjust those of a transition', async () => {
     expect(await listTransitionTags(gatewayOf(new FakeGateway()))).toEqual(ok([pop]));
+  });
+
+  // Story 9a (ADR 0035): a tag reserved to the poses is never offered for a transition.
+  it('should leave out the tags that do not apply to transitions', async () => {
+    const gateway = new FakeGateway();
+    const contrepoids = {
+      ...pop,
+      id: 'tag-contrepoids',
+      name: 'contrepoids',
+      impliedTagId: null,
+      scope: 'poses' as const,
+    };
+    const lunaire = {
+      ...pop,
+      id: 'tag-lunaire',
+      name: 'lunaire',
+      impliedTagId: null,
+      scope: 'poses-and-transitions' as const,
+    };
+    gateway.tags = ok([contrepoids, lunaire, pop]);
+
+    expect(await listTransitionTags(gatewayOf(gateway))).toEqual(ok([lunaire, pop]));
   });
 });

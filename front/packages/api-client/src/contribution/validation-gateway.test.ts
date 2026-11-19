@@ -13,6 +13,7 @@ const pendingThrone = {
   flyerDifficulty: 'discovery',
   canStartFlow: true,
   canEndFlow: false,
+  tags: [],
   contributor: { email: 'alice@example.org', isYou: false },
   submittedAt: '2026-11-03T09:00:00+00:00',
 };
@@ -25,6 +26,7 @@ const noChange = {
   flyerDifficulty: null,
   canStartFlow: null,
   canEndFlow: null,
+  tags: null,
 };
 
 const revisionOfBird = {
@@ -37,6 +39,7 @@ const revisionOfBird = {
     flyerDifficulty: 'intermediate',
     canStartFlow: true,
     canEndFlow: true,
+    tags: [],
   },
   changes: {
     ...noChange,
@@ -94,6 +97,7 @@ describe('createValidationGateway', () => {
               flyerDifficulty: 'discovery',
               canStartFlow: true,
               canEndFlow: false,
+              tags: [],
             },
             contributor: { email: 'alice@example.org', isYou: false },
             submittedAt: new Date('2026-11-03T09:00:00Z'),
@@ -119,6 +123,7 @@ describe('createValidationGateway', () => {
           flyerDifficulty: 'intermediate',
           canStartFlow: true,
           canEndFlow: true,
+          tags: [],
         },
         changes: [
           { field: 'name', before: 'Bird', after: 'Front Bird' },
@@ -208,6 +213,7 @@ describe('createValidationGateway', () => {
       flyerDifficulty: 'discovery',
       canStartFlow: true,
       canEndFlow: false,
+      tags: [],
     });
 
     it('should send an empty acceptance to POST /contribution/pose-proposals/{id}/acceptance when accepting as proposed', async () => {

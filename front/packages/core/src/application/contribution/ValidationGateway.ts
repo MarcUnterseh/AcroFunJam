@@ -7,7 +7,7 @@ import type { RejectionReason } from '../../domain/contribution/rejection-reason
 import type { RevisionMessage } from '../../domain/contribution/revision-message';
 import type { TransitionAdjustment } from '../../domain/contribution/transition-adjustment';
 import type { TransitionContent, TransitionPose } from '../../domain/contribution/transition-proposal';
-import type { ChoosableTag } from '../../domain/shared-kernel/transition-tags';
+import type { ChoosableTag } from '../../domain/shared-kernel/tags';
 import type { TransitionPlaceTaken } from './TransitionProposalGateway';
 
 /** Who made a proposal: their address (null if the account no longer exists), and whether it is the requester. */

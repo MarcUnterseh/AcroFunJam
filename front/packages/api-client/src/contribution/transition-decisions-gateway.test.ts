@@ -119,7 +119,14 @@ describe('createValidationGateway, transitions', () => {
         200,
         {
           tags: [
-            { id: 'tag-pop', name: 'pop', description: 'Propulsé.', impliedTagId: null, transitionCount: 0 },
+            {
+              id: 'tag-pop',
+              name: 'pop',
+              description: 'Propulsé.',
+              impliedTagId: null,
+              scope: 'transitions',
+              transitionCount: 0,
+            },
           ],
         },
         requests,
@@ -127,7 +134,9 @@ describe('createValidationGateway, transitions', () => {
     );
 
     expect(await gateway.listTags()).toEqual(
-      ok([{ id: 'tag-pop', name: 'pop', description: 'Propulsé.', impliedTagId: null }]),
+      ok([
+        { id: 'tag-pop', name: 'pop', description: 'Propulsé.', impliedTagId: null, scope: 'transitions' },
+      ]),
     );
     expect(new URL(requests[0]!.url).pathname).toBe('/catalog/tags');
   });

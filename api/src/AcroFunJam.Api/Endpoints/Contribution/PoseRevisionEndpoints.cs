@@ -165,7 +165,8 @@ internal static class PoseRevisionEndpoints
                 DifficultyCodes.From(current.Difficulty.Base),
                 DifficultyCodes.From(current.Difficulty.Flyer),
                 current.Flow.CanStartFlow,
-                current.Flow.CanEndFlow),
+                current.Flow.CanEndFlow,
+                names.Of(current.Tags)),
             new RevisionChangesResponse(
                 revision.Changes.OfType<NameChange>().Select(c => new NameChangeResponse(c.Before.Value, c.After.Value)).SingleOrDefault(),
                 revision.Changes.OfType<BaseDifficultyChange>()
@@ -273,9 +274,15 @@ public sealed record PendingPoseRevisionResponse(
     ProposalContributorResponse Contributor,
     DateTimeOffset SubmittedAt) : PendingProposalResponse;
 
-/// <summary>The revised pose with its current values.</summary>
+/// <summary>The revised pose with its current values, its tags included (story 9a).</summary>
 public sealed record RevisedPoseResponse(
-    Guid Id, string Name, DifficultyCode BaseDifficulty, DifficultyCode FlyerDifficulty, bool CanStartFlow, bool CanEndFlow);
+    Guid Id,
+    string Name,
+    DifficultyCode BaseDifficulty,
+    DifficultyCode FlyerDifficulty,
+    bool CanStartFlow,
+    bool CanEndFlow,
+    IReadOnlyList<ProposalTagResponse> Tags);
 
 /// <summary>The fields a revision changes; an unchanged field is null.</summary>
 public sealed record RevisionChangesResponse(

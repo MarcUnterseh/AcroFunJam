@@ -5,6 +5,7 @@ import { CatalogApi } from '../support/catalog-api';
 import { ContributionApi } from '../support/contribution-api';
 import { IdentityApi } from '../support/identity-api';
 import { defaultPassword, expectSignedIn, signInThroughTheSite } from '../support/people';
+import { TagApi } from '../support/tag-api';
 import { TransitionApi } from '../support/transition-api';
 
 // Layout check outside the Gherkin specs (no business rule), story 7: a pose name of 60 characters (the maximum) in the
@@ -28,7 +29,9 @@ for (const width of [320, 1280]) {
       const catalogApi = new CatalogApi(context);
       const contributionApi = new ContributionApi(context, identityApi, catalogApi);
       const transitionApi = new TransitionApi(context, identityApi, catalogApi, contributionApi);
-      for (const api of [identityApi, catalogApi, contributionApi, transitionApi]) await api.start();
+      // The form of a transition reads the list of tags (story 8): an empty list, simulated too.
+      const tagApi = new TagApi(context, identityApi, catalogApi);
+      for (const api of [identityApi, catalogApi, contributionApi, transitionApi, tagApi]) await api.start();
       catalogApi.publish({ name: longName });
       catalogApi.publish({ name: 'Bird' });
       const email = 'alice@example.org';

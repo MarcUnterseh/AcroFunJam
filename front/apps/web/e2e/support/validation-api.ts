@@ -5,6 +5,7 @@ import {
   keyOf,
   normalised,
   poseFields,
+  sameTagIds,
   type ContributionApi,
   type PendingProposal,
   type PoseValues,
@@ -35,12 +36,14 @@ const valuesOf = ({
   flyerDifficulty,
   canStartFlow,
   canEndFlow,
+  tagIds,
 }: PoseValues): PoseValues => ({
   name,
   baseDifficulty,
   flyerDifficulty,
   canStartFlow,
   canEndFlow,
+  tagIds: tagIds ?? [],
 });
 
 /** The pose with the values a revision changes. */
@@ -138,11 +141,12 @@ export class ValidationApi {
   private async listQueue(route: Route): Promise<void> {
     const requester = this.identityApi.accountOf(route)!.email.toLowerCase();
     const contributor = (email: string) => ({ email, isYou: email.toLowerCase() === requester });
-    const proposals = this.queue.map(({ contributorEmail, ...proposal }) => ({
+    const proposals = this.queue.map(({ contributorEmail, tagIds, ...proposal }) => ({
       submittedAt: proposal.submittedAt,
       item: {
         kind: 'pose-proposal',
         ...proposal,
+        tags: this.named(tagIds),
         contributor: contributor(contributorEmail),
       } as PendingProposalResponse,
     }));
@@ -172,13 +176,19 @@ export class ValidationApi {
       revision.changes[field] === undefined
         ? null
         : { current: pose[field], proposed: revision.changes[field] };
-    const changes = Object.fromEntries(
-      poseFields.map((field) => [field, change(field)]),
-    ) as RevisionChangesResponse;
+    const changes = {
+      ...Object.fromEntries(poseFields.map((field) => [field, change(field)])),
+      // Story 9a: the tags, current → proposed.
+      tags:
+        revision.changes.tagIds === undefined
+          ? null
+          : { current: this.named(pose.tagIds), proposed: this.named(revision.changes.tagIds) },
+    } as RevisionChangesResponse;
+    const { tagIds, ...values } = valuesOf(pose);
     return {
       kind: 'pose-revision',
       id: revision.id,
-      pose: { id: pose.id, ...valuesOf(pose) },
+      pose: { id: pose.id, ...values, tags: this.named(tagIds) },
       changes,
       message: revision.message,
       contributor,
@@ -234,17 +244,22 @@ export class ValidationApi {
       { ...proposed, id, contributorEmail: revision.contributorEmail, submittedAt: revision.submittedAt },
       body,
     );
-    if (poseFields.every((field) => retained[field] === pose[field]))
+    if (
+      poseFields.every((field) => retained[field] === pose[field]) &&
+      sameTagIds(retained.tagIds, pose.tagIds)
+    )
       return this.problem(route, 422, 'contribution.retained-revision-changes-nothing');
     const takenBy = (published: string) =>
       keyOf(published) !== keyOf(pose.name) && keyOf(published) === keyOf(retained.name);
     if (this.catalogApi.publishedNames.some(takenBy))
       return this.problem(route, 409, 'contribution.pose-name-already-in-catalog');
-    const adjusted = poseFields.some((field) => retained[field] !== proposed[field]);
+    const adjusted =
+      poseFields.some((field) => retained[field] !== proposed[field]) ||
+      !sameTagIds(retained.tagIds, proposed.tagIds);
     const note = normalisedText(body?.message);
     this.contributionApi.decideRevision(id, this.acceptance(retained, adjusted ? note || null : null));
     this.catalogApi.revise(pose.id, retained);
-    const answer: AcceptedPoseProposalResponse = { id, status: 'accepted', adjusted, ...retained };
+    const answer = this.accepted(id, adjusted, retained);
     return route.fulfill({ json: answer });
   }
 
@@ -282,15 +297,15 @@ export class ValidationApi {
       return this.problem(route, 409, 'contribution.pose-name-already-in-catalog');
     if (this.contributionApi.isNamePending(retained.name, proposal.id))
       return this.problem(route, 409, 'contribution.pose-name-already-pending');
-    const adjusted = (Object.keys(retained) as (keyof typeof retained)[]).some(
-      (field) => retained[field] !== proposal[field],
-    );
+    const adjusted =
+      poseFields.some((field) => retained[field] !== proposal[field]) ||
+      !sameTagIds(retained.tagIds, proposal.tagIds);
     if (note !== '' && !adjusted)
       return this.problem(route, 422, 'contribution.adjustment-note-without-adjustment');
 
     this.decide(proposal, this.acceptance(retained, note || null));
     this.catalogApi.publish(retained);
-    const answer: AcceptedPoseProposalResponse = { id, status: 'accepted', adjusted, ...retained };
+    const answer = this.accepted(id, adjusted, retained);
     return route.fulfill({ json: answer });
   }
 
@@ -324,9 +339,30 @@ export class ValidationApi {
     return { kind: 'rejected', reason, decidedAt: decisionDate };
   }
 
+  /** Story 9a: these tags, by identifier and current name, in catalog order. */
+  private named(ids: readonly string[] = []) {
+    return this.catalogApi.tags.describe(ids).map(({ id, name }) => ({ id, name }));
+  }
+
+  private accepted(id: string, adjusted: boolean, retained: PoseValues): AcceptedPoseProposalResponse {
+    const { tagIds, ...values } = retained;
+    return {
+      id,
+      status: 'accepted',
+      adjusted,
+      ...values,
+      tags: this.named(tagIds),
+    } as AcceptedPoseProposalResponse;
+  }
+
   /** The proposed pose with the adjustments of the request: an absent or null value keeps the proposed one. */
   private retained(proposal: PendingProposal, body: AcceptPoseProposalRequest | null): PoseValues {
     return {
+      // Story 9a: the retained tags, chosen again by the list (the implied ones added).
+      tagIds:
+        body?.tagIds != null
+          ? this.catalogApi.tags.choose(body.tagIds, 'pose').tagIds
+          : (proposal.tagIds ?? []),
       name: body?.name != null ? normalised(body.name) : proposal.name,
       baseDifficulty: (body?.baseDifficulty ?? proposal.baseDifficulty) as DifficultyCode,
       flyerDifficulty: (body?.flyerDifficulty ?? proposal.flyerDifficulty) as DifficultyCode,

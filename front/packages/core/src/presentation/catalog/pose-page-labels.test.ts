@@ -10,6 +10,10 @@ import {
   tagTransitionFailureLabel,
   type TransitionTaggingFailure,
   transitionTaggingLabels,
+  pendingRevisionTaggingLabel,
+  poseTaggingLabels,
+  tagPoseButtonName,
+  tagPoseFailureLabel,
 } from './pose-page-labels';
 
 describe('posePageLabels', () => {
@@ -112,5 +116,31 @@ describe('the zone « Étiqueter » (story 8)', () => {
     ],
   ])('should tell why the tags were not recorded (%o)', (error, label) => {
     expect(tagTransitionFailureLabel(error)).toBe(label);
+  });
+});
+
+describe('the tags of the pose (story 9a)', () => {
+  it('should name the fold, the button and the zone as the screen states them', () => {
+    expect(poseTaggingLabels.meanings).toBe('Ce que veulent dire les étiquettes de la pose');
+    expect(tagPoseButtonName('Folded Leaf')).toBe('Étiqueter la pose Folded Leaf');
+    expect(poseTaggingLabels.legend).toBe('Étiquettes de la pose');
+    expect(poseTaggingLabels.saved).toBe('Étiquettes de la pose enregistrées.');
+  });
+
+  it('should ask to decide first on the pending revision of the pose', () => {
+    expect(pendingRevisionTaggingLabel('Folded Leaf')).toBe(
+      "Une modification de Folded Leaf attend déjà d'être validée. Décide d'abord de cette modification, puis étiquette la pose.",
+    );
+  });
+
+  it.each([
+    [
+      'tags-not-applicable',
+      "Une étiquette choisie ne s'applique plus aux poses. Vérifie les étiquettes, puis enregistre de nouveau.",
+    ],
+    ['not-found', "Cette pose n'est plus dans le catalogue. Recharge la page."],
+    ['role-withdrawn', 'Tu ne peux plus étiqueter les poses : ton rôle a changé.'],
+  ] as const)('should tell why the tags of the pose were not recorded (%s)', (kind, label) => {
+    expect(tagPoseFailureLabel({ kind })).toBe(label);
   });
 });

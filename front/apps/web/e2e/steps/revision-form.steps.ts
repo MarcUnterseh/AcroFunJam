@@ -28,7 +28,8 @@ const formChangeOf = (field: string, value: string): RevisionToPropose => {
 
 /** From the catalog, as a person does: the link « Proposer une modification » of the card of the pose. */
 export const startRevision = async (catalogPage: CatalogPage, revisionForm: RevisionForm, pose: string) => {
-  if (!catalogPage.isOpen()) await catalogPage.open();
+  // Opened anew: a pose published after the catalog was read (a scenario signs in first) is then listed.
+  await catalogPage.open();
   await catalogPage.revisionLink(pose).click();
   await revisionForm.loaded();
 };
@@ -50,7 +51,12 @@ const fillRevision = async (
  * « Proposer la modification » for a user; « Vérifier la modification », then « Publier la modification » from the
  * summary, for a validator or an administrator, who publishes directly.
  */
-const proposeRevision = async (world: RevisionWorld, who: string, pose: string, change: RevisionToPropose) => {
+const proposeRevision = async (
+  world: RevisionWorld,
+  who: string,
+  pose: string,
+  change: RevisionToPropose,
+) => {
   await fillRevision(world, pose, change);
   const { revisionForm, identityApi } = world;
   await revisionForm.submit();

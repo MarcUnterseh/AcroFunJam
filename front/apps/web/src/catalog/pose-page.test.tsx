@@ -34,6 +34,8 @@ const throne = (overrides: Partial<PosePage> = {}): PosePage => ({
   flyerDifficulty: 'discovery',
   canStartFlow: true,
   canEndFlow: false,
+  tags: [],
+  pendingRevision: false,
   transitionsFrom: [throneToBird],
   transitionsTo: [birdToThrone],
   ...overrides,

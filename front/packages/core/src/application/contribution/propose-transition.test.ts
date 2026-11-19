@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fail, ok, type Result } from '../../domain/common/result';
-import type { ChoosableTag } from '../../domain/shared-kernel/transition-tags';
+import type { ChoosableTag } from '../../domain/shared-kernel/tags';
 import type {
   TransitionPose,
   TransitionProposalInput,
@@ -23,9 +23,27 @@ import type {
 const throne: TransitionPose = { id: 'pose-throne', name: 'Throne' };
 const bird: TransitionPose = { id: 'pose-bird', name: 'Bird' };
 const owner = 'alice@example.org';
-const dynamique: ChoosableTag = { id: 'tag-dynamique', name: 'dynamique', description: 'Avec élan.', impliedTagId: null };
-const pop: ChoosableTag = { id: 'tag-pop', name: 'pop', description: 'Propulsé.', impliedTagId: 'tag-dynamique' };
-const vrille: ChoosableTag = { id: 'tag-vrille', name: 'vrille', description: 'Rotation.', impliedTagId: null };
+const dynamique: ChoosableTag = {
+  id: 'tag-dynamique',
+  name: 'dynamique',
+  description: 'Avec élan.',
+  impliedTagId: null,
+  scope: 'transitions',
+};
+const pop: ChoosableTag = {
+  id: 'tag-pop',
+  name: 'pop',
+  description: 'Propulsé.',
+  impliedTagId: 'tag-dynamique',
+  scope: 'transitions',
+};
+const vrille: ChoosableTag = {
+  id: 'tag-vrille',
+  name: 'vrille',
+  description: 'Rotation.',
+  impliedTagId: null,
+  scope: 'transitions',
+};
 
 const throneToBird: TransitionProposalInput = {
   fromPoseId: 'pose-throne',
@@ -75,6 +93,22 @@ describe('openTransitionProposal', () => {
       expect(await openTransitionProposal(gateway, 'pose-throne')).toEqual(fail(failure));
     },
   );
+
+  // Story 9a (ADR 0035): a tag reserved to the poses is never offered for a transition.
+  it('should offer only the tags that apply to transitions', async () => {
+    const gateway = new FakeGateway();
+    const contrepoids: ChoosableTag = {
+      ...vrille,
+      id: 'tag-contrepoids',
+      name: 'contrepoids',
+      scope: 'poses',
+    };
+    gateway.tags = ok([contrepoids, dynamique, pop]);
+
+    expect(await openTransitionProposal(gateway, 'pose-throne')).toEqual(
+      ok({ poses: [bird, throne], fromPose: throne, tags: [dynamique, pop] }),
+    );
+  });
 
   it('should tell a departure pose that is not among the published poses as not found', async () => {
     expect(await openTransitionProposal(new FakeGateway(), 'pose-unknown')).toEqual(
@@ -137,9 +171,9 @@ describe('proposeTransition', () => {
       { id: 'tag-vrille', name: 'vrille' },
     ];
 
-    expect(
-      await proposeTransition(gateway, store, 'pose-throne', { ...throneToBird, tags }, owner),
-    ).toEqual(fail({ kind: 'tags-not-in-list', tags: [{ id: 'tag-vrille', name: 'vrille' }] }));
+    expect(await proposeTransition(gateway, store, 'pose-throne', { ...throneToBird, tags }, owner)).toEqual(
+      fail({ kind: 'tags-not-in-list', tags: [{ id: 'tag-vrille', name: 'vrille' }] }),
+    );
     expect(store.load('pose-throne')).toBeNull();
   });
 

@@ -1,7 +1,9 @@
 import {
   poseNameLength,
+  poseTagLabels,
   proposalLabels,
   validationLabels,
+  type PoseField,
   type PoseProposalInput,
   type ProposalField,
 } from '@acrofunjam/core';
@@ -9,7 +11,9 @@ import { useId, type ReactNode, type RefObject } from 'react';
 import { Field } from '../layout/form-controls';
 import { NameCounter } from './NameCounter';
 import { answerOf, answers, levels } from './pose-choices';
-import { TileRadioGroup } from './TileRadioGroup';
+import { TileRadioGroup } from '../layout/TileRadioGroup';
+import { TagChoiceGroup } from '../layout/tag-parts';
+import { usePoseTags } from './usePoseTags';
 
 export type AdjustmentFormRefs = {
   readonly name: RefObject<HTMLInputElement | null>;
@@ -34,9 +38,9 @@ export function AdjustmentForm({
 }: {
   readonly title: string;
   /** The reminders under the label or the legend of each field. */
-  readonly reminders: (field: ProposalField) => readonly string[];
+  readonly reminders: (field: PoseField) => readonly string[];
   readonly input: PoseProposalInput;
-  readonly onChange: <F extends ProposalField>(field: F, value: PoseProposalInput[F]) => void;
+  readonly onChange: <F extends keyof PoseProposalInput>(field: F, value: PoseProposalInput[F]) => void;
   readonly errorOf: (field: ProposalField) => string | undefined;
   /** Alert at the top of the zone (nothing adjusted, incident). */
   readonly notice: ReactNode;
@@ -46,6 +50,8 @@ export function AdjustmentForm({
   // Radio names are unique per card: several cards may be adjusted at the same time.
   const ids = { group: useId(), startHelp: useId(), endHelp: useId() };
   const reminder = reminders;
+  // Story 9a: the tags of the list that apply to poses (the adjustment of the tags, 9a-etiquettes-des-poses.md § 6).
+  const tagList = usePoseTags();
   return (
     <div className="proposal-card__zone adjustment-form">
       <h3 className="proposal-card__zone-title">{title}</h3>
@@ -116,6 +122,15 @@ export function AdjustmentForm({
           firstRadioRef={refs.firstRadios.canEndFlow}
         />
       </div>
+      {tagList && tagList.length > 0 && (
+        <TagChoiceGroup
+          list={tagList}
+          chosen={input.tags}
+          onChange={(tags) => onChange('tags', tags)}
+          legend={poseTagLabels.revisionLegend}
+          reminder={reminder('tags').join(' ')}
+        />
+      )}
       {actions}
     </div>
   );

@@ -12,6 +12,7 @@ const publishedThrone = {
   flyerDifficulty: 'intermediate',
   canStartFlow: true,
   canEndFlow: true,
+  tags: [],
   version: 3,
 };
 
@@ -125,6 +126,7 @@ describe('createPoseRevisionGateway', () => {
       flyerDifficulty: 'discovery',
       canStartFlow: true,
       canEndFlow: false,
+      tags: [],
     });
 
     it('should send the changed fields only (null for the others), the version and the message to POST /contribution/pose-revision-proposals', async () => {
@@ -142,6 +144,7 @@ describe('createPoseRevisionGateway', () => {
         flyerDifficulty: 'discovery',
         canStartFlow: null,
         canEndFlow: false,
+        tagIds: null,
         message: 'Le flyer est à plat.',
       });
       expect(outcome).toEqual(ok({ status: 'pending', name: 'High Throne' }));

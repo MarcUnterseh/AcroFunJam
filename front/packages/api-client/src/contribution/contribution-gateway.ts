@@ -16,6 +16,7 @@ import {
   type ValidPoseProposal,
 } from '@acrofunjam/core';
 import type { ApiClient } from '../client';
+import { tagIdsOf, toChoosableTags, isTagList, toTagList } from '../shared-kernel/tag-reading';
 import type { components } from '../generated/schema';
 import { isDifficultyCode } from '../shared-kernel/difficulty-codes';
 import { toTransitionAdjustments, toTransitionContent, toTransitionPose } from './transition-reading';
@@ -51,6 +52,11 @@ const toFailure = (status: number, problem: unknown): ProposalFailure => {
   if (status >= 500) return { kind: 'unreachable' };
   const refusal = status === 409 ? nameRefusals[codeOf(problem)] : undefined;
   if (refusal) return refusal;
+  // Story 9a: chosen tags refused meanwhile (ADR 0035, ADR 0036).
+  if (status === 409 && codeOf(problem) === 'contribution.tag-not-applicable')
+    return { kind: 'tags-not-applicable', tagIds: tagIdsOf(problem) };
+  if (status === 409 && codeOf(problem) === 'contribution.tag-not-in-list')
+    return { kind: 'tags-not-in-list', tagIds: tagIdsOf(problem) };
   // The content rules (400 pose.*) are checked by the site before sending: refused anyway, the site is outdated,
   // as for a refusal it does not know; the input is kept and reloading brings the new rules (ADR 0019).
   return { kind: 'outdated' };
@@ -63,6 +69,7 @@ const toRequest = (proposal: ValidPoseProposal): ProposePoseRequest => ({
   flyerDifficulty: proposal.flyerDifficulty,
   canStartFlow: proposal.canStartFlow,
   canEndFlow: proposal.canEndFlow,
+  tagIds: proposal.tags.map((tag) => tag.id),
 });
 
 // 401: visitor, expired session or deleted account (ADR 0018); 403 (a role without "propose", none today) is
@@ -85,7 +92,8 @@ const isReadablePose = (proposal: MyPoseProposalResponse): boolean =>
   isDifficultyCode(proposal.flyerDifficulty) &&
   typeof proposal.canStartFlow === 'boolean' &&
   typeof proposal.canEndFlow === 'boolean' &&
-  isDate(proposal.submittedAt);
+  isDate(proposal.submittedAt) &&
+  isTagList(proposal.tags);
 
 type Change<T> = { readonly proposed: T; readonly retained: T } | null;
 
@@ -109,7 +117,9 @@ const toAdjustments = (value: unknown): PoseAdjustment[] | undefined => {
   const flyer = change(adjustments.flyerDifficulty, isDifficultyCode);
   const start = change(adjustments.canStartFlow, isBoolean);
   const end = change(adjustments.canEndFlow, isBoolean);
-  if ([name, base, flyer, start, end].includes(undefined)) return undefined;
+  // Story 9a: absent from an older API, as not adjusted.
+  const tags = change(adjustments.tags ?? null, isTagList);
+  if ([name, base, flyer, start, end, tags].includes(undefined)) return undefined;
   const read: PoseAdjustment[] = [];
   if (name)
     read.push({ field: 'name', proposed: name.proposed as PoseName, retained: name.retained as PoseName });
@@ -117,6 +127,7 @@ const toAdjustments = (value: unknown): PoseAdjustment[] | undefined => {
   if (flyer) read.push({ field: 'flyerDifficulty', ...flyer });
   if (start) read.push({ field: 'canStartFlow', ...start });
   if (end) read.push({ field: 'canEndFlow', ...end });
+  if (tags) read.push({ field: 'tags', ...tags });
   return read.length > 0 ? read : undefined;
 };
 
@@ -126,6 +137,7 @@ const valueChecks = {
   flyerDifficulty: isDifficultyCode,
   canStartFlow: isBoolean,
   canEndFlow: isBoolean,
+  tags: isTagList,
 } as const;
 
 /** What changes in the pose, before → after, the changed fields only; undefined when it cannot be read or is empty. */
@@ -137,7 +149,8 @@ const toChanges = (changes: unknown): PoseValueChange[] | undefined => {
     (v: unknown) => boolean,
   ][]) {
     const change: unknown = (changes as Record<string, unknown>)[field];
-    if (change === null) continue;
+    // Story 9a: the tags may be absent from an older API (unchanged).
+    if (change === null || (field === 'tags' && change === undefined)) continue;
     if (typeof change !== 'object' || change === undefined) return undefined;
     const { before, after } = change as { before?: unknown; after?: unknown };
     if (!isValue(before) || !isValue(after)) return undefined;
@@ -257,6 +270,7 @@ const toMyPoseProposal = (proposal: MyPoseProposalResponse): MyProposal => ({
     flyerDifficulty: proposal.flyerDifficulty,
     canStartFlow: proposal.canStartFlow,
     canEndFlow: proposal.canEndFlow,
+    tags: toTagList(proposal.tags)!,
   },
   submittedAt: new Date(proposal.submittedAt),
   status: toStatus(proposal, toAdjustments),
@@ -276,6 +290,17 @@ export const createContributionGateway = (client: ApiClient): ContributionGatewa
         status: (typeof answer.status === 'string' && statuses[answer.status]) || 'received',
         name: typeof answer.name === 'string' ? answer.name : proposal.name,
       });
+    } catch {
+      return fail({ kind: 'unreachable' });
+    }
+  },
+
+  async listTags() {
+    try {
+      const { data, response } = await client.GET('/catalog/tags');
+      if (!response.ok) return fail(response.status >= 500 ? { kind: 'unreachable' } : { kind: 'outdated' });
+      const tags = toChoosableTags(data);
+      return tags ? ok(tags) : fail({ kind: 'outdated' });
     } catch {
       return fail({ kind: 'unreachable' });
     }

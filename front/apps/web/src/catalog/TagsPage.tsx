@@ -5,9 +5,13 @@ import {
   carriedRefusalLabel,
   changeTag,
   impliedRefusalLabel,
+  pendingPoseCarrierLabel,
   removalQuestion,
   removeTag,
+  scopeCarriedRefusalLabel,
+  scopeNeededRefusalLabel,
   tagAnnouncements,
+  tagAppliesToPoses,
   tagCarrierLabel,
   tagCounterLabel,
   tagDescriptionLength,
@@ -16,20 +20,26 @@ import {
   tagLabels,
   tagNameLength,
   tagNamePolicy,
+  tagScopeChoiceLabel,
+  tagScopeLabel,
+  tagScopes,
   type Tag,
   type TagCarrier,
+  type TagCarriers,
   type TagEditError,
+  type TagScope,
   type TagInput,
   type TagRemovalError,
 } from '@acrofunjam/core';
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useId, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useSession } from '../identity/SessionContext';
 import { useAnnounce } from '../layout/Announcer';
 import { focusPageTitle } from '../layout/focus';
 import { Field, FormAlert, TextAreaField } from '../layout/form-controls';
 import { Icon } from '../layout/Icon';
+import { TileRadioGroup } from '../layout/TileRadioGroup';
 import { catalogPath, posePath } from '../paths';
 import { useTagListGateway } from './TagListContext';
 import { tagListKey, useTags } from './useTags';
@@ -41,6 +51,8 @@ const noBreakSpace = String.fromCharCode(0xa0);
 type Refusal = {
   readonly name?: string;
   readonly description?: string;
+  /** Story 9a: what the tag applies to was not chosen. */
+  readonly scope?: string;
   readonly alert?: string;
 };
 
@@ -60,8 +72,16 @@ const refusalOf = (error: TagEditError): Refusal => {
       return { alert: tagLabels.unreachable };
     case 'outdated':
       return { alert: tagLabels.outdated };
+    // Story 9a: a narrower scope refused; told in full by ChangeRefusal (the carriers, the tags adding it).
+    case 'carried':
+    case 'scope-needed-by-impliers':
+      return {};
+    case 'scope-exceeds-implied':
+      return { alert: tagLabels.scopeExceedsImplied };
   }
 };
+
+const scopeOptions = tagScopes.map((scope) => ({ value: scope, label: tagScopeChoiceLabel(scope) }));
 
 /** A counter always shown under a field of a tag (short limits); over the limit, in danger with its icon. */
 function Counter({ length, maxLength }: { readonly length: number; readonly maxLength: number }) {
@@ -80,15 +100,30 @@ function TagFields({
   refusal,
   onChange,
   autoFocus = false,
+  attempt = 0,
 }: {
   readonly input: TagInput;
   readonly refusal: Refusal;
   readonly onChange: (input: TagInput) => void;
   readonly autoFocus?: boolean;
+  /** Changes at each refused sending: the focus then goes to the first field in error (name, description, scope). */
+  readonly attempt?: number;
 }) {
+  const scopeGroupName = useId();
+  const nameRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const scopeRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (attempt === 0) return;
+    if (refusal.name) nameRef.current?.focus();
+    else if (refusal.description) descriptionRef.current?.focus();
+    else if (refusal.scope) scopeRef.current?.focus();
+    // Only after a refused sending (attempt), not while typing: the refusal is read as it is then.
+  }, [attempt]);
   return (
     <>
       <Field
+        ref={nameRef}
         label={tagLabels.name}
         value={input.name}
         error={refusal.name}
@@ -98,6 +133,7 @@ function TagFields({
         counter={<Counter length={tagNameLength(input.name)} maxLength={tagNamePolicy.maxLength} />}
       />
       <TextAreaField
+        ref={descriptionRef}
         label={tagLabels.description}
         help={tagLabels.descriptionHelp}
         value={input.description}
@@ -110,6 +146,17 @@ function TagFields({
             maxLength={tagDescriptionPolicy.maxLength}
           />
         }
+      />
+      {/* Story 9a (ADR 0035): after the description, none chosen when adding (9a-etiquettes-des-poses.md, § 3). */}
+      <TileRadioGroup<TagScope>
+        legend={tagLabels.scope}
+        name={`${scopeGroupName}-scope`}
+        options={scopeOptions}
+        value={input.scope}
+        onChange={(scope) => onChange({ ...input, scope })}
+        error={refusal.scope}
+        firstRadioRef={scopeRef}
+        layout="scope"
       />
     </>
   );
@@ -148,7 +195,7 @@ function useTagChange() {
   };
 }
 
-const emptyInput: TagInput = { name: '', description: '' };
+const emptyInput: TagInput = { name: '', description: '', scope: null };
 
 /** Panel « Ajouter une étiquette » (8-etiquettes.md): the only primary button of the page at rest. */
 function AddTagPanel() {
@@ -158,6 +205,7 @@ function AddTagPanel() {
   const [input, setInput] = useState(emptyInput);
   const [refusal, setRefusal] = useState<Refusal>({});
   const [sending, setSending] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -167,6 +215,7 @@ function AddTagPanel() {
     setSending(false);
     if (error) {
       setRefusal(refusalOf(error));
+      setAttempt((n) => n + 1);
       return;
     }
     setInput(emptyInput);
@@ -182,7 +231,7 @@ function AddTagPanel() {
             <p>{refusal.alert}</p>
           </ZoneAlert>
         )}
-        <TagFields input={input} refusal={refusal} onChange={setInput} />
+        <TagFields input={input} refusal={refusal} onChange={setInput} attempt={attempt} />
         <div className="tag-form__actions">
           <button type="submit" className="button button--primary" aria-disabled={sending || undefined}>
             {sending ? tagLabels.adding : tagLabels.add}
@@ -199,25 +248,33 @@ type Opened = { readonly id: string; readonly mode: 'edit' | 'remove' } | null;
 function EditZone({ tag, onClose }: { readonly tag: Tag; readonly onClose: () => void }) {
   const gateway = useTagListGateway();
   const change = useTagChange();
-  const [input, setInput] = useState<TagInput>({ name: tag.name, description: tag.description });
+  const [input, setInput] = useState<TagInput>({
+    name: tag.name,
+    description: tag.description,
+    scope: tag.scope,
+  });
   const [refusal, setRefusal] = useState<Refusal>({});
+  const [refused, setRefused] = useState<TagEditError | null>(null);
   const [sending, setSending] = useState(false);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (sending) return;
     setSending(true);
+    const sent = input;
     const error = await change(
-      () => changeTag(gateway, tag.id, input),
-      tagAnnouncements.saved(input.name.trim()),
+      () => changeTag(gateway, tag.id, sent),
+      tagAnnouncements.saved(sent.name.trim()),
     );
     setSending(false);
+    setRefused(error);
     if (error) setRefusal(refusalOf(error));
     else onClose();
   };
 
   return (
     <form className="tag__zone tag-form" noValidate onSubmit={(event) => void submit(event)}>
+      {refused && <ChangeRefusal tag={tag} requested={input.scope} error={refused} />}
       {refusal.alert && (
         <ZoneAlert>
           <p>{refusal.alert}</p>
@@ -271,6 +328,87 @@ function Carriers({
   );
 }
 
+/** Story 9a: the published poses carrying the tag, each a link to its page (9a-etiquettes-des-poses.md, § 3). */
+function CarryingPoses({ carriers }: { readonly carriers: TagCarriers }) {
+  if (carriers.poses.length === 0) return null;
+  return (
+    <>
+      <p className="tag__carriers-title">{tagLabels.catalogPoses}</p>
+      <ul className="tag__carriers">
+        {carriers.poses.map((pose) => (
+          <li key={pose.id}>
+            <Link to={posePath(pose.id)} className="tag__carrier-link">
+              {pose.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+/** The pending proposals carrying the tag: transitions, then poses (story 9a), without link (they have no page). */
+function PendingCarriers({ carriers }: { readonly carriers: TagCarriers }) {
+  if (carriers.pendingProposals.length === 0 && carriers.pendingPoses.length === 0) return null;
+  return (
+    <>
+      <p className="tag__carriers-title">{tagLabels.pendingProposals}</p>
+      <ul className="tag__carriers">
+        {carriers.pendingPoses.map((carrier) => (
+          <li key={carrier.id}>{pendingPoseCarrierLabel(carrier)}</li>
+        ))}
+        {carriers.pendingProposals.map((carrier) => (
+          <li key={carrier.id}>{tagCarrierLabel(carrier)}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+/** Everything carrying the tag, in the order of the screen: poses, transitions, pending proposals. */
+function AllCarriers({ carriers }: { readonly carriers: TagCarriers }) {
+  return (
+    <>
+      <CarryingPoses carriers={carriers} />
+      <Carriers title={tagLabels.catalogTransitions} carriers={carriers.transitions} linked />
+      <PendingCarriers carriers={carriers} />
+    </>
+  );
+}
+
+/** Story 9a: a narrower scope refused (ADR 0035), the input kept: what still carries the tag, or the tags adding it. */
+function ChangeRefusal({
+  tag,
+  requested,
+  error,
+}: {
+  readonly tag: Tag;
+  readonly requested: TagScope | null;
+  readonly error: TagEditError;
+}) {
+  switch (error.kind) {
+    case 'carried': {
+      // What it no longer applies to: the poses when it ceases to apply to them, otherwise the transitions.
+      const withdrawn =
+        tagAppliesToPoses(tag) && requested !== null && !tagAppliesToPoses({ scope: requested });
+      return (
+        <ZoneAlert>
+          <p>{scopeCarriedRefusalLabel(tag.name, withdrawn ? 'poses' : 'transitions')}</p>
+          <AllCarriers carriers={error} />
+        </ZoneAlert>
+      );
+    }
+    case 'scope-needed-by-impliers':
+      return (
+        <ZoneAlert>
+          <p>{scopeNeededRefusalLabel(tag.name, error.impliedBy)}</p>
+        </ZoneAlert>
+      );
+    default:
+      return null;
+  }
+}
+
 /** Why the removal was refused (alerte-formulaire.md, error variant): the carriers, or the tags implying it. */
 function RemovalRefusal({ tag, error }: { readonly tag: Tag; readonly error: TagRemovalError }) {
   switch (error.kind) {
@@ -278,8 +416,7 @@ function RemovalRefusal({ tag, error }: { readonly tag: Tag; readonly error: Tag
       return (
         <ZoneAlert>
           <p>{carriedRefusalLabel(tag.name)}</p>
-          <Carriers title={tagLabels.catalogTransitions} carriers={error.transitions} linked />
-          <Carriers title={tagLabels.pendingProposals} carriers={error.pendingProposals} linked={false} />
+          <AllCarriers carriers={error} />
           <p>{tagLabels.carriedAdvice}</p>
         </ZoneAlert>
       );
@@ -363,12 +500,14 @@ function TagItem({
   return (
     <li className="tag">
       <h2 className="tag__name">{tag.name}</h2>
+      {/* Story 9a: what it applies to, for everybody, under the name (element-etiquette.md). */}
+      <p className="tag__scope">{tagScopeLabel(tag.scope)}</p>
       {mode === 'edit' ? (
         <EditZone tag={tag} onClose={close} />
       ) : (
         <>
           <p className="tag__description">{tag.description}</p>
-          {manages && <p className="tag__count">{carriedByLabel(tag.transitionCount)}</p>}
+          {manages && <p className="tag__count">{carriedByLabel(tag)}</p>}
           {manages &&
             (mode === 'remove' ? (
               <RemoveZone tag={tag} onClose={close} />

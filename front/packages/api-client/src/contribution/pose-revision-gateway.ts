@@ -12,6 +12,7 @@ import {
   type ValidPoseRevision,
 } from '@acrofunjam/core';
 import type { ApiClient } from '../client';
+import { toTagList } from '../shared-kernel/tag-reading';
 import type { components } from '../generated/schema';
 import { isDifficultyCode } from '../shared-kernel/difficulty-codes';
 
@@ -40,6 +41,8 @@ const commonFailure = (status: number): RevisionOpeningFailure => {
 const toRevisablePose = (pose: unknown): RevisablePose | null => {
   if (!isRecord(pose)) return null;
   const { id, name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow } = pose;
+  // Story 9a: the tags of the pose (with their descriptions on its page), by identifier and name.
+  const tags = toTagList(pose['tags']);
   // An int32, possibly written as a string by the contract; a version starts at 1 (ADR 0024).
   const raw = pose['version'];
   const version =
@@ -52,11 +55,21 @@ const toRevisablePose = (pose: unknown): RevisablePose | null => {
     !isBoolean(canStartFlow) ||
     !isBoolean(canEndFlow) ||
     !Number.isInteger(version) ||
-    version < 1
+    version < 1 ||
+    !tags
   )
     return null;
   // The catalog returns the normalised name of a published pose.
-  return { id, name: name as PoseName, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow, version };
+  return {
+    id,
+    name: name as PoseName,
+    baseDifficulty,
+    flyerDifficulty,
+    canStartFlow,
+    canEndFlow,
+    tags,
+    version,
+  };
 };
 
 const refusals: Readonly<Record<string, RevisionFailure>> = {
@@ -93,6 +106,8 @@ const toRequest = ({
     canStartFlow: after('canStartFlow'),
     canEndFlow: after('canEndFlow'),
     message,
+    // Story 9a: the tags only when they change; empty removes them all.
+    tagIds: after('tags')?.map((tag) => tag.id) ?? null,
   };
 };
 

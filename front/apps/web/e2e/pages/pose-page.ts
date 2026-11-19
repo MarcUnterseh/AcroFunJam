@@ -124,9 +124,7 @@ export class PosePage {
     await section.waitFor();
     const read: DisplayedTransition[] = [];
     // The transitions only: the pills of their tags are list items too (story 8).
-    const items = section
-      .getByRole('listitem')
-      .filter({ has: this.page.getByRole('heading', { level: 3 }) });
+    const items = section.getByRole('listitem').filter({ has: this.page.getByRole('heading', { level: 3 }) });
     for (const item of await items.all()) read.push(await this.readItem(item));
     return read;
   }

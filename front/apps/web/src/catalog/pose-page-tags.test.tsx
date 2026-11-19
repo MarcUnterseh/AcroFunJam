@@ -50,6 +50,8 @@ const throne = (transitionsFrom: LinkedTransition[] = [throneToBird, popToBird])
   canEndFlow: false,
   transitionsFrom,
   transitionsTo: [],
+  tags: [],
+  pendingRevision: false,
 });
 
 const validator = () => {
@@ -136,6 +138,26 @@ describe('the zone « Étiqueter » of a validator', () => {
     await transition('Pop to Bird');
     expect(await screen.findByRole('button', { name: 'Étiqueter de Throne vers Bird' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Étiqueter Pop to Bird' })).toBeInTheDocument();
+  });
+
+  // Story 9a (ADR 0035): a tag reserved to the poses is never offered for a transition.
+  it('should not offer a tag that applies only to poses', async () => {
+    const contrepoids = {
+      ...seededTags[0]!,
+      id: 'tag-contrepoids',
+      name: 'contrepoids',
+      scope: 'poses' as const,
+    };
+    const { user: person } = open({
+      gateway: validator(),
+      tags: new FakeTagListGateway(ok([...seededTags, contrepoids])),
+    });
+
+    await person.click(await screen.findByRole('button', { name: 'Étiqueter Pop to Bird' }));
+
+    const group = await screen.findByRole('group', { name: 'Étiquettes de la transition' });
+    expect(within(group).getByRole('checkbox', { name: 'pop' })).toBeInTheDocument();
+    expect(within(group).queryByRole('checkbox', { name: 'contrepoids' })).not.toBeInTheDocument();
   });
 
   it('should open on the tags of the transition checked', async () => {

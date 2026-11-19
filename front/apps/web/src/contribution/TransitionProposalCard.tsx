@@ -22,7 +22,7 @@ import { DecisionAlert } from './DecisionAlert';
 import { DescriptionCounter } from './DescriptionCounter';
 import { NameCounter } from './NameCounter';
 import { levels } from './pose-choices';
-import { TileRadioGroup } from './TileRadioGroup';
+import { TileRadioGroup } from '../layout/TileRadioGroup';
 import type { Sending } from './useDecisionCard';
 import { useTransitionDecision } from './useTransitionDecision';
 import { useTransitionTags } from './useTransitionTags';

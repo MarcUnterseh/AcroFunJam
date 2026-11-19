@@ -179,7 +179,8 @@ public static class ContributionEndpoints
             tagNames,
             result.Value!.OfType<PendingTransitionProposalDto>().Select(t => t.Transition.Tags)
                 .Concat(result.Value!.OfType<PendingPoseProposalDto>().Select(p => p.ProposedPose.Tags))
-                .Concat(result.Value!.OfType<PendingPoseRevisionDto>().SelectMany(r => r.Changes.OfType<PoseTagsChange>().SelectMany(c => new[] { c.Before, c.After }))),
+                .Concat(result.Value!.OfType<PendingPoseRevisionDto>().SelectMany(r => r.Changes.OfType<PoseTagsChange>().SelectMany(c => new[] { c.Before, c.After })))
+                .Concat(result.Value!.OfType<PendingPoseRevisionDto>().Select(r => r.Current.Tags)),
             ct);
         return TypedResults.Ok(new ValidationQueueResponse([.. result.Value!.Select(p => ToResponse(p, names))]));
     }

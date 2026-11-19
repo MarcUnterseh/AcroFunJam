@@ -1,4 +1,4 @@
-import type { TagReference } from '../../domain/shared-kernel/transition-tags';
+import type { TagReference } from '../../domain/shared-kernel/tags';
 
 /**
  * Presentation: French texts of the tags of a transition (story 8), shared by the Catalog (page of a pose, zone

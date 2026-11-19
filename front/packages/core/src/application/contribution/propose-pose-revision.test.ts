@@ -28,6 +28,7 @@ const throne: RevisablePose = {
   flyerDifficulty: 'intermediate',
   canStartFlow: true,
   canEndFlow: true,
+  tags: [],
   version: 1,
 };
 

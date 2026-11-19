@@ -55,6 +55,7 @@ const tag = (id: string, name: string, impliedTagId: string | null = null) => ({
   name,
   description: `${name} …`,
   impliedTagId,
+  scope: 'transitions',
   transitionCount: 3,
 });
 
@@ -112,8 +113,20 @@ describe('createTransitionProposalGateway', () => {
 
       expect(await gateway.listTags()).toEqual(
         ok([
-          { id: 'tag-dynamique', name: 'dynamique', description: 'dynamique …', impliedTagId: null },
-          { id: 'tag-pop', name: 'pop', description: 'pop …', impliedTagId: 'tag-dynamique' },
+          {
+            id: 'tag-dynamique',
+            name: 'dynamique',
+            description: 'dynamique …',
+            impliedTagId: null,
+            scope: 'transitions',
+          },
+          {
+            id: 'tag-pop',
+            name: 'pop',
+            description: 'pop …',
+            impliedTagId: 'tag-dynamique',
+            scope: 'transitions',
+          },
         ]),
       );
       expect(new URL(requests[0]!.url).pathname).toBe('/catalog/tags');

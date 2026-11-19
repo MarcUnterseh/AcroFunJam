@@ -3,8 +3,13 @@ import {
   ok,
   type NamedTag,
   type Result,
+  type CarryingPose,
+  type PendingPoseCarrier,
   type Tag,
   type TagCarrier,
+  type TagCarriers,
+  type TagScope,
+  tagScopes,
   type TagChangeFailure,
   type TagListFailure,
   type TagListGateway,
@@ -30,17 +35,22 @@ const codeOf = (problem: unknown): string =>
 
 const toTag = (value: unknown): Tag | null => {
   if (!isRecord(value)) return null;
-  const { id, name, description, impliedTagId, transitionCount } = value;
+  const { id, name, description, scope, impliedTagId, poseCount, transitionCount } = value;
   if (
     !isString(id) ||
     !isString(name) ||
     !isString(description) ||
+    !isScope(scope) ||
     !(impliedTagId === null || isString(impliedTagId)) ||
+    typeof poseCount !== 'number' ||
     typeof transitionCount !== 'number'
   )
     return null;
-  return { id, name, description, impliedTagId, transitionCount };
+  return { id, name, description, scope, impliedTagId, poseCount, transitionCount };
 };
+
+/** Story 9a: one of the three codes of what a tag applies to (ADR 0035). */
+const isScope = (value: unknown): value is TagScope => tagScopes.includes(value as TagScope);
 
 const toNamed = (value: unknown): NamedTag | null => toTagReference(value);
 
@@ -54,6 +64,26 @@ const toCarrier = (value: unknown): TagCarrier | null => {
 };
 
 const all = everyItem;
+
+const toCarryingPose = (value: unknown): CarryingPose | null => toNamed(value);
+
+const toPendingPose = (value: unknown): PendingPoseCarrier | null => {
+  if (!isRecord(value)) return null;
+  const { id, kind, name } = value;
+  if (!isString(id) || !isString(name) || (kind !== 'pose-proposal' && kind !== 'pose-revision')) return null;
+  return { id, kind, name };
+};
+
+/** What carries the tag (ADR 0034, ADR 0036); the members of story 9a may be absent from an older API. */
+const carriersOf = (problem: Record<string, unknown>): TagCarriers | null => {
+  const poses = all(problem['poses'] ?? [], toCarryingPose);
+  const transitions = all(problem['transitions'], toCarrier);
+  const pendingProposals = all(problem['pendingProposals'] ?? [], toCarrier);
+  const pendingPoses = all(problem['pendingPoses'] ?? [], toPendingPose);
+  return poses && transitions && pendingProposals && pendingPoses
+    ? { poses, transitions, pendingProposals, pendingPoses }
+    : null;
+};
 
 /** 401: visitor, expired session or deleted account (ADR 0018); 403: a role without « gérer les étiquettes ». */
 const accessFailureOf = (status: number): TagChangeFailure | null => {
@@ -69,6 +99,16 @@ const changeFailureOf = (status: number, problem: unknown): TagChangeFailure => 
   const code = codeOf(problem);
   if (status === 409 && code === 'catalog.tag-name-taken') return { kind: 'name-taken' };
   if (status === 404 && code === 'catalog.tag-not-found') return { kind: 'not-found' };
+  if (status === 409 && code === 'catalog.tag-carried' && isRecord(problem)) {
+    const carriers = carriersOf(problem);
+    if (carriers) return { kind: 'carried', ...carriers };
+  }
+  if (status === 409 && code === 'catalog.tag-scope-exceeds-implied')
+    return { kind: 'scope-exceeds-implied' };
+  if (status === 409 && code === 'catalog.tag-scope-needed-by-impliers' && isRecord(problem)) {
+    const impliedBy = all(problem['impliedBy'], toNamed);
+    if (impliedBy) return { kind: 'scope-needed-by-impliers', impliedBy };
+  }
   // The content rules (400) are checked by the site before sending: refused anyway, the site is outdated.
   return { kind: 'outdated' };
 };
@@ -79,9 +119,8 @@ const removalFailureOf = (status: number, problem: unknown): TagRemovalFailure =
   const code = codeOf(problem);
   if (status === 404 && code === 'catalog.tag-not-found') return { kind: 'not-found' };
   if (status === 409 && code === 'catalog.tag-carried' && isRecord(problem)) {
-    const transitions = all(problem['transitions'], toCarrier);
-    const pendingProposals = all(problem['pendingProposals'] ?? [], toCarrier);
-    if (transitions && pendingProposals) return { kind: 'carried', transitions, pendingProposals };
+    const carriers = carriersOf(problem);
+    if (carriers) return { kind: 'carried', ...carriers };
   }
   if (status === 409 && code === 'catalog.tag-implied' && isRecord(problem)) {
     const impliedBy = all(problem['impliedBy'], toNamed);
@@ -94,6 +133,7 @@ const removalFailureOf = (status: number, problem: unknown): TagRemovalFailure =
 const toRequest = (content: ValidTagContent): TagRequest => ({
   name: content.name,
   description: content.description,
+  scope: content.scope,
 });
 
 /** A request that cannot reach the API (network down, server gone) is reported as such, whatever the call. */

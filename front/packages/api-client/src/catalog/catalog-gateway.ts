@@ -2,6 +2,7 @@ import { fail, ok, type CatalogGateway, type PoseSummary } from '@acrofunjam/cor
 import type { ApiClient } from '../client';
 import type { components } from '../generated/schema';
 import { isDifficultyCode } from '../shared-kernel/difficulty-codes';
+import { everyItem, toTagReference } from '../shared-kernel/tag-reading';
 
 type PoseSummaryResponse = components['schemas']['PoseSummaryResponse'];
 
@@ -16,7 +17,8 @@ const isKnown = (pose: PoseSummaryResponse): boolean =>
   isDifficultyCode(pose.baseDifficulty) &&
   isDifficultyCode(pose.flyerDifficulty) &&
   typeof pose.canStartFlow === 'boolean' &&
-  typeof pose.canEndFlow === 'boolean';
+  typeof pose.canEndFlow === 'boolean' &&
+  everyItem(pose.tags, toTagReference) !== null;
 
 // HTTP DTOs never leak into core: they are mapped to the client domain here.
 const toPoseSummary = (pose: PoseSummaryResponse): PoseSummary => ({
@@ -26,6 +28,7 @@ const toPoseSummary = (pose: PoseSummaryResponse): PoseSummary => ({
   flyerDifficulty: pose.flyerDifficulty,
   canStartFlow: pose.canStartFlow,
   canEndFlow: pose.canEndFlow,
+  tags: pose.tags.map(({ id, name }) => ({ id, name })),
 });
 
 /** HTTP adapter of the CatalogGateway port of @acrofunjam/core. */

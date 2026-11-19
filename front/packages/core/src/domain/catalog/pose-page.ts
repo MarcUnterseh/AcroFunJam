@@ -1,12 +1,18 @@
 import type { DifficultyLevel } from '../shared-kernel/difficulty-level';
-import type { TagReference } from '../shared-kernel/transition-tags';
+import type { TagReference } from '../shared-kernel/tags';
 import type { PoseSummary } from './pose-summary';
 
 /** A published pose designated by a transition, under its current name in the catalog (story 7). */
 export type PoseReference = { readonly id: string; readonly name: string };
 
-/** A tag carried by a published transition, with its description, read in the fold of the transition (story 8). */
-export type TransitionTag = TagReference & { readonly description: string };
+/** A tag with its description, read in a fold « Ce que veulent dire les étiquettes » (story 8, story 9a). */
+export type DescribedTag = TagReference & { readonly description: string };
+
+/**
+ * A tag carried by a published transition, with its description, read in the fold of the transition (story 8).
+ * @deprecated Story 9a: a pose carries described tags too; use DescribedTag.
+ */
+export type TransitionTag = DescribedTag;
 
 /**
  * A published transition, as the page of one of its poses presents it (glossary « Page d'une pose », ADR 0030): the
@@ -29,9 +35,13 @@ export type LinkedTransition = {
  * The page of a published pose: the pose, then the transitions from it and to it, in catalog order (on the other
  * pose, then on the name, the transitions without a name first: the order is guaranteed by the API).
  */
-export type PosePage = PoseSummary & {
+export type PosePage = Omit<PoseSummary, 'tags'> & {
   readonly transitionsFrom: readonly LinkedTransition[];
   readonly transitionsTo: readonly LinkedTransition[];
+  /** Story 9a: the tags of the pose with their descriptions, in catalog order. */
+  readonly tags: readonly DescribedTag[];
+  /** Story 9a: a revision of the pose is pending: it cannot be tagged directly meanwhile (ADR 0036). */
+  readonly pendingRevision: boolean;
 };
 
 /** A washing machine: the transition comes back to the pose of the page; it appears in both of its sections. */

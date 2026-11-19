@@ -5,6 +5,7 @@ import {
   createContributionGateway,
   createPosePageGateway,
   createTagListGateway,
+  createPoseTaggingGateway,
   createTransitionTaggingGateway,
   createPoseRevisionGateway,
   createTransitionProposalGateway,
@@ -25,6 +26,7 @@ import 'virtual:tokens.css';
 import { CatalogGatewayProvider } from './catalog/CatalogGatewayContext';
 import { PosePageProvider } from './catalog/PosePageContext';
 import { TagListProvider } from './catalog/TagListContext';
+import { PoseTaggingProvider } from './catalog/PoseTaggingContext';
 import { TransitionTaggingProvider } from './catalog/TransitionTaggingContext';
 import { ContributionProvider } from './contribution/ContributionContext';
 import { createSessionDecisionInputStore } from './contribution/session-decision-input-store';
@@ -63,32 +65,37 @@ createRoot(root).render(
         <PosePageProvider gateway={createPosePageGateway(apiClient)}>
           <TagListProvider gateway={createTagListGateway(apiClient)}>
             <TransitionTaggingProvider gateway={createTransitionTaggingGateway(apiClient)}>
-              <ContributionProvider gateway={createContributionGateway(apiClient)} store={proposalInputStore}>
-                <ValidationProvider gateway={createValidationGateway(apiClient)} store={decisionInputStore}>
-                  <PoseRevisionProvider
-                    gateway={createPoseRevisionGateway(apiClient)}
-                    store={revisionInputStore}
-                  >
-                    <TransitionProposalProvider
-                      gateway={createTransitionProposalGateway(apiClient)}
-                      store={transitionInputStore}
+              <PoseTaggingProvider gateway={createPoseTaggingGateway(apiClient)}>
+                <ContributionProvider
+                  gateway={createContributionGateway(apiClient)}
+                  store={proposalInputStore}
+                >
+                  <ValidationProvider gateway={createValidationGateway(apiClient)} store={decisionInputStore}>
+                    <PoseRevisionProvider
+                      gateway={createPoseRevisionGateway(apiClient)}
+                      store={revisionInputStore}
                     >
-                      <IdentityProvider
-                        gateway={createAuthGateway(apiClient)}
-                        memory={createLocalSessionMemory(localStorage, window)}
-                        forgetOnSignOut={[
-                          proposalInputStore,
-                          decisionInputStore,
-                          { clear: revisionInputStore.clearAll },
-                          { clear: transitionInputStore.clearAll },
-                        ]}
+                      <TransitionProposalProvider
+                        gateway={createTransitionProposalGateway(apiClient)}
+                        store={transitionInputStore}
                       >
-                        <RouterProvider router={router} />
-                      </IdentityProvider>
-                    </TransitionProposalProvider>
-                  </PoseRevisionProvider>
-                </ValidationProvider>
-              </ContributionProvider>
+                        <IdentityProvider
+                          gateway={createAuthGateway(apiClient)}
+                          memory={createLocalSessionMemory(localStorage, window)}
+                          forgetOnSignOut={[
+                            proposalInputStore,
+                            decisionInputStore,
+                            { clear: revisionInputStore.clearAll },
+                            { clear: transitionInputStore.clearAll },
+                          ]}
+                        >
+                          <RouterProvider router={router} />
+                        </IdentityProvider>
+                      </TransitionProposalProvider>
+                    </PoseRevisionProvider>
+                  </ValidationProvider>
+                </ContributionProvider>
+              </PoseTaggingProvider>
             </TransitionTaggingProvider>
           </TagListProvider>
         </PosePageProvider>

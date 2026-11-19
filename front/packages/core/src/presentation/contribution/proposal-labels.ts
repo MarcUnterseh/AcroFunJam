@@ -102,3 +102,33 @@ export const proposalSuccess = (outcome: {
  */
 export const invitesToSeeMyProposals = (status: 'pending' | 'published' | 'received'): boolean =>
   status !== 'published';
+
+/** Story 9a: the tags of a proposed or revised pose (9a-etiquettes-des-poses.md § 4 and § 5, Q181). */
+export const poseTagLabels = {
+  legend: 'Étiquettes (facultatives)',
+  help: 'Choisis celles qui décrivent la pose.',
+  /** Legend of the group in the form of a revision: everything is prefilled, nothing is « facultatif ». */
+  revisionLegend: 'Étiquettes',
+  /** Introduction of the form when tags are offered (replaces « Tous les champs sont obligatoires. »). */
+  introductionWithTags: 'Les étiquettes sont facultatives ; les autres champs sont obligatoires.',
+} as const;
+
+const quotedTags = (names: readonly string[]): string => {
+  const quoted = names.map((name) => `« ${name} »`);
+  return quoted.length > 1 ? `${quoted.slice(0, -1).join(', ')} et ${quoted.at(-1)}` : (quoted[0] ?? '');
+};
+
+/** Tags refused meanwhile, the input kept without them (« L'étiquette « vrille » ne s'applique plus aux poses. … »). */
+export const poseTagsRefusedLabel = (
+  kind: 'tags-not-applicable' | 'tags-not-in-list',
+  names: readonly string[],
+  sendAgain: string,
+): string => {
+  const several = names.length > 1;
+  const subject = `${several ? 'Les étiquettes' : "L'étiquette"} ${quotedTags(names)}`;
+  const reason =
+    kind === 'tags-not-applicable'
+      ? `ne ${several ? "s'appliquent" : "s'applique"} plus aux poses`
+      : `${several ? 'ne sont' : "n'est"} plus dans la liste des étiquettes`;
+  return `${subject} ${reason}. Vérifie tes étiquettes, puis ${sendAgain}.`;
+};

@@ -1,7 +1,14 @@
 import type { BrowserContext, Route } from '@playwright/test';
 import type { components } from '@acrofunjam/api-client/schema';
 import type { CatalogApi, DifficultyCode } from './catalog-api';
-import { keyOf, normalised, poseFields, type ContributionApi, type PoseChanges } from './contribution-api';
+import {
+  keyOf,
+  normalised,
+  poseFields,
+  sameTagIds,
+  type ContributionApi,
+  type PoseChanges,
+} from './contribution-api';
 import type { IdentityApi } from './identity-api';
 
 type ProposePoseRevisionRequest = components['schemas']['ProposePoseRevisionRequest'];
@@ -74,6 +81,15 @@ export class PoseRevisionApi {
         .filter((field) => proposed[field] !== undefined && proposed[field] !== pose[field])
         .map((field) => [field, proposed[field]]),
     ) as PoseChanges;
+    // Story 9a (Q172): the tags, chosen again by the list for a pose; the same set is no change.
+    if (request.tagIds != null) {
+      const chosen = this.catalogApi.tags.choose(request.tagIds, 'pose');
+      if (chosen.notInList.length > 0)
+        return this.problem(route, 409, 'contribution.tag-not-in-list', { tagIds: chosen.notInList });
+      if (chosen.notApplicable.length > 0)
+        return this.problem(route, 409, 'contribution.tag-not-applicable', { tagIds: chosen.notApplicable });
+      if (!sameTagIds(chosen.tagIds, pose.tagIds)) changes.tagIds = chosen.tagIds;
+    }
     if (Object.keys(changes).length === 0)
       return this.problem(route, 422, 'contribution.revision-changes-nothing');
     // As the domain does: a revision that changes nothing is refused before the pending one is looked for.
@@ -87,26 +103,29 @@ export class PoseRevisionApi {
         return this.problem(route, 409, 'contribution.pose-name-already-pending');
     }
 
-    const { id: poseId, name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow } = pose;
-    const before = { name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow };
+    const { id: poseId, name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow, tagIds } = pose;
+    const before = { name, baseDifficulty, flyerDifficulty, canStartFlow, canEndFlow, tagIds };
     const directly = account.role !== 'user';
     const message = (request.message ?? '').split(/\s+/u).filter(Boolean).join(' ') || null;
     const revision = this.contributionApi.addRevision(
       { poseId, before, changes, message, contributorEmail: account.email },
       directly,
     );
-    const revised = { ...before, ...changes };
+    const { tagIds: revisedTagIds, ...revised } = { ...before, ...changes };
     const answer: PoseRevisionProposalResponse = {
       id: revision.id,
       status: directly ? 'accepted' : 'pending',
       poseId,
       ...revised,
+      tags: this.catalogApi.tags
+        .describe(revisedTagIds ?? [])
+        .map(({ id, name: tagName }) => ({ id, name: tagName })),
     };
     return route.fulfill({ status: 201, json: answer });
   }
 
-  private problem(route: Route, status: number, title: string) {
-    const body: ProblemDetails = { title, status };
+  private problem(route: Route, status: number, title: string, extensions: Record<string, unknown> = {}) {
+    const body: ProblemDetails = { title, status, ...extensions };
     return route.fulfill({ status, contentType: 'application/problem+json', body: JSON.stringify(body) });
   }
 }

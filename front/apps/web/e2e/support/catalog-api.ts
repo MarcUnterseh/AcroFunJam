@@ -9,6 +9,8 @@ type ProblemDetails = components['schemas']['ProblemDetails'];
 export type DifficultyCode = components['schemas']['DifficultyCode'];
 
 type PublishedPose = {
+  /** Story 9a: the tags of the pose (none when absent). */
+  tagIds?: string[];
   name: string;
   baseDifficulty?: DifficultyCode;
   flyerDifficulty?: DifficultyCode;
@@ -17,10 +19,10 @@ type PublishedPose = {
 };
 
 /** The values of a published pose, as the API returns them. */
-type PublishedValues = Omit<PoseSummaryResponse, 'id'>;
+type PublishedValues = Omit<PoseSummaryResponse, 'id' | 'tags'>;
 
-/** A published pose as the simulated catalog keeps it: its values and its version (story 6). */
-type StoredPose = PoseSummaryResponse & { version: number };
+/** A published pose as the simulated catalog keeps it: its values, its version (story 6) and its tags (story 9a). */
+type StoredPose = Omit<PoseSummaryResponse, 'tags'> & { version: number; tagIds: string[] };
 
 /** A published transition (story 7): its poses by id, its optional name and description. */
 export type PublishedTransition = {
@@ -45,8 +47,14 @@ export type DescribedTag = { id: string; name: string; description: string };
 export type TagDirectory = {
   /** These tags, with their names and descriptions, in catalog order; a tag unknown to the list is left out. */
   describe(ids: readonly string[]): DescribedTag[];
-  /** The chosen tags with the tags they add, and the chosen ones not in the list (ADR 0034). */
-  choose(ids: readonly string[]): { tagIds: string[]; notInList: string[] };
+  /**
+   * The chosen tags with the tags they add, and the chosen ones not in the list (ADR 0034); story 9a: for a pose, the
+   * chosen ones that do not apply to the poses.
+   */
+  choose(
+    ids: readonly string[],
+    target?: 'pose' | 'transition',
+  ): { tagIds: string[]; notInList: string[]; notApplicable: string[] };
 };
 
 /** Catalog order of the names (ADR 0017), enough for the scenarios of the site. */
@@ -66,8 +74,10 @@ export class CatalogApi {
   /** The simulated list of tags (story 8), set by TagApi. */
   tags: TagDirectory = {
     describe: () => [],
-    choose: (ids) => ({ tagIds: [...ids], notInList: [] }),
+    choose: (ids) => ({ tagIds: [...ids], notInList: [], notApplicable: [] }),
   };
+  /** Story 9a: whether a revision of the pose is pending (« pendingRevision »), set by the simulated revisions. */
+  hasPendingRevision: (poseId: string) => boolean = () => false;
 
   constructor(private readonly context: BrowserContext) {}
 
@@ -80,7 +90,22 @@ export class CatalogApi {
       canEndFlow: true,
       ...pose,
       version: 1,
+      tagIds: pose.tagIds ?? [],
     });
+  }
+
+  /** Story 9a: the pose carries these tags (tagged directly, or published with them). */
+  tagPose(name: string, tagIds: readonly string[]): void {
+    const pose = this.poseNamed(name);
+    pose.tagIds = [...tagIds];
+    pose.version += 1;
+  }
+
+  /** Story 9a: the published poses carrying this tag. */
+  posesCarrying(tagId: string): StoredPose[] {
+    return this.poses
+      .filter((pose) => pose.tagIds.includes(tagId))
+      .sort((a, b) => byCatalogOrder(a.name, b.name));
   }
 
   /** A transition published in the catalog (story 7): directly, or once its proposal is accepted. */
@@ -125,10 +150,17 @@ export class CatalogApi {
       if (this.unreachable) return route.abort('connectionrefused');
       // In catalog order, as the API guarantees it (ADR 0007).
       const poses = [...this.poses].sort((a, b) => byCatalogOrder(a.name, b.name));
-      const body: PoseListResponse = { poses: poses.map(({ version: _version, ...pose }) => pose) };
+      const body: PoseListResponse = {
+        poses: poses.map(({ version: _version, tagIds, ...pose }) => ({
+          ...pose,
+          tags: this.tags.describe(tagIds).map(({ id, name }) => ({ id, name })),
+        })),
+      };
       return route.fulfill({ json: body });
     });
     await this.context.route('**/catalog/poses/*', async (route) => {
+      // PUT /catalog/poses/{id}/tags is answered by the simulated list of tags (story 9a).
+      if (route.request().method() !== 'GET') return route.fallback();
       if (this.unreachable) return route.abort('connectionrefused');
       const id = new URL(route.request().url()).pathname.split('/').pop() ?? '';
       const pose = this.poseWithId(id);
@@ -140,10 +172,13 @@ export class CatalogApi {
           body: JSON.stringify(body),
         });
       }
+      const { tagIds, ...values } = pose;
       const body: PublishedPoseResponse = {
-        ...pose,
+        ...values,
         transitionsFrom: this.linked(pose.id, 'from'),
         transitionsTo: this.linked(pose.id, 'to'),
+        tags: this.tags.describe(tagIds),
+        pendingRevision: this.hasPendingRevision(pose.id),
       };
       return route.fulfill({ json: body });
     });

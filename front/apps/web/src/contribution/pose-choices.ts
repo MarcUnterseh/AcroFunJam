@@ -1,5 +1,5 @@
 import { difficultyLevelName, difficultyScale, proposalLabels, type DifficultyLevel } from '@acrofunjam/core';
-import type { TileOption } from './TileRadioGroup';
+import type { TileOption } from '../layout/TileRadioGroup';
 
 /** The choices of the groups of radio tiles of a pose (forms « Proposer une pose » and « Ajuster avant de publier »). */
 export const levels: readonly TileOption<DifficultyLevel>[] = difficultyScale.map((level) => ({

@@ -1,4 +1,5 @@
 import {
+  transitionTagChoices,
   tagTransition,
   tagTransitionButtonName,
   tagTransitionFailureLabel,
@@ -8,17 +9,17 @@ import {
   type TagTransitionError,
 } from '@acrofunjam/core';
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useSession } from '../identity/SessionContext';
 import { useAnnounce } from '../layout/Announcer';
 import { FormAlert } from '../layout/form-controls';
 import { Icon } from '../layout/Icon';
 import { TagChoiceGroup } from '../layout/tag-parts';
 import { useTransitionTaggingGateway } from './TransitionTaggingContext';
+import { publishedPosesKey } from './usePublishedPoses';
 import { tagListKey, useTags } from './useTags';
 
 /** Every page of a pose and the catalog: a washing machine, or the other pose of the transition, show its tags too. */
-const posesKey = ['catalog', 'poses'] as const;
 
 /**
  * The zone « Étiqueter » of a published transition (zone-etiqueter.md), for a validator or an administrator: the button,
@@ -37,7 +38,9 @@ export function TransitionTagging({
   const queryClient = useQueryClient();
   const announce = useAnnounce();
   const { sessionExpired } = useSession();
-  const { data: list, error: listError, refetch } = useTags();
+  const { data: fullList, error: listError, refetch } = useTags();
+  // Story 9a (ADR 0035): only the tags that apply to transitions.
+  const list = useMemo(() => fullList && transitionTagChoices(fullList), [fullList]);
   const [open, setOpen] = useState(false);
   const [chosen, setChosen] = useState<readonly TagReference[]>(transition.tags);
   const [error, setError] = useState<TagTransitionError | null>(null);
@@ -90,7 +93,7 @@ export function TransitionTagging({
     }
     // The page read again shows the tags; the counts of the list change too.
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: posesKey }),
+      queryClient.invalidateQueries({ queryKey: publishedPosesKey }),
       queryClient.invalidateQueries({ queryKey: tagListKey }),
     ]);
     setSaving(false);

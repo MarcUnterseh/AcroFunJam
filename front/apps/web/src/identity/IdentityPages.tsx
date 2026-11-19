@@ -15,7 +15,11 @@ export function SignInPage({
   const { signIn } = useSession();
   const [params] = useSearchParams();
   return (
-    <IdentityForm kind="sign-in" context={contextOf(safeReturnPath(params.get('retour')))} onSubmit={signIn} />
+    <IdentityForm
+      kind="sign-in"
+      context={contextOf(safeReturnPath(params.get('retour')))}
+      onSubmit={signIn}
+    />
   );
 }
 

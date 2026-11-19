@@ -20,6 +20,7 @@ const throne = {
   flyerDifficulty: 'discovery',
   canStartFlow: true,
   canEndFlow: false,
+  tags: [{ id: 'tag-lunaire', name: 'lunaire' }],
 };
 
 const unexpectedResponse = fail({
@@ -42,9 +43,19 @@ describe('createCatalogGateway', () => {
           flyerDifficulty: 'discovery',
           canStartFlow: true,
           canEndFlow: false,
+          tags: [{ id: 'tag-lunaire', name: 'lunaire' }],
         },
       ]),
     );
+  });
+
+  // Story 9a (ADR 0036): the tags of each pose, under their current names.
+  it('should report a pose whose tags cannot be read as an unexpected response', async () => {
+    const gateway = createCatalogGateway(
+      apiAnswering(200, { poses: [{ ...throne, tags: [{ id: 'tag-x' }] }] }),
+    );
+
+    expect(await gateway.listPublishedPoses()).toEqual(unexpectedResponse);
   });
 
   it('should fail when the request fails', async () => {

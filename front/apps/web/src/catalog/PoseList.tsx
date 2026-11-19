@@ -5,8 +5,10 @@ import {
   flowBoundaryAnswer,
   type DifficultyLevel,
   type PoseSummary,
+  type TagReference,
 } from '@acrofunjam/core';
 import { Link } from 'react-router';
+import { TagLine } from '../layout/tag-parts';
 import { Icon } from '../layout/Icon';
 import { posePath, revisionPath } from '../paths';
 import { DifficultyMoon } from './DifficultyMoon';
@@ -94,7 +96,17 @@ export function DifficultyDetails({ difficulties }: { readonly difficulties: Dif
  * the card of a proposal to validate (carte-proposition.md), which shows the pose as it will be published, and on
  * the page of the pose (story 7).
  */
-export function PoseDetails({ pose }: { readonly pose: PoseCharacteristics }) {
+export function PoseDetails({
+  pose,
+  tags = [],
+  showNoTags = false,
+}: {
+  readonly pose: PoseCharacteristics;
+  /** Story 9a: the tags of the pose, a third group after the flow boundaries; nothing without any. */
+  readonly tags?: readonly TagReference[];
+  /** « aucune » where the line is always present (the validation queue). */
+  readonly showNoTags?: boolean;
+}) {
   return (
     <dl className="pose-card__details">
       <div className="pose-card__roles">
@@ -104,6 +116,7 @@ export function PoseDetails({ pose }: { readonly pose: PoseCharacteristics }) {
         <FlowBoundary label={catalogLabels.canStartFlow} icon="rise" possible={pose.canStartFlow} />
         <FlowBoundary label={catalogLabels.canEndFlow} icon="set" possible={pose.canEndFlow} />
       </div>
+      <TagLine tags={tags} showNone={showNoTags} inList />
     </dl>
   );
 }
@@ -126,7 +139,7 @@ function PoseCard({ pose, revisable }: { readonly pose: PoseSummary; readonly re
           </Link>
         </h2>
       </div>
-      <PoseDetails pose={pose} />
+      <PoseDetails pose={pose} tags={pose.tags} />
       {revisable && (
         <p className="pose-card__revision">
           <Link to={revisionPath(pose.id)} className="pose-card__revision-link">

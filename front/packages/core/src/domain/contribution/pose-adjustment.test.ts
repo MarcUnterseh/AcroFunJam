@@ -10,6 +10,7 @@ const throne: ValidPoseProposal = {
   flyerDifficulty: 'intermediate',
   canStartFlow: true,
   canEndFlow: true,
+  tags: [],
 };
 
 /** The adjustment form starts with the proposed values. */
@@ -58,6 +59,7 @@ describe('adjustmentsOf', () => {
       flyerDifficulty: 'advanced',
       canStartFlow: false,
       canEndFlow: false,
+      tags: [],
     };
 
     expect(adjustmentsOf(throne, retained)).toEqual(

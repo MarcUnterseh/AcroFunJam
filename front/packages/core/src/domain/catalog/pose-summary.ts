@@ -1,4 +1,5 @@
 import type { DifficultyLevel } from '../shared-kernel/difficulty-level';
+import type { TagReference } from '../shared-kernel/tags';
 
 /** A published pose as listed in the catalog. */
 export type PoseSummary = {
@@ -10,4 +11,6 @@ export type PoseSummary = {
   readonly canStartFlow: boolean;
   /** The flyer can come down to the ground directly and safely. */
   readonly canEndFlow: boolean;
+  /** Story 9a: its tags under their current names, in catalog order (none: an empty list). */
+  readonly tags: readonly TagReference[];
 };

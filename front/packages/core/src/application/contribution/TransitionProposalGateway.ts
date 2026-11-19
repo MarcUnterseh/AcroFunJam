@@ -1,6 +1,6 @@
 import type { Result } from '../../domain/common/result';
 import type { TransitionPose, ValidTransitionProposal } from '../../domain/contribution/transition-proposal';
-import type { ChoosableTag } from '../../domain/shared-kernel/transition-tags';
+import type { ChoosableTag } from '../../domain/shared-kernel/tags';
 
 /** What became of a received transition, as stated by the API (never guessed from the role): ADR 0019, ADR 0030. */
 export type TransitionProposalOutcome = {

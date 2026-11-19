@@ -428,7 +428,8 @@ describe('adjusting a proposal before accepting it', () => {
     expect(group(card, 'Peut-on terminer un flow sur cette pose ?')).toHaveAccessibleDescription(
       'Peut terminer : le flyer redescend au sol directement et sans danger. Proposé : Oui',
     );
-    expect(within(card).queryByRole('term')).not.toBeInTheDocument();
+    // The pose is not shown while it is adjusted (the fold of the tags lists terms of its own).
+    expect(card.querySelector('.pose-card__details')).toBeNull();
     expect(decisionButtons(card)).toHaveLength(0);
   });
 

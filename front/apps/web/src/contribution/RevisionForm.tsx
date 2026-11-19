@@ -2,6 +2,7 @@ import {
   changedFields,
   checkPoseName,
   currentValueLabel,
+  poseTagLabels,
   keepRevisionInput,
   myProposalsLabels,
   openPoseRevision,
@@ -44,7 +45,9 @@ import { answerOf, answers, levels } from './pose-choices';
 import { PoseChangeList } from './PoseChangeList';
 import { usePoseRevision } from './PoseRevisionContext';
 import { RevisionSuccess } from './RevisionSuccess';
-import { TileRadioGroup } from './TileRadioGroup';
+import { TileRadioGroup } from '../layout/TileRadioGroup';
+import { TagChoiceGroup } from '../layout/tag-parts';
+import { usePoseTags } from './usePoseTags';
 import { useCounterAnnouncement } from './useCounterAnnouncement';
 import { validatorTextCounter, ValidatorTextCounter } from './ValidatorTextCounter';
 
@@ -127,6 +130,7 @@ export function RevisionForm({
   readonly owner: string;
   readonly sessionExpired: boolean;
 }) {
+  const tagList = usePoseTags();
   const { gateway, store } = usePoseRevision();
   const { session, sessionExpired: expireSession } = useSession();
   const queryClient = useQueryClient();
@@ -656,6 +660,17 @@ export function RevisionForm({
             firstRadioRef={firstRadios.canEndFlow}
           />
         </div>
+        {/* Story 9a: the tags, prefilled with those of the pose; absent when no tag of the list applies to poses. */}
+        {tagList && tagList.length > 0 && (
+          <TagChoiceGroup
+            list={tagList}
+            chosen={input.values.tags}
+            onChange={(tags) => setInput({ ...input, values: { ...input.values, tags } })}
+            legend={poseTagLabels.revisionLegend}
+            reminder={currentValueLabel({ field: 'tags', value: pose.tags })}
+            tag={changed.includes('tags') ? revisionLabels.modified : undefined}
+          />
+        )}
         {/* A validator or an administrator publishes directly: there is no validator to write to. */}
         {!directly && (
           <TextAreaField

@@ -977,6 +977,24 @@ main {
   }
 }
 
+/* Story 9a: what a tag applies to, one column, then the three choices on a line from
+   29.5em = 3 × sizes.tileMinWidth + 2 × spacing.sm (no empty fourth column). */
+.tile-group__tiles--scope {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@container (width >= 19.5em) {
+  .tile-group__tiles--scope {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container (width >= 29.5em) {
+  .tile-group__tiles--scope {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .flow-questions {
   display: grid;
   gap: var(--afj-spacing-md);
@@ -2369,9 +2387,43 @@ main {
   }
 
   .pose-page__actions,
-  .pose-page__body .difficulty-legend {
+  .pose-page__body .difficulty-legend,
+  .pose-tags {
     grid-column: 1 / -1;
   }
+}
+
+/* --- Story 9a: the tags of a pose on its page (9a-etiquettes-des-poses.md § 1) ---------------------------------- */
+
+/* On the sky, every text outside a pill is in skyText (textMuted would fall under 4.5:1 at dawn). */
+.pose-hero .tag-line__term {
+  color: var(--afj-color-sky-text);
+}
+
+.pose-tags {
+  display: grid;
+  gap: var(--afj-spacing-sm);
+  max-inline-size: var(--afj-size-form-wide-max-width);
+}
+
+/* The footer of management follows the fold: a dotted top border, only then. */
+.tag-meanings + .pose-tags__manage {
+  padding-top: var(--afj-spacing-sm);
+  border-top: var(--afj-size-border-width) dotted var(--afj-color-divider);
+}
+
+/* On the background of the page, the zone takes the rendering of an element (the background would vanish). */
+.pose-tagging-zone {
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
+}
+
+.tagging-zone__title {
+  margin: 0;
+  font-size: var(--afj-font-size-md);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text);
 }
 
 /* --- Page « Étiquettes » (story 8, docs/design/ecrans/8-etiquettes.md, element-etiquette.md) ----------------- */
@@ -2458,6 +2510,14 @@ main {
   color: var(--afj-color-text-muted);
 }
 
+/* Story 9a: what the tag applies to, under its name (element-etiquette.md). */
+.tag__scope {
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text-muted);
+}
+
 /* Footer of management: dotted top border. */
 .tag__actions {
   padding-top: var(--afj-spacing-sm);
@@ -2491,6 +2551,7 @@ main {
 }
 
 .tag__carriers {
+  list-style: disc;
   display: grid;
   gap: var(--afj-spacing-xs);
   margin: 0;
@@ -2774,6 +2835,13 @@ main {
 @media (width < 40em) {
   .tagging-zone__actions .button {
     inline-size: 100%;
+  }
+}
+
+/* From 40em, the actions of the zone are on a line, each as wide as its content (a primary is full width otherwise). */
+@media (width >= 40em) {
+  .tagging-zone__actions .button {
+    width: auto;
   }
 }
 

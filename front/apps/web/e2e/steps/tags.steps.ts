@@ -49,10 +49,6 @@ When('le visiteur ouvre la liste des étiquettes depuis le catalogue', async ({ 
   await tagsPage.loaded();
 });
 
-When('{word} consulte la liste des étiquettes sur le site', async ({ tagsPage }, _name: string) => {
-  await tagsPage.open();
-});
-
 When(
   '{word} ouvre la gestion des étiquettes depuis les propositions à valider',
   async ({ page, tagsPage }, _name: string) => {
@@ -69,7 +65,7 @@ const onThePage = async (page: import('@playwright/test').Page, open: () => Prom
 };
 
 When(
-  /^(\S+) ajoute sur le site l'étiquette "([^"]+)" avec la description « (.+) »$/,
+  /^(\S+) ajoute sur le site l'étiquette "([^"]+)" avec la description « ([^»]+) »$/,
   async ({ page, tagsPage }, _name: string, tag: string, description: string) => {
     await onThePage(page, () => tagsPage.open());
     await tagsPage.add(tag, description);

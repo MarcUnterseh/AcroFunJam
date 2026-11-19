@@ -10,6 +10,7 @@ const kept: KeptProposalInput = {
     flyerDifficulty: null,
     canStartFlow: false,
     canEndFlow: null,
+    tags: [],
   },
 };
 

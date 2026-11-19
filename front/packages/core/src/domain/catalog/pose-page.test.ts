@@ -10,6 +10,8 @@ const star: PosePage = {
   canEndFlow: false,
   transitionsFrom: [],
   transitionsTo: [],
+  tags: [],
+  pendingRevision: false,
 };
 
 const linked = (otherPose: { id: string; name: string }): LinkedTransition => ({

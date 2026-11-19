@@ -17,6 +17,7 @@ const throne: PoseContent = {
   flyerDifficulty: 'intermediate',
   canStartFlow: true,
   canEndFlow: true,
+  tags: [],
 };
 
 describe('revisedPose', () => {

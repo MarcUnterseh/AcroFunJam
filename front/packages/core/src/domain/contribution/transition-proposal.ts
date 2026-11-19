@@ -10,7 +10,7 @@ import {
   type TransitionName,
   type TransitionNameError,
 } from '../shared-kernel/transition-name';
-import type { TagReference } from '../shared-kernel/transition-tags';
+import type { TagReference } from '../shared-kernel/tags';
 
 /**
  * A published pose a transition designates (story 7): its id and its current name. Contribution has its own type: the
@@ -91,7 +91,10 @@ export const emptyTransitionProposalInput = (fromPoseId: string): TransitionProp
  * were chosen among the list: only the API knows whether one left it meanwhile.
  */
 export const validateTransitionContent = (
-  input: Pick<TransitionProposalInput, 'name' | 'baseDifficulty' | 'flyerDifficulty' | 'description' | 'tags'>,
+  input: Pick<
+    TransitionProposalInput,
+    'name' | 'baseDifficulty' | 'flyerDifficulty' | 'description' | 'tags'
+  >,
 ): Result<TransitionContent, TransitionFieldError[]> => {
   const errors: TransitionFieldError[] = [];
   const name = checkTransitionName(input.name);
