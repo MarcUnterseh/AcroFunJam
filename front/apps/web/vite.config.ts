@@ -30,6 +30,7 @@ export default defineConfig({
     proxy: {
       '^/catalog/': apiTarget,
       '^/contribution/': apiTarget,
+      '^/flow-generation/': apiTarget,
       '^/identity/': apiTarget,
       '^/me$': apiTarget,
     },
