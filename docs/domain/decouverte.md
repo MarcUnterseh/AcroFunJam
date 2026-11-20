@@ -834,6 +834,48 @@ Carte d'example mapping du 2026-11-19 (bdd-analyst), **toutes les recommandation
 6. Site, rejeu et échecs : G15 (autre flow, même flow ressorti, modifier les critères), G17 (trop restrictifs et pistes, catalogue insuffisant, incident).
 7. Site, étiquettes : K9 (liste dans les deux groupes, explications, exclusion mutuelle, étiquette retirée, étiquettes non chargées).
 
+### Story 9b « Générer un flow sur mobile » (validée le 2026-11-19)
+Carte d'example mapping du 2026-11-19 (bdd-analyst), relue par l'ux-expert (UX-9 à UX-14) et l'acroyoga-expert (AY-1 à AY-7), **validée le 2026-11-19 par le porteur du produit**. Suite de Q201 : le générateur sert surtout sur le tapis. Les règles G et K de la story 9 restent celles du domaine (vérifiées une fois par `@api`) ; la story 9b ne porte que le parcours dans l'application. Scénarios `@mobile @wip` ajoutés à `generation-de-flow/generer-un-flow.feature` et `criteres-de-generation.feature` ; « Le générateur présélectionne 3 transitions… » reçoit `@mobile` tel quel (sans `@wip`, qui l'exclurait de la CI web). Un flow Maestro par scénario, sélecteurs par texte. Nouveau terme : **Application** (glossaire).
+
+**Story** : en tant que visiteur ou utilisateur, sur le tapis avec mon téléphone, je génère un flow dans l'application et je le suis étape par étape, afin de pratiquer sans avoir à inventer un enchaînement ni à revenir à un ordinateur.
+
+**Règles propres au mobile** (M) et exemples
+- **M1. L'application s'ouvre sur le dernier flow gardé, sinon sur le générateur de flow, pour tout le monde, sans compte, « AcroFunJam » en en-tête** (Q212, Q219, UX-13) : sans flow gardé, ouvrir l'application présente le générateur ; présélection 3 transitions, « débutant » / « débutant », aucune étiquette (K9) ; « AcroFunJam » en en-tête. Seul le générateur existe dans la 9b ; la navigation est construite pour accueillir plus tard d'autres écrans (catalogue, compte).
+- **M2. L'application présente le flow comme le site, sans lien vers la page d'une pose** (G12, G13, Q213) : étapes numérotées depuis Throne (« Pop to Bird », « Bird → Folded Leaf ») ; résumé « 2 transitions, de Throne à Folded Leaf. » ; difficultés et étiquettes du départ, de la transition et de l'arrivée ; description dépliée à la demande ; « Ninja Star » marquée « washing machine » ; rappel du spotter au-dessus de l'étape 1, non repliable, texte de la story 9 inchangé (G14, AY-3, UX-14).
+- **M3. Le flow affiché et ses critères sont gardés sur l'appareil, lisibles hors ligne ; revenir en arrière présente ses critères** (Q214, AY-4) : « Throne → Bird » présenté de nouveau après fermeture et réouverture, sans tirage ; hors ligne, après réouverture, la description de « Pop to Bird » se déplie ; retour arrière depuis un flow de 2 transitions, débutant / intermédiaire : ces critères ; depuis le formulaire : sortie de l'application. Pas d'horodatage du flow (UX-9 refusé).
+- **M4. « Générer un autre flow » et « Modifier les critères » comme sur le site** (G15) : mêmes critères ; « Le même flow est ressorti… ».
+- **M5. Échecs expliqués comme sur le site, sans « Voir le catalogue »** (G17, Q213) : critères trop restrictifs et pistes ; catalogue insuffisant (message seul).
+- **M6. Injoignable : message, réessai, et le flow affiché n'est jamais perdu** (Q216) : « Impossible de générer le flow. Vérifie ta connexion Internet, puis réessaie. » ; réessai réussi ; « Générer un autre flow » hors ligne : « Throne → Bird » reste présenté.
+- **M7. Critères comme sur le site, saisis au compteur et aux boutons radio** (K9, Q217, Q221, UX-11) : génération avec plafonds et « lunaire » ; toutes les étiquettes dans les deux groupes ; exclusion mutuelle « (demandée) » / « (exclue) » ; étiquettes non chargées : génération sans étiquette ; compteur − / + (élément réglable), « − » désactivé à 1, « + » à 10 ; plafonds en boutons radio ; seul « Générer un flow » lance le tirage (test unitaire).
+- **M8. Barre basse fixe sous le flow : « Modifier les critères » à gauche, « Générer un autre flow » à droite** (AY-2, UX-10). Actions couvertes par M4 ; placement vérifié par tests unitaires et revue des captures.
+- **M9. Après un nouveau tirage, un message éphémère propose « Revenir au flow précédent », qui rétablit le flow d'avant et ses critères** (AY-2, UX-10). Règles testables retenues par le bdd-analyst : un nouveau tirage est un flow généré qui remplace le flow présenté (« Générer un autre flow », ou « Générer un flow » après « Modifier les critères ») ; un seul flow précédent, plus proposé une fois rétabli (ni retour vers l'autre) jusqu'au tirage suivant ; rien n'est proposé si le même flow est ressorti ou si le tirage échoue ; le message disparaît après un délai (test unitaire) ou dès que le visiteur modifie les critères ; le flow précédent n'est pas gardé sur l'appareil. Exemples : « Throne → Bird », puis « Throne → Star » : revenir présente « Throne → Bird » ; « Throne → Bird » sans « lunaire », puis « Bird → Folded Leaf » avec « lunaire » : revenir rétablit aussi « sans lunaire » ; après le retour, plus de proposition ; même flow ressorti : pas de proposition ; « Modifier les critères » : plus de proposition.
+- **Non vérifié par Maestro** (tests unitaires, revue des captures) : écran maintenu allumé seulement quand le flow est au premier plan ; texte lisible à 2-3 m (Q215, AY-5) ; thème clair ou sombre du système (AY-6).
+
+**Décisions du porteur du produit (2026-11-19)**
+- **Q212** : ouverture sur le dernier flow gardé, sinon sur le formulaire ; pas de compte ; « AcroFunJam » visible ; navigation prête pour d'autres écrans.
+- **Q213** : noms de poses en texte simple, pas de « Voir le catalogue », **provisoirement**, jusqu'à la story « catalogue en lecture sur mobile ».
+- **Q214 + AY-4** : flow et critères gardés sur l'appareil, lisibles hors ligne, descriptions comprises (un scénario) ; retour arrière depuis le flow = formulaire avec ses critères, depuis le formulaire = sortie ; pas d'horodatage (UX-9 non).
+- **Q215 + AY-5** : écran maintenu allumé seulement quand le flow est au premier plan ; texte lisible à 2-3 m ; pas de scénario Maestro.
+- **Q216** : pas de génération hors ligne dans la 9b (story ultérieure).
+- **AY-2, UX-10** : nouvelles règles M8 et M9.
+- **AY-3, UX-14** : rappel du spotter au-dessus de l'étape 1, non repliable, texte de la story 9.
+- **AY-7** : pas de consigne « Pose ton téléphone hors du tapis ».
+- **Q221 + UX-11** : compteur − / + (élément réglable, − désactivé à 1, + à 10), plafonds en boutons radio ; seul « Générer un flow » lance le tirage.
+- **Q217, Q219, Q222, AY-6, UX-13** : recommandations acceptées (étiquettes non chargées comme UX-6, une étiquette retirée depuis des critères gardés donne le message du site ; aucune connexion ; libellés du site partagés par `core/presentation` (ADR 0021), aucun « site » dans les textes ; thème du système ; « AcroFunJam » en en-tête).
+- **Q218, Q220** : adresse de l'API par variable de configuration par profil de build ; Maestro sur l'API réelle avec un catalogue préparé par script, « injoignable » par une adresse qui ne répond pas. **ADR à rédiger** avant l'implémentation.
+- **Hors 9b** : « étape en cours » (AY-1, UX-12), story dédiée juste après la 9b ; trio et échange de rôles : hors périmètre.
+
+**Questions ouvertes restantes** (non bloquantes, à trancher avec l'ux-expert pendant l'implémentation)
+- **Q223** Texte et durée du message éphémère qui propose « Revenir au flow précédent » (M9).
+
+**Ordre d'implémentation conseillé**
+1. Prérequis : ADR Q218 / Q220 (adresse de l'API, données Maestro).
+2. M1 (ouverture sur le générateur, en-tête, présélection), M2 (étapes depuis la pose de départ, rappel du spotter, résumé).
+3. M6 (injoignable, réessai), M5 (trop restrictifs, catalogue insuffisant).
+4. M4 et M8 (autre flow, même flow, modifier, barre basse), M3 (réouverture, hors ligne, retour arrière).
+5. M9 (revenir au flow précédent : retour, critères rétablis, plus de proposition, même flow, modifier).
+6. M2 détails (difficultés et étiquettes, description, washing machine), M7 (compteur, étiquettes), puis M5 pistes.
+
 ### Découpage des stories suivantes (décidé le 2026-11-02)
 1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.
 2. **Proposer une pose** (Contribution) : reprend les règles de contenu de `specs/features/catalogue/publier-une-pose.feature` (brouillon) ; publication directe pour un validateur ou un administrateur.

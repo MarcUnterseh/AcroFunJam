@@ -1,0 +1,33 @@
+# Dans l'application, un visiteur génère un flow avec ses critères de difficulté et d'étiquettes
+appId: com.acrofunjam.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 30000
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn:
+    text: 'Débutant'
+    index: 0
+- tapOn:
+    text: 'Débutant'
+    index: 1
+- tapOn: 'Étiquettes \(facultatives\).*'
+- scrollUntilVisible:
+    element:
+      text: 'lunaire'
+      index: 0
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    text: 'lunaire'
+    index: 0
+- tapOn:
+    id: 'generer-un-flow'
+- scrollUntilVisible:
+    element:
+      text: 'Étape 1 · de Bird vers Folded Leaf'
+    direction: DOWN
+    timeout: 15000

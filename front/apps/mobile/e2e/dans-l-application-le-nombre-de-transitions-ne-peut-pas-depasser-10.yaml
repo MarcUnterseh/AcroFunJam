@@ -1,0 +1,24 @@
+# Dans l'application, le nombre de transitions ne peut pas dépasser 10
+appId: com.acrofunjam.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 30000
+- tapOn: 'Augmenter le nombre de transitions'
+- tapOn: 'Augmenter le nombre de transitions'
+- tapOn: 'Augmenter le nombre de transitions'
+- tapOn: 'Augmenter le nombre de transitions'
+- tapOn: 'Augmenter le nombre de transitions'
+- tapOn: 'Augmenter le nombre de transitions'
+- tapOn: 'Augmenter le nombre de transitions'
+- tapOn: 'Augmenter le nombre de transitions'
+- scrollUntilVisible:
+    element:
+      text: '10'
+    direction: DOWN
+    timeout: 15000
+- assertVisible:
+    text: 'Augmenter le nombre de transitions'
+    enabled: false

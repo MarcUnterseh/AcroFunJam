@@ -1,0 +1,30 @@
+{
+  "poses": [
+    {
+      "name": "Throne"
+    },
+    {
+      "name": "Bird"
+    },
+    {
+      "name": "Star"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Throne",
+      "to": "Bird",
+      "name": null
+    },
+    {
+      "from": "Throne",
+      "to": "Star",
+      "name": null
+    },
+    {
+      "from": "Star",
+      "to": "Bird",
+      "name": null
+    }
+  ]
+}

@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette : générer un flow sur mobile (story 9b)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=Unbounded:wght@500;600;700&display=swap">
+<style>
+/* Maquette statique de la story 9b (docs/design/ecrans/9b-generer-un-flow-mobile.md).
+   Valeurs : @acrofunjam/ui-tokens (front/packages/ui-tokens/src/index.ts), mêmes noms que les variables du site
+   (--afj-*), en dp (1 px de la maquette = 1 dp). Seul ajout : typography.maxFontScale (text 2, title 1.25,
+   display 1), rendu ici par --scale et min(). Chaque cadre de téléphone fait 360 dp de large ; le thème sombre est
+   le même écran avec la classe .dark (colorsDark), dupliqué par le script en bas de page. */
+
+:root {
+  --afj-color-primary: #5B3FC4;
+  --afj-color-primary-active: #38267E;
+  --afj-color-primary-contrast: #FFFFFF;
+  --afj-color-background: #F5F2FA;
+  --afj-color-surface: #FFFFFF;
+  --afj-color-surface-hover: #EDE8F7;
+  --afj-color-text: #211C3B;
+  --afj-color-text-muted: #5B5577;
+  --afj-color-border: #8F87A8;
+  --afj-color-divider: #DCD5EA;
+  --afj-color-focus: #1D69AE;
+  --afj-color-danger: #B42318;
+  --afj-color-danger-surface: #FDECEA;
+  --afj-color-info: #1D69AE;
+  --afj-color-info-surface: #DFEAFA;
+  --afj-color-disabled-surface: #EDE8F7;
+  --afj-color-selected: #47309F;
+  --afj-color-selected-surface: #EBE5FB;
+  --afj-color-base: #2C6A4C;
+  --afj-color-base-surface: #DCEFE3;
+  --afj-color-flyer: #1D69AE;
+  --afj-color-flyer-surface: #DFEAFA;
+  --afj-color-sun: #E8961E;
+  --afj-color-sun-strong: #A15C00;
+  --afj-color-sun-surface: #FFEBC4;
+  --afj-color-tag-surface: #F2EFEA;
+  --afj-color-tag-border: #CFC8BD;
+
+  --afj-spacing-xs: 4px;
+  --afj-spacing-sm: 8px;
+  --afj-spacing-md: 16px;
+  --afj-spacing-lg: 24px;
+  --afj-spacing-xl: 32px;
+  --afj-spacing-xxl: 48px;
+
+  --afj-radius-sm: 10px;
+  --afj-radius-md: 16px;
+  --afj-radius-lg: 26px;
+  --afj-radius-pill: 9999px;
+
+  --afj-font-family: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --afj-font-family-display: "Unbounded", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --afj-font-weight-regular: 400;
+  --afj-font-weight-medium: 500;
+  --afj-font-weight-semibold: 600;
+  --afj-font-weight-bold: 700;
+  --afj-line-height-display: 1;
+  --afj-line-height-tight: 1.25;
+  --afj-line-height-normal: 1.5;
+
+  --afj-size-control: 48px;
+  --afj-size-border-width: 1px;
+  --afj-size-border-width-strong: 2px;
+  --afj-size-accent-bar: 4px;
+  --afj-size-icon: 20px;
+  --afj-size-icon-large: 32px;
+  --afj-size-moon: 18px;
+  --afj-size-moon-large: 24px;
+  --afj-size-trajectory-width: 46px;
+  --afj-size-trajectory-height: 20px;
+  --afj-size-logo: 30px;
+}
+
+/* La nuit (colorsDark), portée par un cadre de téléphone. */
+.dark {
+  color-scheme: dark;
+  --afj-color-primary: #B6A6FF;
+  --afj-color-primary-active: #E0D9FF;
+  --afj-color-primary-contrast: #15122B;
+  --afj-color-background: #110F24;
+  --afj-color-surface: #1A1733;
+  --afj-color-surface-hover: #252148;
+  --afj-color-text: #ECE8F8;
+  --afj-color-text-muted: #ABA4C8;
+  --afj-color-border: #6F6896;
+  --afj-color-divider: #322D57;
+  --afj-color-focus: #8FC1F3;
+  --afj-color-danger: #FF9C8F;
+  --afj-color-danger-surface: #3A1714;
+  --afj-color-info: #8FC1F3;
+  --afj-color-info-surface: #13283F;
+  --afj-color-disabled-surface: #252148;
+  --afj-color-selected: #CDC2FF;
+  --afj-color-selected-surface: #2A2456;
+  --afj-color-base: #82CDA2;
+  --afj-color-base-surface: #163024;
+  --afj-color-flyer: #8FC1F3;
+  --afj-color-flyer-surface: #13283F;
+  --afj-color-sun: #F5C15A;
+  --afj-color-sun-strong: #F5C15A;
+  --afj-color-sun-surface: #3A2E14;
+  --afj-color-tag-surface: #2A2733;
+  --afj-color-tag-border: #4D4858;
+}
+
+/* ---------- Page de la maquette (hors application) ---------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; padding: var(--afj-spacing-lg) var(--afj-spacing-md) var(--afj-spacing-xxl);
+  font-family: var(--afj-font-family); font-size: 16px; line-height: var(--afj-line-height-normal);
+  color: var(--afj-color-text); background: var(--afj-color-surface-hover);
+}
+.mq-intro, .mq-section { max-width: 1560px; margin: 0 auto var(--afj-spacing-xl); }
+.mq-intro h1, .mq-section > h2 { margin: 0 0 var(--afj-spacing-sm); font-family: var(--afj-font-family-display); font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-tight); }
+.mq-intro h1 { font-size: 28px; }
+.mq-section > h2 { font-size: 20px; font-weight: var(--afj-font-weight-medium); }
+.mq-intro p, .mq-section > p { margin: 0 0 var(--afj-spacing-sm); max-width: 95ch; font-size: 14px; color: var(--afj-color-text-muted); }
+.mq-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--afj-spacing-xl); }
+.mq-frame { margin: 0; }
+.mq-frame figcaption { margin-bottom: var(--afj-spacing-xs); font-size: 14px; font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text-muted); }
+
+/* Cadre de téléphone : 360 dp utiles, bord de 10 dp. */
+.device { width: 380px; padding: 10px; background: #0B0A14; border-radius: 40px; }
+
+/* ---------- L'application ---------- */
+
+.phone {
+  --scale: 1; /* fontScale du système */
+  --fs-xs: calc(12px * min(var(--scale), 2));
+  --fs-sm: calc(14px * min(var(--scale), 2));
+  --fs-md: calc(16px * min(var(--scale), 2));
+  --fs-lg: calc(20px * min(var(--scale), 2));
+  --fs-xl: calc(28px * min(var(--scale), 1.25));  /* maxFontScale.title */
+  --fs-xxl: 40px;                                  /* maxFontScale.display */
+  --fs-display: 64px;
+  position: relative; display: flex; flex-direction: column;
+  width: 360px; height: 800px; overflow: hidden;
+  font-family: var(--afj-font-family); font-size: var(--fs-md); line-height: var(--afj-line-height-normal);
+  color: var(--afj-color-text); background: var(--afj-color-background); border-radius: 30px;
+}
+.phone--tall { height: auto; }
+.phone--x16 { --scale: 1.6; }
+.phone p, .phone h1, .phone h2, .phone h3, .phone ul, .phone dl, .phone dd { margin: 0; }
+.phone button { font: inherit; color: inherit; }
+
+.status { display: flex; justify-content: space-between; align-items: center; height: 28px; padding: 0 22px; font-size: 12px; font-weight: var(--afj-font-weight-semibold); }
+.status__icons { display: inline-flex; gap: 6px; }
+.status__icons i { display: inline-block; width: 14px; height: 10px; background: currentColor; border-radius: 2px; opacity: .85; }
+
+.header {
+  display: flex; align-items: center; gap: var(--afj-spacing-sm); height: 56px; padding: 0 var(--afj-spacing-md);
+  border-bottom: var(--afj-size-border-width) solid var(--afj-color-divider);
+}
+.header__back { display: inline-flex; align-items: center; justify-content: center; width: var(--afj-size-control); height: var(--afj-size-control); margin-left: calc(-1 * var(--afj-spacing-md)); background: none; border: 0; color: var(--afj-color-text); }
+.header__brand { display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); font-family: var(--afj-font-family-display); font-weight: var(--afj-font-weight-semibold); font-size: 20px; letter-spacing: -0.02em; }
+.logo { width: var(--afj-size-logo); height: var(--afj-size-logo); }
+
+.scroll { flex: 1; min-height: 0; overflow: hidden; display: grid; align-content: start; gap: var(--afj-spacing-lg); padding: var(--afj-spacing-lg) var(--afj-spacing-md); }
+.phone--tall .scroll { overflow: visible; }
+.scroll--from-middle { padding-top: var(--afj-spacing-md); }
+
+.icon { width: var(--afj-size-icon); height: var(--afj-size-icon); flex: none; }
+.moon { width: var(--afj-size-moon); height: var(--afj-size-moon); flex: none; }
+
+h1.title {
+  font-family: var(--afj-font-family-display); font-weight: var(--afj-font-weight-semibold);
+  font-size: var(--fs-xl); line-height: var(--afj-line-height-tight); letter-spacing: -0.02em;
+}
+.intro { display: grid; gap: var(--afj-spacing-sm); }
+.muted { color: var(--afj-color-text-muted); }
+.help { font-size: var(--fs-sm); color: var(--afj-color-text-muted); }
+.label { font-weight: var(--afj-font-weight-semibold); }
+.field { display: grid; gap: var(--afj-spacing-sm); }
+
+/* Compteur − / + */
+.stepper { display: flex; align-items: center; gap: var(--afj-spacing-md); }
+.stepper__btn {
+  display: inline-flex; align-items: center; justify-content: center; width: var(--afj-size-control); height: var(--afj-size-control);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-border); border-radius: var(--afj-radius-pill);
+  color: var(--afj-color-text);
+}
+.stepper__btn[aria-disabled="true"] { background: var(--afj-color-disabled-surface); border-style: dashed; color: var(--afj-color-text-muted); }
+.stepper__value { min-width: 64px; text-align: center; font-family: var(--afj-font-family-display); font-weight: var(--afj-font-weight-semibold); font-size: var(--fs-xl); line-height: var(--afj-line-height-display); }
+
+/* Tuiles de difficulté (groupe-tuiles-radio.md, phases) : phase à gauche du niveau sur mobile. */
+.difficulties { display: grid; gap: var(--afj-spacing-md); }
+.legend { display: flex; align-items: center; gap: var(--afj-spacing-sm); margin-bottom: var(--afj-spacing-sm); font-weight: var(--afj-font-weight-semibold); }
+.dot { width: var(--afj-spacing-sm); height: var(--afj-spacing-sm); border-radius: 50%; flex: none; }
+.dot--base { background: var(--afj-color-base); }
+.dot--flyer { background: var(--afj-color-flyer); }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--afj-spacing-sm); }
+.phone--x16 .tiles { grid-template-columns: minmax(0, 1fr); }
+.tile {
+  display: flex; align-items: center; gap: var(--afj-spacing-sm); min-height: var(--afj-size-control); padding: var(--afj-spacing-xs) var(--afj-spacing-sm);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-border); border-radius: var(--afj-radius-md);
+}
+.tile .moon { width: var(--afj-size-moon-large); height: var(--afj-size-moon-large); color: var(--afj-color-text-muted); }
+.tile--checked { padding: calc(var(--afj-spacing-xs) - 1px) calc(var(--afj-spacing-sm) - 1px); border-width: var(--afj-size-border-width-strong); font-weight: var(--afj-font-weight-semibold); }
+.tiles--base .tile--checked { color: var(--afj-color-base); background: var(--afj-color-base-surface); border-color: var(--afj-color-base); }
+.tiles--flyer .tile--checked { color: var(--afj-color-flyer); background: var(--afj-color-flyer-surface); border-color: var(--afj-color-flyer); }
+.tile--checked .moon { color: currentColor; }
+
+/* Repli « Étiquettes (facultatives) » */
+.fold { background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-border); border-radius: var(--afj-radius-md); }
+.fold__summary { display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-sm); min-height: var(--afj-size-control); padding: var(--afj-spacing-sm) var(--afj-spacing-md); font-weight: var(--afj-font-weight-semibold); }
+.fold__summary .icon { margin-left: auto; }
+.fold--open .fold__summary .icon { transform: rotate(180deg); }
+.count { padding: 0 var(--afj-spacing-sm); font-size: var(--fs-sm); background: var(--afj-color-selected-surface); border: var(--afj-size-border-width) solid var(--afj-color-selected); border-radius: var(--afj-radius-pill); }
+.fold__content { display: grid; gap: var(--afj-spacing-lg); padding: var(--afj-spacing-md); border-top: var(--afj-size-border-width) dashed var(--afj-color-divider); }
+.group { display: grid; gap: var(--afj-spacing-xs); }
+.pills { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-sm); margin-top: var(--afj-spacing-xs); }
+.check-pill {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); min-height: var(--afj-size-control); padding: 0 var(--afj-spacing-md) 0 calc(var(--afj-spacing-sm) + var(--afj-spacing-xs));
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-border); border-radius: var(--afj-radius-pill);
+}
+.check-pill__box { display: inline-flex; align-items: center; justify-content: center; width: var(--afj-size-icon); height: var(--afj-size-icon); border: var(--afj-size-border-width-strong) solid var(--afj-color-border); border-radius: 4px; flex: none; }
+.check-pill--checked { padding: 0 calc(var(--afj-spacing-md) - 1px) 0 calc(var(--afj-spacing-sm) + var(--afj-spacing-xs) - 1px); background: var(--afj-color-selected-surface); border: var(--afj-size-border-width-strong) solid var(--afj-color-selected); font-weight: var(--afj-font-weight-semibold); }
+.check-pill--checked .check-pill__box { background: var(--afj-color-selected); border-color: var(--afj-color-selected); color: var(--afj-color-selected-surface); }
+.check-pill--disabled { color: var(--afj-color-text-muted); background: var(--afj-color-disabled-surface); border-style: dashed; }
+.check-pill--disabled .check-pill__box { border-color: var(--afj-color-text-muted); }
+.check-pill__state { font-size: var(--fs-sm); }
+.disclosure { display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); min-height: var(--afj-size-control); padding: 0; background: none; border: 0; font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-primary) !important; }
+.disclosure .icon { transform: rotate(-90deg); }
+
+/* Barre basse fixe */
+.bar {
+  display: flex; gap: var(--afj-spacing-lg); padding: var(--afj-spacing-sm) var(--afj-spacing-md) var(--afj-spacing-lg);
+  background: var(--afj-color-surface); border-top: var(--afj-size-border-width) solid var(--afj-color-divider);
+}
+.phone--x16 .bar { flex-direction: column; gap: var(--afj-spacing-md); }
+.btn {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; min-height: var(--afj-size-control);
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md); border-radius: var(--afj-radius-pill);
+  font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-tight); text-align: center;
+}
+.btn--primary { color: var(--afj-color-primary-contrast) !important; background: var(--afj-color-primary); border: 0; }
+.btn--secondary { background: transparent; border: var(--afj-size-border-width) solid var(--afj-color-border); }
+
+/* Dock : un message au-dessus de la barre */
+.dock {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: var(--afj-spacing-sm);
+  margin: 0 var(--afj-spacing-md) var(--afj-spacing-sm); padding: var(--afj-spacing-md) var(--afj-spacing-md) var(--afj-spacing-md) calc(var(--afj-spacing-md) - var(--afj-size-accent-bar) + var(--afj-spacing-xs));
+  border-left: var(--afj-size-accent-bar) solid; border-radius: var(--afj-radius-md);
+}
+.dock--error { background: var(--afj-color-danger-surface); border-color: var(--afj-color-danger); }
+.dock--error .icon { color: var(--afj-color-danger); }
+.dock--info { background: var(--afj-color-info-surface); border-color: var(--afj-color-info); }
+.dock--undo { grid-template-columns: minmax(0, 1fr); gap: 0; padding-right: var(--afj-spacing-sm); padding-bottom: 0; }
+.dock__msg { font-weight: var(--afj-font-weight-semibold); }
+.dock__action {
+  justify-self: end; min-height: var(--afj-size-control); padding: 0 var(--afj-spacing-sm); background: none; border: 0;
+  font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-primary) !important;
+}
+
+/* Résumé, alertes, note de sécurité */
+.summary { font-size: var(--fs-lg); font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-tight); }
+.head { display: grid; gap: var(--afj-spacing-sm); }
+.safety-note {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-sm); padding: var(--afj-spacing-md);
+  background: var(--afj-color-sun-surface); border-radius: var(--afj-radius-md);
+}
+.safety-note .icon { margin-top: 2px; color: var(--afj-color-sun-strong); }
+
+/* Pastilles de rôle, pilules d'étiquettes */
+.details { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-sm); }
+.role-pill {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-sm);
+  padding: var(--afj-spacing-xs) var(--afj-spacing-md) var(--afj-spacing-xs) var(--afj-spacing-xs);
+  border-radius: var(--afj-radius-pill); font-size: var(--fs-sm); font-weight: var(--afj-font-weight-semibold);
+}
+.role-pill--base { background: var(--afj-color-base-surface); }
+.role-pill--flyer { background: var(--afj-color-flyer-surface); }
+.role-pill__word { padding: 2px var(--afj-spacing-sm); border-radius: var(--afj-radius-pill); font-size: var(--fs-xs); font-weight: var(--afj-font-weight-bold); color: var(--afj-color-surface); }
+.role-pill--base .role-pill__word { background: var(--afj-color-base); }
+.role-pill--flyer .role-pill__word { background: var(--afj-color-flyer); }
+.role-pill__level { display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); }
+.role-pill--base .moon { color: var(--afj-color-base); }
+.role-pill--flyer .moon { color: var(--afj-color-flyer); }
+.tag-pill { display: inline-flex; padding: var(--afj-spacing-xs) calc(var(--afj-spacing-sm) + var(--afj-spacing-xs)); font-size: var(--fs-sm); background: var(--afj-color-tag-surface); border: var(--afj-size-border-width) solid var(--afj-color-tag-border); border-radius: var(--afj-radius-pill); }
+
+/* Fil du flow, mobile : rail de 20 dp, contenu de 300 dp. */
+.route { display: grid; }
+.station, .step { position: relative; display: grid; grid-template-columns: var(--afj-size-icon) minmax(0, 1fr); column-gap: var(--afj-spacing-sm); }
+.station::before, .step::before {
+  content: ''; position: absolute; top: 0; bottom: 0; left: calc(var(--afj-size-icon) / 2 - var(--afj-size-border-width));
+  border-left: var(--afj-size-border-width-strong) dotted var(--afj-color-sun-strong);
+}
+.station--start::before { top: 14px; }
+.station--end::before { bottom: auto; height: 14px; }
+.station__icon { position: relative; z-index: 1; margin-top: 2px; color: var(--afj-color-sun-strong); background: var(--afj-color-background); border-radius: 50%; }
+.station__body { grid-column: 2; display: grid; gap: var(--afj-spacing-xs); padding-bottom: var(--afj-spacing-md); }
+.station--end .station__body { padding-bottom: 0; }
+.station__lead { font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text-muted); }
+.pose-name {
+  font-family: var(--afj-font-family-display); font-weight: var(--afj-font-weight-semibold);
+  font-size: var(--fs-xxl); line-height: var(--afj-line-height-tight); letter-spacing: -0.04em;
+}
+.station__same { color: var(--afj-color-text-muted); }
+.station .details { margin-top: var(--afj-spacing-xs); }
+.card {
+  grid-column: 2; display: grid; gap: var(--afj-spacing-sm); margin-bottom: var(--afj-spacing-md); padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider); border-radius: var(--afj-radius-md);
+}
+.step-title { display: grid; gap: var(--afj-spacing-xs); font-weight: inherit; }
+.step-title__line { display: flex; align-items: baseline; gap: var(--afj-spacing-sm); }
+.step-title__word { font-size: var(--fs-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text-muted); }
+.step-title__num { font-family: var(--afj-font-family-display); font-weight: var(--afj-font-weight-bold); font-size: var(--fs-display); line-height: var(--afj-line-height-display); color: var(--afj-color-sun-strong); }
+.step-title__name {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-sm);
+  font-family: var(--afj-font-family-display); font-weight: var(--afj-font-weight-medium); font-size: var(--fs-xl); line-height: var(--afj-line-height-tight); letter-spacing: -0.02em;
+}
+.traj { width: var(--afj-size-trajectory-width); height: var(--afj-size-trajectory-height); color: var(--afj-color-sun-strong); flex: none; }
+.wm { display: flex; align-items: center; gap: var(--afj-spacing-sm); font-size: var(--fs-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text-muted); }
+
+/* Récapitulatif des critères */
+.recap { display: grid; gap: var(--afj-spacing-sm); padding: var(--afj-spacing-md); font-size: var(--fs-sm); background: var(--afj-color-surface-hover); border-radius: var(--afj-radius-sm); }
+.recap--end { margin-top: var(--afj-spacing-sm); }
+.recap h2, .recap h3 { font-size: var(--fs-sm); font-weight: var(--afj-font-weight-semibold); }
+.recap dl { display: grid; gap: var(--afj-spacing-sm); }
+.recap dl > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--afj-spacing-xs) var(--afj-spacing-md); }
+.recap dt { display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); color: var(--afj-color-text-muted); }
+.recap dd { display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); font-weight: var(--afj-font-weight-semibold); }
+.recap dd .moon { color: var(--afj-color-text-muted); }
+
+/* Panneau « aucun flow » */
+.no-flow { display: grid; gap: var(--afj-spacing-md); padding: var(--afj-spacing-lg); background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider); border-radius: var(--afj-radius-lg); }
+.no-flow > .icon { width: var(--afj-size-icon-large); height: var(--afj-size-icon-large); color: var(--afj-color-info); }
+.no-flow h2 { font-family: var(--afj-font-family-display); font-weight: var(--afj-font-weight-medium); font-size: var(--fs-lg); line-height: var(--afj-line-height-tight); }
+.no-flow ul { display: grid; gap: var(--afj-spacing-xs); padding-left: var(--afj-spacing-lg); }
+
+.fade { position: relative; }
+.fade::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 40px; background: linear-gradient(transparent, var(--afj-color-background)); pointer-events: none; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 0 30 30">
+    <circle cx="15" cy="11" r="6" style="fill: var(--afj-color-sun)"/>
+    <path d="M3 27a12 12 0 0 1 24 0z" style="fill: var(--afj-color-base)"/>
+  </symbol>
+  <symbol id="m1" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16a4.5 8 0 0 0 0-16z" fill="currentColor"/></symbol>
+  <symbol id="m2" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor"/></symbol>
+  <symbol id="m3" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16a4.5 8 0 0 1 0-16z" fill="currentColor"/></symbol>
+  <symbol id="m4" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="currentColor" stroke="currentColor" stroke-width="1.5"/></symbol>
+  <symbol id="i-rise" viewBox="0 0 20 20"><path d="M4 14a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 2v5M7.5 4.5 10 2l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-set" viewBox="0 0 20 20"><path d="M4 14a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 2v5M7.5 4.5 10 7l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-station" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="10" r="2.5" fill="currentColor"/></symbol>
+  <symbol id="i-spot" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 6v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="14" r="1.2" fill="currentColor"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 20 20"><polyline points="12.5,4.5 7,10 12.5,15.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 20 20"><polyline points="4.5,7.5 10,13 15.5,7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-info" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="5.8" r="1.2" fill="currentColor"/><line x1="10" y1="9" x2="10" y2="14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-error" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="10" y1="5.5" x2="10" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="14.5" r="1.2" fill="currentColor"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 20 20"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 20 20"><path d="M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 20 20"><polyline points="4.5,10.5 8.5,14.5 15.5,6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trajectory" viewBox="0 0 46 20"><path d="M3 17C12 2 32 2 41 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 4.5"/><path d="M36 14.5l5 1 .5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 46 20"><path d="M8 15c-6-2-5-12 3-12s14 10 24 10c6 0 7-8 1-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 4.5"/><path d="M33.5 1.5 37 4l-3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<header class="mq-intro">
+  <h1>Générer un flow sur mobile (story 9b)</h1>
+  <p>Maquette statique de <code>docs/design/ecrans/9b-generer-un-flow-mobile.md</code>. Chaque écran est montré à l'aube (clair) puis la nuit (sombre), dans un cadre de 360 dp. Les cadres « déroulés » montrent tout le contenu défilant ; la barre basse, elle, reste fixée en bas de l'écran. Libellés réels des scénarios ; « Diminuer / Augmenter le nombre de transitions », « Description », « Nouveau flow généré. » sont proposés.</p>
+</header>
+
+<!-- ============ 1. Critères ============ -->
+<section class="mq-section">
+  <h2>1. Critères (ouverture sans flow gardé)</h2>
+  <p>Présélection : 3 transitions, « Débutant » / « Débutant », aucune étiquette. Compteur − / + (48 dp), tuiles 2 × 2, repli fermé, « Générer un flow » dans la barre basse. Écran déroulé.</p>
+  <div class="mq-row mq-pair">
+    <figure class="mq-frame"><figcaption>Aube (clair)</figcaption>
+      <div class="device"><div class="phone phone--tall">
+        <div class="status"><span>9:41</span><span class="status__icons"><i></i><i></i></span></div>
+        <div class="header"><span class="header__brand"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</span></div>
+        <div class="scroll">
+          <div class="intro">
+            <h1 class="title">Générer un flow</h1>
+            <p class="muted">Choisis la longueur et la difficulté : AcroFunJam tire au hasard un flow parmi les poses et les transitions du catalogue.</p>
+          </div>
+          <div class="field">
+            <p class="label">Nombre de transitions</p>
+            <p class="help">De 1 à 10. Un flow de 3 transitions enchaîne 4 poses.</p>
+            <div class="stepper" role="adjustable">
+              <button class="stepper__btn" aria-label="Diminuer le nombre de transitions"><svg class="icon"><use href="#i-minus"/></svg></button>
+              <span class="stepper__value">3</span>
+              <button class="stepper__btn" aria-label="Augmenter le nombre de transitions"><svg class="icon"><use href="#i-plus"/></svg></button>
+            </div>
+          </div>
+          <div class="difficulties">
+            <p class="help">Aucune pose ni transition du flow ne dépassera ce niveau.</p>
+            <div>
+              <p class="legend"><span class="dot dot--base"></span>Difficulté base, au plus</p>
+              <div class="tiles tiles--base">
+                <span class="tile"><svg class="moon"><use href="#m1"/></svg>Découverte</span>
+                <span class="tile tile--checked"><svg class="moon"><use href="#m2"/></svg>Débutant</span>
+                <span class="tile"><svg class="moon"><use href="#m3"/></svg>Intermédiaire</span>
+                <span class="tile"><svg class="moon"><use href="#m4"/></svg>Avancé</span>
+              </div>
+            </div>
+            <div>
+              <p class="legend"><span class="dot dot--flyer"></span>Difficulté flyer, au plus</p>
+              <div class="tiles tiles--flyer">
+                <span class="tile"><svg class="moon"><use href="#m1"/></svg>Découverte</span>
+                <span class="tile tile--checked"><svg class="moon"><use href="#m2"/></svg>Débutant</span>
+                <span class="tile"><svg class="moon"><use href="#m3"/></svg>Intermédiaire</span>
+                <span class="tile"><svg class="moon"><use href="#m4"/></svg>Avancé</span>
+              </div>
+            </div>
+          </div>
+          <div class="fold"><div class="fold__summary">Étiquettes (facultatives)<svg class="icon"><use href="#i-chevron-down"/></svg></div></div>
+        </div>
+        <div class="bar"><span class="btn btn--primary">Générer un flow</span></div>
+      </div></div>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ 2. Critères, étiquettes ouvertes ============ -->
+<section class="mq-section">
+  <h2>2. Critères, étiquettes ouvertes</h2>
+  <p>Défilé jusqu'aux étiquettes. « lunaire » demandée : cochée dans le premier groupe, désactivée « (demandée) » dans le second ; compte « 1 choisie » dans le résumé. Pastilles de 48 dp.</p>
+  <div class="mq-row mq-pair">
+    <figure class="mq-frame"><figcaption>Aube (clair)</figcaption>
+      <div class="device"><div class="phone">
+        <div class="status"><span>9:41</span><span class="status__icons"><i></i><i></i></span></div>
+        <div class="header"><span class="header__brand"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</span></div>
+        <div class="scroll scroll--from-middle">
+          <div>
+            <p class="legend"><span class="dot dot--flyer"></span>Difficulté flyer, au plus</p>
+            <div class="tiles tiles--flyer">
+              <span class="tile"><svg class="moon"><use href="#m1"/></svg>Découverte</span>
+              <span class="tile tile--checked"><svg class="moon"><use href="#m2"/></svg>Débutant</span>
+              <span class="tile"><svg class="moon"><use href="#m3"/></svg>Intermédiaire</span>
+              <span class="tile"><svg class="moon"><use href="#m4"/></svg>Avancé</span>
+            </div>
+          </div>
+          <div class="fold fold--open">
+            <div class="fold__summary">Étiquettes (facultatives) <span class="count">1 choisie</span><svg class="icon"><use href="#i-chevron-down"/></svg></div>
+            <div class="fold__content">
+              <div class="group">
+                <p class="label">Avec l'une de ces étiquettes</p>
+                <p class="help">Chaque étape portera l'une de ces étiquettes, sur la transition ou sur la pose d'arrivée.</p>
+                <div class="pills">
+                  <span class="check-pill"><span class="check-pill__box"></span>contrepoids</span>
+                  <span class="check-pill"><span class="check-pill__box"></span>dynamique</span>
+                  <span class="check-pill"><span class="check-pill__box"></span>icarien</span>
+                  <span class="check-pill"><span class="check-pill__box"></span>inversion</span>
+                  <span class="check-pill check-pill--checked"><span class="check-pill__box"><svg class="icon" style="width:14px;height:14px"><use href="#i-check"/></svg></span>lunaire</span>
+                  <span class="check-pill"><span class="check-pill__box"></span>pop</span>
+                  <span class="check-pill"><span class="check-pill__box"></span>vrille</span>
+                  <span class="check-pill"><span class="check-pill__box"></span>whip</span>
+                </div>
+              </div>
+              <div class="group">
+                <p class="label">Sans ces étiquettes</p>
+                <p class="help">Seuls les éléments étiquetés sont écartés : vérifie chaque étape.</p>
+                <div class="pills">
+                  <span class="check-pill"><span class="check-pill__box"></span>contrepoids</span>
+                  <span class="check-pill"><span class="check-pill__box"></span>dynamique</span>
+                  <span class="check-pill"><span class="check-pill__box"></span>icarien</span>
+                  <span class="check-pill"><span class="check-pill__box"></span>inversion</span>
+                  <span class="check-pill check-pill--disabled"><span class="check-pill__box"></span>lunaire <span class="check-pill__state">(demandée)</span></span>
+                  <span class="check-pill"><span class="check-pill__box"></span>pop</span>
+                  <span class="check-pill"><span class="check-pill__box"></span>vrille</span>
+                  <span class="check-pill"><span class="check-pill__box"></span>whip</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bar"><span class="btn btn--primary">Générer un flow</span></div>
+      </div></div>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ 3. Flow ============ -->
+<section class="mq-section">
+  <h2>3. Le flow : 3 étapes, dont une washing machine</h2>
+  <p>Rappel du spotter au-dessus du départ, jamais replié. Numéro d'étape 64 dp (sunStrong), nom de transition 28 dp, nom de pose 40 dp en texte simple. Récapitulatif des critères en fin d'écran. Barre basse : « Modifier les critères » à gauche, « Générer un autre flow » à droite, écart de 24 dp. Écran déroulé.</p>
+  <div class="mq-row mq-pair">
+    <figure class="mq-frame"><figcaption>Aube (clair)</figcaption>
+      <div class="device"><div class="phone phone--tall">
+        <div class="status"><span>9:41</span><span class="status__icons"><i></i><i></i></span></div>
+        <div class="header"><button class="header__back" aria-label="Revenir aux critères"><svg class="icon"><use href="#i-chevron-left"/></svg></button><span class="header__brand"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</span></div>
+        <div class="scroll">
+          <div class="head">
+            <h1 class="title">Ton flow</h1>
+            <p class="summary">3 transitions, de Throne à Folded Leaf.</p>
+          </div>
+          <p class="safety-note"><svg class="icon"><use href="#i-spot"/></svg><span>Ce flow est tiré au hasard : il peut contenir des transitions que ton duo n'a jamais faites. Travaillez-les d'abord une par une, avec un spotter. Chacun peut dire stop à tout moment.</span></p>
+          <div class="route">
+            <div class="station station--start">
+              <svg class="icon station__icon"><use href="#i-rise"/></svg>
+              <div class="station__body">
+                <p class="station__lead">Départ :</p>
+                <p class="pose-name">Throne</p>
+                <div class="details">
+                  <span class="role-pill role-pill--base"><span class="role-pill__word">Base</span><span class="role-pill__level"><svg class="moon"><use href="#m2"/></svg>Débutant</span></span>
+                  <span class="role-pill role-pill--flyer"><span class="role-pill__word">Flyer</span><span class="role-pill__level"><svg class="moon"><use href="#m1"/></svg>Découverte</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <section class="card">
+                <h2 class="step-title" aria-label="Étape 1 · Throne → Star">
+                  <span class="step-title__line"><span class="step-title__word">Étape</span><span class="step-title__num">1</span></span>
+                  <span class="step-title__name">Throne <svg class="traj"><use href="#i-trajectory"/></svg> Star</span>
+                </h2>
+                <div class="details">
+                  <span class="role-pill role-pill--base"><span class="role-pill__word">Base</span><span class="role-pill__level"><svg class="moon"><use href="#m2"/></svg>Débutant</span></span>
+                  <span class="role-pill role-pill--flyer"><span class="role-pill__word">Flyer</span><span class="role-pill__level"><svg class="moon"><use href="#m2"/></svg>Débutant</span></span>
+                </div>
+              </section>
+            </div>
+            <div class="station">
+              <svg class="icon station__icon"><use href="#i-station"/></svg>
+              <div class="station__body">
+                <p class="station__lead">Vers</p>
+                <p class="pose-name">Star</p>
+                <div class="details">
+                  <span class="role-pill role-pill--base"><span class="role-pill__word">Base</span><span class="role-pill__level"><svg class="moon"><use href="#m3"/></svg>Intermédiaire</span></span>
+                  <span class="role-pill role-pill--flyer"><span class="role-pill__word">Flyer</span><span class="role-pill__level"><svg class="moon"><use href="#m3"/></svg>Intermédiaire</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <section class="card">
+                <h2 class="step-title" aria-label="Étape 2 · Ninja Star">
+                  <span class="step-title__line"><span class="step-title__word">Étape</span><span class="step-title__num">2</span></span>
+                  <span class="step-title__name">Ninja Star</span>
+                </h2>
+                <p class="wm"><svg class="traj"><use href="#i-loop"/></svg>washing machine</p>
+                <div class="details">
+                  <span class="role-pill role-pill--base"><span class="role-pill__word">Base</span><span class="role-pill__level"><svg class="moon"><use href="#m4"/></svg>Avancé</span></span>
+                  <span class="role-pill role-pill--flyer"><span class="role-pill__word">Flyer</span><span class="role-pill__level"><svg class="moon"><use href="#m4"/></svg>Avancé</span></span>
+                </div>
+                <button class="disclosure"><svg class="icon"><use href="#i-chevron-down"/></svg>Description</button>
+              </section>
+            </div>
+            <div class="station">
+              <svg class="icon station__icon"><use href="#i-station"/></svg>
+              <div class="station__body">
+                <p class="station__lead">Vers</p>
+                <p class="pose-name">Star</p>
+                <p class="station__same">(même pose)</p>
+                <div class="details">
+                  <span class="role-pill role-pill--base"><span class="role-pill__word">Base</span><span class="role-pill__level"><svg class="moon"><use href="#m3"/></svg>Intermédiaire</span></span>
+                  <span class="role-pill role-pill--flyer"><span class="role-pill__word">Flyer</span><span class="role-pill__level"><svg class="moon"><use href="#m3"/></svg>Intermédiaire</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <section class="card">
+                <h2 class="step-title" aria-label="Étape 3 · Star → Folded Leaf">
+                  <span class="step-title__line"><span class="step-title__word">Étape</span><span class="step-title__num">3</span></span>
+                  <span class="step-title__name">Star <svg class="traj"><use href="#i-trajectory"/></svg> Folded Leaf</span>
+                </h2>
+                <div class="details">
+                  <span class="role-pill role-pill--base"><span class="role-pill__word">Base</span><span class="role-pill__level"><svg class="moon"><use href="#m2"/></svg>Débutant</span></span>
+                  <span class="role-pill role-pill--flyer"><span class="role-pill__word">Flyer</span><span class="role-pill__level"><svg class="moon"><use href="#m2"/></svg>Débutant</span></span>
+                </div>
+                <div class="details"><span class="tag-pill">lunaire</span></div>
+              </section>
+            </div>
+            <div class="station station--end">
+              <svg class="icon station__icon"><use href="#i-set"/></svg>
+              <div class="station__body">
+                <p class="station__lead">Vers</p>
+                <p class="pose-name">Folded Leaf</p>
+                <div class="details">
+                  <span class="role-pill role-pill--base"><span class="role-pill__word">Base</span><span class="role-pill__level"><svg class="moon"><use href="#m3"/></svg>Intermédiaire</span></span>
+                  <span class="role-pill role-pill--flyer"><span class="role-pill__word">Flyer</span><span class="role-pill__level"><svg class="moon"><use href="#m2"/></svg>Débutant</span></span>
+                </div>
+                <div class="details"><span class="tag-pill">inversion</span><span class="tag-pill">lunaire</span></div>
+              </div>
+            </div>
+          </div>
+          <section class="recap recap--end">
+            <h2>Critères du flow</h2>
+            <dl>
+              <div><dt>Nombre de transitions</dt><dd>3</dd></div>
+              <div><dt><span class="dot dot--base"></span>Difficulté base, au plus</dt><dd><svg class="moon"><use href="#m4"/></svg>Avancé</dd></div>
+              <div><dt><span class="dot dot--flyer"></span>Difficulté flyer, au plus</dt><dd><svg class="moon"><use href="#m4"/></svg>Avancé</dd></div>
+            </dl>
+          </section>
+        </div>
+        <div class="bar"><span class="btn btn--secondary">Modifier les critères</span><span class="btn btn--primary">Générer un autre flow</span></div>
+      </div></div>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ 4. Message éphémère ============ -->
+<section class="mq-section">
+  <h2>4. Après « Générer un autre flow » : message éphémère (Q223, proposé)</h2>
+  <p>Le nouveau flow s'affiche depuis le haut ; le message se pose au-dessus de la barre, sans la couvrir, 10 s (délai recommandé par Android ; pas de délai avec un lecteur d'écran). « Revenir au flow précédent » rétablit le flow d'avant et ses critères.</p>
+  <div class="mq-row mq-pair">
+    <figure class="mq-frame"><figcaption>Aube (clair)</figcaption>
+      <div class="device"><div class="phone">
+        <div class="status"><span>9:41</span><span class="status__icons"><i></i><i></i></span></div>
+        <div class="header"><button class="header__back" aria-label="Revenir aux critères"><svg class="icon"><use href="#i-chevron-left"/></svg></button><span class="header__brand"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</span></div>
+        <div class="scroll fade">
+          <div class="head">
+            <h1 class="title">Ton flow</h1>
+            <p class="summary">3 transitions, de Throne à Bird.</p>
+          </div>
+          <p class="safety-note"><svg class="icon"><use href="#i-spot"/></svg><span>Ce flow est tiré au hasard : il peut contenir des transitions que ton duo n'a jamais faites. Travaillez-les d'abord une par une, avec un spotter. Chacun peut dire stop à tout moment.</span></p>
+          <div class="route">
+            <div class="station station--start">
+              <svg class="icon station__icon"><use href="#i-rise"/></svg>
+              <div class="station__body">
+                <p class="station__lead">Départ :</p>
+                <p class="pose-name">Throne</p>
+                <div class="details">
+                  <span class="role-pill role-pill--base"><span class="role-pill__word">Base</span><span class="role-pill__level"><svg class="moon"><use href="#m2"/></svg>Débutant</span></span>
+                  <span class="role-pill role-pill--flyer"><span class="role-pill__word">Flyer</span><span class="role-pill__level"><svg class="moon"><use href="#m1"/></svg>Découverte</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <section class="card">
+                <h2 class="step-title" aria-label="Étape 1 · Pop to Bird">
+                  <span class="step-title__line"><span class="step-title__word">Étape</span><span class="step-title__num">1</span></span>
+                  <span class="step-title__name">Pop to Bird</span>
+                </h2>
+              </section>
+            </div>
+          </div>
+        </div>
+        <div class="dock dock--info dock--undo" role="status">
+          <p class="dock__msg">Nouveau flow généré.</p>
+          <button class="dock__action">Revenir au flow précédent</button>
+        </div>
+        <div class="bar"><span class="btn btn--secondary">Modifier les critères</span><span class="btn btn--primary">Générer un autre flow</span></div>
+      </div></div>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ 5. Critères trop restrictifs ============ -->
+<section class="mq-section">
+  <h2>5. Critères trop restrictifs</h2>
+  <p>Sur l'écran des critères, le panneau remplace le formulaire ; « Modifier les critères » devient l'action principale de la barre. Pistes adaptées : ici une étiquette exclue.</p>
+  <div class="mq-row mq-pair">
+    <figure class="mq-frame"><figcaption>Aube (clair)</figcaption>
+      <div class="device"><div class="phone">
+        <div class="status"><span>9:41</span><span class="status__icons"><i></i><i></i></span></div>
+        <div class="header"><span class="header__brand"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</span></div>
+        <div class="scroll">
+          <h1 class="title">Générer un flow</h1>
+          <div class="no-flow">
+            <svg class="icon"><use href="#i-info"/></svg>
+            <h2>Critères trop restrictifs : impossible de générer un flow.</h2>
+            <section class="recap">
+              <h3>Critères du flow</h3>
+              <dl>
+                <div><dt>Nombre de transitions</dt><dd>2</dd></div>
+                <div><dt><span class="dot dot--base"></span>Difficulté base, au plus</dt><dd><svg class="moon"><use href="#m2"/></svg>Débutant</dd></div>
+                <div><dt><span class="dot dot--flyer"></span>Difficulté flyer, au plus</dt><dd><svg class="moon"><use href="#m2"/></svg>Débutant</dd></div>
+                <div><dt>Sans ces étiquettes</dt><dd>vrille</dd></div>
+              </dl>
+            </section>
+            <p>Pour élargir le choix, essaie :</p>
+            <ul>
+              <li>moins de transitions ;</li>
+              <li>des plafonds de difficulté plus hauts ;</li>
+              <li>moins d'étiquettes exclues.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="bar"><span class="btn btn--primary">Modifier les critères</span></div>
+      </div></div>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ 6. Injoignable ============ -->
+<section class="mq-section">
+  <h2>6. AcroFunJam injoignable pendant « Générer un autre flow »</h2>
+  <p>Le flow affiché ne bouge pas ; le message d'erreur se pose au-dessus de la barre, là où le doigt vient de toucher. « Générer un autre flow », juste dessous, sert de réessai. Aucun message éphémère.</p>
+  <div class="mq-row mq-pair">
+    <figure class="mq-frame"><figcaption>Aube (clair)</figcaption>
+      <div class="device"><div class="phone">
+        <div class="status"><span>9:41</span><span class="status__icons"><i></i><i></i></span></div>
+        <div class="header"><button class="header__back" aria-label="Revenir aux critères"><svg class="icon"><use href="#i-chevron-left"/></svg></button><span class="header__brand"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</span></div>
+        <div class="scroll fade">
+          <div class="head">
+            <h1 class="title">Ton flow</h1>
+            <p class="summary">1 transition, de Throne à Bird.</p>
+          </div>
+          <p class="safety-note"><svg class="icon"><use href="#i-spot"/></svg><span>Ce flow est tiré au hasard : il peut contenir des transitions que ton duo n'a jamais faites. Travaillez-les d'abord une par une, avec un spotter. Chacun peut dire stop à tout moment.</span></p>
+          <div class="route">
+            <div class="station station--start">
+              <svg class="icon station__icon"><use href="#i-rise"/></svg>
+              <div class="station__body">
+                <p class="station__lead">Départ :</p>
+                <p class="pose-name">Throne</p>
+                <div class="details">
+                  <span class="role-pill role-pill--base"><span class="role-pill__word">Base</span><span class="role-pill__level"><svg class="moon"><use href="#m2"/></svg>Débutant</span></span>
+                  <span class="role-pill role-pill--flyer"><span class="role-pill__word">Flyer</span><span class="role-pill__level"><svg class="moon"><use href="#m2"/></svg>Débutant</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <section class="card">
+                <h2 class="step-title" aria-label="Étape 1 · Throne → Bird">
+                  <span class="step-title__line"><span class="step-title__word">Étape</span><span class="step-title__num">1</span></span>
+                  <span class="step-title__name">Throne <svg class="traj"><use href="#i-trajectory"/></svg> Bird</span>
+                </h2>
+              </section>
+            </div>
+          </div>
+        </div>
+        <div class="dock dock--error" role="alert">
+          <svg class="icon"><use href="#i-error"/></svg>
+          <p>Impossible de générer le flow. Vérifie ta connexion Internet, puis réessaie.</p>
+        </div>
+        <div class="bar"><span class="btn btn--secondary">Modifier les critères</span><span class="btn btn--primary">Générer un autre flow</span></div>
+      </div></div>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ 7. Police agrandie (aube seulement) ============ -->
+<section class="mq-section">
+  <h2>7. Police du système à ×1,6 (aube seulement)</h2>
+  <p>Texte ×1,6, titres plafonnés à ×1,25, noms de pose et numéros inchangés (<code>typography.maxFontScale</code>). Les plafonds passent en liste verticale, la barre du flow s'empile (« Modifier les critères » au-dessus, « Générer un autre flow » sous le pouce). À gauche, compteur à 1 : « − » désactivé (fond disabledSurface, contour tireté).</p>
+  <div class="mq-row">
+    <figure class="mq-frame"><figcaption>Critères, ×1,6</figcaption>
+      <div class="device"><div class="phone phone--x16">
+        <div class="status"><span>9:41</span><span class="status__icons"><i></i><i></i></span></div>
+        <div class="header"><span class="header__brand"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</span></div>
+        <div class="scroll scroll--from-middle fade">
+          <div class="field">
+            <p class="label">Nombre de transitions</p>
+            <p class="help">De 1 à 10. Un flow de 3 transitions enchaîne 4 poses.</p>
+            <div class="stepper">
+              <button class="stepper__btn" aria-disabled="true" aria-label="Diminuer le nombre de transitions"><svg class="icon"><use href="#i-minus"/></svg></button>
+              <span class="stepper__value">1</span>
+              <button class="stepper__btn" aria-label="Augmenter le nombre de transitions"><svg class="icon"><use href="#i-plus"/></svg></button>
+            </div>
+          </div>
+          <div>
+            <p class="legend"><span class="dot dot--base"></span>Difficulté base, au plus</p>
+            <div class="tiles tiles--base">
+              <span class="tile"><svg class="moon"><use href="#m1"/></svg>Découverte</span>
+              <span class="tile tile--checked"><svg class="moon"><use href="#m2"/></svg>Débutant</span>
+              <span class="tile"><svg class="moon"><use href="#m3"/></svg>Intermédiaire</span>
+              <span class="tile"><svg class="moon"><use href="#m4"/></svg>Avancé</span>
+            </div>
+          </div>
+        </div>
+        <div class="bar"><span class="btn btn--primary">Générer un flow</span></div>
+      </div></div>
+    </figure>
+    <figure class="mq-frame"><figcaption>Flow, ×1,6</figcaption>
+      <div class="device"><div class="phone phone--x16">
+        <div class="status"><span>9:41</span><span class="status__icons"><i></i><i></i></span></div>
+        <div class="header"><button class="header__back" aria-label="Revenir aux critères"><svg class="icon"><use href="#i-chevron-left"/></svg></button><span class="header__brand"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</span></div>
+        <div class="scroll scroll--from-middle fade">
+          <div class="route">
+            <div class="step">
+              <section class="card">
+                <h2 class="step-title" aria-label="Étape 2 · Ninja Star">
+                  <span class="step-title__line"><span class="step-title__word">Étape</span><span class="step-title__num">2</span></span>
+                  <span class="step-title__name">Ninja Star</span>
+                </h2>
+                <p class="wm"><svg class="traj"><use href="#i-loop"/></svg>washing machine</p>
+                <div class="details">
+                  <span class="role-pill role-pill--base"><span class="role-pill__word">Base</span><span class="role-pill__level"><svg class="moon"><use href="#m4"/></svg>Avancé</span></span>
+                  <span class="role-pill role-pill--flyer"><span class="role-pill__word">Flyer</span><span class="role-pill__level"><svg class="moon"><use href="#m4"/></svg>Avancé</span></span>
+                </div>
+              </section>
+            </div>
+            <div class="station">
+              <svg class="icon station__icon"><use href="#i-station"/></svg>
+              <div class="station__body">
+                <p class="station__lead">Vers</p>
+                <p class="pose-name">Star</p>
+                <p class="station__same">(même pose)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bar"><span class="btn btn--secondary">Modifier les critères</span><span class="btn btn--primary">Générer un autre flow</span></div>
+      </div></div>
+    </figure>
+  </div>
+</section>
+
+<script>
+  // Chaque paire : l'écran clair est dupliqué en sombre (même balisage, palette colorsDark).
+  document.querySelectorAll('.mq-pair').forEach((row) => {
+    const light = row.querySelector('.mq-frame');
+    const dark = light.cloneNode(true);
+    dark.querySelector('figcaption').textContent = 'Nuit (sombre)';
+    dark.querySelector('.phone').classList.add('dark');
+    row.appendChild(dark);
+  });
+</script>
+</body>
+</html>

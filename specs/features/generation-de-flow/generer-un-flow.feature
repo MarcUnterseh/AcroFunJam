@@ -45,6 +45,20 @@ Fonctionnalité: Générer un flow
   #   plus pour la base et le flyer) ni les étiquettes.
   # Hors périmètre : pose de départ ou d'arrivée imposée (Q193), flow pour un duo et répertoire (Q202), UX-7, sauvegarder
   # ou partager un flow (Q195). Écran mobile : story dédiée (Q201).
+  #
+  # Story 9b « Générer un flow sur mobile » (decouverte.md, « Story 9b », Q212 à Q222, revues UX-9 à UX-14 et AY-1 à
+  # AY-7), validée le 2026-11-19 par le porteur du produit : scénarios @mobile, un flow Maestro par scénario, vérifiés à la main sur un émulateur (pas en CI) ; restent @wip ceux dont le flow n'est pas encore passé
+  # (front/apps/mobile/e2e), sélecteurs par texte, sur l'API réelle avec un catalogue préparé par script (Q220).
+  # Décisions : l'application s'ouvre sur le dernier flow gardé, sinon sur le générateur de flow, sans compte, avec
+  # « AcroFunJam » en en-tête (Q212, Q219, UX-13) ; noms de poses en texte simple, pas de « Voir le catalogue »,
+  # provisoirement (Q213) ; flow et critères gardés sur l'appareil, lisibles hors ligne, descriptions comprises, sans
+  # horodatage ; retour arrière depuis le flow = critères du flow, depuis le formulaire = sortie (Q214, AY-4) ; pas de
+  # génération hors ligne (Q216) ; barre basse fixe « Modifier les critères » / « Générer un autre flow » et
+  # « Revenir au flow précédent » après un nouveau tirage (AY-2, UX-10) ; rappel du spotter au-dessus de l'étape 1, non
+  # repliable (AY-3, UX-14). Non vérifiés par Maestro (tests unitaires, revue des captures) : écran maintenu allumé
+  # quand le flow est au premier plan, lecture à 2-3 m (Q215, AY-5), placement de la barre basse, thème du système
+  # (AY-6), disparition du message après un délai.
+  # Hors 9b : « étape en cours » (AY-1, UX-12, story suivante) ; trio et échange de rôles (hors périmètre).
 
   Règle: Un flow part d'une pose qui peut commencer un flow
 
@@ -349,8 +363,106 @@ Fonctionnalité: Générer un flow
       Quand le visiteur revient au flow
       Alors le site présente de nouveau le flow « Throne → Bird »
 
-  # Q199 (et Q146 de la story 8) : le rappel vient du générateur, au-dessus des étapes, sans variante.
-  Règle: Le site présente, avec chaque flow, le rappel du spotter
+    @mobile
+    Scénario: L'application présente le flow en étapes numérotées depuis sa pose de départ
+      Soit les poses publiées "Throne", "Bird" et "Folded Leaf" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et la transition publiée "Pop to Bird" de "Throne" vers "Bird" de difficulté base "intermédiaire" et de difficulté flyer "intermédiaire"
+      Et la transition publiée sans nom de "Bird" vers "Folded Leaf" de difficulté base "débutant" et de difficulté flyer "débutant"
+      Quand un visiteur génère un flow de 2 transitions dans l'application
+      Alors l'application présente le flow qui part de "Throne", avec les étapes suivantes :
+        | étape | transition         | pose d'arrivée |
+        | 1     | Pop to Bird        | Bird           |
+        | 2     | Bird → Folded Leaf | Folded Leaf    |
+
+    @mobile
+    Scénario: L'application résume le flow par son nombre de transitions, sa pose de départ et sa pose d'arrivée
+      Soit les poses publiées "Throne", "Bird" et "Folded Leaf" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et les transitions publiées suivantes dans le catalogue :
+        | pose de départ | pose d'arrivée | nom |
+        | Throne         | Bird           |     |
+        | Bird           | Folded Leaf    |     |
+      Quand un visiteur génère un flow de 2 transitions dans l'application
+      Alors l'application résume le flow « 2 transitions, de Throne à Folded Leaf. »
+
+    @mobile
+    Scénario: L'application présente les difficultés et les étiquettes de la pose de départ, de la transition et de la pose d'arrivée
+      Soit la liste des étiquettes est la liste amorcée
+      Et les poses publiées suivantes dans le catalogue :
+        | nom         | difficulté base | difficulté flyer | peut commencer un flow | peut terminer un flow |
+        | Bird        | débutant        | découverte       | oui                    | oui                   |
+        | Folded Leaf | intermédiaire   | débutant         | oui                    | oui                   |
+      Et la pose "Folded Leaf" porte les étiquettes "inversion" et "lunaire"
+      Et la transition publiée sans nom de "Bird" vers "Folded Leaf" de difficulté base "débutant" et de difficulté flyer "débutant", avec l'étiquette "lunaire"
+      Quand un visiteur génère un flow de 1 transition dans l'application
+      Alors l'application présente le flow ainsi :
+        | élément                 | nom                | difficulté base | difficulté flyer | étiquettes         |
+        | départ                  | Bird               | débutant        | découverte       |                    |
+        | étape 1, transition     | Bird → Folded Leaf | débutant        | débutant         | lunaire            |
+        | étape 1, pose d'arrivée | Folded Leaf        | intermédiaire   | débutant         | inversion, lunaire |
+
+    @mobile
+    Scénario: Dans l'application, un visiteur déplie la description de la transition d'une étape
+      Soit les poses publiées "Throne" et "Bird" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et la transition publiée "Pop to Bird" de "Throne" vers "Bird" de difficulté base "intermédiaire" et de difficulté flyer "intermédiaire"
+      Et la transition "Pop to Bird" a pour description "La base propulse le flyer depuis Throne, puis le rattrape en Bird."
+      Et un visiteur a généré un flow de 1 transition dans l'application
+      Quand le visiteur déplie la description de l'étape 1
+      Alors l'application présente la description « La base propulse le flyer depuis Throne, puis le rattrape en Bird. »
+
+    @mobile
+    Scénario: L'application marque une washing machine et son arrivée sur la même pose
+      Soit la pose publiée "Star" qui peut commencer un flow et peut terminer un flow
+      Et la transition publiée "Ninja Star" de "Star" vers "Star" de difficulté base "avancé" et de difficulté flyer "avancé"
+      Quand un visiteur génère un flow de 1 transition dans l'application
+      Alors l'étape 1 du flow présente la transition "Ninja Star", marquée « washing machine », vers la même pose
+
+  # Q214, AY-4 (story 9b) : équivalent mobile de l'adresse de la page et de l'historique de navigation. Le flow
+  # affiché et ses critères sont gardés sur l'appareil, descriptions comprises, lisibles hors ligne ; rouvrir
+  # l'application ne relance pas de tirage. Pas d'horodatage du flow (UX-9).
+  Règle: L'application garde le flow affiché et ses critères d'une ouverture à l'autre
+
+    @mobile
+    Scénario: Un visiteur qui rouvre l'application retrouve le flow affiché
+      Soit les poses publiées "Throne", "Bird" et "Star" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et les transitions publiées suivantes dans le catalogue :
+        | pose de départ | pose d'arrivée | nom |
+        | Throne         | Bird           |     |
+        | Throne         | Star           |     |
+        | Star           | Bird           |     |
+      Et un visiteur a généré dans l'application le flow « Throne → Bird » de 1 transition
+      Et le visiteur a fermé l'application
+      Quand le visiteur rouvre l'application
+      Alors l'application présente de nouveau le flow « Throne → Bird »
+
+    @mobile @wip
+    Scénario: Hors ligne, le flow gardé reste lisible, descriptions comprises
+      Soit les poses publiées "Throne" et "Bird" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et la transition publiée "Pop to Bird" de "Throne" vers "Bird" de difficulté base "intermédiaire" et de difficulté flyer "intermédiaire"
+      Et la transition "Pop to Bird" a pour description "La base propulse le flyer depuis Throne, puis le rattrape en Bird."
+      Et un visiteur a généré un flow de 1 transition dans l'application, de difficulté base "intermédiaire" au plus et de difficulté flyer "intermédiaire" au plus
+      Et le visiteur a fermé l'application
+      Et AcroFunJam est momentanément injoignable
+      Et le visiteur a rouvert l'application
+      Quand le visiteur déplie la description de l'étape 1
+      Alors l'application présente la description « La base propulse le flyer depuis Throne, puis le rattrape en Bird. »
+
+    @mobile
+    Scénario: Revenir en arrière depuis le flow présente les critères du flow affiché
+      Soit les poses publiées "Throne" et "Bird" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et les transitions publiées suivantes dans le catalogue :
+        | pose de départ | pose d'arrivée | nom |
+        | Throne         | Bird           |     |
+        | Bird           | Throne         |     |
+      Et un visiteur a généré un flow de 2 transitions dans l'application, de difficulté base "débutant" au plus et de difficulté flyer "intermédiaire" au plus
+      Quand le visiteur revient en arrière
+      Alors le générateur de flow présente les critères suivants :
+        | nombre de transitions     | 2             |
+        | difficulté base, au plus  | débutant      |
+        | difficulté flyer, au plus | intermédiaire |
+
+  # Q199 (et Q146 de la story 8) : le rappel vient du générateur, au-dessus des étapes, sans variante. Application
+  # (AY-3, UX-14) : au-dessus de l'étape 1, non repliable, même texte.
+  Règle: Chaque flow est présenté avec le rappel du spotter
 
     @web
     Scénario: Le site présente le rappel du spotter avec le flow généré
@@ -358,6 +470,13 @@ Fonctionnalité: Générer un flow
       Et la transition publiée sans nom de "Throne" vers "Bird" de difficulté base "débutant" et de difficulté flyer "débutant"
       Quand un visiteur génère un flow de 1 transition sur le site
       Alors le site présente avec le flow le rappel « Ce flow est tiré au hasard : il peut contenir des transitions que ton duo n'a jamais faites. Travaillez-les d'abord une par une, avec un spotter. Chacun peut dire stop à tout moment. »
+
+    @mobile
+    Scénario: L'application présente le rappel du spotter avec le flow généré
+      Soit les poses publiées "Throne" et "Bird" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et la transition publiée sans nom de "Throne" vers "Bird" de difficulté base "débutant" et de difficulté flyer "débutant"
+      Quand un visiteur génère un flow de 1 transition dans l'application
+      Alors l'application présente, au-dessus de l'étape 1, le rappel « Ce flow est tiré au hasard : il peut contenir des transitions que ton duo n'a jamais faites. Travaillez-les d'abord une par une, avec un spotter. Chacun peut dire stop à tout moment. »
 
   # Q195, Q196 : « Générer un autre flow » rejoue les critères du flow affiché (récapitulatif) ; le tirage est
   # indépendant et peut redonner le même flow (UX-5).
@@ -399,6 +518,125 @@ Fonctionnalité: Générer un flow
         | difficulté base, au plus  | débutant |
         | difficulté flyer, au plus | débutant |
 
+    @mobile
+    Scénario: Dans l'application, « Générer un autre flow » reprend les critères du flow affiché
+      Soit les poses publiées "Throne" et "Bird" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et les transitions publiées suivantes dans le catalogue :
+        | pose de départ | pose d'arrivée | nom |
+        | Throne         | Bird           |     |
+        | Bird           | Throne         |     |
+      Et un visiteur a généré un flow de 2 transitions dans l'application, de difficulté base "débutant" au plus et de difficulté flyer "débutant" au plus
+      Quand le visiteur génère un autre flow
+      Alors l'application présente un flow généré avec les critères suivants :
+        | nombre de transitions     | 2        |
+        | difficulté base, au plus  | débutant |
+        | difficulté flyer, au plus | débutant |
+
+    @mobile
+    Scénario: L'application signale que le même flow est ressorti
+      Soit les poses publiées "Throne" et "Bird" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et la transition publiée sans nom de "Throne" vers "Bird" de difficulté base "débutant" et de difficulté flyer "débutant"
+      Et un visiteur a généré un flow de 1 transition dans l'application
+      Quand le visiteur génère un autre flow
+      Alors l'application indique « Le même flow est ressorti : avec ces critères, le catalogue offre peu de choix. »
+
+    @mobile
+    Scénario: Dans l'application, un visiteur modifie les critères du flow affiché
+      Soit les poses publiées "Throne" et "Bird" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et les transitions publiées suivantes dans le catalogue :
+        | pose de départ | pose d'arrivée | nom |
+        | Throne         | Bird           |     |
+        | Bird           | Throne         |     |
+      Et un visiteur a généré un flow de 2 transitions dans l'application, de difficulté base "débutant" au plus et de difficulté flyer "débutant" au plus
+      Quand le visiteur modifie les critères
+      Alors le générateur de flow présente les critères suivants :
+        | nombre de transitions     | 2        |
+        | difficulté base, au plus  | débutant |
+        | difficulté flyer, au plus | débutant |
+
+  # AY-2, UX-10 (story 9b) : sur le tapis, un « Générer un autre flow » touché par erreur ne doit pas faire perdre le
+  # flow. Règles retenues (bdd-analyst, à relire) :
+  # - un nouveau tirage est un flow généré qui remplace le flow présenté : « Générer un autre flow », ou « Générer un
+  #   flow » après « Modifier les critères » ; le flow précédent est celui présenté juste avant, avec ses critères ;
+  # - un seul flow précédent ; une fois rétabli, il n'est plus proposé d'y revenir (ni de repartir vers l'autre)
+  #   jusqu'au tirage suivant ;
+  # - rien n'est proposé quand le même flow est ressorti ou quand le tirage échoue (le flow affiché reste présenté) ;
+  # - le message disparaît après un délai (test unitaire, durée et texte à fixer avec l'ux-expert) ou dès que le
+  #   visiteur modifie les critères ; le flow précédent n'est pas gardé sur l'appareil.
+  Règle: Après un nouveau tirage, l'application propose un moment de revenir au flow précédent
+
+    @mobile @wip
+    Scénario: Un visiteur revient au flow précédent après avoir généré un autre flow
+      Soit les poses publiées suivantes dans le catalogue :
+        | nom    | peut commencer un flow | peut terminer un flow |
+        | Throne | oui                    | oui                   |
+        | Bird   | non                    | oui                   |
+        | Star   | non                    | oui                   |
+      Et les transitions publiées suivantes dans le catalogue :
+        | pose de départ | pose d'arrivée | nom |
+        | Throne         | Bird           |     |
+        | Throne         | Star           |     |
+      Et un visiteur a généré dans l'application le flow « Throne → Bird » de 1 transition
+      Et le visiteur a généré un autre flow, « Throne → Star »
+      Quand le visiteur revient au flow précédent
+      Alors l'application présente de nouveau le flow « Throne → Bird »
+
+    @mobile
+    Scénario: Revenir au flow précédent rétablit aussi ses critères
+      Soit la liste des étiquettes est la liste amorcée
+      Et les poses publiées "Throne", "Bird" et "Folded Leaf" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et la transition publiée sans nom de "Throne" vers "Bird" de difficulté base "débutant" et de difficulté flyer "débutant"
+      Et la transition publiée sans nom de "Bird" vers "Folded Leaf" de difficulté base "débutant" et de difficulté flyer "débutant", avec l'étiquette "lunaire"
+      Et un visiteur a généré un flow de 1 transition dans l'application sans l'étiquette "lunaire"
+      Et le visiteur a modifié les critères, puis généré un flow de 1 transition avec l'une des étiquettes "lunaire"
+      Quand le visiteur revient au flow précédent
+      Alors l'application présente de nouveau le flow « Throne → Bird », avec les critères suivants :
+        | nombre de transitions     | 1        |
+        | difficulté base, au plus  | débutant |
+        | difficulté flyer, au plus | débutant |
+        | étiquettes demandées      | aucune   |
+        | étiquettes exclues        | lunaire  |
+
+    @mobile
+    Scénario: Une fois le flow précédent rétabli, l'application ne propose plus d'en changer
+      Soit les poses publiées suivantes dans le catalogue :
+        | nom    | peut commencer un flow | peut terminer un flow |
+        | Throne | oui                    | oui                   |
+        | Bird   | non                    | oui                   |
+        | Star   | non                    | oui                   |
+      Et les transitions publiées suivantes dans le catalogue :
+        | pose de départ | pose d'arrivée | nom |
+        | Throne         | Bird           |     |
+        | Throne         | Star           |     |
+      Et un visiteur a généré dans l'application le flow « Throne → Bird » de 1 transition
+      Et le visiteur a généré un autre flow, « Throne → Star »
+      Quand le visiteur revient au flow précédent
+      Alors l'application ne propose pas de revenir au flow précédent
+
+    @mobile
+    Scénario: L'application ne propose pas de revenir au flow précédent quand le même flow est ressorti
+      Soit les poses publiées "Throne" et "Bird" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et la transition publiée sans nom de "Throne" vers "Bird" de difficulté base "débutant" et de difficulté flyer "débutant"
+      Et un visiteur a généré un flow de 1 transition dans l'application
+      Quand le visiteur génère un autre flow
+      Alors l'application ne propose pas de revenir au flow précédent
+
+    @mobile
+    Scénario: Modifier les critères retire la proposition de revenir au flow précédent
+      Soit les poses publiées suivantes dans le catalogue :
+        | nom    | peut commencer un flow | peut terminer un flow |
+        | Throne | oui                    | oui                   |
+        | Bird   | non                    | oui                   |
+        | Star   | non                    | oui                   |
+      Et les transitions publiées suivantes dans le catalogue :
+        | pose de départ | pose d'arrivée | nom |
+        | Throne         | Bird           |     |
+        | Throne         | Star           |     |
+      Et un visiteur a généré dans l'application le flow « Throne → Bird » de 1 transition
+      Et le visiteur a généré un autre flow, « Throne → Star »
+      Quand le visiteur modifie les critères
+      Alors l'application ne propose pas de revenir au flow précédent
+
   # Q183, Q200, UX-1 : bouton secondaire « Générer un flow », premier des actions du catalogue ; pas dans l'en-tête.
   Règle: Tout le monde, visiteur compris, accède au générateur de flow depuis le catalogue
 
@@ -408,9 +646,24 @@ Fonctionnalité: Générer un flow
       Quand le visiteur ouvre le générateur de flow
       Alors le site présente le générateur de flow
 
+  # Q212, Q219, UX-13 (story 9b) : l'application n'a encore ni catalogue ni compte ; elle s'ouvre sur le dernier flow
+  # gardé s'il y en a un (voir « Un visiteur qui rouvre l'application retrouve le flow affiché »), sinon sur le
+  # générateur. Sa navigation accueillera plus tard d'autres écrans (catalogue, compte).
+  Règle: Tout le monde, visiteur compris, trouve le générateur de flow à l'ouverture de l'application
+
+    @mobile
+    Scénario: Sans flow gardé, l'application s'ouvre sur le générateur de flow
+      Quand un visiteur ouvre l'application
+      Alors l'application présente le générateur de flow
+
+    @mobile
+    Scénario: L'application présente le nom « AcroFunJam » en en-tête
+      Quand un visiteur ouvre l'application
+      Alors l'application présente « AcroFunJam » en en-tête
+
   # Q197 : le site ne dit pas quel critère bloque ; il propose des pistes adaptées aux critères choisis et
   # « Modifier les critères ». Q198 : un catalogue insuffisant n'est pas la faute des critères.
-  Règle: Le site explique pourquoi aucun flow n'a été généré
+  Règle: La personne qui génère apprend pourquoi aucun flow n'a été généré
 
     @web
     Scénario: Le site signale des critères trop restrictifs
@@ -446,6 +699,35 @@ Fonctionnalité: Générer un flow
       Quand le visiteur choisit de voir le catalogue
       Alors le site présente les poses du catalogue
 
+    @mobile
+    Scénario: L'application signale des critères trop restrictifs
+      Soit les poses publiées "Throne" et "Bird" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et la transition publiée sans nom de "Throne" vers "Bird" de difficulté base "débutant" et de difficulté flyer "débutant"
+      Quand un visiteur génère un flow de 2 transitions dans l'application
+      Alors l'application indique « Critères trop restrictifs : impossible de générer un flow. »
+
+    @mobile
+    Plan du Scénario: L'application propose des pistes pour élargir le choix, <cas>
+      Soit la liste des étiquettes est la liste amorcée
+      Et les poses publiées "Throne" et "Bird" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et la transition publiée sans nom de "Throne" vers "Bird" de difficulté base "débutant" et de difficulté flyer "débutant"
+      Quand un visiteur génère un flow de 2 transitions dans l'application, <étiquettes>
+      Alors l'application propose, pour élargir le choix, les pistes <pistes>
+
+      Exemples:
+        | cas                         | étiquettes                          | pistes                                                                                                            |
+        | sans critère d'étiquette    | sans critère d'étiquette            | « moins de transitions » et « des plafonds de difficulté plus hauts »                                             |
+        | avec une étiquette exclue   | sans l'étiquette "vrille"           | « moins de transitions », « des plafonds de difficulté plus hauts » et « moins d'étiquettes exclues »             |
+        | avec une étiquette demandée | avec l'une des étiquettes "lunaire" | « moins de transitions », « des plafonds de difficulté plus hauts » et « plus d'étiquettes demandées, ou aucune » |
+
+    # Q213 : l'application n'a pas encore de catalogue à montrer ; le message est le même, sans « Voir le catalogue »,
+    # jusqu'à la story « catalogue en lecture sur mobile ».
+    @mobile
+    Scénario: L'application signale un catalogue qui ne permet pas encore de générer un flow
+      Soit un catalogue sans aucune pose publiée
+      Quand un visiteur génère un flow de 1 transition dans l'application
+      Alors l'application indique « Le catalogue ne permet pas encore de générer un flow. Il manque encore des poses ou des transitions pour former un enchaînement. »
+
   # Le site distingue un AcroFunJam injoignable de critères trop restrictifs.
   Règle: Le site signale une génération impossible à joindre et permet de réessayer
 
@@ -465,3 +747,32 @@ Fonctionnalité: Générer un flow
       Alors le site présente le flow qui part de "Throne", avec les étapes suivantes :
         | étape | transition    | pose d'arrivée |
         | 1     | Throne → Bird | Bird           |
+
+  # Q216 (story 9b) : pas de génération hors ligne ; sur le tapis, le flow affiché n'est jamais perdu.
+  Règle: L'application signale une génération impossible à joindre, sans perdre le flow affiché
+
+    @mobile
+    Scénario: L'application signale que le flow n'a pas pu être généré
+      Soit AcroFunJam est momentanément injoignable
+      Quand un visiteur génère un flow de 1 transition dans l'application
+      Alors l'application indique « Impossible de générer le flow. Vérifie ta connexion Internet, puis réessaie. »
+
+    @mobile
+    Scénario: Dans l'application, un visiteur obtient un flow en réessayant quand AcroFunJam est de nouveau joignable
+      Soit les poses publiées "Throne" et "Bird" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et la transition publiée sans nom de "Throne" vers "Bird" de difficulté base "débutant" et de difficulté flyer "débutant"
+      Et la génération d'un flow de 1 transition dans l'application a échoué car AcroFunJam était injoignable
+      Et AcroFunJam est de nouveau joignable
+      Quand le visiteur réessaie de générer le flow
+      Alors l'application présente le flow qui part de "Throne", avec les étapes suivantes :
+        | étape | transition    | pose d'arrivée |
+        | 1     | Throne → Bird | Bird           |
+
+    @mobile
+    Scénario: Le flow affiché reste présenté quand un autre flow ne peut pas être généré
+      Soit les poses publiées "Throne" et "Bird" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et la transition publiée sans nom de "Throne" vers "Bird" de difficulté base "débutant" et de difficulté flyer "débutant"
+      Et un visiteur a généré un flow de 1 transition dans l'application
+      Et AcroFunJam est momentanément injoignable
+      Quand le visiteur génère un autre flow
+      Alors l'application présente toujours le flow « Throne → Bird »

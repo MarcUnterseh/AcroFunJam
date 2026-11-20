@@ -8,6 +8,17 @@
       "port": 5252
     },
     {
+      "name": "api-e2e",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run", "--project", "api/src/AcroFunJam.Api", "--no-launch-profile", "--",
+        "--urls", "http://localhost:5253",
+        "--environment", "Development",
+        "--ConnectionStrings:AcroFunJam", "Host=localhost;Port=5432;Database=acrofunjam_e2e;Username=acrofunjam;Password=acrofunjam"
+      ],
+      "port": 5253
+    },
+    {
       "name": "web",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "front/apps/web"],

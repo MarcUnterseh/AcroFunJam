@@ -1,0 +1,26 @@
+# Dans l'application, une étiquette exclue ne peut pas être demandée en même temps
+appId: com.acrofunjam.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 30000
+- tapOn: 'Étiquettes \(facultatives\).*'
+- scrollUntilVisible:
+    element:
+      text: 'lunaire'
+      index: 1
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    text: 'lunaire'
+    index: 1
+- scrollUntilVisible:
+    element:
+      text: 'lunaire \(exclue\)'
+    direction: DOWN
+    timeout: 15000
+- assertVisible:
+    text: 'lunaire \(exclue\)'
+    enabled: false

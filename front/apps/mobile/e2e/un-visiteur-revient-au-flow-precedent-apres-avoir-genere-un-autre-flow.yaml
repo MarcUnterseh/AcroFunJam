@@ -1,0 +1,55 @@
+# Un visiteur revient au flow précédent après avoir généré un autre flow
+appId: com.acrofunjam.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 30000
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn:
+    text: 'Avancé'
+    index: 0
+- tapOn:
+    text: 'Avancé'
+    index: 1
+- tapOn:
+    id: 'generer-un-flow'
+- extendedWaitUntil:
+    visible: 'Ton flow'
+    timeout: 15000
+- repeat:
+    times: 15
+    while:
+      notVisible: '1 transition, de Throne à Bird.'
+    commands:
+      - tapOn:
+          id: 'generer-un-autre-flow'
+- tapOn:
+    id: 'modifier-les-criteres'
+- tapOn:
+    id: 'generer-un-flow'
+- extendedWaitUntil:
+    visible: 'Ton flow'
+    timeout: 15000
+- repeat:
+    times: 15
+    while:
+      notVisible: 'Nouveau flow généré.'
+    commands:
+      - tapOn:
+          id: 'modifier-les-criteres'
+      - tapOn:
+          id: 'generer-un-flow'
+      - extendedWaitUntil:
+          visible: 'Ton flow'
+          timeout: 15000
+- extendedWaitUntil:
+    visible: 'Nouveau flow généré.'
+    timeout: 15000
+- tapOn:
+    id: 'revenir-au-flow-precedent'
+- extendedWaitUntil:
+    visible: '1 transition, de Throne à Bird.'
+    timeout: 15000

@@ -1,0 +1,26 @@
+# L'application présente le rappel du spotter avec le flow généré
+appId: com.acrofunjam.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 30000
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn:
+    text: 'Avancé'
+    index: 0
+- tapOn:
+    text: 'Avancé'
+    index: 1
+- tapOn:
+    id: 'generer-un-flow'
+- extendedWaitUntil:
+    visible: 'Ce flow est tiré au hasard.*'
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      text: 'Étape 1 · de Throne vers Bird'
+    direction: DOWN
+    timeout: 15000

@@ -1,5 +1,7 @@
-# Smoke test: the app starts and shows its home screen.
+# Smoke test: the app starts and shows its header.
 appId: com.acrofunjam.app
 ---
 - launchApp
-- assertVisible: 'AcroFunJam'
+- extendedWaitUntil:
+    visible: 'AcroFunJam'
+    timeout: 30000

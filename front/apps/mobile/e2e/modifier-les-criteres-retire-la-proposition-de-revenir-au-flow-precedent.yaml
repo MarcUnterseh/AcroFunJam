@@ -1,0 +1,53 @@
+# Modifier les critères retire la proposition de revenir au flow précédent
+appId: com.acrofunjam.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 30000
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn:
+    text: 'Avancé'
+    index: 0
+- tapOn:
+    text: 'Avancé'
+    index: 1
+- tapOn:
+    id: 'generer-un-flow'
+- extendedWaitUntil:
+    visible: 'Ton flow'
+    timeout: 15000
+- repeat:
+    times: 15
+    while:
+      notVisible: '1 transition, de Throne à Bird.'
+    commands:
+      - tapOn:
+          id: 'generer-un-autre-flow'
+- tapOn:
+    id: 'modifier-les-criteres'
+- tapOn:
+    id: 'generer-un-flow'
+- extendedWaitUntil:
+    visible: 'Ton flow'
+    timeout: 15000
+- repeat:
+    times: 15
+    while:
+      notVisible: 'Nouveau flow généré.'
+    commands:
+      - tapOn:
+          id: 'modifier-les-criteres'
+      - tapOn:
+          id: 'generer-un-flow'
+      - extendedWaitUntil:
+          visible: 'Ton flow'
+          timeout: 15000
+- tapOn:
+    id: 'modifier-les-criteres'
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 15000
+- assertNotVisible: 'Revenir au flow précédent'

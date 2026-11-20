@@ -1,0 +1,31 @@
+# Le flow affiché reste présenté quand un autre flow ne peut pas être généré
+appId: com.acrofunjam.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 30000
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn:
+    text: 'Avancé'
+    index: 0
+- tapOn:
+    text: 'Avancé'
+    index: 1
+- tapOn:
+    id: 'generer-un-flow'
+- extendedWaitUntil:
+    visible: 'Ton flow'
+    timeout: 15000
+- setAirplaneMode: enabled
+- tapOn:
+    id: 'generer-un-autre-flow'
+- extendedWaitUntil:
+    visible: 'Impossible de générer le flow. Vérifie ta connexion Internet, puis réessaie.'
+    timeout: 15000
+- extendedWaitUntil:
+    visible: '1 transition, de Throne à Bird.'
+    timeout: 15000
+- setAirplaneMode: disabled

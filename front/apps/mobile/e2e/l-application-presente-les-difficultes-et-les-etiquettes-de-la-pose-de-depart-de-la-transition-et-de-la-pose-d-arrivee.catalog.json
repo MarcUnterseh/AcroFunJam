@@ -1,0 +1,28 @@
+{
+  "poses": [
+    {
+      "name": "Bird",
+      "base": "débutant",
+      "flyer": "découverte"
+    },
+    {
+      "name": "Folded Leaf",
+      "base": "intermédiaire",
+      "flyer": "débutant",
+      "tags": [
+        "inversion",
+        "lunaire"
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Bird",
+      "to": "Folded Leaf",
+      "name": null,
+      "tags": [
+        "lunaire"
+      ]
+    }
+  ]
+}

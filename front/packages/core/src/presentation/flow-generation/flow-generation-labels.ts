@@ -42,6 +42,16 @@ export const flowGenerationLabels = {
   washingMachine: 'washing machine',
   samePose: '(même pose)',
   description: 'Description',
+  /** Story 9b, the application: the short-lived message after a new draw (Q223) and its action (M9). */
+  newFlowDrawn: 'Nouveau flow généré.',
+  backToPreviousFlow: 'Revenir au flow précédent',
+  /** The back arrow of the screen of the flow. */
+  backToCriteria: 'Revenir aux critères',
+  /** The − and + of the counter of transitions. */
+  fewerTransitions: 'Diminuer le nombre de transitions',
+  moreTransitions: 'Augmenter le nombre de transitions',
+  /** The application is older than the API: no page to reload, an update to install. */
+  outdatedApplication: "Le flow n'a pas pu être généré : l'application doit être mise à jour.",
   /** The accessible name of the ordered list of the steps. */
   steps: 'Étapes du flow',
   /** No flow. */
@@ -55,7 +65,11 @@ export const flowGenerationLabels = {
   outdated: "Le flow n'a pas pu être généré : le site doit être mis à jour. Recharge la page.",
 } as const;
 
-const transitions = (count: number): string => `${count} ${count > 1 ? 'transitions' : 'transition'}`;
+/** « 1 transition », « 3 transitions »: the value of the counter, spoken by screen readers. */
+export const transitionsCountLabel = (count: number): string =>
+  `${count} ${count > 1 ? 'transitions' : 'transition'}`;
+
+const transitions = transitionsCountLabel;
 
 /** « 3 transitions, de Throne à Folded Leaf. »: the sentence one remembers. */
 export const flowSummary = (flow: GeneratedFlow): string =>

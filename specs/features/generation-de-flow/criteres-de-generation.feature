@@ -36,6 +36,13 @@ Fonctionnalité: Critères de génération d'un flow
   # pratique (Q208).
   # Exemples d'étiquettes (expert acroyoga, stories 8 et 9a) : « Pop to Bird » (pop) et « Forbidden » (whip, inversion)
   # de Throne vers Bird ; Folded Leaf (inversion, lunaire) ; transition de Bird vers Folded Leaf (lunaire).
+  #
+  # Story 9b « Générer un flow sur mobile » (decouverte.md, Q212 à Q222), validée le 2026-11-19 : mêmes critères, mêmes
+  # valeurs présélectionnées et mêmes libellés que sur le site, partagés par core/presentation (Q222). Le scénario de
+  # présélection, neutre vis-à-vis du support, vaut aussi pour l'application (@mobile, sans @wip pour ne pas l'exclure
+  # de la CI web ; flow Maestro dans front/apps/mobile/e2e). Saisie (Q221, UX-11) : nombre de transitions par un compteur − / + (élément
+  # réglable pour l'accessibilité), plafonds en boutons radio ; changer un critère ne lance aucun tirage, seul
+  # « Générer un flow » le fait (tests unitaires).
 
   Contexte:
     Soit la liste des étiquettes est la liste amorcée
@@ -230,9 +237,9 @@ Fonctionnalité: Critères de génération d'un flow
       Quand un visiteur génère un flow de 1 transition sans l'étiquette "contrepoids"
       Alors le flow généré est « Throne → Bird »
 
-  Règle: Sur le site, on choisit le nombre de transitions, les plafonds et les étiquettes
+  Règle: On choisit le nombre de transitions, les plafonds et les étiquettes
 
-    @web
+    @web @mobile
     Scénario: Le générateur présélectionne 3 transitions et « débutant » pour la base et pour le flyer
       Quand un visiteur ouvre le générateur de flow
       Alors le générateur de flow présente les critères suivants :
@@ -251,6 +258,28 @@ Fonctionnalité: Critères de génération d'un flow
       Alors le site présente le flow qui part de "Bird", avec les étapes suivantes :
         | étape | transition         | pose d'arrivée |
         | 1     | Bird → Folded Leaf | Folded Leaf    |
+
+    @mobile
+    Scénario: Dans l'application, un visiteur génère un flow avec ses critères de difficulté et d'étiquettes
+      Soit les poses publiées "Bird" et "Folded Leaf" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et la transition publiée sans nom de "Bird" vers "Folded Leaf" de difficulté base "débutant" et de difficulté flyer "débutant", avec l'étiquette "lunaire"
+      Et la transition publiée "Forbidden" de "Bird" vers "Folded Leaf" de difficulté base "avancé" et de difficulté flyer "avancé", avec les étiquettes "whip" et "lunaire"
+      Quand un visiteur génère un flow de 1 transition dans l'application, de difficulté base "débutant" au plus et de difficulté flyer "débutant" au plus, avec l'une des étiquettes "lunaire"
+      Alors l'application présente le flow qui part de "Bird", avec les étapes suivantes :
+        | étape | transition         | pose d'arrivée |
+        | 1     | Bird → Folded Leaf | Folded Leaf    |
+
+    # Q221, UX-11 : « − » désactivé à 1, « + » désactivé à 10.
+    @mobile
+    Plan du Scénario: Dans l'application, le nombre de transitions ne peut pas <sens> <borne>
+      Soit un visiteur a choisi <borne> transitions dans le générateur de flow
+      Quand le visiteur veut <action> le nombre de transitions
+      Alors l'application ne permet pas de <action> le nombre de transitions, qui reste <borne>
+
+      Exemples:
+        | sens              | borne | action    |
+        | descendre sous    | 1     | diminuer  |
+        | dépasser          | 10    | augmenter |
 
     @web
     Scénario: Le site propose de demander et d'exclure toutes les étiquettes de la liste
@@ -280,6 +309,24 @@ Fonctionnalité: Critères de génération d'un flow
         | demandée | exclue     | demandé  | exclure  |
         | exclue   | demandée   | exclu    | demander |
 
+    @mobile @wip
+    Scénario: L'application propose de demander et d'exclure toutes les étiquettes de la liste
+      Soit l'étiquette "contrepoids" dans la liste des étiquettes, qui s'applique aux poses seulement
+      Quand un visiteur ouvre les étiquettes du générateur de flow
+      Alors l'application propose de demander les étiquettes "contrepoids", "dynamique", "icarien", "inversion", "lunaire", "pop", "vrille" et "whip"
+      Et l'application propose d'exclure les étiquettes "contrepoids", "dynamique", "icarien", "inversion", "lunaire", "pop", "vrille" et "whip"
+
+    @mobile
+    Plan du Scénario: Dans l'application, une étiquette <état> ne peut pas être <autre état> en même temps
+      Soit un visiteur a <choix> l'étiquette "lunaire" dans le générateur de flow
+      Quand le visiteur veut <action> l'étiquette "lunaire"
+      Alors l'application ne permet pas de <action> l'étiquette "lunaire", qu'elle marque « (<état>) »
+
+      Exemples:
+        | état     | autre état | choix    | action   |
+        | demandée | exclue     | demandé  | exclure  |
+        | exclue   | demandée   | exclu    | demander |
+
     @web
     Scénario: Le site signale une étiquette retirée de la liste pendant la saisie et conserve les critères saisis
       Soit les poses publiées "Bird" et "Folded Leaf" dans le catalogue, qui peuvent commencer et terminer un flow
@@ -299,5 +346,16 @@ Fonctionnalité: Critères de génération d'un flow
       Et la liste des étiquettes n'a pas pu être chargée sur le site
       Quand un visiteur génère un flow de 1 transition sur le site
       Alors le site présente le flow qui part de "Throne", avec les étapes suivantes :
+        | étape | transition    | pose d'arrivée |
+        | 1     | Throne → Bird | Bird           |
+
+    # Q217 (story 9b) : même règle que UX-6.
+    @mobile @wip
+    Scénario: Dans l'application, un visiteur génère un flow sans étiquette quand les étiquettes n'ont pas pu être chargées
+      Soit les poses publiées "Throne" et "Bird" dans le catalogue, qui peuvent commencer et terminer un flow
+      Et la transition publiée sans nom de "Throne" vers "Bird" de difficulté base "débutant" et de difficulté flyer "débutant"
+      Et la liste des étiquettes n'a pas pu être chargée dans l'application
+      Quand un visiteur génère un flow de 1 transition dans l'application
+      Alors l'application présente le flow qui part de "Throne", avec les étapes suivantes :
         | étape | transition    | pose d'arrivée |
         | 1     | Throne → Bird | Bird           |

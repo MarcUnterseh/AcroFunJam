@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   defaultFlowCriteria,
   flowLengths,
+  fewerTransitions,
+  moreTransitions,
   tagCriterionOf,
   toggleTag,
   withoutTags,
@@ -70,5 +72,12 @@ describe('flow criteria', () => {
     expect(withoutTags(chosen, ['vrille'])).toEqual(
       criteria({ length: 1, requestedTagIds: ['lunaire'], excludedTagIds: ['whip'] }),
     );
+  });
+
+  it('should count one transition less or more, from 1 to 10, with the − / + counter (story 9b)', () => {
+    expect(moreTransitions(criteria({ length: 3 })).length).toBe(4);
+    expect(fewerTransitions(criteria({ length: 3 })).length).toBe(2);
+    expect(fewerTransitions(criteria({ length: 1 })).length).toBe(1);
+    expect(moreTransitions(criteria({ length: 10 })).length).toBe(10);
   });
 });

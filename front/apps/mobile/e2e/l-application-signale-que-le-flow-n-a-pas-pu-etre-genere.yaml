@@ -1,0 +1,23 @@
+# L'application signale que le flow n'a pas pu être généré
+appId: com.acrofunjam.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 30000
+- setAirplaneMode: enabled
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn:
+    text: 'Avancé'
+    index: 0
+- tapOn:
+    text: 'Avancé'
+    index: 1
+- tapOn:
+    id: 'generer-un-flow'
+- extendedWaitUntil:
+    visible: 'Impossible de générer le flow. Vérifie ta connexion Internet, puis réessaie.'
+    timeout: 15000
+- setAirplaneMode: disabled

@@ -7,14 +7,24 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "env": { "EXPO_PUBLIC_API_URL": "http://localhost:5252" }
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://10.0.2.2:5252"
+      }
     },
     "preview": {
       "distribution": "internal",
-      "android": { "buildType": "apk" }
+      "android": {
+        "buildType": "apk"
+      }
     },
     "production": {
       "autoIncrement": true
+    },
+    "e2e": {
+      "extends": "development",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://10.0.2.2:5253"
+      }
     }
   },
   "submit": {

@@ -68,3 +68,6 @@ export * from './domain/flow-generation/generated-flow';
 export type * from './application/flow-generation/FlowGenerationGateway';
 export * from './application/flow-generation/generate-flow';
 export * from './presentation/flow-generation/flow-generation-labels';
+export * from './domain/flow-generation/shown-flow';
+export type * from './application/flow-generation/LastShownFlowStore';
+export * from './application/flow-generation/shown-flow-use-cases';

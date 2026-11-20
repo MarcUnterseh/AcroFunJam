@@ -1,0 +1,16 @@
+{
+  "poses": [
+    {
+      "name": "Star"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Star",
+      "to": "Star",
+      "name": "Ninja Star",
+      "base": "avancé",
+      "flyer": "avancé"
+    }
+  ]
+}

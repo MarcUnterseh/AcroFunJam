@@ -1,0 +1,27 @@
+{
+  "poses": [
+    {
+      "name": "Throne"
+    },
+    {
+      "name": "Bird"
+    },
+    {
+      "name": "Folded Leaf"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Throne",
+      "to": "Bird",
+      "name": "Pop to Bird",
+      "base": "intermédiaire",
+      "flyer": "intermédiaire"
+    },
+    {
+      "from": "Bird",
+      "to": "Folded Leaf",
+      "name": null
+    }
+  ]
+}

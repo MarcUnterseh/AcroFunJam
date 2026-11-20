@@ -1,0 +1,20 @@
+{
+  "poses": [
+    {
+      "name": "Throne"
+    },
+    {
+      "name": "Bird"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Throne",
+      "to": "Bird",
+      "name": "Pop to Bird",
+      "base": "intermédiaire",
+      "flyer": "intermédiaire",
+      "description": "La base propulse le flyer depuis Throne, puis le rattrape en Bird."
+    }
+  ]
+}

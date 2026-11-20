@@ -37,6 +37,18 @@ export const defaultFlowCriteria: FlowCriteria = {
 const tagsOf = (criteria: FlowCriteria, criterion: TagCriterion): readonly string[] =>
   criterion === 'requested' ? criteria.requestedTagIds : criteria.excludedTagIds;
 
+/** One transition less, not below 1 (the − of the counter, story 9b). */
+export const fewerTransitions = (criteria: FlowCriteria): FlowCriteria => ({
+  ...criteria,
+  length: Math.max(minFlowLength, criteria.length - 1),
+});
+
+/** One transition more, not above 10 (the + of the counter, story 9b). */
+export const moreTransitions = (criteria: FlowCriteria): FlowCriteria => ({
+  ...criteria,
+  length: Math.min(maxFlowLength, criteria.length + 1),
+});
+
 /** The group a tag is chosen in, if any. */
 export const tagCriterionOf = (criteria: FlowCriteria, tagId: string): TagCriterion | null =>
   criteria.requestedTagIds.includes(tagId)

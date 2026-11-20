@@ -1,0 +1,26 @@
+# L'application signale que le même flow est ressorti
+appId: com.acrofunjam.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 30000
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn:
+    text: 'Avancé'
+    index: 0
+- tapOn:
+    text: 'Avancé'
+    index: 1
+- tapOn:
+    id: 'generer-un-flow'
+- extendedWaitUntil:
+    visible: 'Ton flow'
+    timeout: 15000
+- tapOn:
+    id: 'generer-un-autre-flow'
+- extendedWaitUntil:
+    visible: 'Le même flow est ressorti : avec ces critères, le catalogue offre peu de choix.'
+    timeout: 15000

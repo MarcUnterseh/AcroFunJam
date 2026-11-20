@@ -50,6 +50,8 @@ const textPairs: readonly [Role, Role][] = [
   ['danger', 'dangerSurface'],
   ['success', 'successSurface'],
   ['info', 'infoSurface'],
+  // Story 9b (Q223): « Revenir au flow précédent », a text button in the message above the bar.
+  ['primary', 'infoSurface'],
   ['badgeContrast', 'badge'],
 ];
 

@@ -1,0 +1,31 @@
+{
+  "poses": [
+    {
+      "name": "Bird"
+    },
+    {
+      "name": "Folded Leaf"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Bird",
+      "to": "Folded Leaf",
+      "name": null,
+      "tags": [
+        "lunaire"
+      ]
+    },
+    {
+      "from": "Bird",
+      "to": "Folded Leaf",
+      "name": "Forbidden",
+      "base": "avancé",
+      "flyer": "avancé",
+      "tags": [
+        "whip",
+        "lunaire"
+      ]
+    }
+  ]
+}

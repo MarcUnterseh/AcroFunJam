@@ -1,0 +1,24 @@
+# L'application signale un catalogue qui ne permet pas encore de générer un flow
+appId: com.acrofunjam.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 30000
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn:
+    text: 'Avancé'
+    index: 0
+- tapOn:
+    text: 'Avancé'
+    index: 1
+- tapOn:
+    id: 'generer-un-flow'
+- extendedWaitUntil:
+    visible: 'Le catalogue ne permet pas encore de générer un flow.'
+    timeout: 15000
+- extendedWaitUntil:
+    visible: 'Il manque encore des poses ou des transitions pour former un enchaînement.'
+    timeout: 15000

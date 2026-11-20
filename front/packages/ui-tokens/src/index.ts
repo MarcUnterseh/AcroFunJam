@@ -164,6 +164,13 @@ export const typography = {
   weight: { regular: '400', medium: '500', semibold: '600', bold: '700' },
   /** Line height as a ratio of the font size (React Native: multiply by the size). */
   lineHeight: { display: 1, tight: 1.25, normal: 1.5 },
+  /**
+   * React Native: largest multiplier of the system font size, per text level (`maxFontSizeMultiplier`). The text
+   * (`xs` to `lg`) follows the system up to ×2; titles (`xl`) up to ×1.25, i.e. 35, still above body text at ×2
+   * (32); display text (`xxl` and above: pose names and step numbers read from the mat) is already above body text
+   * at ×2 and does not grow, so that a pose name never breaks inside a word on a 360 dp screen. Not used by the web.
+   */
+  maxFontScale: { text: 2, title: 1.25, display: 1 },
 } as const;
 
 /** Sizes of interactive elements and layout. */

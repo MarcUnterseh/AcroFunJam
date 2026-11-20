@@ -1,0 +1,14 @@
+# Sans flow gardé, l'application s'ouvre sur le générateur de flow
+appId: com.acrofunjam.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 30000
+- extendedWaitUntil:
+    visible: 'Générer un flow'
+    timeout: 15000
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 15000

@@ -1,0 +1,19 @@
+# Le générateur présélectionne 3 transitions et « débutant » pour la base et pour le flyer
+appId: com.acrofunjam.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 30000
+- extendedWaitUntil:
+    visible: '3'
+    timeout: 15000
+- assertVisible:
+    text: 'Débutant'
+    index: 0
+    checked: true
+- assertVisible:
+    text: 'Débutant'
+    index: 1
+    checked: true

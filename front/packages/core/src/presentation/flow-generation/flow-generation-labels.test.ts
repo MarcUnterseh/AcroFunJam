@@ -6,6 +6,7 @@ import {
   flowGenerationLabels,
   flowStepTitle,
   flowSummary,
+  transitionsCountLabel,
   tagsNoLongerAvailableLabel,
   wideningHints,
 } from './flow-generation-labels';
@@ -122,5 +123,18 @@ describe('flow generation labels', () => {
     expect(flowGenerationLabels.spotterReminder).toBe(
       "Ce flow est tiré au hasard : il peut contenir des transitions que ton duo n'a jamais faites. Travaillez-les d'abord une par une, avec un spotter. Chacun peut dire stop à tout moment.",
     );
+  });
+
+  it('should name the controls of the application and its short-lived message (story 9b)', () => {
+    expect(flowGenerationLabels).toMatchObject({
+      newFlowDrawn: 'Nouveau flow généré.',
+      backToPreviousFlow: 'Revenir au flow précédent',
+      backToCriteria: 'Revenir aux critères',
+      fewerTransitions: 'Diminuer le nombre de transitions',
+      moreTransitions: 'Augmenter le nombre de transitions',
+      outdatedApplication: "Le flow n'a pas pu être généré : l'application doit être mise à jour.",
+    });
+    expect(transitionsCountLabel(1)).toBe('1 transition');
+    expect(transitionsCountLabel(3)).toBe('3 transitions');
   });
 });

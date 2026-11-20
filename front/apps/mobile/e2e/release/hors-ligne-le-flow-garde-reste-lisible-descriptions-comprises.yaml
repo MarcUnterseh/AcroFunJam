@@ -1,0 +1,36 @@
+# Hors ligne, le flow gardé reste lisible, descriptions comprises
+appId: com.acrofunjam.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Nombre de transitions'
+    timeout: 30000
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn: 'Diminuer le nombre de transitions'
+- tapOn:
+    text: 'Intermédiaire'
+    index: 0
+- tapOn:
+    text: 'Intermédiaire'
+    index: 1
+- tapOn:
+    id: 'generer-un-flow'
+- extendedWaitUntil:
+    visible: 'Ton flow'
+    timeout: 15000
+- stopApp
+- setAirplaneMode: enabled
+- launchApp
+- scrollUntilVisible:
+    element:
+      text: 'Description'
+    direction: DOWN
+    timeout: 15000
+- tapOn: 'Description'
+- scrollUntilVisible:
+    element:
+      text: 'La base propulse le flyer depuis Throne, puis le rattrape en Bird.'
+    direction: DOWN
+    timeout: 15000
+- setAirplaneMode: disabled
