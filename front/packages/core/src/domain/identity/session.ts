@@ -53,3 +53,10 @@ export const canManageTags = (session: Session): boolean =>
 
 export const noticeDismissed = (session: Session): Session =>
   session.status === 'visitor' ? { status: 'visitor' } : session;
+
+/**
+ * The person is signed in and the role allows managing the photos of the poses (capability "manage-photos", story 10):
+ * a validator or an administrator.
+ */
+export const canManagePhotos = (session: Session): boolean =>
+  session.status === 'signedIn' && session.capabilities.includes('manage-photos');

@@ -1,6 +1,8 @@
 import {
+  canManagePhotos,
   canManageTags,
   canPropose,
+  enlargedPhotoIndex,
   emptyTransitionsLabel,
   getPosePage,
   isSamePose,
@@ -18,8 +20,8 @@ import {
   type TransitionDirection,
 } from '@acrofunjam/core';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useId, useState, type ReactNode } from 'react';
-import { Link, useParams } from 'react-router';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useSession } from '../identity/SessionContext';
 import { useAnnounce } from '../layout/Announcer';
 import { focusPageTitle } from '../layout/focus';
@@ -29,6 +31,7 @@ import { catalogPath, posePath, revisionPath, transitionProposalPath } from '../
 import { DifficultyLegend } from './DifficultyLegend';
 import { DifficultyDetails, PoseDetails } from './PoseList';
 import { usePosePageGateway } from './PosePageContext';
+import { MainPhotoSection, OtherPhotosSection, PhotoFocus, PhotoViewer } from './PosePhotos';
 import { PoseTagging } from './PoseTagging';
 import { useTags } from './useTags';
 import { TransitionTagging } from './TransitionTagging';
@@ -51,7 +54,7 @@ class PosePageLoadingFailed extends Error {
 export const posePageKey = (poseId: string) => ['catalog', 'poses', poseId, 'page'] as const;
 
 /** The page of a pose, through the getPosePage use case of @acrofunjam/core. */
-function usePosePage(poseId: string) {
+export function usePosePage(poseId: string) {
   const gateway = usePosePageGateway();
   return useQuery<PosePage, PosePageLoadingFailed>({
     queryKey: posePageKey(poseId),
@@ -201,11 +204,38 @@ function LoadedPage({
   page,
   canProposeHere,
   manages,
+  managesPhotos,
 }: {
   readonly page: PosePage;
   readonly canProposeHere: boolean;
   readonly manages: boolean;
+  readonly managesPhotos: boolean;
 }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const photos = page.photos ?? [];
+  const enlarged = enlargedPhotoIndex(searchParams.get('photo'), photos.length);
+  // Opened by a click: an entry of the history, so that « back » on a phone closes it (R18).
+  const openedHere = useRef(false);
+  const enlarge = (index: number) => {
+    openedHere.current = true;
+    setSearchParams({ photo: String(index + 1) });
+  };
+  const browse = (index: number) => setSearchParams({ photo: String(index + 1) }, { replace: true });
+  const closeViewer = () => {
+    if (openedHere.current) {
+      openedHere.current = false;
+      void navigate(-1);
+    } else setSearchParams({}, { replace: true });
+  };
+  // Story 10: with a main photo, the safety note goes next to it, without being repeated under the legend.
+  const safetyNote = (
+    <p className="safety-note">
+      <Icon name="spot" />
+      <span>{posePageLabels.responsibilityWarning}</span>
+    </p>
+  );
+  const notePlacedWithPhoto = photos.length > 0;
   return (
     <>
       <div className="pose-hero">
@@ -216,24 +246,34 @@ function LoadedPage({
         <PoseDetails pose={page} tags={page.tags} />
         <Horizon />
       </div>
-      <div className="pose-page__body">
-        <PoseTags page={page} manages={manages} />
-        {/* Only for a person who may propose: absent otherwise, without any space kept for them. */}
-        {canProposeHere && (
-          <div className="pose-page__actions">
-            <Link to={transitionProposalPath(page.id)} className="button button--primary link-button">
-              <Icon name="plus" />
-              {proposeTransitionFromLabel(page.name)}
-            </Link>
-            <Link to={revisionPath(page.id)} className="button button--secondary link-button">
-              {posePageLabels.proposeRevision}
-            </Link>
-          </div>
-        )}
-        <DifficultyLegend warning={posePageLabels.responsibilityWarning} safetyNote />
-        <TransitionSection page={page} direction="from" manages={manages} />
-        <TransitionSection page={page} direction="to" manages={manages} />
-      </div>
+      <PhotoFocus page={page}>
+        <div className="pose-page__body">
+          <MainPhotoSection page={page} manages={managesPhotos} safetyNote={safetyNote} onEnlarge={enlarge} />
+          <PoseTags page={page} manages={manages} />
+          {/* Only for a person who may propose: absent otherwise, without any space kept for them. */}
+          {canProposeHere && (
+            <div className="pose-page__actions">
+              <Link to={transitionProposalPath(page.id)} className="button button--primary link-button">
+                <Icon name="plus" />
+                {proposeTransitionFromLabel(page.name)}
+              </Link>
+              <Link to={revisionPath(page.id)} className="button button--secondary link-button">
+                {posePageLabels.proposeRevision}
+              </Link>
+            </div>
+          )}
+          <DifficultyLegend
+            warning={notePlacedWithPhoto ? null : posePageLabels.responsibilityWarning}
+            safetyNote
+          />
+          <TransitionSection page={page} direction="from" manages={manages} />
+          <TransitionSection page={page} direction="to" manages={manages} />
+          <OtherPhotosSection page={page} manages={managesPhotos} onEnlarge={enlarge} />
+        </div>
+      </PhotoFocus>
+      {enlarged !== null && (
+        <PhotoViewer page={page} index={enlarged} onBrowse={browse} onClose={closeViewer} />
+      )}
     </>
   );
 }
@@ -256,7 +296,7 @@ function PoseTags({ page, manages }: { readonly page: PosePage; readonly manages
 }
 
 /** « Pose introuvable »: the title says it, then a way back to the catalog. */
-function PoseNotFound() {
+export function PoseNotFound() {
   return (
     <div className="pose-page__not-found">
       <h1 tabIndex={-1}>{posePageLabels.notFoundTitle}</h1>
@@ -269,7 +309,7 @@ function PoseNotFound() {
 }
 
 /** Loading failure (alerte-formulaire.md, error variant, outside a form), as on the catalog. */
-function LoadingFailure({
+export function LoadingFailure({
   outdated,
   retrying,
   onRetry,
@@ -341,7 +381,12 @@ export function PosePageRoute() {
   // A page already received stays on screen when a refresh fails: the failure only matters without it.
   if (page)
     content = (
-      <LoadedPage page={page} canProposeHere={canPropose(session)} manages={canManageTags(session)} />
+      <LoadedPage
+        page={page}
+        canProposeHere={canPropose(session)}
+        manages={canManageTags(session)}
+        managesPhotos={canManagePhotos(session)}
+      />
     );
   else if (notFound) content = <PoseNotFound />;
   else if (error || retrying)

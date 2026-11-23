@@ -88,6 +88,20 @@ public static class ProblemResults
         ["flow-generation.base-difficulty-ceiling-required"] = StatusCodes.Status400BadRequest,
         ["flow-generation.flyer-difficulty-ceiling-required"] = StatusCodes.Status400BadRequest,
         ["flow-generation.tag-not-in-list"] = StatusCodes.Status409Conflict,
+        // Story 10 (ADR 0039): the photos of the poses.
+        ["photo.file-required"] = StatusCodes.Status400BadRequest,
+        ["photo.format-not-accepted"] = StatusCodes.Status400BadRequest,
+        ["photo.too-large"] = StatusCodes.Status413PayloadTooLarge,
+        ["photo.too-small"] = StatusCodes.Status400BadRequest,
+        ["photo.unreadable"] = StatusCodes.Status400BadRequest,
+        ["photo.alt-text-required"] = StatusCodes.Status400BadRequest,
+        ["photo.alt-text-too-long"] = StatusCodes.Status400BadRequest,
+        ["photo.credit-required"] = StatusCodes.Status400BadRequest,
+        ["photo.credit-too-long"] = StatusCodes.Status400BadRequest,
+        ["photo.credit-not-an-author"] = StatusCodes.Status400BadRequest,
+        ["photo.rights-confirmation-required"] = StatusCodes.Status400BadRequest,
+        ["catalog.photo-not-found"] = StatusCodes.Status404NotFound,
+        ["catalog.photo-limit-reached"] = StatusCodes.Status409Conflict,
     };
 
     /// <summary>

@@ -21,6 +21,10 @@ export const revisionPagePattern = '/poses/:id/proposer-une-modification';
 export const revisionPath = (poseId: string): string =>
   `/poses/${encodeURIComponent(poseId)}/proposer-une-modification`;
 
+/** Page « Ajouter une photo » of a published pose (story 10), for the validators and administrators only. */
+export const addPhotoPagePattern = '/poses/:id/ajouter-une-photo';
+export const addPhotoPath = (poseId: string): string => `${posePath(poseId)}/ajouter-une-photo`;
+
 /** Page « Mes propositions » (story 5), for a signed-in person who may propose. */
 export const myProposalsPath = '/mes-propositions';
 

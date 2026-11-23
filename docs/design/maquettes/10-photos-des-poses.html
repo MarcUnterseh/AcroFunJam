@@ -1,0 +1,1913 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette : photos des poses (story 10)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap">
+<style>
+/* Maquette statique de la story 10 (docs/design/ecrans/10-photos-des-poses.md).
+   Valeurs : @acrofunjam/ui-tokens (front/packages/ui-tokens/src/index.ts), mêmes noms de variables que le site
+   (--afj-*). Nouveaux tokens : colors.photoMat, colors.scrim, sizes.thumbnail, sizes.photoMaxHeight, sizes.progress.
+   Les classes reprennent celles du site (front/apps/web/src/index.css) ; les nouvelles sont proposées dans la
+   spécification. Les photos sont des dessins SVG en ligne aux proportions réelles (paysage 4:3, portrait 3:4 et 2:3) :
+   un SVG sans preserveAspectRatio se comporte comme object-fit: contain, si bien que le passe-partout apparaît là où
+   la photo ne remplit pas son cadre. Les cadres réagissent à leur propre largeur (requêtes de conteneur) :
+   40em = breakpoints.md, 64em = breakpoints.lg. */
+
+:root {
+  color-scheme: light;
+  --afj-color-primary: #5B3FC4;
+  --afj-color-primary-hover: #47309F;
+  --afj-color-primary-active: #38267E;
+  --afj-color-primary-contrast: #FFFFFF;
+  --afj-color-background: #F5F2FA;
+  --afj-color-surface: #FFFFFF;
+  --afj-color-surface-hover: #EDE8F7;
+  --afj-color-text: #211C3B;
+  --afj-color-text-muted: #5B5577;
+  --afj-color-border: #8F87A8;
+  --afj-color-divider: #DCD5EA;
+  --afj-color-focus: #1D69AE;
+  --afj-color-danger: #B42318;
+  --afj-color-danger-surface: #FDECEA;
+  --afj-color-info: #1D69AE;
+  --afj-color-info-surface: #DFEAFA;
+  --afj-color-disabled-surface: #EDE8F7;
+  --afj-color-selected: #47309F;
+  --afj-color-selected-surface: #EBE5FB;
+  --afj-color-base: #2C6A4C;
+  --afj-color-base-surface: #DCEFE3;
+  --afj-color-flyer: #1D69AE;
+  --afj-color-flyer-surface: #DFEAFA;
+  --afj-color-sun: #E8961E;
+  --afj-color-sun-strong: #A15C00;
+  --afj-color-sun-surface: #FFEBC4;
+  --afj-color-sky-text: #211C3B;
+  --afj-color-tag-surface: #F2EFEA;
+  --afj-color-tag-border: #CFC8BD;
+  --afj-color-photo-mat: #E9E6EF;
+  --afj-color-scrim: #211C3BB8;
+
+  --afj-sky-gradient: linear-gradient(172deg, #FFE1A0 0%, #FBC0A4 36%, #D3C1F1 72%, #A797E6 100%);
+  --afj-sky-orb: radial-gradient(circle at 50% 50%, #FFF6D8 0%, #FFD36B 38%, #F6A43A 70%, rgba(246, 164, 58, 0) 71%);
+  --afj-sky-orb-glow: rgba(255, 196, 92, 0.55);
+  --afj-sky-grain-opacity: 0.18;
+
+  --afj-spacing-xs: 4px;
+  --afj-spacing-sm: 8px;
+  --afj-spacing-md: 16px;
+  --afj-spacing-lg: 24px;
+  --afj-spacing-xl: 32px;
+  --afj-spacing-xxl: 48px;
+
+  --afj-radius-sm: 10px;
+  --afj-radius-md: 16px;
+  --afj-radius-lg: 26px;
+  --afj-radius-pill: 9999px;
+
+  --afj-font-family: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --afj-font-family-display: "Unbounded", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --afj-font-size-xs: 0.75rem;
+  --afj-font-size-sm: 0.875rem;
+  --afj-font-size-md: 1rem;
+  --afj-font-size-lg: 1.25rem;
+  --afj-font-size-xl: 1.75rem;
+  --afj-font-size-xxl: 2.5rem;
+  --afj-font-size-display: 4rem;
+  --afj-font-size-display-large: 6rem;
+  --afj-font-weight-regular: 400;
+  --afj-font-weight-medium: 500;
+  --afj-font-weight-semibold: 600;
+  --afj-font-weight-bold: 700;
+  --afj-line-height-tight: 1.25;
+  --afj-line-height-normal: 1.5;
+
+  --afj-size-touch-target: 44px;
+  --afj-size-control: 48px;
+  --afj-size-border-width: 1px;
+  --afj-size-border-width-strong: 2px;
+  --afj-size-accent-bar: 4px;
+  --afj-size-focus-ring-width: 3px;
+  --afj-size-focus-ring-offset: 2px;
+  --afj-size-form-wide-max-width: 640px;
+  --afj-size-content-max-width: 1040px;
+  --afj-size-icon: 20px;
+  --afj-size-icon-large: 32px;
+  --afj-size-moon: 18px;
+  --afj-size-avatar: 36px;
+  --afj-size-logo: 30px;
+  --afj-size-orb: 180px;
+  --afj-size-orb-large: 300px;
+  --afj-size-horizon: 26px;
+  --afj-size-thumbnail: 80px;
+  --afj-size-photo-max-height: 560px;
+  --afj-size-progress: 8px;
+}
+
+/* La nuit (colorsDark, skyDark) : suit le système, sauf choix explicite dans la barre de la maquette. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --afj-color-primary: #B6A6FF;
+    --afj-color-primary-hover: #CDC2FF;
+    --afj-color-primary-active: #E0D9FF;
+    --afj-color-primary-contrast: #15122B;
+    --afj-color-background: #110F24;
+    --afj-color-surface: #1A1733;
+    --afj-color-surface-hover: #252148;
+    --afj-color-text: #ECE8F8;
+    --afj-color-text-muted: #ABA4C8;
+    --afj-color-border: #6F6896;
+    --afj-color-divider: #322D57;
+    --afj-color-focus: #8FC1F3;
+    --afj-color-danger: #FF9C8F;
+    --afj-color-danger-surface: #3A1714;
+    --afj-color-info: #8FC1F3;
+    --afj-color-info-surface: #13283F;
+    --afj-color-disabled-surface: #252148;
+    --afj-color-selected: #CDC2FF;
+    --afj-color-selected-surface: #2A2456;
+    --afj-color-base: #82CDA2;
+    --afj-color-base-surface: #163024;
+    --afj-color-flyer: #8FC1F3;
+    --afj-color-flyer-surface: #13283F;
+    --afj-color-sun: #F5C15A;
+    --afj-color-sun-strong: #F5C15A;
+    --afj-color-sun-surface: #3A2E14;
+    --afj-color-sky-text: #F3F0FF;
+    --afj-color-tag-surface: #2A2733;
+    --afj-color-tag-border: #4D4858;
+    --afj-color-photo-mat: #2A2833;
+    --afj-color-scrim: #05040ECC;
+    --afj-sky-gradient: linear-gradient(172deg, #2E2670 0%, #211C55 45%, #151233 100%);
+    --afj-sky-orb: radial-gradient(circle at 42% 40%, #FFFDF2 0%, #EDE6CF 45%, #CFC6AC 70%, rgba(207, 198, 172, 0) 71%);
+    --afj-sky-orb-glow: rgba(220, 214, 255, 0.28);
+    --afj-sky-grain-opacity: 0.12;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --afj-color-primary: #B6A6FF;
+  --afj-color-primary-hover: #CDC2FF;
+  --afj-color-primary-active: #E0D9FF;
+  --afj-color-primary-contrast: #15122B;
+  --afj-color-background: #110F24;
+  --afj-color-surface: #1A1733;
+  --afj-color-surface-hover: #252148;
+  --afj-color-text: #ECE8F8;
+  --afj-color-text-muted: #ABA4C8;
+  --afj-color-border: #6F6896;
+  --afj-color-divider: #322D57;
+  --afj-color-focus: #8FC1F3;
+  --afj-color-danger: #FF9C8F;
+  --afj-color-danger-surface: #3A1714;
+  --afj-color-info: #8FC1F3;
+  --afj-color-info-surface: #13283F;
+  --afj-color-disabled-surface: #252148;
+  --afj-color-selected: #CDC2FF;
+  --afj-color-selected-surface: #2A2456;
+  --afj-color-base: #82CDA2;
+  --afj-color-base-surface: #163024;
+  --afj-color-flyer: #8FC1F3;
+  --afj-color-flyer-surface: #13283F;
+  --afj-color-sun: #F5C15A;
+  --afj-color-sun-strong: #F5C15A;
+  --afj-color-sun-surface: #3A2E14;
+  --afj-color-sky-text: #F3F0FF;
+  --afj-color-tag-surface: #2A2733;
+  --afj-color-tag-border: #4D4858;
+  --afj-color-photo-mat: #2A2833;
+  --afj-color-scrim: #05040ECC;
+  --afj-sky-gradient: linear-gradient(172deg, #2E2670 0%, #211C55 45%, #151233 100%);
+  --afj-sky-orb: radial-gradient(circle at 42% 40%, #FFFDF2 0%, #EDE6CF 45%, #CFC6AC 70%, rgba(207, 198, 172, 0) 71%);
+  --afj-sky-orb-glow: rgba(220, 214, 255, 0.28);
+  --afj-sky-grain-opacity: 0.12;
+}
+
+/* ---------- Base ---------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: var(--afj-spacing-lg) var(--afj-spacing-md) var(--afj-spacing-xxl);
+  font-family: var(--afj-font-family);
+  font-size: var(--afj-font-size-md);
+  line-height: var(--afj-line-height-normal);
+  color: var(--afj-color-text);
+  background: var(--afj-color-background);
+}
+
+h1, h2, h3 { text-wrap: balance; }
+
+h1 {
+  margin: 0 0 var(--afj-spacing-lg);
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-xl);
+  font-weight: var(--afj-font-weight-semibold);
+  line-height: var(--afj-line-height-tight);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+a { color: var(--afj-color-primary); }
+
+:focus-visible {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus);
+  outline-offset: var(--afj-size-focus-ring-offset);
+}
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+
+.icon { inline-size: var(--afj-size-icon); block-size: var(--afj-size-icon); flex-shrink: 0; }
+.icon--large { inline-size: var(--afj-size-icon-large); block-size: var(--afj-size-icon-large); flex-shrink: 0; }
+.moon { inline-size: var(--afj-size-moon); block-size: var(--afj-size-moon); flex-shrink: 0; }
+
+/* ---------- Habillage de la maquette (hors site) ---------- */
+
+.mq-intro { max-width: 1120px; margin: 0 auto var(--afj-spacing-xl); }
+.mq-intro h1 { margin-bottom: var(--afj-spacing-sm); }
+.mq-intro p { margin: 0 0 var(--afj-spacing-sm); max-width: 80ch; color: var(--afj-color-text-muted); }
+.mq-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-sm); margin-top: var(--afj-spacing-md); }
+.mq-theme[aria-pressed="true"] {
+  background: var(--afj-color-selected-surface);
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-selected);
+}
+.mq-swatches { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-md); margin-top: var(--afj-spacing-md); font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.mq-swatch { display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); }
+.mq-swatch i { display: inline-block; inline-size: 32px; block-size: 32px; border-radius: var(--afj-radius-sm); border: var(--afj-size-border-width) solid var(--afj-color-border); }
+
+.mq-section { max-width: 1440px; margin: 0 auto var(--afj-spacing-xxl); }
+.mq-section > h2 {
+  margin: 0 0 var(--afj-spacing-xs);
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-medium);
+  line-height: var(--afj-line-height-tight);
+}
+.mq-section > p { margin: 0 0 var(--afj-spacing-md); max-width: 90ch; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.mq-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--afj-spacing-lg); margin-bottom: var(--afj-spacing-lg); }
+.mq-frame { margin: 0; min-width: 0; }
+.mq-frame--mobile { flex: 0 0 320px; width: 320px; max-width: 100%; }
+.mq-frame--wide { width: min(100%, 1074px); }
+.mq-frame figcaption {
+  margin-bottom: var(--afj-spacing-xs);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text-muted);
+}
+.mq-screen {
+  container: screen / inline-size;
+  position: relative;
+  overflow: hidden;
+  background: var(--afj-color-background);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md);
+}
+.mq-screen--phone-modal { block-size: 568px; }
+.mq-screen--wide-modal { block-size: 700px; }
+.mq-omitted {
+  margin: 0;
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+  font-size: var(--afj-font-size-sm);
+  font-style: italic;
+  color: var(--afj-color-text-muted);
+  border: var(--afj-size-border-width) dashed var(--afj-color-border);
+  border-radius: var(--afj-radius-sm);
+}
+
+/* ---------- En-tête du site ---------- */
+
+.site-header { background: var(--afj-color-background); border-bottom: var(--afj-size-border-width) solid var(--afj-color-divider); }
+.site-header__inner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-md);
+  max-width: var(--afj-size-content-max-width); margin-inline: auto; padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+}
+.site-header__brand {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); min-height: var(--afj-size-touch-target);
+  font-family: var(--afj-font-family-display); font-weight: var(--afj-font-weight-semibold); letter-spacing: -0.01em;
+  color: var(--afj-color-text); text-decoration: none;
+}
+.logo { inline-size: var(--afj-size-logo); block-size: var(--afj-size-logo); flex-shrink: 0; }
+.site-header__account { display: flex; align-items: center; gap: var(--afj-spacing-sm); margin-inline-start: auto; }
+.site-header__avatar {
+  display: inline-grid; place-items: center; inline-size: var(--afj-size-avatar); block-size: var(--afj-size-avatar);
+  border-radius: 50%; font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-bold);
+  color: var(--afj-color-text); background: var(--afj-color-sun-surface);
+}
+.site-header .button {
+  min-height: var(--afj-size-touch-target); padding: 0 var(--afj-spacing-md); font-size: var(--afj-font-size-sm);
+  background: var(--afj-color-surface-hover); border-color: transparent;
+}
+
+main { max-width: var(--afj-size-content-max-width); margin: 0 auto; padding: var(--afj-spacing-lg) var(--afj-spacing-md); }
+
+/* ---------- Boutons ---------- */
+
+.button {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--afj-spacing-xs);
+  min-height: var(--afj-size-touch-target); padding: 0 var(--afj-spacing-lg);
+  border: var(--afj-size-border-width) solid transparent; border-radius: var(--afj-radius-pill);
+  font: inherit; font-weight: var(--afj-font-weight-semibold); text-align: center; text-decoration: none; cursor: pointer;
+}
+.button--primary {
+  min-height: var(--afj-size-control); width: 100%;
+  color: var(--afj-color-primary-contrast); background: var(--afj-color-primary);
+}
+.button--secondary { color: var(--afj-color-text); background: transparent; border-color: var(--afj-color-border); }
+.button--small { padding: 0 var(--afj-spacing-md); }
+.link-button { min-height: var(--afj-size-control); }
+.button[aria-disabled="true"] { cursor: progress; }
+@media (hover: hover) {
+  .button--primary:not([aria-disabled="true"]):hover { background: var(--afj-color-primary-hover); }
+  .button--secondary:hover { background: var(--afj-color-surface-hover); border-color: var(--afj-color-text); }
+}
+.button--primary:active { background: var(--afj-color-primary-active); }
+.button--secondary:active { background: var(--afj-color-divider); }
+
+/* ---------- Champs, alerte ---------- */
+
+.field { display: grid; gap: var(--afj-spacing-xs); min-width: 0; }
+.field label { margin-bottom: var(--afj-spacing-xs); font-weight: var(--afj-font-weight-semibold); }
+.field input, .field textarea {
+  width: 100%; min-width: 0; min-height: var(--afj-size-control); padding: 0 var(--afj-spacing-md);
+  font: inherit; color: var(--afj-color-text); background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-border); border-radius: var(--afj-radius-md);
+}
+.field textarea { padding: var(--afj-spacing-sm) var(--afj-spacing-md); resize: vertical; overflow-wrap: anywhere; }
+.field input[aria-invalid="true"] {
+  padding: 0 calc(var(--afj-spacing-md) - var(--afj-size-border-width));
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-danger);
+}
+.field textarea[aria-invalid="true"] {
+  padding: calc(var(--afj-spacing-sm) - var(--afj-size-border-width)) calc(var(--afj-spacing-md) - var(--afj-size-border-width));
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-danger);
+}
+.field__help { margin: 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.field__help b { font-weight: var(--afj-font-weight-semibold); }
+.field__counter {
+  margin: 0; text-align: end; font-size: var(--afj-font-size-sm); font-variant-numeric: tabular-nums; color: var(--afj-color-text-muted);
+}
+.field__error {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-xs); margin: 0;
+  font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-danger);
+}
+
+.form-alert {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-sm);
+  padding: var(--afj-spacing-md); padding-inline-start: var(--afj-spacing-lg);
+  background: var(--afj-color-danger-surface); border-left: var(--afj-size-accent-bar) solid var(--afj-color-danger);
+  border-radius: var(--afj-radius-md);
+}
+.form-alert .icon { color: var(--afj-color-danger); }
+.form-alert__content { display: flex; flex-direction: column; align-items: flex-start; gap: var(--afj-spacing-sm); min-width: 0; }
+.form-alert__content p { margin: 0; }
+
+/* ---------- Rôles, bornes de flow ---------- */
+
+.pose-card__details { display: grid; gap: var(--afj-spacing-md); margin: 0; }
+.pose-card__roles { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-sm); }
+.pose-card__flow { display: grid; gap: var(--afj-spacing-xs); }
+.role-pill {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); max-width: 100%;
+  padding: var(--afj-spacing-xs) var(--afj-spacing-md) var(--afj-spacing-xs) var(--afj-spacing-xs);
+  border-radius: var(--afj-radius-pill); font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold);
+  line-height: var(--afj-line-height-tight);
+}
+.role-pill--base { color: var(--afj-color-base); background: var(--afj-color-base-surface); }
+.role-pill--flyer { color: var(--afj-color-flyer); background: var(--afj-color-flyer-surface); }
+.role-pill__word {
+  padding: 0.125rem var(--afj-spacing-sm); border-radius: var(--afj-radius-pill);
+  font-size: var(--afj-font-size-xs); font-weight: var(--afj-font-weight-bold); color: var(--afj-color-surface);
+}
+.role-pill--base .role-pill__word { background: var(--afj-color-base); }
+.role-pill--flyer .role-pill__word { background: var(--afj-color-flyer); }
+.role-pill__level { display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); margin: 0; color: var(--afj-color-text); }
+.flow-boundary { display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-sm); font-size: var(--afj-font-size-sm); }
+.flow-boundary dt { display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); }
+.flow-boundary dd { margin: 0; padding: 0 var(--afj-spacing-sm); border-radius: var(--afj-radius-pill); font-weight: var(--afj-font-weight-semibold); }
+.flow-boundary--yes dt { font-weight: var(--afj-font-weight-semibold); }
+.flow-boundary--yes .icon { color: var(--afj-color-sun-strong); }
+.flow-boundary--yes dd { color: var(--afj-color-text); background: var(--afj-color-sun-surface); }
+.flow-boundary--no { color: var(--afj-color-text-muted); }
+.flow-boundary--no .flow-boundary__question { text-decoration: line-through; text-decoration-color: var(--afj-color-border); }
+.flow-boundary--no dd { background: var(--afj-color-surface-hover); }
+
+/* ---------- Catalogue : carte de pose et vignette (story 10) ---------- */
+
+.page-header { display: flex; flex-direction: column; gap: var(--afj-spacing-md); margin-bottom: var(--afj-spacing-lg); }
+.page-header h1 { margin: 0; line-height: 1; }
+.catalog__count { margin: 0 0 var(--afj-spacing-lg); color: var(--afj-color-text-muted); }
+.pose-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--afj-spacing-md); margin: 0; padding: 0; list-style: none; }
+.pose-card {
+  position: relative; display: flex; flex-direction: column; padding: var(--afj-spacing-lg);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-lg);
+}
+.pose-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--afj-spacing-md); margin-bottom: var(--afj-spacing-md); }
+.pose-card__name {
+  margin: 0; min-width: 0; font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-tight); letter-spacing: -0.01em; overflow-wrap: anywhere;
+}
+.pose-card__link { color: var(--afj-color-text); text-decoration: none; }
+.pose-card__link::after { content: ''; position: absolute; inset: 0; border-radius: var(--afj-radius-lg); }
+.pose-card__link:focus-visible { outline: none; }
+.pose-card:has(.pose-card__link:focus-visible) {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus); outline-offset: var(--afj-size-focus-ring-offset);
+}
+/* Story 10 : la vignette, carré de sizes.thumbnail, la photo contenue sur le passe-partout ; décorative (alt=""). */
+.pose-card__thumbnail {
+  display: block; inline-size: var(--afj-size-thumbnail); block-size: var(--afj-size-thumbnail); flex-shrink: 0;
+  border-radius: var(--afj-radius-sm); background: var(--afj-color-photo-mat); overflow: hidden;
+}
+.pose-card .pose-card__details { margin-bottom: 0; }
+@media (hover: hover) {
+  .pose-card:hover { border-color: var(--afj-color-text); box-shadow: 0 0.625rem 1.875rem -1.125rem var(--afj-color-primary); }
+  .pose-card:hover .pose-card__link { text-decoration: underline; text-decoration-thickness: var(--afj-size-border-width-strong); }
+}
+
+/* ---------- Page d'une pose : le ciel (inchangé) ---------- */
+
+.back-link {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); min-block-size: var(--afj-size-touch-target);
+  margin-bottom: var(--afj-spacing-xs); color: var(--afj-color-primary);
+  text-decoration: underline; text-decoration-thickness: var(--afj-size-border-width); justify-self: start;
+}
+.pose-hero {
+  position: relative; isolation: isolate; overflow: hidden; display: grid; gap: var(--afj-spacing-md);
+  margin-bottom: var(--afj-spacing-lg);
+  padding: var(--afj-spacing-md) var(--afj-spacing-md) calc(var(--afj-size-horizon) + var(--afj-spacing-lg));
+  color: var(--afj-color-sky-text); background: var(--afj-sky-gradient); border-radius: var(--afj-radius-lg);
+}
+.pose-hero::before {
+  content: ''; position: absolute; z-index: -1;
+  top: calc(var(--afj-spacing-md) + var(--afj-size-touch-target) - var(--afj-size-orb));
+  right: calc(var(--afj-size-orb) / -3);
+  width: var(--afj-size-orb); height: var(--afj-size-orb); border-radius: 50%;
+  background: var(--afj-sky-orb); box-shadow: 0 0 5rem 1.875rem var(--afj-sky-orb-glow);
+}
+.pose-hero::after {
+  content: ''; position: absolute; z-index: -1; inset: 0; opacity: var(--afj-sky-grain-opacity);
+  mix-blend-mode: overlay; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.pose-hero__horizon {
+  position: absolute; z-index: -1; right: 0; bottom: 0; left: 0; width: 100%; height: var(--afj-size-horizon);
+  fill: var(--afj-color-background);
+}
+.pose-hero .back-link { margin: 0; color: var(--afj-color-sky-text); }
+.pose-hero :focus-visible { outline-color: var(--afj-color-sky-text); }
+.pose-hero h1 {
+  margin: 0; font-size: var(--afj-font-size-xxl); font-weight: var(--afj-font-weight-bold); line-height: 0.95;
+  letter-spacing: -0.04em; overflow-wrap: break-word; hyphens: auto;
+}
+.pose-hero .flow-boundary--no,
+.pose-hero .flow-boundary--yes .icon { color: var(--afj-color-sky-text); }
+.pose-hero .flow-boundary--no .flow-boundary__question { text-decoration-color: currentcolor; }
+
+/* ---------- Page d'une pose : le corps ---------- */
+
+.pose-page__body { display: grid; gap: var(--afj-spacing-lg); align-items: start; }
+.pose-page__section-title {
+  margin: 0; font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-medium); line-height: var(--afj-line-height-tight); overflow-wrap: anywhere;
+}
+.safety-note {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-sm); margin: 0; padding: var(--afj-spacing-md);
+  font-size: var(--afj-font-size-sm); color: var(--afj-color-text); background: var(--afj-color-sun-surface);
+  border-radius: var(--afj-radius-md);
+}
+.safety-note .icon { color: var(--afj-color-sun-strong); }
+
+/* ---------- Story 10 : section « Photos de <pose> » (galerie-photos.md) ---------- */
+
+.pose-photos { display: grid; gap: var(--afj-spacing-md); min-width: 0; }
+.pose-photos__lead { display: grid; gap: var(--afj-spacing-md); align-items: start; min-width: 0; }
+.pose-photos__empty, .pose-photos__max { margin: 0; color: var(--afj-color-text-muted); }
+
+.pose-photo-item { display: grid; gap: var(--afj-spacing-sm); align-content: start; min-width: 0; }
+.pose-photo { display: grid; gap: var(--afj-spacing-xs); margin: 0; min-width: 0; }
+
+/* Le bouton d'agrandissement est toute la photo ; la photo est contenue sur le passe-partout, jamais recadrée. */
+.pose-photo__enlarge {
+  position: relative; display: block; inline-size: 100%; padding: 0; border: 0;
+  font: inherit; color: inherit; background: var(--afj-color-photo-mat);
+  border-radius: var(--afj-radius-md); overflow: hidden; cursor: zoom-in;
+}
+.photo-img { display: block; inline-size: 100%; block-size: auto; }
+.pose-photo--main .photo-img { max-block-size: var(--afj-size-photo-max-height); }
+.pose-photos__grid .pose-photo__enlarge { aspect-ratio: 1; }
+.pose-photos__grid .photo-img { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; }
+
+.pose-photo__zoom {
+  position: absolute; inset-block-end: var(--afj-spacing-sm); inset-inline-end: var(--afj-spacing-sm);
+  display: grid; place-items: center;
+  inline-size: var(--afj-size-touch-target); block-size: var(--afj-size-touch-target); border-radius: 50%;
+  color: var(--afj-color-text); background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+}
+@media (hover: hover) {
+  .pose-photo__enlarge:hover .pose-photo__zoom { background: var(--afj-color-surface-hover); border-color: var(--afj-color-text); }
+}
+.pose-photo__enlarge:active .pose-photo__zoom { background: var(--afj-color-divider); }
+.pose-photo__credit { font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); overflow-wrap: anywhere; }
+
+.pose-photos__grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--afj-spacing-md);
+  margin: 0; padding: 0; list-style: none;
+}
+.pose-photos__grid--manage { grid-template-columns: minmax(0, 1fr); gap: var(--afj-spacing-lg); }
+
+/* Gestion (validateur, administrateur). */
+.pose-photo__main-mark {
+  justify-self: start; display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); margin: 0;
+  padding: var(--afj-spacing-xs) var(--afj-spacing-sm) var(--afj-spacing-xs) var(--afj-spacing-xs);
+  font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-tight);
+  color: var(--afj-color-text); background: var(--afj-color-sun-surface); border-radius: var(--afj-radius-pill);
+}
+.pose-photo__main-mark .icon { color: var(--afj-color-sun-strong); }
+.pose-photo__actions {
+  display: flex; flex-wrap: wrap; gap: var(--afj-spacing-sm);
+  padding-top: var(--afj-spacing-sm); border-top: var(--afj-size-border-width) dotted var(--afj-color-divider);
+}
+.pose-photo__zone {
+  container-type: inline-size;
+  display: grid; gap: var(--afj-spacing-md); min-width: 0; margin: 0; padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
+}
+.pose-photo__zone-title { margin: 0; font-weight: var(--afj-font-weight-semibold); }
+.pose-photo__zone-text { margin: -0.5rem 0 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.zone-actions { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-sm); }
+.zone-actions .button { inline-size: 100%; }
+@container (width >= 22em) {
+  .zone-actions .button { inline-size: auto; }
+}
+
+.pose-photos__manage {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-sm) var(--afj-spacing-md);
+  padding-top: var(--afj-spacing-md); border-top: var(--afj-size-border-width) dotted var(--afj-color-divider);
+}
+.pose-photos__count { margin: 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); font-variant-numeric: tabular-nums; }
+
+/* Revue du 2026-11-20 : la principale seule en haut ; un lien interne descend vers « Autres photos de Bird »,
+   dernière section de la page, après les transitions. */
+.pose-photos__more {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); justify-self: start;
+  min-block-size: var(--afj-size-touch-target);
+  font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-primary);
+  text-decoration: underline; text-decoration-thickness: var(--afj-size-border-width);
+}
+.pose-photos__more:focus-visible { border-radius: var(--afj-radius-sm); }
+@media (hover: hover) {
+  .pose-photos__more:hover { color: var(--afj-color-primary-hover); text-decoration-thickness: var(--afj-size-border-width-strong); }
+}
+.pose-photos__more:active { color: var(--afj-color-primary-active); }
+.pose-other-photos { display: grid; gap: var(--afj-spacing-md); min-width: 0; }
+.pose-page__section { display: grid; gap: var(--afj-spacing-sm); min-width: 0; }
+
+/* Dialogue : bouton sans destination (première ou dernière photo), désactivé à sa place. */
+.button--secondary[aria-disabled="true"].button--unavailable {
+  cursor: default; color: var(--afj-color-text-muted); background: var(--afj-color-disabled-surface); border-color: var(--afj-color-divider);
+}
+
+/* ---------- Story 10 : page « Ajouter une photo » ---------- */
+
+.photo-page { max-width: var(--afj-size-form-wide-max-width); margin: 0 auto; }
+.photo-page .back-link { margin-bottom: var(--afj-spacing-xs); }
+.photo-page h1 { margin-bottom: var(--afj-spacing-sm); }
+.photo-page__intro { margin: 0 0 var(--afj-spacing-lg); color: var(--afj-color-text-muted); }
+.photo-form { display: grid; gap: var(--afj-spacing-lg); }
+
+.photo-field { display: grid; gap: var(--afj-spacing-xs); min-width: 0; }
+.photo-field__label { font-weight: var(--afj-font-weight-semibold); }
+.photo-field__choose { justify-self: start; min-height: var(--afj-size-control); margin-top: var(--afj-spacing-xs); }
+.photo-field__preview { margin-top: var(--afj-spacing-xs); border-radius: var(--afj-radius-md); background: var(--afj-color-photo-mat); overflow: hidden; }
+.photo-field__preview .photo-img { max-block-size: var(--afj-size-photo-max-height); }
+.photo-field__unavailable {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-sm); margin: var(--afj-spacing-xs) 0 0; padding: var(--afj-spacing-md);
+  font-size: var(--afj-font-size-sm); color: var(--afj-color-text); background: var(--afj-color-photo-mat); border-radius: var(--afj-radius-md);
+}
+.photo-field__unavailable .icon--large { color: var(--afj-color-text-muted); }
+.photo-field__summary {
+  margin: var(--afj-spacing-xs) 0 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted);
+  font-variant-numeric: tabular-nums; overflow-wrap: anywhere;
+}
+.photo-field__change { justify-self: start; margin-top: var(--afj-spacing-xs); padding: 0 var(--afj-spacing-md); }
+.photo-field--invalid .photo-field__preview,
+.photo-field--invalid .photo-field__unavailable { outline: var(--afj-size-border-width-strong) solid var(--afj-color-danger); outline-offset: 0; }
+.photo-field--invalid .photo-field__choose {
+  padding: 0 calc(var(--afj-spacing-lg) - var(--afj-size-border-width));
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-danger);
+}
+.photo-field .field__error { margin-top: var(--afj-spacing-xs); }
+
+.confirm { display: grid; gap: var(--afj-spacing-xs); }
+.confirm-box {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-sm); min-block-size: var(--afj-size-control);
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md); overflow-wrap: anywhere;
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md); cursor: pointer;
+}
+.confirm-box input {
+  flex: none; inline-size: var(--afj-size-icon); block-size: var(--afj-size-icon); margin: 0.125rem 0 0;
+  accent-color: var(--afj-color-selected);
+}
+.confirm-box input:focus-visible { outline: none; }
+.confirm-box:has(input:focus-visible) {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus); outline-offset: var(--afj-size-focus-ring-offset);
+}
+.confirm-box:has(input:checked) {
+  padding: calc(var(--afj-spacing-sm) - var(--afj-size-border-width)) calc(var(--afj-spacing-md) - var(--afj-size-border-width));
+  background: var(--afj-color-selected-surface); border: var(--afj-size-border-width-strong) solid var(--afj-color-selected);
+}
+.confirm--invalid .confirm-box {
+  padding: calc(var(--afj-spacing-sm) - var(--afj-size-border-width)) calc(var(--afj-spacing-md) - var(--afj-size-border-width));
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-danger);
+}
+@media (hover: hover) {
+  .confirm-box:not(:has(input:checked)):hover { background: var(--afj-color-surface-hover); border-color: var(--afj-color-text); }
+  .confirm--invalid .confirm-box:hover { border-color: var(--afj-color-danger); }
+}
+
+/* Barre de progression (barre-progression.md) : <progress> natif stylé. */
+.progress { display: grid; gap: var(--afj-spacing-xs); }
+.progress__label {
+  display: flex; justify-content: space-between; align-items: baseline; gap: var(--afj-spacing-sm);
+  font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold);
+}
+.progress__value { font-variant-numeric: tabular-nums; }
+.progress progress {
+  -webkit-appearance: none; appearance: none; display: block; inline-size: 100%; block-size: var(--afj-size-progress);
+  border: 0; border-radius: var(--afj-radius-pill); overflow: hidden;
+  color: var(--afj-color-primary); background: var(--afj-color-surface-hover);
+}
+.progress progress::-webkit-progress-bar { background: var(--afj-color-surface-hover); border-radius: var(--afj-radius-pill); }
+.progress progress::-webkit-progress-value { background: var(--afj-color-primary); border-radius: var(--afj-radius-pill); }
+.progress progress::-moz-progress-bar { background: var(--afj-color-primary); border-radius: var(--afj-radius-pill); }
+.progress progress:indeterminate {
+  background: linear-gradient(var(--afj-color-primary), var(--afj-color-primary)) no-repeat 0 0 / 30% 100%,
+    var(--afj-color-surface-hover);
+  animation: progress-slide 1.4s linear infinite alternate;
+}
+.progress progress:indeterminate::-webkit-progress-bar { background: transparent; }
+.progress progress:indeterminate::-moz-progress-bar { background: transparent; }
+@keyframes progress-slide { to { background-position: 100% 0, 0 0; } }
+
+.form-actions { display: flex; flex-direction: column; gap: var(--afj-spacing-md); }
+.form-confirm {
+  display: grid; gap: var(--afj-spacing-md); padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
+}
+.form-confirm p { margin: 0; font-weight: var(--afj-font-weight-semibold); }
+.form-confirm .zone-actions .button { inline-size: 100%; }
+
+/* ---------- Story 10 : dialogue d'agrandissement (dialogue-agrandissement.md) ---------- */
+/* Dans la maquette, le dialogue est dessiné en place dans son cadre ; sur le site, c'est <dialog> + showModal(). */
+
+.mq-backdrop { position: absolute; inset: 0; background: var(--afj-color-scrim); }
+.photo-viewer {
+  position: absolute; inset: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: var(--afj-spacing-md);
+  margin: 0; padding: var(--afj-spacing-md); color: var(--afj-color-text); background: var(--afj-color-surface); border: 0;
+}
+.photo-viewer__header { display: flex; align-items: center; justify-content: space-between; gap: var(--afj-spacing-sm); }
+.photo-viewer__title {
+  margin: 0; min-width: 0; font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-md);
+  font-weight: var(--afj-font-weight-medium); line-height: var(--afj-line-height-tight); font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.photo-viewer__header .button { flex: none; padding: 0 var(--afj-spacing-md); }
+.photo-viewer__stage {
+  position: relative; min-block-size: 0; background: var(--afj-color-photo-mat); border-radius: var(--afj-radius-md); overflow: hidden;
+}
+.photo-viewer__stage .photo-img { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; }
+.photo-viewer__footer { display: grid; gap: var(--afj-spacing-sm); }
+.photo-viewer__credit { margin: 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); overflow-wrap: anywhere; }
+.photo-viewer__nav { display: grid; gap: var(--afj-spacing-sm); }
+.photo-viewer__nav .button { inline-size: 100%; padding: 0 var(--afj-spacing-md); }
+
+/* ---------- Grand écran (par cadre) ---------- */
+
+@container screen (width >= 40em) {
+  .site-header__inner { padding-inline: var(--afj-spacing-lg); }
+  main { padding-inline: var(--afj-spacing-lg); }
+  .pose-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--afj-spacing-lg); }
+  .pose-hero {
+    gap: var(--afj-spacing-lg);
+    padding: var(--afj-spacing-lg) var(--afj-spacing-xl) calc(var(--afj-size-horizon) + var(--afj-spacing-xl));
+  }
+  .pose-hero h1 { font-size: var(--afj-font-size-display); }
+  .pose-photos__grid--manage { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .photo-page--carded {
+    margin-top: var(--afj-spacing-xl); padding: var(--afj-spacing-xl);
+    max-width: calc(var(--afj-size-form-wide-max-width) + 2 * var(--afj-spacing-xl));
+    background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider); border-radius: var(--afj-radius-lg);
+  }
+  .photo-page--carded .form-confirm { background: var(--afj-color-background); border-color: transparent; }
+  .form-actions { flex-flow: row wrap; }
+  .form-actions .button, .form-confirm .zone-actions .button { width: auto; inline-size: auto; }
+  .photo-viewer {
+    inset: var(--afj-spacing-xl); max-inline-size: var(--afj-size-content-max-width); margin-inline: auto;
+    padding: var(--afj-spacing-lg); border: var(--afj-size-border-width) solid var(--afj-color-divider); border-radius: var(--afj-radius-lg);
+  }
+  .photo-viewer__title { font-size: var(--afj-font-size-lg); }
+  .photo-viewer__footer { display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-md); }
+  .photo-viewer__credit { flex: 1; }
+  .photo-viewer__nav { display: flex; flex-wrap: wrap; }
+  .photo-viewer__nav .button { inline-size: auto; }
+}
+
+@container screen (width >= 64em) {
+  .pose-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pose-hero::before { top: var(--afj-spacing-md); right: 6%; width: var(--afj-size-orb-large); height: var(--afj-size-orb-large); }
+  .pose-hero > h1, .pose-hero > .pose-card__details { max-inline-size: calc(100% - var(--afj-size-orb-large) - 10%); }
+  .pose-hero h1 { font-size: var(--afj-font-size-display-large); }
+  .pose-page__body { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--afj-spacing-xl); }
+  .pose-photos, .pose-other-photos, .pose-page__body > .mq-omitted { grid-column: 1 / -1; }
+  /* La note de sécurité passe à côté de la photo principale. */
+  .pose-photos__lead { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); column-gap: var(--afj-spacing-xl); }
+  .pose-photos__lead > .safety-note { grid-column: 2; grid-row: 1; }
+  .pose-photos__lead > .pose-photo-item { grid-column: 1; grid-row: 1; }
+  .pose-photos__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .pose-photos__grid--manage { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (forced-colors: active) {
+  .pose-card, .pose-photo__zone, .form-confirm, .photo-viewer, .confirm-box { border-color: CanvasText; }
+  .pose-hero { border: var(--afj-size-border-width) solid CanvasText; }
+  .pose-hero::before, .pose-hero::after, .pose-hero__horizon { display: none; }
+  .pose-photo__enlarge, .photo-field__preview, .photo-field__unavailable, .photo-viewer__stage { border: var(--afj-size-border-width) solid CanvasText; }
+  .pose-photo__zoom, .pose-photo__main-mark, .safety-note, .role-pill, .flow-boundary dd { border: var(--afj-size-border-width) solid CanvasText; }
+  .confirm-box:has(input:checked) { border-color: Highlight; }
+  .pose-hero .back-link, .pose-card__link, .pose-photos__more { color: LinkText; }
+  .progress progress { -webkit-appearance: auto; appearance: auto; border: var(--afj-size-border-width) solid CanvasText; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress progress:indeterminate {
+    animation: none;
+    background: repeating-linear-gradient(45deg, var(--afj-color-primary) 0 var(--afj-spacing-xs),
+      var(--afj-color-surface-hover) var(--afj-spacing-xs) var(--afj-spacing-sm));
+  }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="logo" viewBox="0 0 30 30">
+      <circle cx="15" cy="11" r="6" style="fill: var(--afj-color-sun)"/>
+      <path d="M3 27a12 12 0 0 1 24 0z" style="fill: var(--afj-color-base)"/>
+    </symbol>
+    <symbol id="m1" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16a4.5 8 0 0 0 0-16z" fill="currentColor"/></symbol>
+    <symbol id="m2" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor"/></symbol>
+    <symbol id="m3" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16a4.5 8 0 0 1 0-16z" fill="currentColor"/></symbol>
+    <symbol id="i-rise" viewBox="0 0 20 20"><path d="M4 14a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 2v5M7.5 4.5 10 2l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-set" viewBox="0 0 20 20"><path d="M4 14a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 2v5M7.5 4.5 10 7l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 20 20"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 20 20"><path d="M4.5 7.5 10 13l5.5-5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 20 20"><path d="M7.5 4.5 13 10l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-error" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 5.5v5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="14.2" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="i-spot" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 6v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="14" r="1.2" fill="currentColor"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 20 20"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <!-- Story 10 : nouvelles icônes (trait 2 px, grille de 20, currentColor). -->
+    <symbol id="i-zoom" viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m12.6 12.6 4.4 4.4M8.5 6v5M6 8.5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-close" viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-photo" viewBox="0 0 20 20"><rect x="2.5" y="4" width="15" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6 13a4 4 0 0 1 8 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4.5 13h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.6" fill="currentColor"/><path d="M10 1.8v2.4M10 15.8v2.4M1.8 10h2.4M15.8 10h2.4M4.2 4.2l1.7 1.7M14.1 14.1l1.7 1.7M4.2 15.8l1.7-1.7M14.1 5.9l1.7-1.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="horizon" viewBox="0 0 1200 26" preserveAspectRatio="none"><path d="M0 14C150 0 300 26 450 13S750 0 900 13s200 11 300-3V26H0z"/></symbol>
+
+    <!-- Photos de remplacement : des dessins aux proportions réelles, aucun fichier externe.
+         Bird vue de profil, Bird, les prises, Folded Leaf : 4:3 (400 × 300) ; Bird vue de face : 3:4 (300 × 400) ;
+         Throne : 2:3 (200 × 300). Chaque dessin remplit son propre cadre : le passe-partout n'apparaît qu'autour. -->
+    <linearGradient id="g-wall-warm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E7D8C3"/><stop offset="1" stop-color="#CDB89E"/></linearGradient>
+    <linearGradient id="g-wall-cool" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#CFDCE2"/><stop offset="1" stop-color="#AFC0C8"/></linearGradient>
+    <linearGradient id="g-wall-lilac" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DCD3EA"/><stop offset="1" stop-color="#BFB2D6"/></linearGradient>
+    <linearGradient id="g-park" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3D9A6"/><stop offset="1" stop-color="#E4B98A"/></linearGradient>
+    <symbol id="ph-bird-side" viewBox="0 0 400 300">
+      <rect width="400" height="300" fill="url(#g-wall-warm)"/>
+      <circle cx="338" cy="62" r="30" fill="#F6E3B4"/>
+      <rect y="232" width="400" height="68" fill="#A88E72"/>
+      <rect x="58" y="228" width="290" height="8" rx="3" fill="#5D6F7A"/>
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M110 220H198" stroke="#2F3F4C" stroke-width="15"/>
+        <path d="M198 220 232 150" stroke="#2F3F4C" stroke-width="12"/>
+        <path d="M128 218 268 160" stroke="#2F3F4C" stroke-width="8"/>
+        <path d="M168 140H300" stroke="#7A3F4F" stroke-width="15"/>
+        <path d="M168 140 106 132" stroke="#7A3F4F" stroke-width="11"/>
+        <path d="M286 143 268 160" stroke="#7A3F4F" stroke-width="8"/>
+      </g>
+      <circle cx="94" cy="216" r="13" fill="#2F3F4C"/>
+      <circle cx="318" cy="137" r="13" fill="#7A3F4F"/>
+    </symbol>
+    <symbol id="ph-bird-34" viewBox="0 0 400 300">
+      <g transform="translate(400 0) scale(-1 1)"><use href="#ph-bird-side"/></g>
+    </symbol>
+    <symbol id="ph-bird-front" viewBox="0 0 300 400">
+      <rect width="300" height="400" fill="url(#g-wall-cool)"/>
+      <rect y="320" width="300" height="80" fill="#8F7D6B"/>
+      <rect x="40" y="316" width="220" height="8" rx="3" fill="#5D6F7A"/>
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M134 318V214M166 318V214" stroke="#2F3F4C" stroke-width="12"/>
+        <path d="M150 190 52 176M150 190l98-14" stroke="#7A3F4F" stroke-width="10"/>
+        <path d="M118 318 96 286M182 318l22-32" stroke="#2F3F4C" stroke-width="8"/>
+      </g>
+      <ellipse cx="150" cy="198" rx="22" ry="30" fill="#7A3F4F"/>
+      <circle cx="150" cy="156" r="16" fill="#7A3F4F"/>
+      <ellipse cx="150" cy="330" rx="26" ry="10" fill="#2F3F4C"/>
+    </symbol>
+    <symbol id="ph-bird-grips" viewBox="0 0 400 300">
+      <rect width="400" height="300" fill="url(#g-wall-lilac)"/>
+      <g fill="none" stroke-linecap="round">
+        <path d="M30 300 188 168" stroke="#B9876A" stroke-width="40"/>
+        <path d="M400 30 222 150" stroke="#D2A07F" stroke-width="36"/>
+      </g>
+      <circle cx="196" cy="160" r="34" fill="#B9876A"/>
+      <circle cx="214" cy="152" r="30" fill="#D2A07F"/>
+      <path d="M196 132c12 4 22 14 24 28M184 140c12 4 20 14 22 26" fill="none" stroke="#9A6D53" stroke-width="4" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="ph-throne" viewBox="0 0 200 300">
+      <rect width="200" height="300" fill="url(#g-park)"/>
+      <rect y="262" width="200" height="38" fill="#7D9A6A"/>
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M52 256H110" stroke="#2F3F4C" stroke-width="13"/>
+        <path d="M110 256 112 166" stroke="#2F3F4C" stroke-width="11"/>
+        <path d="M70 252 106 186" stroke="#2F3F4C" stroke-width="7"/>
+        <path d="M112 160 108 98" stroke="#7A3F4F" stroke-width="13"/>
+        <path d="M112 160 140 164 116 196" stroke="#7A3F4F" stroke-width="9"/>
+        <path d="M109 112 134 150" stroke="#7A3F4F" stroke-width="7"/>
+      </g>
+      <circle cx="40" cy="253" r="11" fill="#2F3F4C"/>
+      <circle cx="106" cy="80" r="12" fill="#7A3F4F"/>
+    </symbol>
+    <symbol id="ph-folded-leaf" viewBox="0 0 400 300">
+      <rect width="400" height="300" fill="url(#g-wall-lilac)"/>
+      <rect y="236" width="400" height="64" fill="#9C8670"/>
+      <rect x="56" y="232" width="290" height="8" rx="3" fill="#5D6F7A"/>
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M106 224H196" stroke="#2F3F4C" stroke-width="14"/>
+        <path d="M196 224 214 150" stroke="#2F3F4C" stroke-width="11"/>
+        <path d="M214 146 176 196" stroke="#7A3F4F" stroke-width="14"/>
+        <path d="M180 192 166 226" stroke="#7A3F4F" stroke-width="7"/>
+        <path d="M214 146 262 194V224" stroke="#7A3F4F" stroke-width="11"/>
+      </g>
+      <circle cx="94" cy="221" r="12" fill="#2F3F4C"/>
+      <circle cx="170" cy="210" r="12" fill="#7A3F4F"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="mq-intro">
+  <h1>Story 10 « Photos des poses » : maquette</h1>
+  <p>Écrans de <code>docs/design/ecrans/10-photos-des-poses.md</code>, avec les valeurs de <code>@acrofunjam/ui-tokens</code>. Chaque état est montré à 320 px et, quand c'est utile, sur grand écran ; les cadres réagissent à leur propre largeur. Les états sont indépendants : une même pose peut avoir des photos dans un cadre et aucune dans un autre.</p>
+  <p>Les photos sont des dessins de remplacement aux proportions réelles : paysage 4:3 (Bird vue de profil, Folded Leaf), portrait 3:4 (Bird vue de face) et 2:3 (Throne). Aucune n'est recadrée : le passe-partout (<code>photoMat</code>) remplit le reste de chaque cadre. Libellés : ceux validés le 2026-11-20 ; les libellés « proposés » de la spécification restent à confirmer.</p>
+  <div class="mq-toolbar" role="group" aria-label="Thème de la maquette">
+    <button type="button" class="button button--secondary mq-theme" data-theme-choice="light" aria-pressed="false">Aube (clair)</button>
+    <button type="button" class="button button--secondary mq-theme" data-theme-choice="dark" aria-pressed="false">Nuit (sombre)</button>
+  </div>
+  <div class="mq-swatches" aria-label="Nouveaux tokens de couleur">
+    <span class="mq-swatch"><i style="background: var(--afj-color-photo-mat)"></i>photoMat (passe-partout)</span>
+    <span class="mq-swatch"><i style="background: var(--afj-color-scrim)"></i>scrim (voile du dialogue)</span>
+  </div>
+</div>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-catalog">
+  <h2 id="mq-catalog">1. Catalogue : vignette carrée à côté du nom</h2>
+  <p>Vignette de 80 px (<code>sizes.thumbnail</code>), rayon <code>sm</code>, photo contenue sur le passe-partout, décorative (<code>alt=""</code>). Bird (paysage) et Throne (portrait : tête et pieds gardés) en ont une ; Reverse Bird, sans photo, n'a ni vignette ni place réservée.</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Visiteur, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><a class="button button--secondary" href="#">Se connecter</a></div>
+        </div></header>
+        <main>
+          <div class="page-header"><h1>Catalogue des poses</h1></div>
+          <p class="catalog__count">4 poses</p>
+          <ul class="pose-grid" role="list">
+            <li class="pose-card">
+              <div class="pose-card__top">
+                <h2 class="pose-card__name"><a class="pose-card__link" href="#">Bird</a></h2>
+                <svg class="pose-card__thumbnail" viewBox="0 0 400 300" aria-hidden="true"><use href="#ph-bird-side"/></svg>
+              </div>
+              <dl class="pose-card__details">
+                <div class="pose-card__roles">
+                  <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                  <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                </div>
+                <div class="pose-card__flow">
+                  <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Oui</dd></div>
+                  <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+                </div>
+              </dl>
+            </li>
+            <li class="pose-card">
+              <div class="pose-card__top">
+                <h2 class="pose-card__name"><a class="pose-card__link" href="#">Reverse Bird</a></h2>
+              </div>
+              <dl class="pose-card__details">
+                <div class="pose-card__roles">
+                  <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                  <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                </div>
+                <div class="pose-card__flow">
+                  <div class="flow-boundary flow-boundary--no"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Non</dd></div>
+                  <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+                </div>
+              </dl>
+            </li>
+            <li class="pose-card">
+              <div class="pose-card__top">
+                <h2 class="pose-card__name"><a class="pose-card__link" href="#">Throne</a></h2>
+                <svg class="pose-card__thumbnail" viewBox="0 0 200 300" aria-hidden="true"><use href="#ph-throne"/></svg>
+              </div>
+              <p class="mq-omitted">Pastilles de rôle, bornes de flow</p>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Visiteur, grand écran (3 colonnes)</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><a class="button button--secondary" href="#">Se connecter</a></div>
+        </div></header>
+        <main>
+          <div class="page-header"><h1>Catalogue des poses</h1></div>
+          <p class="catalog__count">4 poses</p>
+          <ul class="pose-grid" role="list">
+            <li class="pose-card">
+              <div class="pose-card__top">
+                <h2 class="pose-card__name"><a class="pose-card__link" href="#">Bird</a></h2>
+                <svg class="pose-card__thumbnail" viewBox="0 0 400 300" aria-hidden="true"><use href="#ph-bird-side"/></svg>
+              </div>
+              <dl class="pose-card__details">
+                <div class="pose-card__roles">
+                  <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                  <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                </div>
+                <div class="pose-card__flow">
+                  <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Oui</dd></div>
+                  <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+                </div>
+              </dl>
+            </li>
+            <li class="pose-card">
+              <div class="pose-card__top">
+                <h2 class="pose-card__name"><a class="pose-card__link" href="#">Folded Leaf</a></h2>
+                <svg class="pose-card__thumbnail" viewBox="0 0 400 300" aria-hidden="true"><use href="#ph-folded-leaf"/></svg>
+              </div>
+              <dl class="pose-card__details">
+                <div class="pose-card__roles">
+                  <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                  <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                </div>
+                <div class="pose-card__flow">
+                  <div class="flow-boundary flow-boundary--no"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Non</dd></div>
+                  <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+                </div>
+              </dl>
+            </li>
+            <li class="pose-card">
+              <div class="pose-card__top">
+                <h2 class="pose-card__name"><a class="pose-card__link" href="#">Reverse Bird</a></h2>
+              </div>
+              <dl class="pose-card__details">
+                <div class="pose-card__roles">
+                  <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                  <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                </div>
+                <div class="pose-card__flow">
+                  <div class="flow-boundary flow-boundary--no"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Non</dd></div>
+                  <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+                </div>
+              </dl>
+            </li>
+            <li class="pose-card">
+              <div class="pose-card__top">
+                <h2 class="pose-card__name"><a class="pose-card__link" href="#">Throne</a></h2>
+                <svg class="pose-card__thumbnail" viewBox="0 0 200 300" aria-hidden="true"><use href="#ph-throne"/></svg>
+              </div>
+              <dl class="pose-card__details">
+                <div class="pose-card__roles">
+                  <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                  <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                </div>
+                <div class="pose-card__flow">
+                  <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Oui</dd></div>
+                  <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+                </div>
+              </dl>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-visitor">
+  <h2 id="mq-visitor">2. Page d'une pose, visiteur</h2>
+  <p>Revue du 2026-11-20 : en tête du corps, hors du ciel, la <strong>photo principale seule</strong>, entière, précédée de la note de sécurité (à côté d'elle sur grand écran), puis le lien « Voir les 2 autres photos ». Ce lien descend vers « Autres photos de Bird », <strong>dernière section de la page</strong>, après les transitions : cellules carrées où chaque photo est contenue (« Bird vue de face », portrait, garde la tête et les pieds). Pose à une photo : ni lien ni section du bas. Sans photo : aucune section.</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Bird, 3 photos, 320 px : haut et bas de page</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><a class="button button--secondary" href="#">Se connecter</a></div>
+        </div></header>
+        <main>
+          <div class="pose-hero">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+            <h1>Bird</h1>
+            <dl class="pose-card__details">
+              <div class="pose-card__roles">
+                <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+              </div>
+              <div class="pose-card__flow">
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Oui</dd></div>
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+              </div>
+            </dl>
+            <svg class="pose-hero__horizon" aria-hidden="true"><use href="#horizon"/></svg>
+          </div>
+          <div class="pose-page__body">
+            <section class="pose-photos" aria-labelledby="v1">
+              <h2 id="v1" class="pose-page__section-title">Photos de Bird</h2>
+              <div class="pose-photos__lead">
+                <p class="safety-note"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Tu restes juge de tes limites. Les chutes arrivent surtout pendant les transitions : apprends-les avec un spotter.</span></p>
+                <div class="pose-photo-item">
+                  <figure class="pose-photo pose-photo--main">
+                    <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 1 de Bird</span><svg class="photo-img" viewBox="0 0 400 300" role="img" aria-label="Bird vue de profil"><use href="#ph-bird-side"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                    <figcaption class="pose-photo__credit">Photo : Léa Martin</figcaption>
+                  </figure>
+                  <a class="pose-photos__more" href="#v1-others">Voir les 2 autres photos<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></a>
+                </div>
+              </div>
+            </section>
+            <p class="mq-omitted">Étiquettes de la pose, actions, légende de l'échelle (sans la note de sécurité, montée en haut)</p>
+            <section class="pose-page__section" aria-labelledby="v1-from">
+              <h2 id="v1-from" class="pose-page__section-title">Transitions depuis Bird</h2>
+              <p class="mq-omitted">Transitions (inchangées)</p>
+            </section>
+            <section class="pose-page__section" aria-labelledby="v1-to">
+              <h2 id="v1-to" class="pose-page__section-title">Transitions vers Bird</h2>
+              <p class="mq-omitted">Transitions (inchangées)</p>
+            </section>
+            <section class="pose-other-photos" id="v1-others" aria-labelledby="v1-others-title">
+              <h2 id="v1-others-title" class="pose-page__section-title" tabindex="-1">Autres photos de Bird</h2>
+              <ul class="pose-photos__grid" role="list">
+                <li class="pose-photo-item"><figure class="pose-photo">
+                  <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 2 de Bird</span><svg class="photo-img" viewBox="0 0 300 400" role="img" aria-label="Bird vue de face"><use href="#ph-bird-front"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                  <figcaption class="pose-photo__credit">Photo : Hugo Bernard</figcaption>
+                </figure></li>
+                <li class="pose-photo-item"><figure class="pose-photo">
+                  <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 3 de Bird</span><svg class="photo-img" viewBox="0 0 400 300" role="img" aria-label="Bird, les prises"><use href="#ph-bird-grips"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                  <figcaption class="pose-photo__credit">Photo : Lulu Acro</figcaption>
+                </figure></li>
+              </ul>
+            </section>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Reverse Bird, sans photo, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><a class="button button--secondary" href="#">Se connecter</a></div>
+        </div></header>
+        <main>
+          <div class="pose-hero">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+            <h1>Reverse Bird</h1>
+            <dl class="pose-card__details">
+              <div class="pose-card__roles">
+                <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+              </div>
+            </dl>
+            <svg class="pose-hero__horizon" aria-hidden="true"><use href="#horizon"/></svg>
+          </div>
+          <div class="pose-page__body">
+            <p class="mq-omitted">Aucune section des photos : le corps commence par la légende de l'échelle</p>
+            <p class="safety-note"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Tu restes juge de tes limites. Les chutes arrivent surtout pendant les transitions : apprends-les avec un spotter.</span></p>
+            <p class="mq-omitted">Transitions (inchangées)</p>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Bird, 3 photos, grand écran : en haut, la principale et la note de sécurité à côté ; en bas de page, après les transitions, la grille de 4 colonnes</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><a class="button button--secondary" href="#">Se connecter</a></div>
+        </div></header>
+        <main>
+          <div class="pose-hero">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+            <h1>Bird</h1>
+            <dl class="pose-card__details">
+              <div class="pose-card__roles">
+                <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m1"/></svg>Découverte</dd></div>
+                <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+              </div>
+              <div class="pose-card__flow">
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-rise"/></svg><span class="flow-boundary__question">Peut commencer un flow</span></dt><dd>Oui</dd></div>
+                <div class="flow-boundary flow-boundary--yes"><dt><svg class="icon" aria-hidden="true"><use href="#i-set"/></svg><span class="flow-boundary__question">Peut terminer un flow</span></dt><dd>Oui</dd></div>
+              </div>
+            </dl>
+            <svg class="pose-hero__horizon" aria-hidden="true"><use href="#horizon"/></svg>
+          </div>
+          <div class="pose-page__body">
+            <section class="pose-photos" aria-labelledby="v2">
+              <h2 id="v2" class="pose-page__section-title">Photos de Bird</h2>
+              <div class="pose-photos__lead">
+                <p class="safety-note"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Tu restes juge de tes limites. Les chutes arrivent surtout pendant les transitions : apprends-les avec un spotter.</span></p>
+                <div class="pose-photo-item">
+                  <figure class="pose-photo pose-photo--main">
+                    <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 1 de Bird</span><svg class="photo-img" viewBox="0 0 400 300" role="img" aria-label="Bird vue de profil"><use href="#ph-bird-side"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                    <figcaption class="pose-photo__credit">Photo : Léa Martin</figcaption>
+                  </figure>
+                  <a class="pose-photos__more" href="#v2-others">Voir les 2 autres photos<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></a>
+                </div>
+              </div>
+            </section>
+            <p class="mq-omitted">Étiquettes de la pose, actions, légende de l'échelle (sans la note de sécurité, montée en haut)</p>
+            <section class="pose-page__section" aria-labelledby="v2-from">
+              <h2 id="v2-from" class="pose-page__section-title">Transitions depuis Bird</h2>
+              <p class="mq-omitted">Transitions (inchangées)</p>
+            </section>
+            <section class="pose-page__section" aria-labelledby="v2-to">
+              <h2 id="v2-to" class="pose-page__section-title">Transitions vers Bird</h2>
+              <p class="mq-omitted">Transitions (inchangées)</p>
+            </section>
+            <section class="pose-other-photos" id="v2-others" aria-labelledby="v2-others-title">
+              <h2 id="v2-others-title" class="pose-page__section-title" tabindex="-1">Autres photos de Bird</h2>
+              <ul class="pose-photos__grid" role="list">
+                <li class="pose-photo-item"><figure class="pose-photo">
+                  <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 2 de Bird</span><svg class="photo-img" viewBox="0 0 300 400" role="img" aria-label="Bird vue de face"><use href="#ph-bird-front"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                  <figcaption class="pose-photo__credit">Photo : Hugo Bernard</figcaption>
+                </figure></li>
+                <li class="pose-photo-item"><figure class="pose-photo">
+                  <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 3 de Bird</span><svg class="photo-img" viewBox="0 0 400 300" role="img" aria-label="Bird, les prises"><use href="#ph-bird-grips"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                  <figcaption class="pose-photo__credit">Photo : Lulu Acro</figcaption>
+                </figure></li>
+              </ul>
+            </section>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-manage">
+  <h2 id="mq-manage">3. Page d'une pose, validateur : gérer les photos</h2>
+  <p>En haut, sous la photo principale : le repère « Photo principale (vignette du catalogue) » en pilule soleil, son pied pointillé (« Modifier », « Retirer »), puis le lien vers les autres photos. En bas de page, « Autres photos de Bird » : chaque photo avec ses actions, puis le pied de section (« Ajouter une photo » et « 2 photos sur 5 », ou la phrase du maximum). Pose à une photo : pas de section du bas, le pied de section ferme la section du haut. Modification et retrait se font sur place, dans une zone qui remplace le pied de la photo ; « Retirer la photo » n'est jamais rouge. Grille du validateur : 1, 2 puis 3 colonnes.</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Reverse Bird, sans photo, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <div class="pose-hero">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+            <h1>Reverse Bird</h1>
+            <p class="mq-omitted" style="color: inherit">Pastilles, bornes de flow</p>
+            <svg class="pose-hero__horizon" aria-hidden="true"><use href="#horizon"/></svg>
+          </div>
+          <div class="pose-page__body">
+            <section class="pose-photos" aria-labelledby="m0">
+              <h2 id="m0" class="pose-page__section-title">Photos de Reverse Bird</h2>
+              <p class="pose-photos__empty">Reverse Bird n'a pas encore de photo.</p>
+              <a class="button button--secondary" href="#" style="justify-self: start"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une photo<span class="visually-hidden"> de Reverse Bird</span></a>
+            </section>
+            <p class="mq-omitted">Étiquettes, actions, légende et note de sécurité, transitions</p>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Throne, 1 photo : le pied de section reste en haut, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <p class="mq-omitted">Ciel de Throne (inchangé)</p>
+          <div class="pose-page__body" style="margin-top: var(--afj-spacing-lg)">
+            <section class="pose-photos" aria-labelledby="m01h">
+              <h2 id="m01h" class="pose-page__section-title">Photos de Throne</h2>
+              <div class="pose-photos__lead">
+                <p class="safety-note"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Tu restes juge de tes limites. Les chutes arrivent surtout pendant les transitions : apprends-les avec un spotter.</span></p>
+                <div class="pose-photo-item">
+                  <figure class="pose-photo pose-photo--main">
+                    <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 1 de Throne</span><svg class="photo-img" viewBox="0 0 200 300" role="img" aria-label="Throne vu de profil"><use href="#ph-throne"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                    <figcaption class="pose-photo__credit">Photo : Léa Martin</figcaption>
+                  </figure>
+                  <p class="pose-photo__main-mark"><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg>Photo principale (vignette du catalogue)</p>
+                  <div class="pose-photo__actions">
+                    <button type="button" class="button button--secondary button--small">Modifier<span class="visually-hidden"> la photo Throne vu de profil</span></button>
+                    <button type="button" class="button button--secondary button--small">Retirer<span class="visually-hidden"> la photo Throne vu de profil</span></button>
+                  </div>
+                  <div class="pose-photos__manage">
+                    <a class="button button--secondary" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une photo<span class="visually-hidden"> de Throne</span></a>
+                    <p class="pose-photos__count">1 photo sur 5</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <p class="mq-omitted">Étiquettes, actions, légende, transitions ; pas de section du bas</p>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Bird, 2 photos : haut et bas de page, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <p class="mq-omitted">Ciel de Bird (inchangé)</p>
+          <div class="pose-page__body" style="margin-top: var(--afj-spacing-lg)">
+            <section class="pose-photos" aria-labelledby="m1h">
+              <h2 id="m1h" class="pose-page__section-title">Photos de Bird</h2>
+              <div class="pose-photos__lead">
+                <p class="safety-note"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Tu restes juge de tes limites. Les chutes arrivent surtout pendant les transitions : apprends-les avec un spotter.</span></p>
+                <div class="pose-photo-item">
+                  <figure class="pose-photo pose-photo--main">
+                    <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 1 de Bird</span><svg class="photo-img" viewBox="0 0 400 300" role="img" aria-label="Bird vue de profil"><use href="#ph-bird-side"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                    <figcaption class="pose-photo__credit">Photo : Léa Martin</figcaption>
+                  </figure>
+                  <p class="pose-photo__main-mark"><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg>Photo principale (vignette du catalogue)</p>
+                  <div class="pose-photo__actions">
+                    <button type="button" class="button button--secondary button--small">Modifier<span class="visually-hidden"> la photo Bird vue de profil</span></button>
+                    <button type="button" class="button button--secondary button--small">Retirer<span class="visually-hidden"> la photo Bird vue de profil</span></button>
+                  </div>
+                  <a class="pose-photos__more" href="#m1-others">Voir l'autre photo<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></a>
+                </div>
+              </div>
+            </section>
+            <p class="mq-omitted">Étiquettes, actions, légende, transitions depuis et vers Bird</p>
+            <section class="pose-other-photos" id="m1-others" aria-labelledby="m1-others-title">
+              <h2 id="m1-others-title" class="pose-page__section-title" tabindex="-1">Autres photos de Bird</h2>
+              <ul class="pose-photos__grid pose-photos__grid--manage" role="list">
+                <li class="pose-photo-item">
+                  <figure class="pose-photo">
+                    <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 2 de Bird</span><svg class="photo-img" viewBox="0 0 300 400" role="img" aria-label="Bird vue de face"><use href="#ph-bird-front"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                    <figcaption class="pose-photo__credit">Photo : Hugo Bernard</figcaption>
+                  </figure>
+                  <div class="pose-photo__actions">
+                    <button type="button" class="button button--secondary button--small">Choisir comme photo principale<span class="visually-hidden"> : Bird vue de face</span></button>
+                    <button type="button" class="button button--secondary button--small">Modifier<span class="visually-hidden"> la photo Bird vue de face</span></button>
+                    <button type="button" class="button button--secondary button--small">Retirer<span class="visually-hidden"> la photo Bird vue de face</span></button>
+                  </div>
+                </li>
+              </ul>
+              <div class="pose-photos__manage">
+                <a class="button button--secondary" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une photo<span class="visually-hidden"> de Bird</span></a>
+                <p class="pose-photos__count">2 photos sur 5</p>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Bird, 5 photos (maximum) : en haut, retrait de la principale ; en bas, modification de la 3e, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <p class="mq-omitted">Ciel de Bird (inchangé)</p>
+          <div class="pose-page__body" style="margin-top: var(--afj-spacing-lg)">
+            <section class="pose-photos" aria-labelledby="m5h">
+              <h2 id="m5h" class="pose-page__section-title">Photos de Bird</h2>
+              <div class="pose-photos__lead">
+                <p class="safety-note"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Tu restes juge de tes limites. Les chutes arrivent surtout pendant les transitions : apprends-les avec un spotter.</span></p>
+                <div class="pose-photo-item">
+                  <figure class="pose-photo pose-photo--main">
+                    <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 1 de Bird</span><svg class="photo-img" viewBox="0 0 400 300" role="img" aria-label="Bird vue de profil"><use href="#ph-bird-side"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                    <figcaption class="pose-photo__credit">Photo : Léa Martin</figcaption>
+                  </figure>
+                  <p class="pose-photo__main-mark"><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg>Photo principale (vignette du catalogue)</p>
+                  <div class="pose-photo__zone" role="group" aria-labelledby="rm1">
+                    <p id="rm1" class="pose-photo__zone-title">Retirer cette photo de Bird ?</p>
+                    <p class="pose-photo__zone-text">La photo suivante deviendra la photo principale et la vignette du catalogue.</p>
+                    <div class="zone-actions">
+                      <button type="button" class="button button--secondary">Retirer la photo</button>
+                      <button type="button" class="button button--secondary">Annuler</button>
+                    </div>
+                  </div>
+                  <a class="pose-photos__more" href="#m5-others">Voir les 4 autres photos<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></a>
+                </div>
+              </div>
+            </section>
+            <p class="mq-omitted">Étiquettes, actions, légende, transitions depuis et vers Bird</p>
+            <section class="pose-other-photos" id="m5-others" aria-labelledby="m5-others-title">
+              <h2 id="m5-others-title" class="pose-page__section-title" tabindex="-1">Autres photos de Bird</h2>
+              <ul class="pose-photos__grid pose-photos__grid--manage" role="list">
+                <li class="pose-photo-item">
+                  <figure class="pose-photo">
+                    <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 2 de Bird</span><svg class="photo-img" viewBox="0 0 300 400" role="img" aria-label="Bird vue de face"><use href="#ph-bird-front"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                    <figcaption class="pose-photo__credit">Photo : Hugo Bernard</figcaption>
+                  </figure>
+                  <div class="pose-photo__actions">
+                    <button type="button" class="button button--secondary button--small">Choisir comme photo principale</button>
+                    <button type="button" class="button button--secondary button--small">Modifier</button>
+                    <button type="button" class="button button--secondary button--small">Retirer</button>
+                  </div>
+                </li>
+                <li class="pose-photo-item">
+                  <figure class="pose-photo">
+                    <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 3 de Bird</span><svg class="photo-img" viewBox="0 0 400 300" role="img" aria-label="Bird, les prises"><use href="#ph-bird-grips"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                    <figcaption class="pose-photo__credit">Photo : Lulu Acro</figcaption>
+                  </figure>
+                  <form class="pose-photo__zone" aria-labelledby="ed3">
+                    <p id="ed3" class="pose-photo__zone-title">Modifier la photo</p>
+                    <div class="field">
+                      <label for="ed3-alt">Texte alternatif</label>
+                      <textarea id="ed3-alt" rows="4">Bird, les prises</textarea>
+                      <p class="field__help">Décris la pose pour qui ne voit pas la photo : ce que font la base et le flyer. Inutile d'écrire « Photo de ». Si la pose a plusieurs photos, précise l'angle (vue de côté, détail des prises).</p>
+                      <p class="field__help"><b>Exemple :</b> Bird : la base, allongée sur le dos, a les pieds sur les hanches du flyer, face au sol à l'horizontale, bras écartés.</p>
+                      <p class="field__counter">16 / 200</p>
+                    </div>
+                    <div class="field">
+                      <label for="ed3-credit">Crédit</label>
+                      <input id="ed3-credit" type="text" value="Lulu Acro">
+                      <p class="field__help">Le nom de la personne qui a pris la photo, présenté sous elle : « Photo : Léa Martin ». Si tu l'as prise toi-même, écris ton nom.</p>
+                      <p class="field__counter">9 / 100</p>
+                    </div>
+                    <div class="zone-actions">
+                      <button type="button" class="button button--primary">Enregistrer la photo</button>
+                      <button type="button" class="button button--secondary">Annuler</button>
+                    </div>
+                  </form>
+                </li>
+                <li class="pose-photo-item">
+                  <figure class="pose-photo">
+                    <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 4 de Bird</span><svg class="photo-img" viewBox="0 0 400 300" role="img" aria-label="Bird vue de trois quarts"><use href="#ph-bird-34"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                    <figcaption class="pose-photo__credit">Photo : Collectif AcroLyon</figcaption>
+                  </figure>
+                  <div class="pose-photo__actions">
+                    <button type="button" class="button button--secondary button--small">Choisir comme photo principale</button>
+                    <button type="button" class="button button--secondary button--small">Modifier</button>
+                    <button type="button" class="button button--secondary button--small">Retirer</button>
+                  </div>
+                </li>
+                <li class="pose-photo-item"><p class="mq-omitted">Photo 5 (comme la photo 4)</p></li>
+              </ul>
+              <div class="pose-photos__manage">
+                <p class="pose-photos__max">Bird a déjà 5 photos, le maximum. Retire une photo pour en ajouter une autre.</p>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Bird, 5 photos, grand écran : la principale en haut ; en bas de page, grille du validateur à 3 colonnes, modification de la 2e, retrait de la 4e, phrase du maximum</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <p class="mq-omitted">Ciel de Bird (inchangé)</p>
+          <div class="pose-page__body" style="margin-top: var(--afj-spacing-lg)">
+            <section class="pose-photos" aria-labelledby="w5h">
+              <h2 id="w5h" class="pose-page__section-title">Photos de Bird</h2>
+              <div class="pose-photos__lead">
+                <p class="safety-note"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Tu restes juge de tes limites. Les chutes arrivent surtout pendant les transitions : apprends-les avec un spotter.</span></p>
+                <div class="pose-photo-item">
+                  <figure class="pose-photo pose-photo--main">
+                    <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 1 de Bird</span><svg class="photo-img" viewBox="0 0 400 300" role="img" aria-label="Bird vue de profil"><use href="#ph-bird-side"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                    <figcaption class="pose-photo__credit">Photo : Léa Martin</figcaption>
+                  </figure>
+                  <p class="pose-photo__main-mark"><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg>Photo principale (vignette du catalogue)</p>
+                  <div class="pose-photo__actions">
+                    <button type="button" class="button button--secondary button--small">Modifier</button>
+                    <button type="button" class="button button--secondary button--small">Retirer</button>
+                  </div>
+                  <a class="pose-photos__more" href="#w5-others">Voir les 4 autres photos<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></a>
+                </div>
+              </div>
+            </section>
+            <p class="mq-omitted">Étiquettes, actions, légende de l'échelle</p>
+            <section class="pose-page__section" aria-labelledby="w5-from">
+              <h2 id="w5-from" class="pose-page__section-title">Transitions depuis Bird</h2>
+              <p class="mq-omitted">Transitions (inchangées)</p>
+            </section>
+            <section class="pose-page__section" aria-labelledby="w5-to">
+              <h2 id="w5-to" class="pose-page__section-title">Transitions vers Bird</h2>
+              <p class="mq-omitted">Transitions (inchangées)</p>
+            </section>
+            <section class="pose-other-photos" id="w5-others" aria-labelledby="w5-others-title">
+              <h2 id="w5-others-title" class="pose-page__section-title" tabindex="-1">Autres photos de Bird</h2>
+              <ul class="pose-photos__grid pose-photos__grid--manage" role="list">
+                <li class="pose-photo-item">
+                  <figure class="pose-photo">
+                    <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 2 de Bird</span><svg class="photo-img" viewBox="0 0 300 400" role="img" aria-label="Bird vue de face"><use href="#ph-bird-front"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                    <figcaption class="pose-photo__credit">Photo : Hugo Bernard</figcaption>
+                  </figure>
+                  <form class="pose-photo__zone" aria-labelledby="wed2">
+                    <p id="wed2" class="pose-photo__zone-title">Modifier la photo</p>
+                    <div class="field">
+                      <label for="wed2-alt">Texte alternatif</label>
+                      <textarea id="wed2-alt" rows="4">Bird vue de face</textarea>
+                      <p class="field__help">Décris la pose pour qui ne voit pas la photo : ce que font la base et le flyer. Inutile d'écrire « Photo de ». Si la pose a plusieurs photos, précise l'angle (vue de côté, détail des prises).</p>
+                      <p class="field__counter">16 / 200</p>
+                    </div>
+                    <div class="field">
+                      <label for="wed2-credit">Crédit</label>
+                      <input id="wed2-credit" type="text" value="Hugo Bernard">
+                      <p class="field__counter">12 / 100</p>
+                    </div>
+                    <div class="zone-actions">
+                      <button type="button" class="button button--primary">Enregistrer la photo</button>
+                      <button type="button" class="button button--secondary">Annuler</button>
+                    </div>
+                  </form>
+                </li>
+                <li class="pose-photo-item">
+                  <figure class="pose-photo">
+                    <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 3 de Bird</span><svg class="photo-img" viewBox="0 0 400 300" role="img" aria-label="Bird, les prises"><use href="#ph-bird-grips"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                    <figcaption class="pose-photo__credit">Photo : Lulu Acro</figcaption>
+                  </figure>
+                  <div class="pose-photo__actions">
+                    <button type="button" class="button button--secondary button--small">Choisir comme photo principale</button>
+                    <button type="button" class="button button--secondary button--small">Modifier</button>
+                    <button type="button" class="button button--secondary button--small">Retirer</button>
+                  </div>
+                </li>
+                <li class="pose-photo-item">
+                  <figure class="pose-photo">
+                    <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 4 de Bird</span><svg class="photo-img" viewBox="0 0 400 300" role="img" aria-label="Bird vue de trois quarts"><use href="#ph-bird-34"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                    <figcaption class="pose-photo__credit">Photo : Collectif AcroLyon</figcaption>
+                  </figure>
+                  <div class="pose-photo__zone" role="group" aria-labelledby="wrm4">
+                    <p id="wrm4" class="pose-photo__zone-title">Retirer cette photo de Bird ?</p>
+                    <div class="zone-actions">
+                      <button type="button" class="button button--secondary">Retirer la photo</button>
+                      <button type="button" class="button button--secondary">Annuler</button>
+                    </div>
+                  </div>
+                </li>
+                <li class="pose-photo-item">
+                  <figure class="pose-photo">
+                    <button type="button" class="pose-photo__enlarge"><span class="visually-hidden">Agrandir la photo 5 de Bird</span><svg class="photo-img" viewBox="0 0 300 400" role="img" aria-label="Bird vue de dos"><use href="#ph-bird-front"/></svg><span class="pose-photo__zoom" aria-hidden="true"><svg class="icon"><use href="#i-zoom"/></svg></span></button>
+                    <figcaption class="pose-photo__credit">Photo : Hugo Bernard</figcaption>
+                  </figure>
+                  <div class="pose-photo__actions">
+                    <button type="button" class="button button--secondary button--small">Choisir comme photo principale</button>
+                    <button type="button" class="button button--secondary button--small">Modifier</button>
+                    <button type="button" class="button button--secondary button--small">Retirer</button>
+                  </div>
+                </li>
+              </ul>
+              <div class="pose-photos__manage">
+                <p class="pose-photos__max">Bird a déjà 5 photos, le maximum. Retire une photo pour en ajouter une autre.</p>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-add">
+  <h2 id="mq-add">4. Page « Ajouter une photo de Throne »</h2>
+  <p>Colonne de 640 px (un panneau à partir de 40em). Le champ Photo commence par un bouton secondaire ; après le choix, l'aperçu entier sur le passe-partout (Throne est en portrait 2:3 : sur grand écran, il est plafonné à 560 px de haut et centré). La case des droits est une tuile, jamais cochée à l'ouverture. Pendant l'envoi, la barre de progression se place au-dessus des actions.</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Vide, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <div class="photo-page">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Throne</a>
+            <h1>Ajouter une photo de Throne</h1>
+            <p class="photo-page__intro">Tous les champs sont obligatoires.</p>
+            <form class="photo-form">
+              <div class="photo-field">
+                <label class="photo-field__label" for="a1-file">Photo</label>
+                <p class="field__help">JPEG, PNG, WebP ou HEIC, au moins 800 pixels sur le plus petit côté.</p>
+                <input id="a1-file" class="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif">
+                <label for="a1-file" class="button button--secondary photo-field__choose"><svg class="icon" aria-hidden="true"><use href="#i-photo"/></svg>Choisir une photo</label>
+              </div>
+              <div class="field">
+                <label for="a1-alt">Texte alternatif</label>
+                <textarea id="a1-alt" rows="4"></textarea>
+                <p class="field__help">Décris la pose pour qui ne voit pas la photo : ce que font la base et le flyer. Inutile d'écrire « Photo de ». Si la pose a plusieurs photos, précise l'angle (vue de côté, détail des prises).</p>
+                <p class="field__help"><b>Exemple :</b> Bird : la base, allongée sur le dos, a les pieds sur les hanches du flyer, face au sol à l'horizontale, bras écartés.</p>
+                <p class="field__counter">0 / 200</p>
+              </div>
+              <div class="field">
+                <label for="a1-credit">Crédit</label>
+                <input id="a1-credit" type="text">
+                <p class="field__help">Le nom de la personne qui a pris la photo, présenté sous elle : « Photo : Léa Martin ». Si tu l'as prise toi-même, écris ton nom.</p>
+                <p class="field__counter">0 / 100</p>
+              </div>
+              <div class="confirm">
+                <label class="confirm-box"><input type="checkbox"><span>Je confirme que l'auteur de la photo a autorisé sa publication sur AcroFunJam, que chaque personne photographiée l'a acceptée, et qu'aucune personne mineure n'y est reconnaissable.</span></label>
+                <p class="field__help">AcroFunJam garde ta confirmation avec la photo (ton compte et la date).</p>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="button button--primary">Ajouter la photo</button>
+                <button type="button" class="button button--secondary">Annuler</button>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Photo choisie (portrait), saisie complète, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <div class="photo-page">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Throne</a>
+            <h1>Ajouter une photo de Throne</h1>
+            <p class="photo-page__intro">Tous les champs sont obligatoires.</p>
+            <form class="photo-form">
+              <div class="photo-field">
+                <label class="photo-field__label" for="a2-file">Photo</label>
+                <p class="field__help">JPEG, PNG, WebP ou HEIC, au moins 800 pixels sur le plus petit côté.</p>
+                <input id="a2-file" class="visually-hidden" type="file">
+                <div class="photo-field__preview"><svg class="photo-img" viewBox="0 0 200 300" aria-hidden="true"><use href="#ph-throne"/></svg></div>
+                <p class="photo-field__summary">throne-profil.jpg · 2,8 Mo · 2000 × 3000 pixels</p>
+                <label for="a2-file" class="button button--secondary photo-field__change">Changer de photo</label>
+              </div>
+              <div class="field">
+                <label for="a2-alt">Texte alternatif</label>
+                <textarea id="a2-alt" rows="4">Throne : la base, allongée sur le dos, jambes à la verticale, tient les chevilles du flyer ; le flyer, assis sur ses pieds, genoux pliés ; vue de profil.</textarea>
+                <p class="field__help">Décris la pose pour qui ne voit pas la photo : ce que font la base et le flyer. Inutile d'écrire « Photo de ». Si la pose a plusieurs photos, précise l'angle (vue de côté, détail des prises).</p>
+                <p class="field__help"><b>Exemple :</b> Bird : la base, allongée sur le dos, a les pieds sur les hanches du flyer, face au sol à l'horizontale, bras écartés.</p>
+                <p class="field__counter">153 / 200</p>
+              </div>
+              <div class="field">
+                <label for="a2-credit">Crédit</label>
+                <input id="a2-credit" type="text" value="Léa Martin">
+                <p class="field__help">Le nom de la personne qui a pris la photo, présenté sous elle : « Photo : Léa Martin ». Si tu l'as prise toi-même, écris ton nom.</p>
+                <p class="field__counter">10 / 100</p>
+              </div>
+              <div class="confirm">
+                <label class="confirm-box"><input type="checkbox" checked><span>Je confirme que l'auteur de la photo a autorisé sa publication sur AcroFunJam, que chaque personne photographiée l'a acceptée, et qu'aucune personne mineure n'y est reconnaissable.</span></label>
+                <p class="field__help">AcroFunJam garde ta confirmation avec la photo (ton compte et la date).</p>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="button button--primary">Ajouter la photo</button>
+                <button type="button" class="button button--secondary">Annuler</button>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Avec erreurs (photo trop petite, crédit, case), 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <div class="photo-page">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Throne</a>
+            <h1>Ajouter une photo de Throne</h1>
+            <p class="photo-page__intro">Tous les champs sont obligatoires.</p>
+            <form class="photo-form">
+              <div class="photo-field photo-field--invalid">
+                <label class="photo-field__label" for="a3-file">Photo</label>
+                <p class="field__help">JPEG, PNG, WebP ou HEIC, au moins 800 pixels sur le plus petit côté.</p>
+                <input id="a3-file" class="visually-hidden" type="file" aria-invalid="true">
+                <div class="photo-field__preview"><svg class="photo-img" viewBox="0 0 400 300" aria-hidden="true"><use href="#ph-folded-leaf"/></svg></div>
+                <p class="photo-field__summary">throne-de-loin.jpg · 1 Mo · 1200 × 799 pixels</p>
+                <label for="a3-file" class="button button--secondary photo-field__change">Changer de photo</label>
+                <p class="field__error"><svg class="icon" aria-hidden="true"><use href="#i-error"/></svg><span>Cette photo mesure 1200 × 799 pixels : il faut au moins 800 pixels sur le plus petit côté. Choisis une photo plus grande.</span></p>
+              </div>
+              <div class="field">
+                <label for="a3-alt">Texte alternatif</label>
+                <textarea id="a3-alt" rows="4">Throne vu de profil</textarea>
+                <p class="field__help">Décris la pose pour qui ne voit pas la photo : ce que font la base et le flyer. Inutile d'écrire « Photo de ». Si la pose a plusieurs photos, précise l'angle (vue de côté, détail des prises).</p>
+                <p class="field__counter">19 / 200</p>
+              </div>
+              <div class="field">
+                <label for="a3-credit">Crédit</label>
+                <input id="a3-credit" type="text" aria-invalid="true">
+                <p class="field__help">Le nom de la personne qui a pris la photo, présenté sous elle : « Photo : Léa Martin ». Si tu l'as prise toi-même, écris ton nom.</p>
+                <p class="field__counter">0 / 100</p>
+                <p class="field__error"><svg class="icon" aria-hidden="true"><use href="#i-error"/></svg><span>Indique le crédit de la photo : le nom de la personne qui l'a prise.</span></p>
+              </div>
+              <div class="confirm confirm--invalid">
+                <label class="confirm-box"><input type="checkbox" aria-invalid="true"><span>Je confirme que l'auteur de la photo a autorisé sa publication sur AcroFunJam, que chaque personne photographiée l'a acceptée, et qu'aucune personne mineure n'y est reconnaissable.</span></label>
+                <p class="field__help">AcroFunJam garde ta confirmation avec la photo (ton compte et la date).</p>
+                <p class="field__error"><svg class="icon" aria-hidden="true"><use href="#i-error"/></svg><span>Confirme tes droits sur la photo et l'accord des personnes photographiées.</span></p>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="button button--primary">Ajouter la photo</button>
+                <button type="button" class="button button--secondary">Annuler</button>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Aucune photo choisie, et AcroFunJam injoignable, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="photo-page">
+            <p class="mq-omitted">En-tête, lien retour, titre, introduction</p>
+            <form class="photo-form" style="margin-top: var(--afj-spacing-lg)">
+              <div class="form-alert" role="alert">
+                <svg class="icon" aria-hidden="true"><use href="#i-error"/></svg>
+                <div class="form-alert__content"><p>La photo n'a pas pu être envoyée : impossible de joindre AcroFunJam. Vérifie ta connexion Internet, puis réessaie.</p></div>
+              </div>
+              <div class="photo-field photo-field--invalid">
+                <label class="photo-field__label" for="a4-file">Photo</label>
+                <p class="field__help">JPEG, PNG, WebP ou HEIC, au moins 800 pixels sur le plus petit côté.</p>
+                <input id="a4-file" class="visually-hidden" type="file" aria-invalid="true">
+                <label for="a4-file" class="button button--secondary photo-field__choose"><svg class="icon" aria-hidden="true"><use href="#i-photo"/></svg>Choisir une photo</label>
+                <p class="field__error"><svg class="icon" aria-hidden="true"><use href="#i-error"/></svg><span>Choisis une photo.</span></p>
+              </div>
+              <div class="photo-field">
+                <span class="photo-field__label">Aperçu indisponible (HEIC, autre état)</span>
+                <div class="photo-field__unavailable"><svg class="icon--large" aria-hidden="true"><use href="#i-photo"/></svg><span>Ton navigateur ne sait pas afficher cette photo HEIC. AcroFunJam la vérifiera après l'envoi.</span></div>
+                <p class="photo-field__summary">img_2048.heic · 3,1 Mo</p>
+                <span class="button button--secondary photo-field__change">Changer de photo</span>
+              </div>
+              <p class="mq-omitted">Texte alternatif, crédit, case des droits (saisie gardée)</p>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Pendant l'envoi : progression, puis préparation, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="photo-page">
+            <p class="mq-omitted">En-tête, titre, champs (affichés tels quels, ni grisés ni masqués)</p>
+            <form class="photo-form" style="margin-top: var(--afj-spacing-lg)">
+              <div class="progress">
+                <label class="progress__label" for="p1"><span>Envoi de la photo</span><span class="progress__value" aria-hidden="true">42 %</span></label>
+                <progress id="p1" max="100" value="42">42 %</progress>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="button button--primary" aria-disabled="true">Envoi de la photo…</button>
+                <button type="button" class="button button--secondary">Annuler l'envoi</button>
+              </div>
+              <p class="mq-omitted">Puis, une fois le fichier envoyé :</p>
+              <div class="progress">
+                <label class="progress__label" for="p2"><span>Préparation de la photo…</span></label>
+                <progress id="p2" max="100"></progress>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="button button--primary" aria-disabled="true">Envoi de la photo…</button>
+                <button type="button" class="button button--secondary">Annuler l'envoi</button>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Confirmation d'abandon, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="photo-page">
+            <p class="mq-omitted">En-tête, titre, champs (saisie en cours)</p>
+            <form class="photo-form" style="margin-top: var(--afj-spacing-lg)">
+              <div class="confirm">
+                <label class="confirm-box"><input type="checkbox" checked><span>Je confirme que l'auteur de la photo a autorisé sa publication sur AcroFunJam, que chaque personne photographiée l'a acceptée, et qu'aucune personne mineure n'y est reconnaissable.</span></label>
+                <p class="field__help">AcroFunJam garde ta confirmation avec la photo (ton compte et la date).</p>
+              </div>
+              <div class="form-confirm" role="group" aria-labelledby="ab1">
+                <p id="ab1">Abandonner cette photo ? Ta saisie sera perdue.</p>
+                <div class="zone-actions">
+                  <button type="button" class="button button--secondary">Abandonner</button>
+                  <button type="button" class="button button--secondary">Continuer l'ajout</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Photo choisie, grand écran : panneau de 640 px, aperçu portrait plafonné à 560 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <div class="photo-page photo-page--carded">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Throne</a>
+            <h1>Ajouter une photo de Throne</h1>
+            <p class="photo-page__intro">Tous les champs sont obligatoires.</p>
+            <form class="photo-form">
+              <div class="photo-field">
+                <label class="photo-field__label" for="w-file">Photo</label>
+                <p class="field__help">JPEG, PNG, WebP ou HEIC, au moins 800 pixels sur le plus petit côté.</p>
+                <input id="w-file" class="visually-hidden" type="file">
+                <div class="photo-field__preview"><svg class="photo-img" viewBox="0 0 200 300" aria-hidden="true"><use href="#ph-throne"/></svg></div>
+                <p class="photo-field__summary">throne-profil.jpg · 2,8 Mo · 2000 × 3000 pixels</p>
+                <label for="w-file" class="button button--secondary photo-field__change">Changer de photo</label>
+              </div>
+              <div class="field">
+                <label for="w-alt">Texte alternatif</label>
+                <textarea id="w-alt" rows="4">Throne : la base, allongée sur le dos, jambes à la verticale, tient les chevilles du flyer ; le flyer, assis sur ses pieds, genoux pliés ; vue de profil.</textarea>
+                <p class="field__help">Décris la pose pour qui ne voit pas la photo : ce que font la base et le flyer. Inutile d'écrire « Photo de ». Si la pose a plusieurs photos, précise l'angle (vue de côté, détail des prises).</p>
+                <p class="field__help"><b>Exemple :</b> Bird : la base, allongée sur le dos, a les pieds sur les hanches du flyer, face au sol à l'horizontale, bras écartés.</p>
+                <p class="field__counter">153 / 200</p>
+              </div>
+              <div class="field">
+                <label for="w-credit">Crédit</label>
+                <input id="w-credit" type="text" value="Léa Martin">
+                <p class="field__help">Le nom de la personne qui a pris la photo, présenté sous elle : « Photo : Léa Martin ». Si tu l'as prise toi-même, écris ton nom.</p>
+                <p class="field__counter">10 / 100</p>
+              </div>
+              <div class="confirm">
+                <label class="confirm-box"><input type="checkbox"><span>Je confirme que l'auteur de la photo a autorisé sa publication sur AcroFunJam, que chaque personne photographiée l'a acceptée, et qu'aucune personne mineure n'y est reconnaissable.</span></label>
+                <p class="field__help">AcroFunJam garde ta confirmation avec la photo (ton compte et la date).</p>
+              </div>
+              <div class="progress">
+                <label class="progress__label" for="wp"><span>Envoi de la photo</span><span class="progress__value" aria-hidden="true">67 %</span></label>
+                <progress id="wp" max="100" value="67">67 %</progress>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="button button--primary" aria-disabled="true">Envoi de la photo…</button>
+                <button type="button" class="button button--secondary">Annuler l'envoi</button>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-viewer">
+  <h2 id="mq-viewer">5. Agrandissement : « Photo 2 sur 3 de Bird »</h2>
+  <p>Téléphone : le dialogue occupe tout l'écran ; la photo (portrait 3:4) est entière sur le passe-partout ; « Photo précédente » et « Photo suivante » sont empilées ; aux extrémités, le bouton sans destination reste à sa place, désactivé. Le dialogue parcourt toutes les photos (la principale du haut et celles du bas de page). Grand écran : un panneau sur le voile <code>scrim</code>, qui assombrit la page ; crédit à gauche, navigation à droite.</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Ouvert, 320 × 568 px</figcaption>
+      <div class="mq-screen mq-screen--phone-modal">
+        <div class="photo-viewer" role="dialog" aria-modal="true" aria-labelledby="dv1">
+          <div class="photo-viewer__header">
+            <h2 id="dv1" class="photo-viewer__title">Photo 2 sur 3 de Bird</h2>
+            <button type="button" class="button button--secondary"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>Fermer</button>
+          </div>
+          <div class="photo-viewer__stage"><svg class="photo-img" viewBox="0 0 300 400" role="img" aria-label="Bird vue de face"><use href="#ph-bird-front"/></svg></div>
+          <div class="photo-viewer__footer">
+            <p class="photo-viewer__credit">Photo : Hugo Bernard</p>
+            <div class="photo-viewer__nav">
+              <button type="button" class="button button--secondary"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Photo précédente</button>
+              <button type="button" class="button button--secondary">Photo suivante<svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Photo 1 sur 3 : « Photo précédente » désactivée à sa place, 320 × 568 px</figcaption>
+      <div class="mq-screen mq-screen--phone-modal">
+        <div class="photo-viewer" role="dialog" aria-modal="true" aria-labelledby="dv0">
+          <div class="photo-viewer__header">
+            <h2 id="dv0" class="photo-viewer__title">Photo 1 sur 3 de Bird</h2>
+            <button type="button" class="button button--secondary"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>Fermer</button>
+          </div>
+          <div class="photo-viewer__stage"><svg class="photo-img" viewBox="0 0 400 300" role="img" aria-label="Bird vue de profil"><use href="#ph-bird-side"/></svg></div>
+          <div class="photo-viewer__footer">
+            <p class="photo-viewer__credit">Photo : Léa Martin</p>
+            <div class="photo-viewer__nav">
+              <button type="button" class="button button--secondary button--unavailable" aria-disabled="true"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Photo précédente</button>
+              <button type="button" class="button button--secondary">Photo suivante<svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Ouvert, grand écran (1074 × 700 px)</figcaption>
+      <div class="mq-screen mq-screen--wide-modal">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><a class="button button--secondary" href="#">Se connecter</a></div>
+        </div></header>
+        <main>
+          <div class="pose-hero">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Catalogue</a>
+            <h1>Bird</h1>
+            <svg class="pose-hero__horizon" aria-hidden="true"><use href="#horizon"/></svg>
+          </div>
+          <p class="mq-omitted">Page de Bird, sous le voile</p>
+        </main>
+        <div class="mq-backdrop" aria-hidden="true"></div>
+        <div class="photo-viewer" role="dialog" aria-modal="true" aria-labelledby="dv2">
+          <div class="photo-viewer__header">
+            <h2 id="dv2" class="photo-viewer__title">Photo 2 sur 3 de Bird</h2>
+            <button type="button" class="button button--secondary"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>Fermer</button>
+          </div>
+          <div class="photo-viewer__stage"><svg class="photo-img" viewBox="0 0 300 400" role="img" aria-label="Bird vue de face"><use href="#ph-bird-front"/></svg></div>
+          <div class="photo-viewer__footer">
+            <p class="photo-viewer__credit">Photo : Hugo Bernard</p>
+            <div class="photo-viewer__nav">
+              <button type="button" class="button button--secondary"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Photo précédente</button>
+              <button type="button" class="button button--secondary">Photo suivante<svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<script>
+  // Bascule du thème de la maquette : par défaut celui du système, puis le choix explicite.
+  (function () {
+    var root = document.documentElement;
+    var media = window.matchMedia('(prefers-color-scheme: dark)');
+    var buttons = document.querySelectorAll('[data-theme-choice]');
+    function effective() { return root.getAttribute('data-theme') || (media.matches ? 'dark' : 'light'); }
+    function sync() {
+      var current = effective();
+      buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.themeChoice === current)); });
+    }
+    buttons.forEach(function (b) {
+      b.addEventListener('click', function () { root.setAttribute('data-theme', b.dataset.themeChoice); sync(); });
+    });
+    media.addEventListener('change', sync);
+    sync();
+  })();
+</script>
+</body>
+</html>

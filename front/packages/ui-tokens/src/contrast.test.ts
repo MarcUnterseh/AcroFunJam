@@ -53,6 +53,9 @@ const textPairs: readonly [Role, Role][] = [
   // Story 9b (Q223): « Revenir au flow précédent », a text button in the message above the bar.
   ['primary', 'infoSurface'],
   ['badgeContrast', 'badge'],
+  // Story 10: the text written in the frame of a photo that cannot be previewed (HEIC), on the passe-partout.
+  ['text', 'photoMat'],
+  ['textMuted', 'photoMat'],
 ];
 
 /** Controls and icons carrying meaning (3:1). `sun` is decorative in the light theme: never listed here. */
@@ -71,6 +74,10 @@ const controlPairs: readonly [Role, Role][] = [
   ['flyer', 'surface'],
   ['success', 'successSurface'],
   ['badge', 'surface'],
+  // Story 10: the filled part of the progress bar (sending a photo) on its track.
+  ['primary', 'surfaceHover'],
+  // Story 10: the photo icon of a frame without preview (« aperçu indisponible »), on the passe-partout.
+  ['textMuted', 'photoMat'],
 ];
 
 const hexStops = (gradient: string): string[] => gradient.match(/#[0-9A-Fa-f]{6}/g) ?? [];

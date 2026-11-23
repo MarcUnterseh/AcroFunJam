@@ -15,4 +15,8 @@ public sealed record PublishedPoseSummary(
 }
 
 /// <summary>A published pose as the catalog presents it: with its tags, in catalog order (story 9a, V3).</summary>
-public sealed record CatalogPose(PublishedPoseSummary Pose, IReadOnlyList<GetPosePage.PresentedTag> Tags);
+public sealed record CatalogPose(PublishedPoseSummary Pose, IReadOnlyList<GetPosePage.PresentedTag> Tags)
+{
+    /// <summary>The address of the thumbnail of its main photo; none when the pose has no photo (story 10, R16).</summary>
+    public string? Thumbnail { get; init; }
+}

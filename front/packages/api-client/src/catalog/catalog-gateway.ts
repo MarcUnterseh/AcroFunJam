@@ -18,7 +18,8 @@ const isKnown = (pose: PoseSummaryResponse): boolean =>
   isDifficultyCode(pose.flyerDifficulty) &&
   typeof pose.canStartFlow === 'boolean' &&
   typeof pose.canEndFlow === 'boolean' &&
-  everyItem(pose.tags, toTagReference) !== null;
+  everyItem(pose.tags, toTagReference) !== null &&
+  (pose.thumbnail === null || typeof pose.thumbnail === 'string');
 
 // HTTP DTOs never leak into core: they are mapped to the client domain here.
 const toPoseSummary = (pose: PoseSummaryResponse): PoseSummary => ({
@@ -29,6 +30,7 @@ const toPoseSummary = (pose: PoseSummaryResponse): PoseSummary => ({
   canStartFlow: pose.canStartFlow,
   canEndFlow: pose.canEndFlow,
   tags: pose.tags.map(({ id, name }) => ({ id, name })),
+  thumbnail: pose.thumbnail,
 });
 
 /** HTTP adapter of the CatalogGateway port of @acrofunjam/core. */

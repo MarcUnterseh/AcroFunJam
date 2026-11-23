@@ -15,7 +15,12 @@ type IconName =
   | 'trajectory'
   | 'loop'
   | 'burst'
-  | 'station';
+  | 'station'
+  | 'zoom'
+  | 'close'
+  | 'chevronRight'
+  | 'photo'
+  | 'sun';
 
 const line = { stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' } as const;
 
@@ -127,6 +132,33 @@ const shapes: Record<IconName, React.ReactNode> = {
     <>
       <line x1="10" y1="4" x2="10" y2="16" {...line} />
       <line x1="4" y1="10" x2="16" y2="10" {...line} />
+    </>
+  ),
+  // Story 10 (docs/design/ecrans/10-photos-des-poses.md): enlarging, closing, browsing, choosing a photo, the main photo.
+  zoom: (
+    <>
+      <circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path d="m12.6 12.6 4.4 4.4M8.5 6v5M6 8.5h5" {...line} />
+    </>
+  ),
+  close: <path d="m5 5 10 10M15 5 5 15" {...line} />,
+  chevronRight: <path d="M7.5 4.5 13 10l-5.5 5.5" fill="none" {...line} strokeLinejoin="round" />,
+  photo: (
+    <>
+      <rect x="2.5" y="4" width="15" height="12" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M6 13a4 4 0 0 1 8 0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M4.5 13h11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </>
+  ),
+  sun: (
+    <>
+      <circle cx="10" cy="10" r="3.6" fill="currentColor" />
+      <path
+        d="M10 1.8v2.4M10 15.8v2.4M1.8 10h2.4M15.8 10h2.4M4.2 4.2l1.7 1.7M14.1 14.1l1.7 1.7M4.2 15.8l1.7-1.7M14.1 5.9l1.7-1.7"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
     </>
   ),
 };

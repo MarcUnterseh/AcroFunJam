@@ -74,6 +74,18 @@ export const colors = {
   tagSurface: '#F2EFEA',
   /** Outline of a tag pill: decorative only (the word carries the meaning), never the outline of a control. */
   tagBorder: '#CFC8BD',
+  /**
+   * The « passe-partout » of a photo (story 10, galerie-photos.md): the neutral background on which a photo is
+   * contained, never cropped (catalog thumbnail, photos of a pose page, enlarged photo, preview). A cool grey, not a
+   * violet, so that it does not tint the photo. Decorative around the photo; text on it (« aperçu indisponible »):
+   * 13.2:1, textMuted 5.7:1.
+   */
+  photoMat: '#E9E6EF',
+  /**
+   * The veil behind the enlarged photo dialog (::backdrop), « text » at 72 %: dims the page, decorative only; nothing
+   * is ever written on it (the dialog is an opaque surface). #RRGGBBAA, also read by React Native.
+   */
+  scrim: '#211C3BB8',
 } as const;
 
 export type Colors = typeof colors;
@@ -113,6 +125,8 @@ export const colorsDark: { readonly [Role in keyof Colors]: string } = {
   skyText: '#F3F0FF',
   tagSurface: '#2A2733',
   tagBorder: '#4D4858',
+  photoMat: '#2A2833',
+  scrim: '#05040ECC',
 };
 
 /**
@@ -222,6 +236,15 @@ export const sizes = {
   horizon: 26,
   /** Burst of the success panel. */
   burst: 54,
+  /**
+   * Square thumbnail of the main photo, beside the name on a pose card (story 10). The generated thumbnail is 192 px
+   * (ADR 0039): sharp up to 2×.
+   */
+  thumbnail: 80,
+  /** Largest height of a photo shown in full on a page (main photo of a pose, preview before adding one). */
+  photoMaxHeight: 560,
+  /** Thickness of a progress bar (sending a photo). */
+  progress: 8,
 } as const;
 
 /** Minimum viewport widths (web media queries, mobile tablets). */

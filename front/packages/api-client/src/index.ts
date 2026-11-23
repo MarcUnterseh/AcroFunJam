@@ -4,6 +4,7 @@ export { createPosePageGateway } from './catalog/pose-page-gateway';
 export { createTagListGateway } from './catalog/tag-list-gateway';
 export { createTransitionTaggingGateway } from './catalog/transition-tagging-gateway';
 export { createPoseTaggingGateway } from './catalog/pose-tagging-gateway';
+export * from './catalog/pose-photos-gateway';
 export { createContributionGateway } from './contribution/contribution-gateway';
 export { createValidationGateway } from './contribution/validation-gateway';
 export { createPoseRevisionGateway } from './contribution/pose-revision-gateway';

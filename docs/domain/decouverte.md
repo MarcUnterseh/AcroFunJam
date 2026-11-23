@@ -876,6 +876,225 @@ Carte d'example mapping du 2026-11-19 (bdd-analyst), relue par l'ux-expert (UX-9
 5. M9 (revenir au flow précédent : retour, critères rétablis, plus de proposition, même flow, modifier).
 6. M2 détails (difficultés et étiquettes, description, washing machine), M7 (compteur, étiquettes), puis M5 pistes.
 
+### Story 10 « Photos des poses » (validée le 2026-11-20)
+Carte d'example mapping du 2026-11-20 (bdd-analyst), relue par l'expert acroyoga (AY-8 à AY-15) et l'ux-expert (UX-15 à UX-29), **validée le 2026-11-20 par le porteur du produit**. Demande d'origine : « J'aimerais bien qu'on puisse ajouter des photos et vidéos », sans préciser à quoi, qui ni comment. Q224 : les **photos des poses, téléversées**, d'abord (les liens vidéo des transitions deviennent la story 12). Le porteur du produit a tranché explicitement la source des photos, la case des droits, le crédit, la vignette et les photos trop lourdes ; **toutes les autres recommandations (Q246 à Q269, AY-8 à AY-15, UX-15 à UX-29) sont acceptées**. Scénarios (tous `@wip`, pas encore implémentés) : `specs/features/catalogue/ajouter-des-photos-a-une-pose.feature` (A) et `specs/features/catalogue/consulter-les-photos-des-poses.feature` (C). Contexte Catalogue, cibles @api et @web (pas de mobile, Q263). **Prérequis : l'ADR de stockage des photos** (liste ci-dessous).
+
+**Décisions du porteur du produit (2026-11-20)**
+1. **Source des photos** : l'équipe **et** la communauté. La charte des photos et la case des droits s'appliquent à toutes. Dans la story 10, seuls les validateurs et les administrateurs ajoutent (Q246) ; la communauté propose avec la story 11.
+2. **Case des droits** : **une seule case**, deux engagements et les mineurs, **jamais cochée par défaut** : « Je confirme que l'auteur de la photo a autorisé sa publication sur AcroFunJam, que chaque personne photographiée l'a acceptée, et qu'aucune personne mineure n'y est reconnaissable. » Aide : « AcroFunJam garde ta confirmation avec la photo (ton compte et la date). » On dit « personnes photographiées », jamais « personnes reconnaissables » ni « modèles ».
+3. **Crédit** : **l'auteur de la photo seulement**, obligatoire, présenté « Photo : Léa Martin » ; un pseudonyme ou un collectif est accepté ; « inconnu » est refusé (règle portée par le domaine). Les personnes photographiées restent anonymes.
+4. **Vignette** : **petite vignette carrée à côté du nom**, dans la ligne du haut de la carte d'une pose ; pas d'espace réservé sans photo ; décorative pour les lecteurs d'écran ; cadrage qui ne coupe pas les poses verticales (ui-designer).
+5. **Photo trop lourde** : **le site la réduit avant l'envoi** (JPEG, environ 2400 pixels sur le plus grand côté) quand le navigateur sait la lire, au lieu de la refuser. La limite de 10 Mo reste celle de l'API, et celle du site pour ce qu'il ne sait pas réduire (par exemple une photo HEIC hors Safari). À confirmer dans l'ADR.
+6. Toutes les autres recommandations de l'analyse et des deux relecteurs sont acceptées (voir les questions tranchées).
+
+**Charte des photos** (expert acroyoga, AY-8 à AY-15 ; règles de validation, non vérifiées par AcroFunJam ; à reprendre plus tard dans la charte de validation)
+- **Photo principale** : vue de profil, base et flyer entiers. Une photo spectaculaire ne devient pas la photo principale.
+- **Ce qu'on montre** : la pose **tenue** (ni l'entrée ni la sortie), les **prises** visibles, le sol visible, un fond lisible.
+- **Qui** : deux personnes seulement. Un spotter est admis s'il ne masque ni les prises ni l'alignement, et le texte alternatif le mentionne. Pas de trio. Aucune autre personne reconnaissable à l'arrière-plan (sinon, recadrer).
+- **Tenue et sécurité** : une tenue qui ne découvre rien dans les inversions ; un sol adapté, un alignement correct, pas de mise en scène risquée.
+- **Bonne fiche** : une variante (High Bird) va sur la fiche de sa propre pose, pas sur celle de Bird.
+- **Droits** : une photo de festival ou trouvée en ligne n'est pas libre pour autant. **Une seule demande de retrait suffit**, qu'elle vienne de la base ou du flyer.
+- **Texte alternatif** : un modèle en quatre parties : position de la base, prises, orientation du flyer, vue (« vue de profil »).
+- **Avertissement de responsabilité** : il reste visible avant ou à côté des photos sur la page d'une pose.
+
+**Découpage de la demande** (Q224 tranchée : photos des poses d'abord)
+- **10. Photos des poses** (cette story) : un validateur ou un administrateur téléverse directement des photos d'une pose publiée, avec un texte alternatif, un crédit et la confirmation des droits ; il en choisit la principale, qui devient la vignette de la pose dans le catalogue (candidate depuis la story 1) ; il les décrit de nouveau ou les retire. Tout visiteur les voit sur la page de la pose.
+- **11. Proposer des photos d'une pose** : un utilisateur propose une photo pour une pose publiée, ou en joint à sa proposition de pose ; un validateur l'accepte ou la refuse ; nouveau type dans la file de validation et « Mes propositions » (ADR 0027) ; publication directe pour un validateur ou un administrateur ; modération des photos venues d'utilisateurs.
+- **Transverse, avant la story 11 : « Signaler un contenu ou demander son retrait »** (droit à l'image, droits d'auteur, RGPD), ouverte aussi aux personnes non inscrites.
+- **12. Lier des vidéos à une transition** (ancienne recommandation de première story, carte gardée en résumé ci-dessous, Q225 à Q245), puis **12b** proposer une vidéo, **12c** vidéos des poses, **12d** vidéos dans le flow généré, **12e** lecteur intégré (facultatif).
+- **13. Photos dans le flow généré et dans l'application** : la photo principale de chaque pose dans les étapes du flow, sur le site et dans l'application, gardée avec le flow pour la consultation hors ligne ; à articuler avec la story « catalogue en lecture sur mobile » (Q213).
+- **14. Photos des transitions** (une ou plusieurs photos du passage, positions de passage comprises, décision 2).
+- **Hors périmètre durable** : vidéos téléversées dans AcroFunJam (stockage, transcodage, bande passante, modération).
+
+**Story** : en tant que validateur ou administrateur, je téléverse directement des photos d'une pose publiée, chacune avec un texte alternatif et le crédit de son auteur, en confirmant que l'auteur en a autorisé la publication, que chaque personne photographiée l'a acceptée et qu'aucune personne mineure n'y est reconnaissable ; je choisis la photo principale, je corrige leurs descriptions et je les retire au besoin ; tout visiteur voit la photo principale de chaque pose dans le catalogue et toutes ses photos sur la page de la pose, afin de reconnaître une pose d'un coup d'œil.
+
+**Existant** :
+- le glossaire définit déjà **Photo** (« Image illustrant une pose ou une transition. Un élément peut en avoir plusieurs. », contextes Catalogue et Contribution ; synonymes interdits « image », « illustration », « média ») ;
+- la carte des contextes prévoit un port `IPhotoStorage` (stockage blob, « pas un contexte métier ») et une commande `AttachPhotos` du Catalogue, **sans ADR** ; il n'existe aujourd'hui **aucun stockage de fichiers**, et l'hébergement de production n'est pas décidé ;
+- la carte d'une pose prévoit « aucun espace réservé tant qu'il n'y a pas de photo » (`docs/design/composants/carte-pose.md`) ;
+- l'étiquetage direct d'une pose (story 9a) change sa version et est bloqué par une modification en attente ; les photos s'en écartent (Q264) ;
+- la limite de taille du corps des requêtes est reportée depuis la story 3.
+
+**Règles et exemples** (A = `ajouter-des-photos-a-une-pose.feature`, C = `consulter-les-photos-des-poses.feature`). Sauf mention, une photo est ajoutée avec un texte alternatif, un crédit et la confirmation des droits.
+- **R1. Un validateur ou un administrateur ajoute directement une photo à une pose publiée, qui la présente aussitôt** (A).
+  - Bruno (validateur), puis Paul (administrateur), ajoutent à Bird « une photo JPEG de 2 Mo de 1600×1200 », texte alternatif « Bird : la base, allongée sur le dos, a les pieds sur les hanches du flyer ; mains dans les mains ; le flyer, face au sol, à l'horizontale ; vue de profil. », crédit « Léa Martin » : la page de Bird la présente.
+- **R2. Seul un validateur ou un administrateur gère les photos d'une pose** (A).
+  - Alice (utilisatrice) : ajout à Throne et retrait refusés (elle proposera des photos avec la story 11). Un visiteur : il faut être connecté. Un compte supprimé : comme une session expirée (story 3, sans scénario dédié).
+- **R3. Seule une pose publiée reçoit une photo** (A) : pose inconnue, introuvable. Une proposition de pose en attente n'en reçoit pas (story 11, Q265).
+- **R4. Une photo est un fichier JPEG, PNG, WebP ou HEIC, reconnu à son contenu** (A).
+  - Acceptés : JPEG, PNG, WebP, HEIC (photos des iPhone, converties à l'arrivée), de 2 Mo en 1600×1200.
+  - Impossibles : un GIF animé, un document PDF, une vidéo MP4, un fichier texte nommé « folded-leaf.jpg » ; aucun fichier.
+- **R5. L'API accepte une photo de 10 Mo au plus ; le site réduit avant l'envoi une photo plus lourde qu'il sait lire** (A ; décision 5, à confirmer dans l'ADR).
+  - API : 10 Mo en 4000×3000, acceptée ; 12 Mo en 6000×4000, impossible.
+  - Site : une photo JPEG de 12 Mo de 6000×4000 est réduite (JPEG, environ 2400 pixels sur le plus grand côté), puis ajoutée ; une photo HEIC de 12 Mo que le navigateur ne sait pas lire est signalée dès le choix.
+- **R6. Une photo mesure au moins 800 pixels sur son plus petit côté, sans maximum** (A) : 1200×800, 800×1200 et 6000×4000 acceptées ; 1200×799 impossible. Sur le site, vérifié dès le choix quand le navigateur sait lire la photo, après l'envoi sinon.
+- **R7. Le texte alternatif est obligatoire, sans espaces superflus, et compte au plus 200 caractères** (A). La charte en donne le modèle en quatre parties : position de la base, prises, orientation du flyer, vue.
+  - « Folded Leaf : la base, allongée sur le dos ;   ses pieds dans les plis de l'aine du flyer ; le flyer replié, buste relâché vers le sol ; vue de profil. » entouré d'espaces : normalisé. 200 caractères : accepté ; 201 : impossible. Absent, ou fait seulement d'espaces : obligatoire.
+- **R8. Le crédit nomme l'auteur de la photo : obligatoire, sans espaces superflus, 100 caractères au plus ; un pseudonyme ou un collectif est accepté, « inconnu » est refusé** (A ; décision 3). Les personnes photographiées ne sont pas nommées.
+  - « Léa   Martin » → « Léa Martin » ; « Lulu Acro » (pseudonyme) et « Collectif AcroLyon » acceptés ; « Inconnu » et « auteur inconnu » refusés (comparés avec la clé de comparaison du nom ; liste exacte à fixer par le domain-expert) ; absent : obligatoire ; 101 caractères : impossible.
+- **R9. Ajouter une photo exige une confirmation, une seule case jamais cochée par défaut** (A ; décision 2) : « Je confirme que l'auteur de la photo a autorisé sa publication sur AcroFunJam, que chaque personne photographiée l'a acceptée, et qu'aucune personne mineure n'y est reconnaissable. » La confirmation est gardée avec la photo (le compte et la date), jamais présentée.
+  - Sans confirmation : impossible. Bruno ajoute le 2026-11-21 une photo de Bird : la confirmation de Bruno, du 2026-11-21, est gardée.
+  - Sur le site, la case n'est pas cochée à l'ouverture ; aide « AcroFunJam garde ta confirmation avec la photo (ton compte et la date). ».
+- **R10. AcroFunJam retire toutes les métadonnées d'une photo et la présente redressée** (A).
+  - Une photo de Reverse Bird avec une position GPS et le modèle de l'appareil : la photo présentée ne contient aucune métadonnée.
+  - Une photo 4000×3000 marquée « à pivoter de 90° » (prise en portrait par un téléphone) : présentée en portrait.
+- **R11. Une pose a au plus 5 photos** (A) : une sixième pour Bird, impossible ; retirer « Bird vue de face » libère une place pour « Bird vue de côté ».
+- **R12. Les photos d'une pose sont présentées dans l'ordre où elles ont été ajoutées ; la première est la photo principale, et un validateur peut en choisir une autre, qui passe en premier** (A).
+  - « Bird vue de face », puis « Bird vue de côté » : la principale est « Bird vue de face ». Paul choisit « Bird vue de côté » : elle passe en premier.
+  - Retirer la photo principale fait de la suivante la photo principale.
+- **R13. Un validateur ou un administrateur retire une photo, immédiatement, sans motif ni historique** (A).
+  - Paul retire « Throne vu de côté » : la page de Throne ne présente plus de photo, et la photo n'est plus accessible, même par son adresse. Retirer une photo déjà retirée : impossible.
+- **R14. Un validateur ou un administrateur change le texte alternatif et le crédit d'une photo** (A), avec les mêmes règles qu'à l'ajout ; changer de fichier, c'est retirer, puis ajouter.
+  - « Photo de Folded Leaf » corrigé en « Folded Leaf : la base, allongée sur le dos ; ses pieds dans les plis de l'aine du flyer ; le flyer replié, buste relâché vers le sol ; vue de profil. » ; un texte fait seulement d'espaces : impossible ; crédit « Lea Martin » corrigé en « Léa Martin ».
+- **R15. Ajouter une photo ne change pas la pose** (A, Q264) : sa version reste la même, et l'ajout reste possible quand une modification de la pose est en attente.
+  - Alice a proposé de modifier Reverse Bird : Bruno y ajoute une photo. Alice a commencé à modifier Reverse Bird, Bruno ajoute entre-temps une photo : la modification d'Alice reste recevable.
+  - Reverse Bird renommée « Reverse Bird (L-base) » garde ses photos.
+- **R16. La carte d'une pose du catalogue présente sa photo principale en petite vignette carrée, à côté du nom** (C ; décision 4).
+  - Bird présentée avec la vignette de « Bird vue de face » ; Throne, sans photo, sans vignette ni espace réservé.
+  - La vignette est décorative pour les lecteurs d'écran, qui lisent déjà le nom de la pose. Cadrage qui ne coupe pas les poses verticales (ui-designer, sans scénario).
+  - **Vignette du catalogue : à revoir avec de vraies photos** (remarque du porteur du produit, 2026-11-20).
+- **R17. La page d'une pose présente toutes ses photos, la principale en premier, chacune avec « Photo : <crédit> »** (C ; Q261, UX-15, **révisée le 2026-11-20 par le porteur du produit**).
+  - **En tête du corps de la page, seule la photo principale** (bloc « Photo de Bird », intitulé à confirmer par l'ux-expert).
+  - Sous elle, quand il y a d'autres photos, un lien « Voir les 2 autres photos » (« Voir l'autre photo » s'il n'y en a qu'une), qui descend vers la section **« Autres photos de Bird », tout en bas de la page, après les transitions**.
+  - Exemples. Bird a 3 photos : « Bird vue de profil » (Léa Martin) en tête, « Voir les 2 autres photos », puis « Bird vue de face » (Hugo Bernard) et « Bird, les prises » (Lulu Acro) dans « Autres photos de Bird ». Throne a 1 seule photo : pas de lien, pas de section du bas pour un visiteur.
+  - Pour un visiteur, une pose sans photo (Folded Leaf) ne présente rien : ni photo, ni section, ni message.
+  - L'API présente toujours toutes les photos dans l'ordre (la principale en premier). La séparation haut / bas relève du site.
+  - L'avertissement de responsabilité reste visible avant ou à côté de la photo principale (AY ; règle d'interface, revue des captures).
+- **R18. Sur le site, un visiteur agrandit une photo et passe de l'une à l'autre parmi toutes les photos de la pose, principale comprise** (C ; UX) :
+  - dialogue « Photo 2 sur 3 de Bird », avec « Fermer », « Photo précédente », « Photo suivante » ;
+  - Échap ferme ;
+  - l'adresse de la page porte la photo agrandie (`?photo=2`), si bien que revenir en arrière (le retour du téléphone) ferme l'agrandissement ;
+  - depuis la photo principale, en haut, « Photo suivante » mène aux photos de la section du bas.
+- **R19. Sur le site, un validateur ou un administrateur gère les photos depuis la page de la pose** (A ; UX-15 à UX-29) :
+  - **où se trouve la gestion** (révisé le 2026-11-20) : le pied de gestion de la photo principale reste sous elle, en haut. Celui des autres photos, l'invitation « Ajouter une photo » et le repère « 2 photos sur 5 » sont dans la section du bas, « Autres photos de Bird ». Pour un validateur, cette section existe dès que la pose a une photo, même sans autre photo, pour porter l'invitation (interprétation de l'analyse, à confirmer par l'ux-expert) ;
+  - **pose sans photo** : l'invitation reste en haut, à la place de la photo principale : « Throne n'a pas encore de photo. » et « Ajouter une photo » (nom accessible « Ajouter une photo de Throne ») ; jamais pour un utilisateur ;
+  - **maximum** : à 5 photos, la section du bas indique « Bird a déjà 5 photos, le maximum. Retire une photo pour en ajouter une autre. », sans bouton ; le bouton revient quand on retire la 5e ;
+  - **page dédiée** `/poses/:id/ajouter-une-photo`, titre « Ajouter une photo de Throne » : Photo (depuis l'appareil photo ou la photothèque, avec un aperçu), Texte alternatif, Crédit (libellés gardés, aides de l'ux-expert, UX-21, ci-dessous), la case des droits, « Ajouter la photo » et « Annuler » ; quitter avec une saisie demande « Abandonner cette photo ? Ta saisie sera perdue. » (« Abandonner » / « Continuer l'ajout ») ;
+  - **aides des champs** (UX-21), aussi pour « Modifier » :
+    - Texte alternatif : « Décris la pose pour qui ne voit pas la photo : ce que font la base et le flyer. Inutile d'écrire « Photo de ». Si la pose a plusieurs photos, précise l'angle (vue de côté, détail des prises). » ; exemple : « Bird : la base, allongée sur le dos, a les pieds sur les hanches du flyer, face au sol à l'horizontale, bras écartés. » ;
+    - Crédit : « Le nom de la personne qui a pris la photo, présenté sous elle : « Photo : Léa Martin ». Si tu l'as prise toi-même, écris ton nom. » ;
+  - **contrôles** : format, poids et dimensions vérifiés dès le choix quand le navigateur sait lire la photo, après l'envoi sinon ; une photo trop lourde qu'il sait lire est réduite avant l'envoi (R5) ; progression de l'envoi, avec « Annuler l'envoi » ;
+  - **erreurs** (UX-20), qui conservent toujours la saisie, case des droits comprise : « Choisis une photo. » ; « Ce fichier n'est pas une photo JPEG, PNG, WebP ou HEIC. Choisis une autre photo. » ; « Cette photo mesure 1200 × 799 pixels : il faut au moins 800 pixels sur le plus petit côté. Choisis une photo plus grande. » ; « Décris la photo : le texte alternatif est obligatoire. » ; « Indique le crédit de la photo : le nom de la personne qui l'a prise. » ; « Confirme tes droits sur la photo et l'accord des personnes photographiées. » ; « La photo n'a pas pu être envoyée : impossible de joindre AcroFunJam. Vérifie ta connexion Internet, puis réessaie. » ; session expirée : « Ta session a expiré. Connecte-toi de nouveau, puis envoie la photo. » ;
+  - **après l'ajout** : retour à la page de la pose, annonce « Photo ajoutée à Throne. » ;
+  - **sous chaque photo** : « Choisir comme photo principale », « Modifier » (texte alternatif et crédit, sur place), « Retirer » ; noms accessibles suffixés du texte alternatif ; repère « Photo principale », visible des validateurs et des administrateurs seulement ;
+  - **retrait** : confirmation « Retirer cette photo de Throne ? », avec sa conséquence : pour la photo principale, « La photo suivante deviendra la photo principale et la vignette du catalogue. » ; pour la dernière, « Throne n'aura plus de photo. ».
+
+**Ce que l'ADR de stockage des photos devra trancher** (à rédiger avant l'implémentation ; les scénarios n'en dépendent pas)
+- **Où stocker** : stockage objet (compatible S3, Azure Blob), disque du serveur, ou base PostgreSQL, derrière le port `IPhotoStorage` de la carte des contextes ; lien avec l'hébergement de production, encore non décidé ; sauvegardes.
+- **Comment servir** : adresses publiques ou signées, adresses non devinables, CDN, en-têtes de cache, politique de sécurité du contenu (`img-src`) ; accès refusé dès le retrait (R13), y compris dans les caches.
+- **Tailles générées** : vignette du catalogue, taille de la page d'une pose, taille agrandie ; formats de sortie (WebP, AVIF, JPEG de repli), images adaptées à l'écran (`srcset`) ; cadrage de la vignette.
+- **Traitement à l'arrivée** : bibliothèque d'images (ImageSharp, SkiaSharp, libvips…) et sa licence ; **décodage et conversion du HEIC** (faisabilité, licence : condition de Q254) ; reconnaissance du format au contenu ; suppression de toutes les métadonnées et application de l'orientation ; conservation ou non du fichier d'origine (recommandation Q258 : non) ; protection contre les fichiers piégés (bombes de décompression, dimensions extrêmes) ; éventuelle analyse antivirus.
+- **Téléversement** : par l'API (multipart) ou direct vers le stockage (adresse pré-signée) ; **limite de taille du corps des requêtes** (Kestrel, proxy inverse), reportée depuis la story 3 ; traitement synchrone ou en tâche de fond ; progression et annulation de l'envoi.
+- **Réduction par le site** (décision 5) : confirmer la réduction avant l'envoi (JPEG, environ 2400 pixels sur le plus grand côté, qualité), les formats que les navigateurs savent lire (HEIC hors Safari), et la cohérence avec les tailles générées.
+- **Cohérence** entre la base et les fichiers : fichier téléversé sans photo enregistrée (orphelin), photo enregistrée sans fichier, suppression effective et son délai ; concurrence de deux ajouts sur une pose qui a 4 photos (maximum de 5, sous le verrou `pose:<id>` ou autrement).
+- **Modèle** (avec le domain-expert) : photos dans l'agrégat `Pose` ou agrégat distinct (`PosePhotos`) ; événements ; contrat HTTP (photos dans `GET /catalog/poses` et `GET /catalog/poses/{id}`, ajout, retrait, photo principale, texte alternatif et crédit).
+- **Tests** : faux du port pour les specs @api, vrai stockage en intégration (Testcontainers : RustFS, ADR 0039), fixtures des scénarios (« une photo JPEG de 2 Mo de 1600×1200 », HEIC, photo avec GPS, photo à pivoter), API simulée pour @web.
+- **Coûts** : volume et bande passante attendus (au plus 5 photos par pose, nombre de poses), purge.
+
+**Questions tranchées** (toutes le 2026-11-20 par le porteur du produit ; recommandations de l'analyse acceptées sauf mention)
+- **Q224 Première story.** *Tranchée : les photos des poses, téléversées* (contre la recommandation initiale, les liens vidéo des transitions, devenus la story 12).
+- **Q246 Qui ajoute ?** *Tranchée : validateurs et administrateurs, directement, dans la story 10 ; la communauté propose avec la story 11* (décision 1 : l'équipe et la communauté sont les sources des photos). Options écartées : propositions des utilisateurs dès la story 10, les deux d'un coup.
+- **Q247 Capacité.** *Tranchée : nouvelle capacité « gérer les photos » (`manage-photos`)*, pour les validateurs et les administrateurs. Conséquence : le scénario des capacités de `identite/comptes-et-roles.feature` est révisé (`@wip` le temps de la story, comme pour la story 8 ; fait le 2026-11-20 par le domain-expert : « gérer les photos » entre « gérer les étiquettes » et « gérer les rôles »).
+- **Q248 Nombre maximal.** *Tranchée : 5 photos par pose.*
+- **Q249 Ordre et photo principale.** *Tranchée : ordre d'ajout, la première est la principale, un validateur en choisit une autre, qui passe en premier ; pas de réordonnancement libre.*
+- **Q250 Vignette.** *Tranchée (décision 4) : petite vignette carrée à côté du nom, dans la ligne du haut de la carte ; pas d'espace réservé ; décorative ; cadrage qui ne coupe pas les poses verticales (ui-designer).*
+- **Q251 Texte alternatif.** *Tranchée : obligatoire, espaces superflus retirés, 200 caractères au plus, non affiché comme légende ; modèle en quatre parties de la charte (AY).* Libellé « Texte alternatif » gardé, aide de l'ux-expert (UX-21).
+- **Q252 Crédit.** *Tranchée (décision 3) : l'auteur de la photo seulement, obligatoire, 100 caractères au plus, « Photo : Léa Martin » ; pseudonyme ou collectif acceptés, « inconnu » refusé ; personnes photographiées anonymes.* Libellé « Crédit » gardé (UX-21).
+- **Q253 Droits et accord.** *Tranchée (décision 2) : une seule case, jamais cochée par défaut, au libellé de la décision 2, avec son aide ; gardée avec le compte et la date.*
+- **Q254 Formats.** *Tranchée : JPEG, PNG, WebP et HEIC, reconnus au contenu ; HEIC sous réserve de faisabilité (ADR) ; pas de GIF.*
+- **Q255 Poids.** *Tranchée : 10 Mo pour l'API ; le site réduit avant l'envoi une photo plus lourde qu'il sait lire (décision 5, à confirmer dans l'ADR).*
+- **Q256 Dimensions.** *Tranchée : au moins 800 pixels sur le plus petit côté, sans maximum ; contrôle dès le choix sur le site quand il sait lire la photo (UX).*
+- **Q257 Métadonnées.** *Tranchée : toutes retirées, orientation appliquée.*
+- **Q258 Fichier d'origine.** *Tranchée : jamais présenté ni gardé ; seules les tailles générées (ADR).*
+- **Q259 Retrait.** *Tranchée : immédiat, sans motif ni historique, avec confirmation et sa conséquence (UX) ; plus accessible par son adresse ; la suivante devient principale.*
+- **Q260 Modifier.** *Tranchée : texte alternatif et crédit modifiables sur place ; l'ordre par la seule photo principale ; changer de fichier = retirer, puis ajouter.*
+- **Q261 Page d'une pose.** *Tranchée (UX-15), puis révisée le 2026-11-20 par le porteur du produit :*
+  - *seule la photo principale en tête du corps de la page ;*
+  - *lien « Voir les 2 autres photos » (« Voir l'autre photo ») vers la section « Autres photos de Bird », tout en bas de la page, après les transitions ;*
+  - *crédit sous chaque photo ;*
+  - *agrandissement en dialogue sur toutes les photos ;*
+  - *gestion de la principale en haut, des autres photos et de l'ajout en bas (en haut pour une pose sans photo) ;*
+  - *avertissement de responsabilité visible avant ou à côté de la photo principale (AY).*
+- **Q262 Flow généré.** *Tranchée : hors story 10 (story 13).*
+- **Q263 Application mobile.** *Tranchée : hors story 10 (story 13, avec le hors ligne).*
+- **Q264 Pose supprimée, renommée, modifiée.** *Tranchée : les photos suivent la pose ; elles seront retirées avec elle quand le retrait d'une pose existera ; ajouter une photo ne change pas la version de la pose et reste possible pendant une modification en attente.*
+- **Q265 Photo d'une proposition de pose.** *Tranchée : non (story 11).*
+- **Q266 Modération.** *Tranchée : charte des photos (AY-8 à AY-15), sans détection automatique ; la modération des photos de la communauté relève de la story 11.*
+- **Q267 Demande de retrait.** *Tranchée : adresse de contact sur le site avant la mise en production (sans scénario) ; une seule demande, de la base ou du flyer, suffit (AY) ; story transverse « Signaler un contenu ou demander son retrait » avant la story 11.*
+- **Q268 Même photo deux fois.** *Tranchée : aucune règle.*
+- **Q269 Vocabulaire.** *Tranchée :* texte alternatif, crédit (de l'auteur de la photo), photo principale, vignette, confirmation des droits, personnes photographiées (jamais « modèles »), ajouter / retirer une photo, gérer les photos ; « prise » proposé au glossaire ; « trio » écarté (hors catalogue). Identifiants de code : domain-expert.
+
+**Termes du glossaire** : validés : Photo (précisée), Texte alternatif, Crédit, Photo principale, Vignette, Confirmation des droits, Personnes photographiées, Ajouter / retirer une photo, Gérer les photos ; **proposé au domain-expert** : Prise (point de contact). Identifiants de code de ces termes : domain-expert, avec l'ADR.
+
+**Modèle du domain-expert (2026-11-20)** (identifiants : glossaire, section « Photos des poses » ; relations : `context-map.md`)
+- **Agrégat `PosePhotos`**, un par pose publiée, distinct de `Pose` : il garantit le maximum de 5, la photo principale (`MainPhotoId`, enregistrée) et l'ordre de présentation (la principale, puis les autres dans l'ordre d'ajout : choisir C parmi A, B, C donne C, A, B ; puis choisir B donne B, A, C). Ajouter, retirer, corriger ou choisir ne change jamais la version de la pose (R15) ; verrou propre `pose-photos:<id>`.
+- **Crédit qui ne nomme personne** (R8, liste fixée) : refusé si sa clé de comparaison (celle du nom d'une pose) est exactement « inconnu », « inconnue », « auteur inconnu », « auteure inconnue », « autrice inconnue », « photographe inconnu », « photographe inconnue », « anonyme », « unknown » ou « anonymous » ; un crédit sans lettre ni chiffre vaut absence de crédit. « Anonyme » et les équivalents anglais étendent la décision 3 (même raison : sans auteur connu, pas d'autorisation à confirmer) ; le porteur du produit peut les retirer. Le site ne répète pas cette liste : l'API la porte, le site présente son refus sous le champ « Crédit » (libellé proposé à l'ux-expert : « Le crédit doit nommer la personne qui a pris la photo. Si tu ne sais pas qui l'a prise, n'ajoute pas cette photo. »).
+- **10 Mo** = 10 Mio (10 485 760 octets), même constante pour l'API et le site, à confirmer par l'ADR (marge de la limite du corps des requêtes multipart).
+- **Réduction par le site** : vers 2400 pixels sur le plus grand côté, **sans jamais descendre sous 800 pixels sur le plus petit** (un panorama de 20000×900 garde 800 pixels de haut) ; jamais d'agrandissement.
+- **Ports techniques** : `IPhotoProcessor` (constate format, dimensions ; produit les tailles générées sans métadonnées), `IPhotoStorage`, `IPhotoAddresses` ; le domaine décide seul (formats, poids, dimensions). Specs @api d'abord avec des faux, puis les adaptateurs choisis par l'ADR.
+
+**Hors périmètre** : proposer une photo (utilisateur), photo d'une proposition de pose ; photos des transitions ; photos dans le flow généré ; écran mobile, consultation hors ligne ; réordonner librement ; signalement d'un contenu ; vidéos.
+
+**Ordre d'implémentation conseillé** (après l'ADR de stockage)
+1. API : R1 avec une photo JPEG, R3, puis R2 (droits, visiteur).
+2. API : R17 (page d'une pose), R16 (vignette du catalogue).
+3. API : R7, R8, R9 (texte alternatif, crédit, confirmation des droits).
+4. API : R4, R5, R6 (format, poids, dimensions), puis R10 (métadonnées, orientation).
+5. API : R11, R12 (maximum, photo principale), R13 (retrait), R14 (modifier), R15 (indépendance vis-à-vis des modifications).
+6. Site, consultation : R16 (vignette), R17 (section des photos), R18 (agrandissement).
+7. Site, gestion (R19) : section et invitation, page dédiée et ajout, contrôles dès le choix et réduction, erreurs et incidents (injoignable, session expirée), photo principale, modifier, retrait.
+
+**Décisions du porteur du produit (2026-11-23), après les revues de clôture**
+- **Stockage** : RustFS (compatible S3) en local et dans les tests, MinIO ne publiant plus ses images (ADR 0039, écarts).
+- **Crédit refusé** : « Le crédit doit nommer la personne qui a pris la photo. Si tu ne sais pas qui l'a prise, n'ajoute pas cette photo. », affiché sous le champ « Crédit ».
+- **Session expirée pendant l'ajout** : « Ta session a expiré. Connecte-toi de nouveau, puis choisis de nouveau la photo. » (le texte alternatif et le crédit restent ; le fichier ne survit pas à la reconnexion).
+- **Onglet** : fermer ou recharger la page « Ajouter une photo » avec une saisie en cours demande confirmation (invite native du navigateur), en plus de « Abandonner cette photo ? » dans le site.
+- **AVIF** : non accepté (R4), côté API comme côté site.
+- Ces décisions remplacent les textes cités plus haut dans cette section.
+
+#### Story 12 « Lier des vidéos à une transition » (story ultérieure, non validée)
+Carte du 2026-11-20, recommandée d'abord comme première story, puis **repoussée** par la décision Q224. Gardée en résumé ; ses questions (Q225 à Q245) restent ouvertes et seront reprises avant la story. Scénarios (tous `@wip`, non validés) : `specs/features/catalogue/lier-des-videos-a-une-transition.feature` (L) et `specs/features/catalogue/consulter-les-videos-des-transitions.feature` (C). Contexte Catalogue, cibles @api et @web.
+
+**Story** : en tant que validateur ou administrateur, je lie directement à une transition publiée des vidéos hébergées sur YouTube, Vimeo ou Instagram, chacune avec une légende, et je les retire au besoin ; tout visiteur les retrouve sur la page d'une pose, sous chaque transition qui en part ou qui y arrive. Pourquoi elle reste intéressante : une transition est un mouvement, et des contributeurs écrivent déjà des liens vidéo en texte brut dans les descriptions (story 7) ; aucun stockage de fichiers n'est nécessaire. Suites : 12b proposer une vidéo (utilisateur), 12c vidéos des poses, 12d vidéos dans le flow généré, 12e lecteur intégré.
+
+**Règles en résumé** (recommandations non validées ; L et C : fichiers ci-dessus)
+- **V1.** Un validateur ou un administrateur lie directement une vidéo à une transition publiée (Bruno, puis Paul, sur « Pop to Bird », de Throne vers Bird, une vidéo YouTube légendée « Pop to Bird, vue de côté ») ; seuls eux lient ou retirent (Alice refusée, visiteur) ; seule une transition publiée.
+- **V2.** Adresse d'une vidéo YouTube, Vimeo ou Instagram (`youtube.com/watch?v=…`, `youtu.be/…`, `vimeo.com/…`, `instagram.com/reel/…`) ; impossibles : `example.org/pop-to-bird.mp4`, une chaîne YouTube, un texte, aucune adresse ; pas de vérification auprès de l'hébergeur.
+- **V3.** Légende obligatoire, normalisée, 100 caractères au plus.
+- **V4.** Au plus 3 vidéos par transition, dans l'ordre de liaison ; une même vidéo (hébergeur et identifiant, moment de départ ignoré) une fois par transition, permise sur plusieurs.
+- **V5.** Retrait immédiat par un validateur ou un administrateur.
+- **V6.** La page d'une pose présente les vidéos de chaque transition (depuis et vers, washing machine dans les deux sections) comme des liens vers l'hébergeur, sans lecteur intégré ni contenu chargé de l'hébergeur ; rien pour une transition sans vidéo.
+- **V7.** Site : « Lier une vidéo » pour les validateurs et les administrateurs, retiré à 3 vidéos ; erreurs sous le champ de l'adresse, légende conservée ; retrait avec confirmation.
+
+Architecture : aucune infrastructure nouvelle ; un ADR court pour le contrat HTTP et l'absence de lecteur intégré.
+
+**Questions ouvertes de la story 12** (recommandation de l'analyse en gras ; les scénarios la suivent ; « story 10 » s'y lit désormais « story 12 », et 10b à 10e, 12b à 12e)
+- **Q225 À quoi s'attache une vidéo ?** Options : une pose ; une transition ; un flow. **Recommandation : une transition publiée seulement dans la story 12** ; les poses dans la story 12c ; jamais un flow, qui n'est pas enregistré (story 9). Ni une proposition en attente (story 12b).
+- **Q226 Téléversement ou lien externe ?** **Recommandation : lien externe pour les vidéos, durablement** (stockage, transcodage, bande passante et modération hors de portée) ; le téléversement est réservé aux photos (story 10).
+- **Q227 Hébergeurs acceptés.** Options : (a) liste fermée YouTube, Vimeo, Instagram ; (b) la même, plus TikTok et Facebook ; (c) toute adresse en `https`. **Recommandation : (a)**, à confirmer par l'expert acroyoga (la communauté publie beaucoup sur Instagram). Une liste fermée permet de reconnaître la vidéo (doublons, V4), d'afficher l'hébergeur et d'écarter les liens douteux ; (c) ouvre la porte à n'importe quel site.
+- **Q228 Lecteur intégré ou lien ?** Options : lien qui ouvre la vidéo chez l'hébergeur ; lecteur intégré (iframe) ; vignette de l'hébergeur et lien. **Recommandation : un simple lien dans la story 10** : aucun traceur de l'hébergeur avant que la personne ouvre la vidéo, donc pas de consentement à recueillir, une page plus légère. Lecteur intégré : story 10e, après un ADR (vie privée, `youtube-nocookie`, politique de sécurité du contenu).
+- **Q229 Qui ajoute une vidéo ?** Options : (a) validateur et administrateur, directement ; (b) tout utilisateur, par une proposition validée ; (c) les deux dès la story 10. **Recommandation : (a) dans la story 10, (b) dans la story 10b** (nouveau type de proposition, avec publication directe pour un validateur). La décision 13 (« tout le monde peut proposer l'ajout de photos ») reste l'objectif.
+- **Q230 Quelle capacité ?** Options : nouvelle capacité « gérer les vidéos » (`manage-videos`) ; « gérer les étiquettes » ; « accepter ou refuser une proposition ». **Recommandation : nouvelle capacité « gérer les vidéos »**, accordée aux validateurs et aux administrateurs, sur le modèle de la story 8 ; à rapprocher de « gérer les photos » (Q247), peut-être en une seule capacité. Conséquence : le scénario des capacités de `identite/comptes-et-roles.feature` sera révisé, comme pour la story 8 (non fait tant que Q230 n'est pas tranchée).
+- **Q231 Légende et accessibilité.** Options : légende obligatoire ; facultative, avec un texte par défaut (« Vidéo 1 de Pop to Bird ») ; longueur. **Recommandation : obligatoire, espaces superflus retirés, 100 caractères au plus** : c'est le texte du lien, qui doit dire où il mène (WCAG 2.4.4). Pour les photos (story 10), un **texte alternatif obligatoire** (Q251).
+- **Q232 Nombre, ordre, vidéo principale.** **Recommandation : au plus 3 vidéos par transition, dans l'ordre où elles ont été liées, sans vidéo principale ni réordonnancement** (retirer, puis lier de nouveau). La photo principale d'une pose (vignette) relève de la story 10 (Q249).
+- **Q233 Doublons.** **Recommandation : une même vidéo (hébergeur et identifiant) une seule fois par transition ; permise sur plusieurs transitions** (une vidéo montre souvent un enchaînement).
+- **Q234 Moment de départ** (`t=42`). **Recommandation : l'adresse est conservée telle que saisie, moment de départ compris ; il ne compte pas pour les doublons.** Pas de champ « moment de départ » distinct.
+- **Q235 Vérifier que la vidéo existe ?** Options : non ; appel à l'hébergeur (oEmbed) à la liaison ; vérification régulière des liens morts. **Recommandation : non** : pas de dépendance à un service extérieur ; un validateur retire un lien mort (V5).
+- **Q236 Droits d'auteur et droit à l'image.** Options : (a) charte de validation : ne lier que des vidéos publiques, publiées par les personnes filmées ou avec leur accord ; (b) case de confirmation à chaque liaison ; (c) seulement des vidéos du validateur lui-même. **Recommandation : (a) pour des liens**, la vidéo restant publiée et maîtrisée par son auteur chez l'hébergeur ; pour les photos téléversées (story 10), case de confirmation et crédit de l'auteur obligatoires (Q252, Q253). À confirmer par le porteur du produit (responsabilité juridique).
+- **Q237 Demande de retrait d'une personne filmée**, pas forcément inscrite. Options : adresse de contact sur le site ; action « Signaler » ; rien. **Recommandation : la même adresse de contact que pour les photos (Q267), puis la story transverse « Signaler un contenu ou demander son retrait »** ; dans la story 12, c'est un validateur qui retire la vidéo (V5).
+- **Q238 Retrait.** **Recommandation : par un validateur ou un administrateur, immédiat, sans motif ni historique ; confirmation en place sur le site.** Le contributeur d'origine n'existe pas encore (liaison directe).
+- **Q239 Changer la légende ou l'adresse d'une vidéo liée ?** **Recommandation : non dans la story 10** : retirer, puis lier de nouveau.
+- **Q240 Affichage sur le site.** **Recommandation : dans le repli de chaque transition, sur la page d'une pose, après les étiquettes ; chaque vidéo par sa légende et son hébergeur ; rien sur les cartes du catalogue** ; libellés, ouverture dans un nouvel onglet et son annonce : ux-expert.
+- **Q241 Générateur, application, hors ligne.** **Recommandation : hors story 10.** Story 10d : les vidéos dans chaque étape du flow, sur le site et dans l'application ; hors ligne, elles restent présentées avec le flow gardé, et l'application dit qu'il faut une connexion pour les ouvrir. Aucun téléchargement de vidéo.
+- **Q242 Avertissement.** Options : rien de nouveau ; une phrase près des vidéos (« Une vidéo montre une façon de faire ; elle ne remplace ni un cours ni un spotter. »). **Recommandation : rien de nouveau dans la story 10** (l'avertissement de responsabilité de la page d'une pose couvre les vidéos) ; avis de l'expert acroyoga attendu.
+- **Q243 Liens vidéo déjà écrits dans les descriptions.** **Recommandation : laissés tels quels** ; un validateur peut les reprendre en vidéos à la main ; aucune extraction automatique.
+- **Q244 Vidéos d'une proposition de transition.** Proposer une transition avec ses vidéos ? **Recommandation : non dans la story 10** ; la story 10b porte sur une vidéo proposée pour une transition **publiée**, pas sur la proposition d'une transition.
+- **Q245 Vocabulaire.** « Média » est un synonyme interdit (glossaire, « Photo »). **Recommandation** : pas de terme générique ; on dit « photos et vidéos ». Termes proposés : **vidéo** (d'une transition), **légende** (d'une vidéo), **hébergeur** (de vidéos), **lier / retirer une vidéo**, capacité **« gérer les vidéos »**. Ajoutés au glossaire comme termes proposés, à confirmer par le domain-expert.
+
+**Termes proposés au glossaire** (marqués « proposé, story 12 ») : Vidéo, Légende (d'une vidéo), Hébergeur (de vidéos), Lier / retirer une vidéo, Gérer les vidéos.
+
+**Ordre d'implémentation conseillé** (le moment venu) : V1, V6 côté API, puis V2 à V5, puis le site (V6, V7).
+
 ### Découpage des stories suivantes (décidé le 2026-11-02)
 1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.
 2. **Proposer une pose** (Contribution) : reprend les règles de contenu de `specs/features/catalogue/publier-une-pose.feature` (brouillon) ; publication directe pour un validateur ou un administrateur.
@@ -888,7 +1107,9 @@ Révision du 2026-11-04 : la story 5 **« Suivre mes propositions »** (Contribu
 - « figure », « posture » : remplacés par **pose**, ou **élément** quand il s'agit d'une pose ou d'une transition ;
 - « catégorie » : remplacé par **étiquette** ;
 - « passage », « mouvement » : remplacés par **transition** ;
-- « voltigeur », « porteur » : remplacés par **flyer** et **base**.
+- « voltigeur », « porteur » : remplacés par **flyer** et **base** ;
+- « trio » : hors catalogue (le catalogue ne décrit que des poses à deux) ; une photo de trio n'est pas admise (story 10) ;
+- « modèles » (pour les personnes sur une photo) : remplacé par **personnes photographiées** (story 10).
 
 ## Questions ouvertes
 
@@ -936,7 +1157,7 @@ Tranché par la story 9 (2026-11-19), voir « Story 9 Générer un flow » ci-de
 - Charte de validation des transitions (quand découper un mouvement qui traverse une position de passage, nom en usage entre d'autres poses) : à rédiger avec l'expert acroyoga, non bloquant.
 - Refus : un motif est-il obligatoire ? L'auteur peut-il amender puis resoumettre ?
 - Fusion de doublons : qui la fait et comment, avec quelles conséquences sur les transitions ?
-- Photos : consentement des personnes photographiées, crédit de l'auteur, procédure de retrait, formats et taille.
+- Photos : consentement des personnes photographiées, crédit de l'auteur, procédure de retrait, formats et taille. Tranché par la story 10 « Photos des poses » (validée le 2026-11-20) : case des droits, crédit de l'auteur, charte des photos, Q251 à Q258, Q267 ; reste l'ADR de stockage des photos, à rédiger avant l'implémentation.
 
 ### Identité et présentation
 - ~~Un compte est-il obligatoire pour générer un flow ?~~ Tranché (story 9, Q183) : non, le visiteur génère aussi. Et pour proposer ? (Consulter : non, cf. story 1.)

@@ -23,6 +23,7 @@ public static class CatalogEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         catalog.MapTagEndpoints();
+        catalog.MapPhotoEndpoints();
 
         return app;
     }
@@ -64,7 +65,8 @@ public static class CatalogEndpoints
             [.. pose.TransitionsFrom.Select(t => ToResponse(pose, t))],
             [.. pose.TransitionsTo.Select(t => ToResponse(pose, t))],
             [.. pose.PoseTags.Select(ToResponse)],
-            pose.HasPendingRevision));
+            pose.HasPendingRevision,
+            [.. pose.Photos.Select(PhotoEndpoints.ToResponse)]));
     }
 
     private static LinkedTransitionResponse ToResponse(PosePage page, LinkedTransition transition) =>
@@ -89,6 +91,7 @@ public static class CatalogEndpoints
             DifficultyCodes.From(pose.FlyerDifficulty),
             pose.Flow.CanStartFlow,
             pose.Flow.CanEndFlow,
-            [.. catalogPose.Tags.Select(t => new NamedTagResponse(t.Id.Value, t.Name.Value))]);
+            [.. catalogPose.Tags.Select(t => new NamedTagResponse(t.Id.Value, t.Name.Value))],
+            catalogPose.Thumbnail);
     }
 }

@@ -260,7 +260,9 @@ Then(
   async ({ flowGenerator }, rows: DataTable) => {
     await expect(flowGenerator.title).toHaveText('Ton flow');
     for (const [criterion, value] of rows.raw()) {
-      const row = flowGenerator.recap.locator('dl > div').filter({ hasText: recapRow[criterion ?? ''] ?? '' });
+      const row = flowGenerator.recap
+        .locator('dl > div')
+        .filter({ hasText: recapRow[criterion ?? ''] ?? '' });
       await expect(row.locator('dd')).toHaveText(new RegExp(`^${value}$`, 'i'));
     }
   },

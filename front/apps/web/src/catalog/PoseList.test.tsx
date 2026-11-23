@@ -70,6 +70,18 @@ describe('PoseList', () => {
     ]);
   });
 
+  // Story 10 (R16): the thumbnail of the main photo next to the name, decorative; no space kept without a photo.
+  it('should present the thumbnail of the main photo next to the name, decorative, and none without photo', () => {
+    const [throne, highBird] = poses as [PoseSummary, PoseSummary];
+    const { container } = render(<PoseList poses={[{ ...throne, thumbnail: '/catalog/photos/p/thumbnail' }, highBird]} />);
+
+    const thumbnails = container.querySelectorAll('img.pose-card__thumbnail');
+    expect(thumbnails).toHaveLength(1);
+    expect(thumbnails[0]).toHaveAttribute('src', '/catalog/photos/p/thumbnail');
+    expect(thumbnails[0]).toHaveAttribute('alt', '');
+    expect(within(screen.getAllByRole('listitem')[0]!).queryByRole('img')).not.toBeInTheDocument();
+  });
+
   it('should hide the decorative moon phases and icons from assistive technologies', () => {
     const { container } = render(<PoseList poses={poses} />);
 

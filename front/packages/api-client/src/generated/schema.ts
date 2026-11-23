@@ -132,6 +132,70 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/catalog/poses/{id}/photos': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AddPosePhoto'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/catalog/poses/{id}/photos/main': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations['ChooseMainPhoto'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/catalog/poses/{id}/photos/{photoId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations['CorrectPhoto'];
+    post?: never;
+    delete: operations['RemovePosePhoto'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/catalog/photos/{photoId}/{size}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['GetPhoto'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/contribution/pose-proposals': {
     parameters: {
       query?: never;
@@ -873,6 +937,10 @@ export interface components {
       expiresIn: number | string;
       refreshToken: string;
     };
+    CorrectPhotoRequest: {
+      altText: null | string;
+      credit: null | string;
+    };
     DifficultyAdjustmentResponse: {
       proposed: components['schemas']['DifficultyCode'];
       retained: components['schemas']['DifficultyCode'];
@@ -954,6 +1022,8 @@ export interface components {
         [key: string]: string[];
       };
     };
+    /** Format: binary */
+    IFormFile: string;
     InfoRequest: {
       newEmail?: null | string;
       newPassword?: null | string;
@@ -978,6 +1048,10 @@ export interface components {
       password: string;
       twoFactorCode?: null | string;
       twoFactorRecoveryCode?: null | string;
+    };
+    MainPhotoRequest: {
+      /** Format: uuid */
+      photoId: string;
     };
     MyAccountResponse: {
       email: string;
@@ -1134,6 +1208,22 @@ export interface components {
     PendingRevisionResponse: {
       isYours: boolean;
     };
+    PhotoResponse: {
+      /** Format: uuid */
+      id: string;
+      altText: string;
+      credit: string;
+      /** Format: int32 */
+      width: number | string;
+      /** Format: int32 */
+      height: number | string;
+      sources: components['schemas']['PhotoSourcesResponse'];
+    };
+    PhotoSourcesResponse: {
+      thumbnail: string;
+      page: string;
+      enlarged: string;
+    };
     PoseAdjustmentsResponse: {
       name: null | components['schemas']['NameAdjustmentResponse'];
       baseDifficulty: null | components['schemas']['DifficultyAdjustmentResponse'];
@@ -1191,6 +1281,7 @@ export interface components {
       canStartFlow: boolean;
       canEndFlow: boolean;
       tags: components['schemas']['NamedTagResponse'][];
+      thumbnail: null | string;
     };
     ProblemDetails: {
       type?: null | string;
@@ -1257,6 +1348,7 @@ export interface components {
       transitionsTo: components['schemas']['LinkedTransitionResponse'][];
       tags: components['schemas']['TransitionTagResponse'][];
       pendingRevision: boolean;
+      photos: components['schemas']['PhotoResponse'][];
     };
     RefreshRequest: {
       refreshToken: string;
@@ -1815,6 +1907,278 @@ export interface operations {
       };
       /** @description Conflict */
       409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  AddPosePhoto: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'multipart/form-data': components['schemas']['IFormFile'];
+      };
+    };
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PhotoResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Payload Too Large */
+      413: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  ChooseMainPhoto: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MainPhotoRequest'];
+      };
+    };
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  CorrectPhoto: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        photoId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CorrectPhotoRequest'];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PhotoResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  RemovePosePhoto: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        photoId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['ProblemDetails'];
+        };
+      };
+    };
+  };
+  GetPhoto: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        photoId: string;
+        size: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Not Found */
+      404: {
         headers: {
           [name: string]: unknown;
         };

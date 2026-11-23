@@ -1,5 +1,6 @@
 import type { DifficultyLevel } from '../shared-kernel/difficulty-level';
 import type { TagReference } from '../shared-kernel/tags';
+import type { PosePhoto } from './pose-photos';
 import type { PoseSummary } from './pose-summary';
 
 /** A published pose designated by a transition, under its current name in the catalog (story 7). */
@@ -42,6 +43,8 @@ export type PosePage = Omit<PoseSummary, 'tags'> & {
   readonly tags: readonly DescribedTag[];
   /** Story 9a: a revision of the pose is pending: it cannot be tagged directly meanwhile (ADR 0036). */
   readonly pendingRevision: boolean;
+  /** Story 10: its photos, the main photo first, then the others in the order of addition (absent: none). */
+  readonly photos?: readonly PosePhoto[];
 };
 
 /** A washing machine: the transition comes back to the pose of the page; it appears in both of its sections. */

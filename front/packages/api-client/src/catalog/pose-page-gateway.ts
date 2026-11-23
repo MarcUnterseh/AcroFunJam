@@ -5,6 +5,7 @@ import {
   type PosePage,
   type PosePageFailure,
   type PosePageGateway,
+  type PosePhoto,
   type Result,
   type TransitionTag,
 } from '@acrofunjam/core';
@@ -58,6 +59,32 @@ const toLinkedTransition = (value: unknown): LinkedTransition | null => {
   };
 };
 
+/** A photo of a pose (story 10, ADR 0039), or null when it cannot be read. */
+export const toPosePhoto = (value: unknown): PosePhoto | null => {
+  if (!isRecord(value)) return null;
+  const { id, altText, credit, width, height, sources } = value;
+  if (
+    !isString(id) ||
+    !isString(altText) ||
+    !isString(credit) ||
+    typeof width !== 'number' ||
+    typeof height !== 'number' ||
+    !isRecord(sources) ||
+    !isString(sources['thumbnail']) ||
+    !isString(sources['page']) ||
+    !isString(sources['enlarged'])
+  )
+    return null;
+  return {
+    id,
+    altText,
+    credit,
+    width,
+    height,
+    sources: { thumbnail: sources['thumbnail'], page: sources['page'], enlarged: sources['enlarged'] },
+  };
+};
+
 const toTransitions = (value: unknown): LinkedTransition[] | null => {
   if (!Array.isArray(value)) return null;
   const transitions = value.map(toLinkedTransition);
@@ -73,6 +100,7 @@ const toPosePage = (value: unknown): PosePage | null => {
   const transitionsTo = toTransitions(value['transitionsTo']);
   const tags = everyItem(value['tags'], toTransitionTag);
   const { pendingRevision } = value;
+  const photos = everyItem(value['photos'], toPosePhoto);
   if (
     !isString(id) ||
     !isString(name) ||
@@ -83,7 +111,8 @@ const toPosePage = (value: unknown): PosePage | null => {
     !transitionsFrom ||
     !transitionsTo ||
     !tags ||
-    !isBoolean(pendingRevision)
+    !isBoolean(pendingRevision) ||
+    !photos
   )
     return null;
   return {
@@ -97,6 +126,7 @@ const toPosePage = (value: unknown): PosePage | null => {
     transitionsTo,
     tags,
     pendingRevision,
+    photos,
   };
 };
 

@@ -60,7 +60,7 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
         var pose = document.GetProperty("components").GetProperty("schemas").GetProperty("PoseSummaryResponse");
 
         pose.GetProperty("required").EnumerateArray().Select(p => p.GetString())
-            .ShouldBe(["id", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "tags"], ignoreOrder: true);
+            .ShouldBe(["id", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "tags", "thumbnail"], ignoreOrder: true);
         pose.GetProperty("properties").GetProperty("canStartFlow").GetProperty("type").GetString().ShouldBe("boolean");
         pose.GetProperty("properties").GetProperty("canEndFlow").GetProperty("type").GetString().ShouldBe("boolean");
     }
@@ -199,7 +199,7 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
         schemas.GetProperty("PublishedPoseResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
             .ShouldBe(
                 ["id", "name", "baseDifficulty", "flyerDifficulty", "canStartFlow", "canEndFlow", "version", "transitionsFrom", "transitionsTo",
-                    "tags", "pendingRevision"],
+                    "tags", "pendingRevision", "photos"],
                 ignoreOrder: true);
         schemas.GetProperty("LinkedTransitionResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
             .ShouldBe(["id", "otherPose", "name", "baseDifficulty", "flyerDifficulty", "description", "tags"], ignoreOrder: true);

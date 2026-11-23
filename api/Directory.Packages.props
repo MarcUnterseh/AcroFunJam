@@ -15,6 +15,9 @@
     <!-- Aligns EF Core with the Design package (Npgsql only requires 10.0.4); flows to the projects referencing Infrastructure. -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.14" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.14" />
+    <!-- Photos of the poses (ADR 0039): processing of the images, object storage compatible with S3. -->
+    <PackageVersion Include="Magick.NET-Q8-AnyCPU" Version="15.1.0" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.1.2" />
   </ItemGroup>
   <ItemGroup Label="Tests">
     <PackageVersion Include="xunit.v3" Version="4.0.2" /> <!-- Microsoft Testing Platform v2 (global.json) -->

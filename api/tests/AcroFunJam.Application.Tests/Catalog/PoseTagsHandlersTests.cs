@@ -42,7 +42,7 @@ public sealed class PoseTagsHandlersTests
     {
         var pose = FoldedLeaf("lunaire", "inversion");
 
-        var page = (await new GetPosePageHandler(_poses, new FakePoseTransitionsReader(), _lists, _pending).Handle(new GetPosePage(pose.Id), Ct)).Value!;
+        var page = (await new GetPosePageHandler(_poses, new FakePoseTransitionsReader(), _lists, _pending, new FakePosePhotosRepository(), new FakePhotoAddresses()).Handle(new GetPosePage(pose.Id), Ct)).Value!;
 
         page.PoseTags.Select(t => t.Name.Value).ShouldBe(["inversion", "lunaire"]);
         page.PoseTags[0].Description.ShouldBe(_lists.Stored!.Tags.Single(t => t.Name.Value == "inversion").Description);
@@ -55,7 +55,7 @@ public sealed class PoseTagsHandlersTests
         var pose = FoldedLeaf();
         _pending.Pending.Add(pose.Id);
 
-        var page = (await new GetPosePageHandler(_poses, new FakePoseTransitionsReader(), _lists, _pending).Handle(new GetPosePage(pose.Id), Ct)).Value!;
+        var page = (await new GetPosePageHandler(_poses, new FakePoseTransitionsReader(), _lists, _pending, new FakePosePhotosRepository(), new FakePhotoAddresses()).Handle(new GetPosePage(pose.Id), Ct)).Value!;
 
         page.HasPendingRevision.ShouldBeTrue();
         page.PoseTags.ShouldBeEmpty();
@@ -72,7 +72,7 @@ public sealed class PoseTagsHandlersTests
             APublishedPose.Named("Throne").Build(),
         ]);
 
-        var poses = (await new ListPublishedPosesHandler(reader, _lists).Handle(new ListPublishedPoses(), Ct)).Value!;
+        var poses = (await new ListPublishedPosesHandler(reader, _lists, new FakePosePhotosRepository(), new FakePhotoAddresses()).Handle(new ListPublishedPoses(), Ct)).Value!;
 
         poses.Select(p => (p.Pose.Name.Value, string.Join(", ", p.Tags.Select(t => t.Name.Value))))
             .ShouldBe([("Straddle Bat", "inversion, lunaire"), ("Throne", "")]);

@@ -21,6 +21,7 @@ const throne = {
   canStartFlow: true,
   canEndFlow: false,
   tags: [{ id: 'tag-lunaire', name: 'lunaire' }],
+  thumbnail: null,
 };
 
 const unexpectedResponse = fail({
@@ -44,12 +45,23 @@ describe('createCatalogGateway', () => {
           canStartFlow: true,
           canEndFlow: false,
           tags: [{ id: 'tag-lunaire', name: 'lunaire' }],
+          thumbnail: null,
         },
       ]),
     );
   });
 
   // Story 9a (ADR 0036): the tags of each pose, under their current names.
+  it('should give the thumbnail of the main photo of a pose, story 10', async () => {
+    const gateway = createCatalogGateway(
+      apiAnswering(200, { poses: [{ ...throne, thumbnail: '/catalog/photos/photo-1/thumbnail' }] }),
+    );
+
+    const result = await gateway.listPublishedPoses();
+
+    expect(result.ok && result.value[0]?.thumbnail).toBe('/catalog/photos/photo-1/thumbnail');
+  });
+
   it('should report a pose whose tags cannot be read as an unexpected response', async () => {
     const gateway = createCatalogGateway(
       apiAnswering(200, { poses: [{ ...throne, tags: [{ id: 'tag-x' }] }] }),

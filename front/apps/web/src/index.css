@@ -3281,3 +3281,672 @@ main {
   display: grid;
   gap: var(--afj-spacing-sm);
 }
+
+/* ---------- Story 10 « Photos des poses » (docs/design/ecrans/10-photos-des-poses.md, galerie-photos.md) ---------- */
+
+/* Catalogue: the thumbnail of the main photo next to the name, decorative; « à l'essai ». */
+.pose-card__thumbnail {
+  display: block;
+  inline-size: var(--afj-size-thumbnail);
+  block-size: var(--afj-size-thumbnail);
+  flex-shrink: 0;
+  object-fit: contain;
+  border-radius: var(--afj-radius-sm);
+  background: var(--afj-color-photo-mat);
+}
+
+/* A photo is always entire, contained on its mat, never cropped. */
+.pose-photos,
+.pose-other-photos {
+  display: grid;
+  gap: var(--afj-spacing-md);
+  min-width: 0;
+}
+
+.pose-photos__lead {
+  display: grid;
+  gap: var(--afj-spacing-md);
+  align-items: start;
+  min-width: 0;
+}
+
+.pose-photos__empty,
+.pose-photos__max {
+  margin: 0;
+  color: var(--afj-color-text-muted);
+}
+
+.pose-photo-item {
+  display: grid;
+  gap: var(--afj-spacing-sm);
+  align-content: start;
+  min-width: 0;
+}
+
+.pose-photo {
+  display: grid;
+  gap: var(--afj-spacing-xs);
+  margin: 0;
+  min-width: 0;
+}
+
+.pose-photo__enlarge {
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  background: var(--afj-color-photo-mat);
+  border-radius: var(--afj-radius-md);
+  overflow: hidden;
+  cursor: zoom-in;
+}
+
+.photo-img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  object-fit: contain;
+}
+
+.pose-photo--main .photo-img {
+  max-block-size: var(--afj-size-photo-max-height);
+}
+
+.pose-photos__grid .pose-photo__enlarge {
+  aspect-ratio: 1;
+}
+
+.pose-photos__grid .photo-img {
+  position: absolute;
+  inset: 0;
+  block-size: 100%;
+}
+
+.pose-photo__unavailable {
+  display: grid;
+  place-items: center;
+  min-block-size: calc(var(--afj-size-thumbnail) * 2);
+  padding: var(--afj-spacing-md);
+  color: var(--afj-color-text-muted);
+}
+
+.pose-photo__zoom {
+  position: absolute;
+  inset-block-end: var(--afj-spacing-sm);
+  inset-inline-end: var(--afj-spacing-sm);
+  display: grid;
+  place-items: center;
+  inline-size: var(--afj-size-touch-target);
+  block-size: var(--afj-size-touch-target);
+  border-radius: var(--afj-radius-pill);
+  color: var(--afj-color-text);
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+}
+
+@media (hover: hover) {
+  .pose-photo__enlarge:hover .pose-photo__zoom {
+    background: var(--afj-color-surface-hover);
+    border-color: var(--afj-color-text);
+  }
+}
+
+.pose-photo__credit {
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.pose-photos__more {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--afj-spacing-xs);
+  justify-self: start;
+  min-block-size: var(--afj-size-touch-target);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-primary);
+  text-decoration: underline;
+  text-decoration-thickness: var(--afj-size-border-width);
+}
+
+@media (hover: hover) {
+  .pose-photos__more:hover {
+    color: var(--afj-color-primary-hover);
+    text-decoration-thickness: var(--afj-size-border-width-strong);
+  }
+}
+
+.pose-photos__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--afj-spacing-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pose-photos__grid--manage {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--afj-spacing-lg);
+}
+
+/* Management (validators and administrators). */
+.pose-photo__main-mark {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--afj-spacing-xs);
+  margin: 0;
+  padding: var(--afj-spacing-xs) var(--afj-spacing-sm) var(--afj-spacing-xs) var(--afj-spacing-xs);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  line-height: var(--afj-line-height-tight);
+  color: var(--afj-color-text);
+  background: var(--afj-color-sun-surface);
+  border-radius: var(--afj-radius-pill);
+}
+
+.pose-photo__main-mark .icon {
+  color: var(--afj-color-sun-strong);
+}
+
+.pose-photo__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--afj-spacing-sm);
+  padding-top: var(--afj-spacing-sm);
+  border-top: var(--afj-size-border-width) dotted var(--afj-color-divider);
+}
+
+.pose-photo__zone {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--afj-spacing-md);
+  min-width: 0;
+  margin: 0;
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
+}
+
+.pose-photo__zone-title {
+  margin: 0;
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.pose-photo__zone-text {
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+.zone-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--afj-spacing-sm);
+}
+
+.pose-photos__manage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--afj-spacing-sm) var(--afj-spacing-md);
+  padding-top: var(--afj-spacing-md);
+  border-top: var(--afj-size-border-width) dotted var(--afj-color-divider);
+}
+
+.pose-photos__count {
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The page « Ajouter une photo de Throne ». */
+.photo-page {
+  max-width: var(--afj-size-form-wide-max-width);
+  margin: 0 auto;
+}
+
+.photo-page h1 {
+  margin-bottom: var(--afj-spacing-sm);
+}
+
+.photo-page__intro {
+  margin: 0 0 var(--afj-spacing-lg);
+  color: var(--afj-color-text-muted);
+}
+
+.photo-form {
+  display: grid;
+  gap: var(--afj-spacing-lg);
+}
+
+.photo-field {
+  display: grid;
+  gap: var(--afj-spacing-xs);
+  min-width: 0;
+}
+
+.photo-field__label {
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.photo-field__choose,
+.photo-field__change {
+  justify-self: start;
+  margin-top: var(--afj-spacing-xs);
+}
+
+.photo-field__choose {
+  min-height: var(--afj-size-control);
+}
+
+.photo-field input:focus-visible ~ .button {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus);
+  outline-offset: var(--afj-size-focus-ring-offset);
+}
+
+.photo-field__preview {
+  margin-top: var(--afj-spacing-xs);
+  border-radius: var(--afj-radius-md);
+  background: var(--afj-color-photo-mat);
+  overflow: hidden;
+}
+
+.photo-field__preview .photo-img {
+  max-block-size: var(--afj-size-photo-max-height);
+}
+
+.photo-field__unavailable {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--afj-spacing-sm);
+  margin: var(--afj-spacing-xs) 0 0;
+  padding: var(--afj-spacing-md);
+  font-size: var(--afj-font-size-sm);
+  background: var(--afj-color-photo-mat);
+  border-radius: var(--afj-radius-md);
+}
+
+.photo-field__summary {
+  margin: var(--afj-spacing-xs) 0 0;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.photo-field--invalid .photo-field__preview,
+.photo-field--invalid .photo-field__unavailable {
+  outline: var(--afj-size-border-width-strong) solid var(--afj-color-danger);
+}
+
+.photo-field--invalid .photo-field__choose {
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-danger);
+}
+
+.confirm {
+  display: grid;
+  gap: var(--afj-spacing-xs);
+}
+
+.confirm-box {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--afj-spacing-sm);
+  min-block-size: var(--afj-size-control);
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+  overflow-wrap: anywhere;
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md);
+  cursor: pointer;
+}
+
+.confirm-box input {
+  flex: none;
+  inline-size: var(--afj-size-icon);
+  block-size: var(--afj-size-icon);
+  margin: 0;
+  align-self: center;
+  accent-color: var(--afj-color-selected);
+}
+
+.confirm-box:has(input:checked) {
+  background: var(--afj-color-selected-surface);
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-selected);
+}
+
+.confirm--invalid .confirm-box {
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-danger);
+}
+
+.progress {
+  display: grid;
+  gap: var(--afj-spacing-xs);
+}
+
+.progress__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--afj-spacing-sm);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.progress progress {
+  appearance: none;
+  display: block;
+  inline-size: 100%;
+  block-size: var(--afj-size-progress);
+  border: 0;
+  border-radius: var(--afj-radius-pill);
+  overflow: hidden;
+  color: var(--afj-color-primary);
+  background: var(--afj-color-surface-hover);
+}
+
+.progress progress::-webkit-progress-bar {
+  background: var(--afj-color-surface-hover);
+}
+
+.progress progress::-webkit-progress-value {
+  background: var(--afj-color-primary);
+}
+
+.progress progress::-moz-progress-bar {
+  background: var(--afj-color-primary);
+}
+
+.form-confirm {
+  display: grid;
+  gap: var(--afj-spacing-md);
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
+}
+
+.form-confirm p {
+  margin: 0;
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+/* The enlargement: full screen on a phone, a panel on the scrim beyond 40em. */
+.photo-viewer {
+  inset: 0;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  block-size: 100%;
+  max-block-size: 100%;
+  margin: 0;
+  padding: var(--afj-spacing-md);
+  color: var(--afj-color-text);
+  background: var(--afj-color-surface);
+  border: 0;
+}
+
+.photo-viewer[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: var(--afj-spacing-md);
+}
+
+.photo-viewer::backdrop {
+  background: var(--afj-color-scrim);
+}
+
+.photo-viewer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--afj-spacing-sm);
+}
+
+.photo-viewer__title {
+  margin: 0;
+  min-width: 0;
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-md);
+  font-weight: var(--afj-font-weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.photo-viewer__stage {
+  position: relative;
+  min-block-size: 0;
+  background: var(--afj-color-photo-mat);
+  border-radius: var(--afj-radius-md);
+  overflow: hidden;
+}
+
+.photo-viewer__stage .photo-img {
+  position: absolute;
+  inset: 0;
+  block-size: 100%;
+}
+
+.photo-viewer__footer {
+  display: grid;
+  gap: var(--afj-spacing-sm);
+}
+
+.photo-viewer__credit {
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+.photo-viewer__nav {
+  display: grid;
+  gap: var(--afj-spacing-sm);
+}
+
+.photo-viewer .button[aria-disabled="true"] {
+  cursor: default;
+  color: var(--afj-color-text-muted);
+  background: var(--afj-color-disabled-surface);
+  border-color: var(--afj-color-divider);
+}
+
+@media (width >= 40em) {
+  .pose-photos__grid--manage {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .photo-page {
+    margin-top: var(--afj-spacing-xl);
+    padding: var(--afj-spacing-xl);
+    max-width: calc(var(--afj-size-form-wide-max-width) + 2 * var(--afj-spacing-xl));
+    background: var(--afj-color-surface);
+    border: var(--afj-size-border-width) solid var(--afj-color-divider);
+    border-radius: var(--afj-radius-lg);
+  }
+
+  .photo-viewer {
+    inset: var(--afj-spacing-xl);
+    inline-size: auto;
+    max-inline-size: var(--afj-size-content-max-width);
+    block-size: auto;
+    margin: auto;
+    padding: var(--afj-spacing-lg);
+    border: var(--afj-size-border-width) solid var(--afj-color-divider);
+    border-radius: var(--afj-radius-lg);
+  }
+
+  .photo-viewer__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--afj-spacing-md);
+  }
+
+  .photo-viewer__credit {
+    flex: 1;
+  }
+
+  .photo-viewer__nav {
+    display: flex;
+  }
+}
+
+@media (width >= 64em) {
+  .pose-photos__lead {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    column-gap: var(--afj-spacing-xl);
+  }
+
+  .pose-photos__lead > .safety-note {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .pose-photos__lead > .pose-photo-item {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .pose-photos__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .pose-photos__grid--manage {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (forced-colors: active) {
+  .pose-photo__enlarge,
+  .photo-field__preview,
+  .photo-viewer__stage,
+  .pose-photo__zone,
+  .confirm-box,
+  .photo-viewer {
+    border: var(--afj-size-border-width) solid CanvasText;
+  }
+
+  .pose-photos__more {
+    color: LinkText;
+  }
+}
+
+/* Story 10, visual review (2026-11-23): rules of the mockup carried over. */
+.pose-photos__lead > .safety-note {
+  margin: 0;
+}
+
+.pose-photo-item > * {
+  min-width: 0;
+}
+
+.pose-photo__actions .button,
+.zone-actions .button {
+  white-space: normal;
+  max-inline-size: 100%;
+}
+
+.zone-actions .button,
+.form-confirm .zone-actions .button {
+  inline-size: 100%;
+}
+
+@container (width >= 22em) {
+  .zone-actions .button {
+    inline-size: auto;
+  }
+}
+
+.photo-form .form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--afj-spacing-md);
+}
+
+.photo-viewer__title,
+.photo-viewer__credit {
+  line-height: var(--afj-line-height-tight);
+  overflow-wrap: anywhere;
+}
+
+.progress progress:indeterminate {
+  background:
+    linear-gradient(var(--afj-color-primary), var(--afj-color-primary)) no-repeat 0 0 / 30% 100%,
+    var(--afj-color-surface-hover);
+  animation: progress-slide 1.4s linear infinite alternate;
+}
+
+.progress progress:indeterminate::-webkit-progress-bar {
+  background: transparent;
+}
+
+.progress progress:indeterminate::-moz-progress-bar {
+  background: transparent;
+}
+
+@keyframes progress-slide {
+  to {
+    background-position:
+      100% 0,
+      0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress progress:indeterminate {
+    animation: none;
+    background: repeating-linear-gradient(
+      45deg,
+      var(--afj-color-primary) 0 var(--afj-spacing-xs),
+      var(--afj-color-surface-hover) var(--afj-spacing-xs) var(--afj-spacing-sm)
+    );
+  }
+}
+
+@media (width >= 40em) {
+  .photo-form .form-actions {
+    flex-flow: row wrap;
+  }
+
+  .photo-page .form-confirm {
+    background: var(--afj-color-background);
+    border-color: transparent;
+  }
+
+  .form-confirm .zone-actions .button {
+    inline-size: auto;
+  }
+
+  .photo-viewer__title {
+    font-size: var(--afj-font-size-lg);
+  }
+}
+
+@media (width >= 64em) {
+  .pose-photos,
+  .pose-other-photos {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (forced-colors: active) {
+  .pose-photo__zoom,
+  .pose-photo__main-mark,
+  .photo-field__unavailable {
+    border: var(--afj-size-border-width) solid CanvasText;
+  }
+
+  .confirm-box:has(input:checked) {
+    border-color: Highlight;
+  }
+
+  .progress progress {
+    appearance: auto;
+    border: var(--afj-size-border-width) solid CanvasText;
+  }
+}

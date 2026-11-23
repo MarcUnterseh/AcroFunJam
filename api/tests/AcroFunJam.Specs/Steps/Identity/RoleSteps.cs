@@ -93,7 +93,7 @@ public sealed class RoleSteps(People people, RoleSetter roles, Deployment deploy
     }
 
     [Then(@"^l'attribution est refusée car (.+)$")]
-    [Then(@"^le retrait est refusé car (.+)$")]
+    [Then(@"^le retrait est refusé car (?!seul un validateur ou un administrateur gère les photos$)(.+)$")] // the photos: PosePhotoSteps
     public async Task ThenTheRoleChangeIsRefused(string reason)
     {
         var (status, code) = Refusal(reason);

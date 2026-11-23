@@ -16,5 +16,17 @@ services:
       timeout: 5s
       retries: 10
 
+  # Object storage compatible with S3 for the photos of the poses (ADR 0039). RustFS: MinIO no longer publishes its images.
+  rustfs:
+    image: rustfs/rustfs:1.0.4
+    environment:
+      RUSTFS_ACCESS_KEY: acrofunjam
+      RUSTFS_SECRET_KEY: acrofunjam-secret
+    ports:
+      - "9000:9000"
+    volumes:
+      - photos-data:/data
+
 volumes:
   postgres-data:
+  photos-data:

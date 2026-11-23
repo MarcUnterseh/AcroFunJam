@@ -1,6 +1,12 @@
 import {
   fail,
   ok,
+  type PhotoFacts,
+  type PhotoInspector,
+  type PhotoReducer,
+  type PosePhoto,
+  type PosePhotosFailure,
+  type PosePhotosGateway,
   type Acceptance,
   type AcceptanceOutcome,
   type AccessFailure,
@@ -79,6 +85,7 @@ import { CatalogGatewayProvider } from '../catalog/CatalogGatewayContext';
 import { PosePageProvider } from '../catalog/PosePageContext';
 import { TagListProvider } from '../catalog/TagListContext';
 import { PoseTaggingProvider } from '../catalog/PoseTaggingContext';
+import { PosePhotosProvider, type PosePhotosPorts } from '../catalog/PosePhotosContext';
 import { FlowGenerationProvider } from '../flow-generation/FlowGenerationContext';
 import { TransitionTaggingProvider } from '../catalog/TransitionTaggingContext';
 import { ContributionProvider } from '../contribution/ContributionContext';
@@ -454,6 +461,74 @@ export class FakePoseTaggingGateway implements PoseTaggingGateway {
   };
 }
 
+/**
+ * Story 10: the photos of a pose (ADR 0039), the requests sent, answered in turn. A file is inspected as a JPEG of 2 MiB of
+ * 1600 × 1200, unless the test says otherwise.
+ */
+export class FakePosePhotos implements PosePhotosPorts {
+  readonly added: Array<{
+    poseId: string;
+    file: File;
+    altText: string;
+    credit: string;
+    rightsConfirmed: boolean;
+  }> = [];
+  readonly removed: Array<{ poseId: string; photoId: string }> = [];
+  readonly chosen: Array<{ poseId: string; photoId: string }> = [];
+  readonly corrected: Array<{ poseId: string; photoId: string; altText: string; credit: string }> = [];
+  readonly addAnswer = new Answers<Result<PosePhoto, PosePhotosFailure>>([ok(aPosePhoto())]);
+  readonly answer = new Answers<Result<void, PosePhotosFailure>>([ok(undefined)]);
+  facts: PhotoFacts = { format: 'jpeg', size: 2 * 1024 * 1024, dimensions: { width: 1600, height: 1200 } };
+
+  readonly inspector: PhotoInspector<File> = { inspect: async () => this.facts };
+  readonly reducer: PhotoReducer<File> = { reduce: async (file) => file };
+  readonly gateway: PosePhotosGateway<File> = {
+    addPhoto: async (poseId, input, options) => {
+      this.added.push({ poseId, ...input });
+      options.onProgress?.(0.5);
+      const answer = this.addAnswer.next();
+      const signal = options.signal;
+      if (!signal) return answer;
+      // As the browser: a sending cancelled by the person ends at once, whatever the API would have answered.
+      const cancelled = new Promise<Result<PosePhoto, PosePhotosFailure>>((resolve) =>
+        signal.addEventListener('abort', () => resolve(fail({ kind: 'cancelled' })), { once: true }),
+      );
+      return Promise.race([answer, cancelled]);
+    },
+    removePhoto: async (poseId, photoId) => {
+      this.removed.push({ poseId, photoId });
+      return this.answer.next();
+    },
+    chooseMainPhoto: async (poseId, photoId) => {
+      this.chosen.push({ poseId, photoId });
+      return this.answer.next();
+    },
+    correctPhoto: async (poseId, photoId, texts) => {
+      this.corrected.push({ poseId, photoId, ...texts });
+      const result = await this.answer.next();
+      return result.ok ? ok(aPosePhoto({ id: photoId, ...texts })) : result;
+    },
+  };
+}
+
+/** A photo of a pose, as the API presents it. */
+export const aPosePhoto = (overrides: Partial<PosePhoto> = {}): PosePhoto => {
+  const id = overrides.id ?? 'photo-1';
+  return {
+    id,
+    altText: 'Bird vue de profil',
+    credit: 'Léa Martin',
+    width: 1600,
+    height: 1200,
+    sources: {
+      thumbnail: `/catalog/photos/${id}/thumbnail`,
+      page: `/catalog/photos/${id}/page`,
+      enlarged: `/catalog/photos/${id}/enlarged`,
+    },
+    ...overrides,
+  };
+};
+
 /** Tagging a published transition (story 8): the tags sent, answered in turn. */
 export class FakeTransitionTaggingGateway implements TransitionTaggingGateway {
   readonly answer = new Answers<Result<void, TagTransitionFailure>>([ok(undefined)]);
@@ -600,6 +675,7 @@ export const renderSite = (
     tags = new FakeTagListGateway(),
     tagging = new FakeTransitionTaggingGateway(),
     poseTagging = new FakePoseTaggingGateway(),
+    photos = new FakePosePhotos(),
     transitions = new FakeTransitionProposalGateway(),
     transitionStore = new MemoryTransitionInputStore(),
     flowGeneration = new FakeFlowGenerationGateway(),
@@ -618,6 +694,7 @@ export const renderSite = (
     tags?: TagListGateway;
     tagging?: FakeTransitionTaggingGateway;
     poseTagging?: FakePoseTaggingGateway;
+    photos?: FakePosePhotos;
     transitions?: FakeTransitionProposalGateway;
     transitionStore?: MemoryTransitionInputStore;
     flowGeneration?: FakeFlowGenerationGateway;
@@ -633,23 +710,25 @@ export const renderSite = (
           <TagListProvider gateway={tags}>
             <TransitionTaggingProvider gateway={tagging}>
               <PoseTaggingProvider gateway={poseTagging}>
-                <ContributionProvider gateway={contribution} store={store}>
-                  <ValidationProvider gateway={validation} store={decisionStore}>
-                    <PoseRevisionProvider gateway={revision} store={revisionStore}>
-                      <TransitionProposalProvider gateway={transitions} store={transitionStore}>
-                        <IdentityProvider
-                          gateway={gateway}
-                          memory={memory}
-                          forgetOnSignOut={[store, decisionStore, revisionStore, transitionStore]}
-                        >
-                          <FlowGenerationProvider gateway={flowGeneration}>
-                            <RouterProvider router={router} />
-                          </FlowGenerationProvider>
-                        </IdentityProvider>
-                      </TransitionProposalProvider>
-                    </PoseRevisionProvider>
-                  </ValidationProvider>
-                </ContributionProvider>
+                <PosePhotosProvider ports={photos}>
+                  <ContributionProvider gateway={contribution} store={store}>
+                    <ValidationProvider gateway={validation} store={decisionStore}>
+                      <PoseRevisionProvider gateway={revision} store={revisionStore}>
+                        <TransitionProposalProvider gateway={transitions} store={transitionStore}>
+                          <IdentityProvider
+                            gateway={gateway}
+                            memory={memory}
+                            forgetOnSignOut={[store, decisionStore, revisionStore, transitionStore]}
+                          >
+                            <FlowGenerationProvider gateway={flowGeneration}>
+                              <RouterProvider router={router} />
+                            </FlowGenerationProvider>
+                          </IdentityProvider>
+                        </TransitionProposalProvider>
+                      </PoseRevisionProvider>
+                    </ValidationProvider>
+                  </ContributionProvider>
+                </PosePhotosProvider>
               </PoseTaggingProvider>
             </TransitionTaggingProvider>
           </TagListProvider>
@@ -670,6 +749,7 @@ export const renderSite = (
     revisionStore,
     posePage,
     tagging,
+    photos,
     transitions,
     transitionStore,
     flowGeneration,

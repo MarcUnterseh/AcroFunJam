@@ -54,7 +54,7 @@ Api ──► Infrastructure ──► Application ──► Domain      apps/we
 
 ```bash
 # Infra locale
-docker compose up -d                 # PostgreSQL (Docker Desktop doit tourner, aussi pour Testcontainers)
+docker compose up -d                 # PostgreSQL et RustFS, stockage des photos (Docker Desktop doit tourner, aussi pour Testcontainers)
 
 # API (.NET 10, tests sur Microsoft Testing Platform, cf. ADR 0005)
 dotnet build api/AcroFunJam.slnx

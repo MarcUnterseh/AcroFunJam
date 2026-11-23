@@ -110,6 +110,7 @@ public static class IdentityEndpoints
         Capability.Propose => "propose",
         Capability.ValidateProposals => "validate-proposals",
         Capability.ManageTags => "manage-tags",
+        Capability.ManagePhotos => "manage-photos",
         Capability.ManageRoles => "manage-roles",
         _ => throw new ArgumentOutOfRangeException(nameof(capability), capability, "Unknown capability."),
     };

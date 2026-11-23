@@ -18,6 +18,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using AcroFunJam.Infrastructure.Photos;
+
 namespace AcroFunJam.Infrastructure;
 
 public static class DependencyInjection
@@ -47,6 +49,11 @@ public static class DependencyInjection
         services.AddScoped<ITagListRepository, EfTagListRepository>();
         services.AddScoped<ITagCarriersReader, EfTagCarriersReader>();
         services.AddScoped<ITagListLock, PgTagListLock>(); // shared by the writers of tags, exclusive for a removal (ADR 0033)
+        services.AddScoped<IPosePhotosRepository, EfPosePhotosRepository>();
+        services.AddScoped<IPosePhotosLock, PgPosePhotosLock>(); // pose-photos:<id>, independent of the lock of the pose (ADR 0039)
+        services.AddSingleton<IPhotoProcessor, MagickPhotoProcessor>();
+        services.AddSingleton(configuration.GetSection(PhotoStorageOptions.Section).Get<PhotoStorageOptions>() ?? new PhotoStorageOptions());
+        services.AddSingleton<IPhotoStorage, S3PhotoStorage>();
 
         // Identity
         services.AddScoped<IAccountRepository, EfAccountRepository>();

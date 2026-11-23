@@ -7,6 +7,7 @@ import {
 } from '@acrofunjam/core';
 import type { ReactNode } from 'react';
 import { matchPath, type RouteObject } from 'react-router';
+import { AddPhotoPage } from './catalog/AddPhotoPage';
 import { CatalogRoute } from './catalog/CatalogRoute';
 import { PosePageRoute } from './catalog/PosePageRoute';
 import { TagsPage } from './catalog/TagsPage';
@@ -21,6 +22,7 @@ import { NotFoundPage } from './layout/NotFoundPage';
 import type { SiteRouteHandle } from './layout/route-handle';
 import { SiteLayout } from './layout/SiteLayout';
 import {
+  addPhotoPagePattern,
   flowGeneratorPath,
   myProposalsPath,
   posePagePattern,
@@ -64,6 +66,7 @@ export const routes = (extra?: ReactNode): RouteObject[] => [
     children: [
       { index: true, element: <CatalogRoute /> },
       { path: posePagePattern, element: <PosePageRoute /> },
+      { path: addPhotoPagePattern, element: <AddPhotoPage />, handle: ownSessionNotice },
       { path: tagsPath, element: <TagsPage /> },
       { path: flowGeneratorPath, element: <FlowGeneratorPage /> },
       { path: signInPagePath, element: <SignInPage contextOf={signInContextOf} />, handle: ownSessionNotice },

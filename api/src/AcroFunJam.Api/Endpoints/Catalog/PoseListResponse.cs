@@ -8,7 +8,7 @@ public sealed record PoseListResponse(IReadOnlyList<PoseSummaryResponse> Poses);
 /// <summary>A published pose; both flow indicators are always given (ADR 0018); its tags in catalog order (story 9a, ADR 0036).</summary>
 public sealed record PoseSummaryResponse(
     Guid Id, string Name, DifficultyCode BaseDifficulty, DifficultyCode FlyerDifficulty, bool CanStartFlow, bool CanEndFlow,
-    IReadOnlyList<NamedTagResponse> Tags);
+    IReadOnlyList<NamedTagResponse> Tags, string? Thumbnail);
 
 /// <summary>
 /// A published pose with its version, to start a revision of it (story 6, ADR 0024); its tags with their descriptions, in
@@ -25,7 +25,17 @@ public sealed record PublishedPoseResponse(
     IReadOnlyList<LinkedTransitionResponse> TransitionsFrom,
     IReadOnlyList<LinkedTransitionResponse> TransitionsTo,
     IReadOnlyList<TransitionTagResponse> Tags,
-    bool PendingRevision);
+    bool PendingRevision,
+    IReadOnlyList<PhotoResponse> Photos);
+
+/// <summary>
+/// A photo of a pose (story 10, ADR 0039): the main photo is the first of <c>photos</c>; its upright dimensions; the addresses of
+/// its generated sizes. The confirmation of the rights is never given.
+/// </summary>
+public sealed record PhotoResponse(Guid Id, string AltText, string Credit, int Width, int Height, PhotoSourcesResponse Sources);
+
+/// <summary>The addresses of the generated sizes of a photo, under the origin of the API (ADR 0039).</summary>
+public sealed record PhotoSourcesResponse(string Thumbnail, string Page, string Enlarged);
 
 /// <summary>
 /// A published transition on the page of a pose (story 7, ADR 0030): the other pose under its current name (the end pose in

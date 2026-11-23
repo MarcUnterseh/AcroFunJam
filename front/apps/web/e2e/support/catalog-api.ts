@@ -6,6 +6,7 @@ type PoseSummaryResponse = components['schemas']['PoseSummaryResponse'];
 type PublishedPoseResponse = components['schemas']['PublishedPoseResponse'];
 type LinkedTransitionResponse = components['schemas']['LinkedTransitionResponse'];
 type ProblemDetails = components['schemas']['ProblemDetails'];
+type PhotoResponse = components['schemas']['PhotoResponse'];
 export type DifficultyCode = components['schemas']['DifficultyCode'];
 
 type PublishedPose = {
@@ -19,10 +20,13 @@ type PublishedPose = {
 };
 
 /** The values of a published pose, as the API returns them. */
-type PublishedValues = Omit<PoseSummaryResponse, 'id' | 'tags'>;
+type PublishedValues = Omit<PoseSummaryResponse, 'id' | 'tags' | 'thumbnail'>;
 
 /** A published pose as the simulated catalog keeps it: its values, its version (story 6) and its tags (story 9a). */
-export type StoredPose = Omit<PoseSummaryResponse, 'tags'> & { version: number; tagIds: string[] };
+export type StoredPose = Omit<PoseSummaryResponse, 'tags' | 'thumbnail'> & {
+  version: number;
+  tagIds: string[];
+};
 
 /** A published transition (story 7): its poses by id, its optional name and description. */
 export type PublishedTransition = {
@@ -78,6 +82,8 @@ export class CatalogApi {
   };
   /** Story 9a: whether a revision of the pose is pending (« pendingRevision »), set by the simulated revisions. */
   hasPendingRevision: (poseId: string) => boolean = () => false;
+  /** Story 10: the photos of the pose, the main one first, set by the simulated photos (PhotoApi). */
+  photosOf: (poseId: string) => PhotoResponse[] = () => [];
 
   constructor(private readonly context: BrowserContext) {}
 
@@ -163,6 +169,7 @@ export class CatalogApi {
         poses: poses.map(({ version: _version, tagIds, ...pose }) => ({
           ...pose,
           tags: this.tags.describe(tagIds).map(({ id, name }) => ({ id, name })),
+          thumbnail: this.photosOf(pose.id)[0]?.sources.thumbnail ?? null,
         })),
       };
       return route.fulfill({ json: body });
@@ -188,6 +195,7 @@ export class CatalogApi {
         transitionsTo: this.linked(pose.id, 'to'),
         tags: this.tags.describe(tagIds),
         pendingRevision: this.hasPendingRevision(pose.id),
+        photos: this.photosOf(pose.id),
       };
       return route.fulfill({ json: body });
     });

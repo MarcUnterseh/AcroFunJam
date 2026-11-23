@@ -71,3 +71,8 @@ export * from './presentation/flow-generation/flow-generation-labels';
 export * from './domain/flow-generation/shown-flow';
 export type * from './application/flow-generation/LastShownFlowStore';
 export * from './application/flow-generation/shown-flow-use-cases';
+// Story 10 « Photos des poses » (ADR 0039)
+export * from './domain/catalog/pose-photos';
+export * from './application/catalog/pose-photos';
+export type * from './application/catalog/PosePhotosGateway';
+export * from './presentation/catalog/photo-labels';

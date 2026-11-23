@@ -13,4 +13,6 @@ export type PoseSummary = {
   readonly canEndFlow: boolean;
   /** Story 9a: its tags under their current names, in catalog order (none: an empty list). */
   readonly tags: readonly TagReference[];
+  /** Story 10: the address of the thumbnail of its main photo; absent or null: the pose has no photo. */
+  readonly thumbnail?: string | null;
 };

@@ -1,3 +1,4 @@
+using AcroFunJam.Application.Catalog;
 using AcroFunJam.Application.Catalog.ListPublishedPoses;
 using AcroFunJam.Specs.Support.Catalog;
 using AcroFunJam.Specs.Support.Identity;
@@ -34,7 +35,16 @@ public sealed class AcroFunJamApiFactory(CatalogTestData catalog, ScenarioClock 
             {
                 services.RemoveAll<IPublishedPosesReader>();
                 services.AddSingleton<IPublishedPosesReader>(new SeededPublishedPosesReader(catalog));
+                // Without a database, the seeded poses have no photo (story 10).
+                services.RemoveAll<IPosePhotosRepository>();
+                services.AddSingleton<IPosePhotosRepository, NoPosePhotos>();
             }
+
+            // The processing and the storage of the photos are faked (ADR 0039): the integration tests exercise Magick.NET and MinIO.
+            services.RemoveAll<IPhotoProcessor>();
+            services.AddSingleton<IPhotoProcessor, ScenarioPhotoProcessor>();
+            services.RemoveAll<IPhotoStorage>();
+            services.AddSingleton<IPhotoStorage, ScenarioPhotoStorage>();
 
             // Dates of submission and decision set by the steps ("le 2026-11-03").
             services.RemoveAll<TimeProvider>();

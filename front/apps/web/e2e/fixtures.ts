@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { test as base, createBdd } from 'playwright-bdd';
+import { AddPhotoForm } from './pages/add-photo-form';
 import { CatalogPage } from './pages/catalog-page';
 import { FlowGenerator } from './pages/flow-generator';
 import { IdentityForm, SiteHeader } from './pages/identity-pages';
@@ -15,6 +16,7 @@ import { FlowGenerationApi } from './support/flow-generation-api';
 import { ContributionApi } from './support/contribution-api';
 import { IdentityApi } from './support/identity-api';
 import { MyProposalsApi } from './support/my-proposals-api';
+import { PhotoApi } from './support/photo-api';
 import { PoseRevisionApi } from './support/pose-revision-api';
 import { TagApi } from './support/tag-api';
 import { TransitionApi } from './support/transition-api';
@@ -30,6 +32,8 @@ type Fixtures = {
   transitionApi: TransitionApi;
   tagApi: TagApi;
   flowGenerationApi: FlowGenerationApi;
+  photoApi: PhotoApi;
+  addPhotoForm: AddPhotoForm;
   flowGenerator: FlowGenerator;
   catalogPage: CatalogPage;
   posePage: PosePage;
@@ -122,6 +126,15 @@ export const test = base.extend<Fixtures>({
     },
     { auto: true },
   ],
+  photoApi: [
+    async ({ context, identityApi, catalogApi }, use) => {
+      const api = new PhotoApi(context, identityApi, catalogApi);
+      await api.start();
+      await use(api);
+    },
+    { auto: true },
+  ],
+  addPhotoForm: async ({ page }, use) => use(new AddPhotoForm(page)),
   flowGenerator: async ({ page }, use) => use(new FlowGenerator(page)),
   catalogPage: async ({ page }, use) => use(new CatalogPage(page)),
   posePage: async ({ page }, use) => use(new PosePage(page)),

@@ -12,6 +12,8 @@ Story 5 : la carte « ma proposition » (`carte-ma-proposition.md`) reprend auss
 
 Story 6 : la carte de modification de la file (`carte-modification.md`) reprend la `dl` pour « La pose après modification » ; le lien « Proposer une modification » (ci-dessous) n'appartient qu'au catalogue.
 
+**Story 10** : la ligne du haut reçoit la **vignette** carrée de la photo principale, à côté du nom (section « Vignette » ci-dessous, `../ecrans/10-photos-des-poses.md`).
+
 **Story 9a** : la `dl` reçoit un troisième groupe, la **ligne « Étiquettes »** (`pilule-etiquette.md`, « Ligne d'une pose »), après les bornes de flow, même écart `spacing.md`. Catalogue et ciel de la page d'une pose : **rien** quand la pose n'a pas d'étiquette (aucun vide réservé, pas de « aucune ») ; cartes de la file de validation et de modification : « Étiquettes aucune ». Sur la carte cliquable, la ligne fait partie de la zone étendue du nom (les pilules ne sont pas interactives) ; au survol (`surfaceHover`), la pilule opaque garde `text` sur `tagSurface` (14,1:1 / 12,2:1). Le lien « Proposer une modification » reste calé en bas. Écran : `../ecrans/9a-etiquettes-des-poses.md`.
 
 ## Structure
@@ -125,11 +127,34 @@ Hauteur ajoutée à la carte : séparateur + 4 + 44 ≈ 49 px. Le lien fait tout
 
 Pourquoi un lien textuel plutôt qu'un lien-bouton (`lien-bouton.md`) : douze cartes à boutons de 48 px alourdiraient la grille et concurrenceraient « Proposer une pose », seule action primaire de la page. Le soulignement permanent suffit à signaler un lien sans la couleur. `forced-colors: active` : `LinkText`, soulignement conservé.
 
-## Vignette (emplacement futur, non implémenté)
+## Vignette (story 10)
 
-- En tête de carte, pleine largeur, ratio 4:3, rayon `radius.md` aux angles supérieurs, sans padding (la carte garde son padding sous la vignette).
-- Dans le DOM, la vignette viendra **après** le `h2` (le titre reste le premier élément lu) et sera remontée visuellement par `order` ; une image d'illustration aura un `alt` vide, puisque le nom suit.
-- Aucun espace réservé tant qu'il n'y a pas de photo : pas d'image grise de remplacement.
+Remplace l'ancien « emplacement futur » (pleine largeur 4:3), écarté par la décision 4 : une **petite vignette carrée à côté du nom**, dans la ligne du haut (`.pose-card__top`), à la place réservée au glyphe. Écran : `../ecrans/10-photos-des-poses.md`, § 1.
+
+```
+┌──────────────────────────────────────┐      ┌──────────────────────────────────────┐
+│ Bird                      ┌────────┐ │      │ Reverse Bird                         │  <- sans photo : rien,
+│ ‾‾‾‾                      │▒▒▒▒▒▒▒▒│ │      │ ‾‾‾‾‾‾‾‾‾‾‾‾                         │     ni vignette ni vide
+│                           │[ 4:3  ]│ │      │ [Base]◑ Débutant                     │
+│                           │▒▒▒▒▒▒▒▒│ │      │ …                                    │
+│                           └────────┘ │
+│ [Base]◑ Débutant                     │      Throne (photo portrait) : ┌────────┐
+│ …                                    │                                │▒▒[2:3]▒│
+└──────────────────────────────────────┘                                └────────┘
+```
+
+| Élément | Tokens |
+|---|---|
+| Image (`img.pose-card__thumbnail`) | **après** le `h2` dans la ligne du haut (le nom reste lu en premier) ; `inline-size` et `block-size` **`sizes.thumbnail`** (80) ; `flex-shrink: 0` ; rayon **`radius.sm`** (10) ; fond **`photoMat`** ; `object-fit: contain` ; `alt=""` (décorative, R16 : le nom est lu juste avant) ; `width="80" height="80"` ; `loading="lazy"` ; source `thumbnail` (192 px, nette jusqu'à 2×) |
+| Ligne du haut | inchangée : `display: flex`, `align-items: flex-start`, `justify-content: space-between`, écart `spacing.md` ; le nom prend le reste (à 320 px : ≈ 140 px, un nom long passe sur plusieurs lignes) |
+| Sans photo | **aucun** élément, aucune place réservée (R16) |
+
+- **À l'essai** (porteur du produit, 2026-11-20) : la vignette lui semble « bizarre » sur la maquette ; elle est gardée pour l'instant et sera jugée avec de vraies photos.
+- **Cadrage** : la vignette générée (ADR 0039) est un carré où la photo est **contenue**, jamais recadrée, avec des marges **transparentes** (WebP avec canal alpha, retenu le 2026-11-20) ; le passe-partout est peint par le site (`photoMat`), si bien qu'il suit le thème (aube `#E9E6EF`, nuit `#2A2833`).
+- La vignette est dans la zone étendue du lien du nom (`::after`) : un clic dessus ouvre la page de la pose ; elle n'est pas un arrêt de tabulation.
+- Survol de la carte (`surfaceHover`) : la vignette ne change pas. Focus : l'anneau entoure la carte entière (inchangé).
+- Glyphes (plus tard) : une pose avec photo montre sa vignette ; sans photo, son glyphe (à confirmer quand les glyphes seront dessinés).
+- `forced-colors: active` : aucun contour ajouté (image décorative) ; le passe-partout disparaît, la photo reste.
 
 ## Mobile (React Native)
 

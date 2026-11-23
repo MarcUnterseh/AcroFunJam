@@ -38,6 +38,16 @@ const star = {
   transitionsTo: [ninjaStar],
   tags: [{ id: 'tag-inversion', name: 'inversion', description: 'La tête du flyer est plus basse.' }],
   pendingRevision: true,
+  photos: [
+    {
+      id: 'photo-1',
+      altText: 'Star vue de profil',
+      credit: 'Léa Martin',
+      width: 1600,
+      height: 1200,
+      sources: { thumbnail: '/catalog/photos/photo-1/thumbnail', page: '/catalog/photos/photo-1/page', enlarged: '/catalog/photos/photo-1/enlarged' },
+    },
+  ],
 };
 
 const apiAnswering = (status: number, body?: unknown, requests: Request[] = []) =>
@@ -79,9 +89,16 @@ describe('createPosePageGateway', () => {
         transitionsTo: [ninjaStar],
         tags: [{ id: 'tag-inversion', name: 'inversion', description: 'La tête du flyer est plus basse.' }],
         pendingRevision: true,
+        photos: star.photos,
       }),
     );
     expect(new URL(requests[0]!.url).pathname).toBe(`/catalog/poses/${starId}`);
+  });
+
+  it('should report photos it cannot read as an outdated site', async () => {
+    const gateway = createPosePageGateway(apiAnswering(200, { ...star, photos: [{ id: 'photo-1' }] }));
+
+    expect(await gateway.getPosePage(starId)).toEqual(fail({ kind: 'outdated' }));
   });
 
   it('should report an unknown pose as not found', async () => {

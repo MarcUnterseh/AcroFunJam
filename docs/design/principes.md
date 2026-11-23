@@ -41,6 +41,8 @@ Les noms sont des **rôles**. Mêmes clés en clair (`colors`) et en sombre (`co
 | `skyText` | `#211C3B` | `#F3F0FF` | texte sur le ciel de la page d'une pose |
 | `tagSurface` | `#F2EFEA` pierre | `#2A2733` | fond de la **pilule d'étiquette** (lecture seule), story 8 |
 | `tagBorder` | `#CFC8BD` | `#4D4858` | contour **décoratif** de la pilule d'étiquette (jamais un contrôle) |
+| `photoMat` | `#E9E6EF` | `#2A2833` | **passe-partout** des photos (story 10) : fond neutre sur lequel une photo est contenue, jamais recadrée |
+| `scrim` | `#211C3B` à 72 % (`#211C3BB8`) | `#05040E` à 80 % (`#05040ECC`) | voile derrière le dialogue d'agrandissement (`::backdrop`) ; décoratif, rien n'est écrit dessus |
 
 Le ciel (`sky` / `skyDark`) : dégradé (aube : `#FFE1A0` → `#FBC0A4` → `#D3C1F1` → `#A797E6` ; nuit : `#2E2670` → `#211C55` → `#151233`), astre (soleil / lune en dégradé radial), halo et opacité du grain. Ce sont les seules couleurs écrites hors palette ; le mobile peut les ignorer.
 
@@ -72,6 +74,18 @@ La pierre est le seul neutre **chaud** de la palette : elle sépare les étiquet
 
 Un flow généré se lit comme une course du soleil : **lever** à la pose de départ, **stations** pour les poses intermédiaires, **coucher** à la dernière pose, reliés par un **rail** pointillé `sunStrong` (la trajectoire, à la verticale) ; chaque transition est une carte entre deux stations. Les icônes et le rail sont des renforts : « Départ : », « Vers » et « Étape 1 · » portent le sens. Une washing machine est dite par la boucle **et le mot** « washing machine », jamais par une pilule d'étiquette. Aucun nouveau token ; nouvelle icône `station`. Détail : `composants/fil-du-flow.md`, écran `ecrans/9-generer-un-flow.md`.
 
+## Les photos des poses (story 10)
+
+Une photo montre une pose **tenue, entière** (charte des photos) : l'interface ne la coupe jamais. Toute photo est **contenue** dans son cadre, et le reste du cadre est le **passe-partout** `photoMat`, un gris froid neutre qui ne teinte pas la photo (ni violet, ni chaud). Une pose verticale (Throne) garde la tête du flyer et les pieds de la base, même dans la vignette carrée du catalogue.
+
+- **Vignette** (`carte-pose.md`) : carré `sizes.thumbnail` (80), rayon `sm`, à côté du nom ; décorative ; rien sans photo.
+- **Page d'une pose** (`composants/galerie-photos.md`) : la photo principale seule en tête du corps, hors du ciel (hauteur au plus `sizes.photoMaxHeight`, 560), avec la note de sécurité ; les autres en cellules carrées dans « Autres photos de <pose> », tout en bas de la page ; « Photo : Léa Martin » sous chaque photo en `textMuted`. Le ciel reste le seul moment spectaculaire : aucune photo n'y entre, aucune ombre ni effet sur les photos.
+- **Photo principale** : repère « Photo principale (vignette du catalogue) » pour les validateurs, en pilule `sunSurface` avec l'icône **soleil** (la lumière principale de la pose).
+- **Agrandissement** (`composants/dialogue-agrandissement.md`) : `<dialog>` sur le voile `scrim`, la photo sur le passe-partout.
+- **Ajout** (`composants/champ-photo.md`, `case-confirmation.md`, `barre-progression.md`) : aperçu entier sur le passe-partout, progression de l'envoi en `primary` sur `surfaceHover`.
+
+Détail : `ecrans/10-photos-des-poses.md`.
+
 ## Difficulté en phases de lune
 
 | Niveau | Phase |
@@ -95,7 +109,7 @@ Boutons en pilule : primaire plein, secondaire à contour `border`, discret (fon
 
 ## Icônes
 
-Dessinées dans le dépôt (`Icon.tsx`, `currentColor`, `aria-hidden`) : erreur, information, coche, tiret, plus, flèche, horloge, chevrons, et pour cette direction **lever** / **coucher** (bornes de flow), **trajectoire** en pointillés (une transition est un vol), **boucle** (washing machine), **spot** (note de sécurité), **éclat** de soleil (succès). Le logo : un demi-cercle de terre qui porte un soleil (`Logo.tsx`). Les **glyphes de pose** ne sont pas livrés : un emplacement est réservé sur la carte.
+Dessinées dans le dépôt (`Icon.tsx`, `currentColor`, `aria-hidden`) : erreur, information, coche, tiret, plus, flèche, horloge, chevrons, et pour cette direction **lever** / **coucher** (bornes de flow), **trajectoire** en pointillés (une transition est un vol), **boucle** (washing machine), **spot** (note de sécurité), **éclat** de soleil (succès). Story 10 : **loupe** (agrandir), **croix** (fermer), **chevron droit** (photo suivante), **photo** (un cadre où un soleil se lève sur l'horizon : choisir une photo, aperçu indisponible), **soleil** (repère « Photo principale »). Le logo : un demi-cercle de terre qui porte un soleil (`Logo.tsx`). Les **glyphes de pose** ne sont pas livrés : un emplacement est réservé sur la carte.
 
 ## Typographie
 
@@ -149,6 +163,7 @@ Texte (seuil 4,5:1) :
 | `success` / `info` | `successSurface` / `infoSurface` | 5,4 / **4,7** | 7,6 / 7,9 |
 | `badgeContrast` | `badge` | 16,2 | 15,1 |
 | `skyText` | chaque arrêt du ciel | 12,8 / 10,2 / 9,8 / 6,4 | 11,5 / 13,7 / 16,1 |
+| `text` / `textMuted` | `photoMat` (aperçu indisponible) | 13,2 / 5,7 | 12,0 / 6,1 |
 
 Contrôles et icônes porteuses de sens (seuil 3:1) :
 
@@ -159,8 +174,10 @@ Contrôles et icônes porteuses de sens (seuil 3:1) :
 | `sunStrong` | `background` / `surface` / `sunSurface` | 4,7 / 5,2 / 4,4 | 11,3 / 10,4 / 8,0 |
 | `selected` | `selectedSurface` | 7,8 | 8,6 |
 | `base` / `flyer` | `surface` | 6,4 / 5,7 | 9,2 / 9,1 |
+| `primary` (remplissage d'une barre de progression) | `surfaceHover` (piste) | 5,9 | 7,1 |
+| `textMuted` (icône photo) | `photoMat` | 5,7 | 6,1 |
 
-`sun` à l'aube (2,2:1 sur `background`) est **décoratif** : jamais du texte ni une icône porteuse de sens (le test le vérifie). `divider` ne délimite jamais un contrôle.
+`photoMat` et `scrim` sont décoratifs (aucun contrôle ne s'en sert de limite). `sun` à l'aube (2,2:1 sur `background`) est **décoratif** : jamais du texte ni une icône porteuse de sens (le test le vérifie). `divider` ne délimite jamais un contrôle.
 
 ## Règles d'usage
 
@@ -172,7 +189,7 @@ Contrôles et icônes porteuses de sens (seuil 3:1) :
 
 ## Espacements, tailles, points de rupture
 
-Espacements (`spacing.*`, base 4) inchangés. Tailles (`sizes.*`) : cible 44, contrôle 48, phases de lune 18 (texte) / 24 (tuile), trajectoire 46 × 20, avatar 36, logo 30, astre 180 / 300, horizon 26, éclat 54, emplacement de glyphe 52. Points de rupture : `md` 640 (40em), `lg` 1024 (64em). Catalogue : 1, 2 puis 3 colonnes ; page d'une pose : sections côte à côte à partir de 64em.
+Espacements (`spacing.*`, base 4) inchangés. Tailles (`sizes.*`) : cible 44, contrôle 48, phases de lune 18 (texte) / 24 (tuile), trajectoire 46 × 20, avatar 36, logo 30, astre 180 / 300, horizon 26, éclat 54, emplacement de glyphe 52, vignette 80, hauteur maximale d'une photo 560, barre de progression 8. Points de rupture : `md` 640 (40em), `lg` 1024 (64em). Catalogue : 1, 2 puis 3 colonnes ; page d'une pose : sections côte à côte à partir de 64em.
 
 ## Traduction côté web (ADR 0012)
 
@@ -187,4 +204,4 @@ Espacements (`spacing.*`, base 4) inchangés. Tailles (`sizes.*`) : cible 44, co
 
 ## Hors périmètre
 
-Glyphes des poses (emplacement réservé), photos, illustrations.
+Glyphes des poses (emplacement réservé), illustrations. Les photos des poses sont entrées avec la story 10.

@@ -16,7 +16,7 @@ public sealed class ListPublishedPosesHandlerTests
             APublishedPose.Named("Star").WithBaseDifficulty(DifficultyLevel.Intermediate).WithFlyerDifficulty(DifficultyLevel.Advanced).Build(),
         ];
         var reader = new FakePublishedPosesReader(publishedPoses);
-        var handler = new ListPublishedPosesHandler(reader, new FakeTagListRepository());
+        var handler = new ListPublishedPosesHandler(reader, new FakeTagListRepository(), new FakePosePhotosRepository(), new FakePhotoAddresses());
 
         // Act
         var result = await handler.Handle(new ListPublishedPoses(), TestContext.Current.CancellationToken);
@@ -29,7 +29,7 @@ public sealed class ListPublishedPosesHandlerTests
     [Fact]
     public async Task Handle_Should_ReturnEmptyList_When_CatalogHasNoPose()
     {
-        var handler = new ListPublishedPosesHandler(new FakePublishedPosesReader([]), new FakeTagListRepository());
+        var handler = new ListPublishedPosesHandler(new FakePublishedPosesReader([]), new FakeTagListRepository(), new FakePosePhotosRepository(), new FakePhotoAddresses());
 
         var result = await handler.Handle(new ListPublishedPoses(), TestContext.Current.CancellationToken);
 
@@ -45,7 +45,7 @@ public sealed class ListPublishedPosesHandlerTests
                 APublishedPose.Named("Throne").Build(), APublishedPose.Named("Folded Leaf").Build(), APublishedPose.Named("bird").Build(),
                 APublishedPose.Named("Handstand").Build(), APublishedPose.Named("Étoile").Build(), APublishedPose.Named("Hand-to-Hand").Build(),
             ]);
-        var handler = new ListPublishedPosesHandler(reader, new FakeTagListRepository());
+        var handler = new ListPublishedPosesHandler(reader, new FakeTagListRepository(), new FakePosePhotosRepository(), new FakePhotoAddresses());
 
         var result = await handler.Handle(new ListPublishedPoses(), TestContext.Current.CancellationToken);
 

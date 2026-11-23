@@ -19,6 +19,9 @@ public sealed record PosePage(
     IReadOnlyList<LinkedTransition> TransitionsFrom, IReadOnlyList<LinkedTransition> TransitionsTo,
     IReadOnlyDictionary<TagId, PresentedTag> Tags, IReadOnlyList<PresentedTag> PoseTags, bool HasPendingRevision)
 {
+    /// <summary>The photos of the pose, the main photo first, then the others in the order of addition (story 10, R17).</summary>
+    public IReadOnlyList<PresentedPhoto> Photos { get; init; } = [];
+
     /// <summary>These tags, presented in catalog order; a tag unknown to the list is left out.</summary>
     public static IReadOnlyList<PresentedTag> Presented(TagSet tags, IReadOnlyDictionary<TagId, PresentedTag> known)
     {

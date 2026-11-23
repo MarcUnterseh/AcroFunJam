@@ -12,7 +12,8 @@ export function DifficultyLegend({
   warning = catalogLabels.responsibilityWarning,
   safetyNote = false,
 }: {
-  readonly warning?: string;
+  /** null: no warning (story 10: the safety note is in the section of the main photo). */
+  readonly warning?: string | null;
   /** The page of a pose: the warning becomes the safety note (« spotter »), on the sun surface with its icon. */
   readonly safetyNote?: boolean;
 } = {}) {
@@ -31,7 +32,7 @@ export function DifficultyLegend({
           </li>
         ))}
       </ol>
-      {safetyNote ? (
+      {warning === null ? null : safetyNote ? (
         <p className="safety-note">
           <Icon name="spot" />
           <span>{warning}</span>

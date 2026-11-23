@@ -16,6 +16,12 @@ public static class CatalogErrors
 
     public static readonly Error PoseNotFound = new("catalog.pose-not-found", "Cette pose n'est pas dans le catalogue.");
 
+    /// <summary>A pose has at most 5 photos (story 10, R11).</summary>
+    public static readonly Error PhotoLimitReached =
+        new("catalog.photo-limit-reached", "Cette pose a déjà 5 photos, le maximum. Retire une photo pour en ajouter une autre.");
+
+    public static readonly Error PhotoNotFound = new("catalog.photo-not-found", "Cette photo n'est pas (ou plus) dans le catalogue.");
+
     public static readonly Error FromPoseNotFound = new("catalog.from-pose-not-found", "La pose de départ n'est pas dans le catalogue.");
 
     public static readonly Error ToPoseNotFound = new("catalog.to-pose-not-found", "La pose d'arrivée n'est pas dans le catalogue.");

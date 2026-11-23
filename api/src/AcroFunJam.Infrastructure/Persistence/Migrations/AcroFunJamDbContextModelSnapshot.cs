@@ -22,6 +22,80 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.PhotoRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("AddedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("added_at");
+
+                    b.Property<int>("AdditionRank")
+                        .HasColumnType("integer")
+                        .HasColumnName("addition_rank");
+
+                    b.Property<string>("AltText")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("alt_text");
+
+                    b.Property<string>("Credit")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("credit");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("integer")
+                        .HasColumnName("height");
+
+                    b.Property<Guid>("PoseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("pose_id");
+
+                    b.Property<DateTimeOffset>("RightsConfirmedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("rights_confirmed_at");
+
+                    b.Property<Guid>("RightsConfirmedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("rights_confirmed_by");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("integer")
+                        .HasColumnName("width");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PoseId")
+                        .HasDatabaseName("ix_photos_pose_id");
+
+                    b.ToTable("photos", "catalog", t =>
+                        {
+                            t.HasCheckConstraint("ck_photos_alt_text", "alt_text <> '' AND char_length(alt_text) <= 200");
+
+                            t.HasCheckConstraint("ck_photos_credit", "credit <> '' AND char_length(credit) <= 100");
+
+                            t.HasCheckConstraint("ck_photos_dimensions", "width > 0 AND height > 0");
+                        });
+                });
+
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.PosePhotosRecord", b =>
+                {
+                    b.Property<Guid>("PoseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("pose_id");
+
+                    b.Property<Guid?>("MainPhotoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("main_photo_id");
+
+                    b.HasKey("PoseId");
+
+                    b.ToTable("pose_photos", "catalog");
+                });
+
             modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.PoseRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -927,6 +1001,26 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("user_tokens", "identity");
+                });
+
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.PhotoRecord", b =>
+                {
+                    b.HasOne("AcroFunJam.Infrastructure.Persistence.Catalog.PosePhotosRecord", null)
+                        .WithMany()
+                        .HasForeignKey("PoseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_photos_pose_photos");
+                });
+
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.PosePhotosRecord", b =>
+                {
+                    b.HasOne("AcroFunJam.Infrastructure.Persistence.Catalog.PoseRecord", null)
+                        .WithOne()
+                        .HasForeignKey("AcroFunJam.Infrastructure.Persistence.Catalog.PosePhotosRecord", "PoseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_pose_photos_pose");
                 });
 
             modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.TagRecord", b =>

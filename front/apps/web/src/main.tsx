@@ -1,5 +1,6 @@
 import {
   createApiClient,
+  createPosePhotosGateway,
   createAuthGateway,
   createCatalogGateway,
   createContributionGateway,
@@ -28,6 +29,8 @@ import { CatalogGatewayProvider } from './catalog/CatalogGatewayContext';
 import { PosePageProvider } from './catalog/PosePageContext';
 import { TagListProvider } from './catalog/TagListContext';
 import { PoseTaggingProvider } from './catalog/PoseTaggingContext';
+import { PosePhotosProvider } from './catalog/PosePhotosContext';
+import { browserPhotoInspector, canvasPhotoReducer } from './catalog/browser-photo-adapters';
 import { TransitionTaggingProvider } from './catalog/TransitionTaggingContext';
 import { ContributionProvider } from './contribution/ContributionContext';
 import { createSessionDecisionInputStore } from './contribution/session-decision-input-store';
@@ -45,7 +48,14 @@ import './index.css';
 
 // Composition root: the adapters of @acrofunjam/api-client are wired here and injected through React contexts.
 // Same origin by default (Vite proxy in development): the session cookie is sent automatically (ADR 0011).
-const apiClient = createApiClient({ baseUrl: import.meta.env.VITE_API_URL ?? window.location.origin });
+const apiBaseUrl = import.meta.env.VITE_API_URL ?? window.location.origin;
+const apiClient = createApiClient({ baseUrl: apiBaseUrl });
+/** Story 10 (ADR 0039): the photos of the poses, sent with their progress (XMLHttpRequest). */
+const posePhotos = {
+  gateway: createPosePhotosGateway(apiClient, apiBaseUrl),
+  inspector: browserPhotoInspector,
+  reducer: canvasPhotoReducer,
+};
 const queryClient = new QueryClient();
 const router = createBrowserRouter(routes());
 // The input of « Proposer une pose » kept in the tab (ADR 0019), forgotten on sign-out (shared device).
@@ -68,37 +78,42 @@ createRoot(root).render(
           <TagListProvider gateway={createTagListGateway(apiClient)}>
             <TransitionTaggingProvider gateway={createTransitionTaggingGateway(apiClient)}>
               <PoseTaggingProvider gateway={createPoseTaggingGateway(apiClient)}>
-                <ContributionProvider
-                  gateway={createContributionGateway(apiClient)}
-                  store={proposalInputStore}
-                >
-                  <ValidationProvider gateway={createValidationGateway(apiClient)} store={decisionInputStore}>
-                    <PoseRevisionProvider
-                      gateway={createPoseRevisionGateway(apiClient)}
-                      store={revisionInputStore}
+                <PosePhotosProvider ports={posePhotos}>
+                  <ContributionProvider
+                    gateway={createContributionGateway(apiClient)}
+                    store={proposalInputStore}
+                  >
+                    <ValidationProvider
+                      gateway={createValidationGateway(apiClient)}
+                      store={decisionInputStore}
                     >
-                      <TransitionProposalProvider
-                        gateway={createTransitionProposalGateway(apiClient)}
-                        store={transitionInputStore}
+                      <PoseRevisionProvider
+                        gateway={createPoseRevisionGateway(apiClient)}
+                        store={revisionInputStore}
                       >
-                        <IdentityProvider
-                          gateway={createAuthGateway(apiClient)}
-                          memory={createLocalSessionMemory(localStorage, window)}
-                          forgetOnSignOut={[
-                            proposalInputStore,
-                            decisionInputStore,
-                            { clear: revisionInputStore.clearAll },
-                            { clear: transitionInputStore.clearAll },
-                          ]}
+                        <TransitionProposalProvider
+                          gateway={createTransitionProposalGateway(apiClient)}
+                          store={transitionInputStore}
                         >
-                          <FlowGenerationProvider gateway={createFlowGenerationGateway(apiClient)}>
-                            <RouterProvider router={router} />
-                          </FlowGenerationProvider>
-                        </IdentityProvider>
-                      </TransitionProposalProvider>
-                    </PoseRevisionProvider>
-                  </ValidationProvider>
-                </ContributionProvider>
+                          <IdentityProvider
+                            gateway={createAuthGateway(apiClient)}
+                            memory={createLocalSessionMemory(localStorage, window)}
+                            forgetOnSignOut={[
+                              proposalInputStore,
+                              decisionInputStore,
+                              { clear: revisionInputStore.clearAll },
+                              { clear: transitionInputStore.clearAll },
+                            ]}
+                          >
+                            <FlowGenerationProvider gateway={createFlowGenerationGateway(apiClient)}>
+                              <RouterProvider router={router} />
+                            </FlowGenerationProvider>
+                          </IdentityProvider>
+                        </TransitionProposalProvider>
+                      </PoseRevisionProvider>
+                    </ValidationProvider>
+                  </ContributionProvider>
+                </PosePhotosProvider>
               </PoseTaggingProvider>
             </TransitionTaggingProvider>
           </TagListProvider>

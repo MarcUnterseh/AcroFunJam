@@ -87,6 +87,9 @@ Fonctionnalité: Comptes et rôles
 
   # Q1 : les capacités sont observées en consultant ses capacités.
   # Q13 : « gérer les étiquettes » est ajoutée par la story 8 « Étiquettes » (validée le 2026-11-13).
+  # Q247 : « gérer les photos » (code manage-photos) est ajoutée par la story 10 « Photos des poses » (validée le
+  # 2026-11-20), entre « gérer les étiquettes » et « gérer les rôles ». @wip le temps de la story 10, comme pour la
+  # story 8 : retirer le tag dès que la capacité existe.
   Règle: Les capacités d'un rôle s'ajoutent à celles du rôle précédent
 
     @api
@@ -96,10 +99,10 @@ Fonctionnalité: Comptes et rôles
       Alors les capacités d'Alice sont exactement : <capacités>
 
       Exemples:
-        | rôle           | capacités                                                                            |
-        | utilisateur    | proposer                                                                             |
-        | validateur     | proposer, accepter ou refuser une proposition, gérer les étiquettes                  |
-        | administrateur | proposer, accepter ou refuser une proposition, gérer les étiquettes, gérer les rôles |
+        | rôle           | capacités                                                                                              |
+        | utilisateur    | proposer                                                                                               |
+        | validateur     | proposer, accepter ou refuser une proposition, gérer les étiquettes, gérer les photos                  |
+        | administrateur | proposer, accepter ou refuser une proposition, gérer les étiquettes, gérer les photos, gérer les rôles |
 
   # Q8 : l'administrateur désigne l'utilisateur par son adresse e-mail.
   Règle: Un administrateur attribue le rôle validateur ou administrateur à un autre utilisateur

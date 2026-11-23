@@ -129,7 +129,7 @@ public sealed class TransitionTagsHandlersTests
             new TransitionId(Guid.NewGuid()), _bird.Id, _bird.Name, Name: null, Beginner, Description: null, TagSet.Of([IdOf("pop"), IdOf("dynamique")]));
         reader.From[_throne.Id] = [linked];
 
-        var page = (await new GetPosePageHandler(_poses, reader, _lists, new FakePendingPoseRevisions()).Handle(new GetPosePage(_throne.Id), Ct)).Value!;
+        var page = (await new GetPosePageHandler(_poses, reader, _lists, new FakePendingPoseRevisions(), new FakePosePhotosRepository(), new FakePhotoAddresses()).Handle(new GetPosePage(_throne.Id), Ct)).Value!;
 
         page.TagsOf(page.TransitionsFrom.Single()).Select(t => t.Name.Value).ShouldBe(["dynamique", "pop"]);
         page.TagsOf(page.TransitionsFrom.Single()).Single(t => t.Name.Value == "pop").Description.Value
