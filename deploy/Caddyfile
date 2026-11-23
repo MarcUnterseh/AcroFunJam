@@ -1,0 +1,32 @@
+# Same origin for the site and the API (ADR 0011, ADR 0040). SITE_ADDRESS: the domain in production (HTTPS by
+# Let's Encrypt), http://localhost:8080 to try the images on a workstation.
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		-Server
+	}
+
+	# Anchored on a slash: pages of the site such as /catalogue are not API routes.
+	@api path /catalog/* /contribution/* /flow-generation/* /identity/* /me /health
+	handle @api {
+		reverse_proxy api:8080
+	}
+
+	handle {
+		root * /srv
+		# Files of the build carry a hash in their name; the rest (index.html first) is checked at every visit.
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		@other not path /assets/*
+		header @other Cache-Control "no-cache"
+		# Every route of the site is answered by index.html (ADR 0010).
+		try_files {path} /index.html
+		file_server
+	}
+}

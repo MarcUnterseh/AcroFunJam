@@ -1,0 +1,65 @@
+# Production on one server (ADR 0040). Copied to the server by .github/workflows/deploy.yml, next to the .env file
+# (model: deploy/.env.example). IMAGE_TAG is the commit deployed.
+#   docker compose run --rm migrate && docker compose up -d
+name: acrofunjam
+
+services:
+  web:
+    image: ghcr.io/${IMAGE_OWNER}/acrofunjam-web:${IMAGE_TAG}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      SITE_ADDRESS: ${DOMAIN}
+    volumes:
+      - caddy-data:/data # certificates
+      - caddy-config:/config
+    depends_on:
+      - api
+
+  api:
+    image: ghcr.io/${IMAGE_OWNER}/acrofunjam-api:${IMAGE_TAG}
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true" # behind Caddy, the only service that reaches it
+      ConnectionStrings__AcroFunJam: Host=postgres;Database=acrofunjam;Username=acrofunjam;Password=${POSTGRES_PASSWORD}
+      PhotoStorage__ServiceUrl: ${PHOTO_STORAGE_URL}
+      PhotoStorage__Bucket: ${PHOTO_STORAGE_BUCKET}
+      PhotoStorage__AccessKey: ${PHOTO_STORAGE_ACCESS_KEY}
+      PhotoStorage__SecretKey: ${PHOTO_STORAGE_SECRET_KEY}
+      PhotoStorage__CreateBucket: "false" # created with the storage; the key may only write in it
+      Identity__InitialAdministratorEmail: ${INITIAL_ADMINISTRATOR_EMAIL:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  migrate:
+    image: ghcr.io/${IMAGE_OWNER}/acrofunjam-migrations:${IMAGE_TAG}
+    profiles: [tools] # run by the deployment only, never by "up"
+    environment:
+      MIGRATIONS_CONNECTION: Host=postgres;Database=acrofunjam;Username=acrofunjam;Password=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: acrofunjam
+      POSTGRES_USER: acrofunjam
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U acrofunjam -d acrofunjam"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  caddy-data:
+  caddy-config:
+  postgres-data:

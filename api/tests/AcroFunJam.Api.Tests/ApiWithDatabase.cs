@@ -19,6 +19,9 @@ public sealed class ApiWithDatabase : WebApplicationFactory<Program>, IAsyncLife
     // Starts at the real time: the test client compares the cookie expiry with the real clock.
     public FakeTimeProvider Clock { get; } = new(TimeProvider.System.GetUtcNow());
 
+    /// <summary>The disposable database, to check what the Api keeps in it.</summary>
+    public string ConnectionString => _database.GetConnectionString();
+
     /// <summary>An HTTPS client (the session cookie is <c>Secure</c>), keeping its cookies.</summary>
     public HttpClient CreateBrowserClient(bool handleCookies = true) =>
         CreateClient(new WebApplicationFactoryClientOptions

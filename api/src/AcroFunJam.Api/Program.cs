@@ -9,6 +9,7 @@ using AcroFunJam.Application;
 using AcroFunJam.Infrastructure;
 using AcroFunJam.Infrastructure.Persistence;
 using AcroFunJam.Infrastructure.Persistence.Identity;
+using Microsoft.AspNetCore.DataProtection;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,8 @@ builder.Services
     .AddIdentityApiEndpoints<ApplicationUser>(AccountRules.Apply)
     .AddEntityFrameworkStores<AcroFunJamDbContext>();
 builder.Services.ConfigureApplicationCookie(SessionCookie.Configure);
+// The keys of the session cookie survive a deployment and are shared by every instance (ADR 0040).
+builder.Services.AddDataProtection().SetApplicationName("AcroFunJam").PersistKeysToDbContext<AcroFunJamDbContext>();
 
 var app = builder.Build();
 

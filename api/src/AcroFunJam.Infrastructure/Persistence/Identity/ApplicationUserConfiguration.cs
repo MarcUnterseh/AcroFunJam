@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -28,6 +29,12 @@ internal sealed class UserLoginConfiguration : IEntityTypeConfiguration<Identity
 internal sealed class UserTokenConfiguration : IEntityTypeConfiguration<IdentityUserToken<Guid>>
 {
     public void Configure(EntityTypeBuilder<IdentityUserToken<Guid>> builder) => builder.ToTable("user_tokens", IdentitySchema.Name);
+}
+
+/// <summary>Keys of the session cookie (ADR 0040): kept in the database so that a deployment signs nobody out.</summary>
+internal sealed class DataProtectionKeyConfiguration : IEntityTypeConfiguration<DataProtectionKey>
+{
+    public void Configure(EntityTypeBuilder<DataProtectionKey> builder) => builder.ToTable("data_protection_keys", IdentitySchema.Name);
 }
 
 internal static class IdentitySchema

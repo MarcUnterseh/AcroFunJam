@@ -28,12 +28,14 @@ public sealed class S3PhotoStorageTests : IAsyncLifetime
 
     private S3PhotoStorage _storage = null!;
 
+    private string ServiceUrl => $"http://{_rustfs.Hostname}:{_rustfs.GetMappedPublicPort(9000)}";
+
     public async ValueTask InitializeAsync()
     {
         await _rustfs.StartAsync(Ct);
         var options = new PhotoStorageOptions
         {
-            ServiceUrl = $"http://{_rustfs.Hostname}:{_rustfs.GetMappedPublicPort(9000)}",
+            ServiceUrl = ServiceUrl,
             Bucket = "acrofunjam-photos",
             AccessKey = AccessKey,
             SecretKey = SecretKey,
@@ -74,6 +76,26 @@ public sealed class S3PhotoStorageTests : IAsyncLifetime
         using var memory = new MemoryStream();
         await content.CopyToAsync(memory, Ct);
         return memory.ToArray();
+    }
+
+    [Fact]
+    public async Task Store_Should_LeaveTheBucketToItsOwner_When_CreatingTheBucketIsDisabled()
+    {
+        // In production the bucket is created with the storage, and the key may only write in it (ADR 0040).
+        using var storage = new S3PhotoStorage(
+            new PhotoStorageOptions
+            {
+                ServiceUrl = ServiceUrl,
+                Bucket = "provisioned-elsewhere",
+                AccessKey = AccessKey,
+                SecretKey = SecretKey,
+                CreateBucket = false,
+            },
+            NullLogger<S3PhotoStorage>.Instance);
+
+        var store = () => storage.Store(new PhotoId(Guid.NewGuid()), Renditions(), Ct);
+
+        (await store.ShouldThrowAsync<Amazon.S3.AmazonS3Exception>()).ErrorCode.ShouldBe("NoSuchBucket");
     }
 
     [Fact]

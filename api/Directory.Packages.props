@@ -11,6 +11,8 @@
   </ItemGroup>
   <ItemGroup Label="Infrastructure">
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.14" />
+    <!-- Keys of the session cookie kept in the database: they survive a deployment (ADR 0040). -->
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.14" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <!-- Aligns EF Core with the Design package (Npgsql only requires 10.0.4); flows to the projects referencing Infrastructure. -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.14" />

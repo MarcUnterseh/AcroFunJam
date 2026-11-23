@@ -81,6 +81,7 @@ npm start --prefix front/apps/mobile # Expo ; e2e mobile : maestro test front/ap
 ```
 
 CI : `.github/workflows/ci.yml` (jobs `api`, `front`, `e2e-web`).
+Déploiement continu : `.github/workflows/deploy.yml`, après une CI verte sur `main` ; serveur, images et secrets dans `deploy/` et `docs/deploiement.md` (ADR 0040).
 
 ## Outillage Claude de ce dépôt
 

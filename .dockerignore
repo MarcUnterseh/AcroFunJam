@@ -1,0 +1,17 @@
+# Build context of the images of deploy/ (ADR 0040): sources only.
+**/node_modules
+**/bin
+**/obj
+**/dist
+**/TestResults
+**/playwright-report
+**/test-results
+**/screenshots
+**/.expo
+.git
+.claude
+docs
+specs
+front/apps/mobile
+**/.env
+**/.env.*

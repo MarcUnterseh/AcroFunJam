@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Npgsql;
 
 namespace AcroFunJam.Api.Tests;
 
@@ -110,6 +111,18 @@ public sealed class SessionCookieTests(ApiWithDatabase api) : IClassFixture<ApiW
         api.Clock.Advance(TimeSpan.FromDays(15));
 
         (await browser.GetAsync(new Uri("/me", UriKind.Relative), Ct)).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Login_Should_KeepTheKeysOfTheSessionInTheDatabase_When_UsingCookies()
+    {
+        using var browser = await SignedInBrowser(NewEmail());
+
+        // In a container the user profile does not survive a deployment: the keys live in the database (ADR 0040).
+        await using var connection = new NpgsqlConnection(api.ConnectionString);
+        await connection.OpenAsync(Ct);
+        await using var count = new NpgsqlCommand("SELECT count(*) FROM identity.data_protection_keys", connection);
+        ((long)(await count.ExecuteScalarAsync(Ct))!).ShouldBeGreaterThan(0);
     }
 
     private sealed record MyAccount(string Email, string Role);

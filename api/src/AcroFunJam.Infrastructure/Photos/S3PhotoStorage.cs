@@ -21,6 +21,9 @@ public sealed class PhotoStorageOptions
     public string AccessKey { get; set; } = string.Empty;
 
     public string SecretKey { get; set; } = string.Empty;
+
+    /// <summary>Creates the bucket at the first photo (development and tests); false when the bucket is provisioned with the storage.</summary>
+    public bool CreateBucket { get; set; } = true;
 }
 
 /// <summary>
@@ -52,7 +55,7 @@ public sealed partial class S3PhotoStorage(PhotoStorageOptions options, ILogger<
     public async Task Store(PhotoId photo, PhotoRenditions renditions, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(renditions);
-        if (!_bucketReady)
+        if (options.CreateBucket && !_bucketReady)
         {
             await EnsureBucket(ct);
             _bucketReady = true;
