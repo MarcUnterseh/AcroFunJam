@@ -34,7 +34,15 @@ public sealed partial class S3PhotoStorage(PhotoStorageOptions options, ILogger<
 {
     private readonly AmazonS3Client _client = new(
         new BasicAWSCredentials(options.AccessKey, options.SecretKey),
-        new AmazonS3Config { ServiceURL = options.ServiceUrl, ForcePathStyle = true, AuthenticationRegion = "us-east-1" });
+        new AmazonS3Config
+        {
+            ServiceURL = options.ServiceUrl,
+            ForcePathStyle = true,
+            AuthenticationRegion = "us-east-1",
+            // Cloudflare R2 (ADR 0040) rejects the trailing checksums the SDK adds by default.
+            RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED,
+            ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED,
+        });
 
     private static readonly PhotoRendition[] Renditions = Enum.GetValues<PhotoRendition>();
 
@@ -70,6 +78,8 @@ public sealed partial class S3PhotoStorage(PhotoStorageOptions options, ILogger<
                 Key = Key(photo, rendition.Rendition),
                 InputStream = content,
                 ContentType = "image/webp",
+                // In one signed piece: a size weighs a few hundred kB at most, and R2 does not take every streamed sending.
+                UseChunkEncoding = false,
             }, ct);
         }
     }
