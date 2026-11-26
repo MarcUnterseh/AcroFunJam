@@ -1,0 +1,1426 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette : vidéos des transitions (story 12)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap">
+<style>
+/* Maquette statique de la story 12 (docs/design/ecrans/12-videos-des-transitions.md).
+   Valeurs : @acrofunjam/ui-tokens (front/packages/ui-tokens/src/index.ts), mêmes noms de variables que le site
+   (--afj-*). Nouveaux tokens : sizes.videoPoster (120), sizes.videoMaxHeight (480) ; aucune couleur nouvelle.
+   Les classes existantes reprennent celles du site (front/apps/web/src/index.css) ; les nouvelles sont proposées dans
+   les spécifications (rangee-videos.md, lecteur-video.md, bloc-preparation-video.md, champ-video.md).
+   Les affiches et les vidéos sont des dessins SVG en ligne aux proportions réelles (portrait 9:16, paysage 16:9) : un
+   SVG sans preserveAspectRatio se comporte comme object-fit: contain, si bien que le passe-partout apparaît autour.
+   Les contrôles du navigateur sont simulés (classes mq-native, couleurs écrites en dur : ce n'est pas le site).
+   Les cadres réagissent à leur propre largeur (requêtes de conteneur) : 40em = breakpoints.md, 64em = breakpoints.lg. */
+
+:root {
+  color-scheme: light;
+  --afj-color-primary: #5B3FC4;
+  --afj-color-primary-hover: #47309F;
+  --afj-color-primary-active: #38267E;
+  --afj-color-primary-contrast: #FFFFFF;
+  --afj-color-background: #F5F2FA;
+  --afj-color-surface: #FFFFFF;
+  --afj-color-surface-hover: #EDE8F7;
+  --afj-color-text: #211C3B;
+  --afj-color-text-muted: #5B5577;
+  --afj-color-border: #8F87A8;
+  --afj-color-divider: #DCD5EA;
+  --afj-color-focus: #1D69AE;
+  --afj-color-danger: #B42318;
+  --afj-color-danger-surface: #FDECEA;
+  --afj-color-disabled-surface: #EDE8F7;
+  --afj-color-selected: #47309F;
+  --afj-color-selected-surface: #EBE5FB;
+  --afj-color-base: #2C6A4C;
+  --afj-color-base-surface: #DCEFE3;
+  --afj-color-flyer: #1D69AE;
+  --afj-color-flyer-surface: #DFEAFA;
+  --afj-color-sun: #E8961E;
+  --afj-color-sun-strong: #A15C00;
+  --afj-color-sun-surface: #FFEBC4;
+  --afj-color-tag-surface: #F2EFEA;
+  --afj-color-tag-border: #CFC8BD;
+  --afj-color-photo-mat: #E9E6EF;
+
+  --afj-spacing-xs: 4px;
+  --afj-spacing-sm: 8px;
+  --afj-spacing-md: 16px;
+  --afj-spacing-lg: 24px;
+  --afj-spacing-xl: 32px;
+  --afj-spacing-xxl: 48px;
+
+  --afj-radius-sm: 10px;
+  --afj-radius-md: 16px;
+  --afj-radius-lg: 26px;
+  --afj-radius-pill: 9999px;
+
+  --afj-font-family: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --afj-font-family-display: "Unbounded", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --afj-font-size-xs: 0.75rem;
+  --afj-font-size-sm: 0.875rem;
+  --afj-font-size-md: 1rem;
+  --afj-font-size-lg: 1.25rem;
+  --afj-font-size-xl: 1.75rem;
+  --afj-font-weight-regular: 400;
+  --afj-font-weight-medium: 500;
+  --afj-font-weight-semibold: 600;
+  --afj-font-weight-bold: 700;
+  --afj-line-height-tight: 1.25;
+  --afj-line-height-normal: 1.5;
+
+  --afj-size-touch-target: 44px;
+  --afj-size-control: 48px;
+  --afj-size-border-width: 1px;
+  --afj-size-border-width-strong: 2px;
+  --afj-size-accent-bar: 4px;
+  --afj-size-focus-ring-width: 3px;
+  --afj-size-focus-ring-offset: 2px;
+  --afj-size-form-wide-max-width: 640px;
+  --afj-size-content-max-width: 1040px;
+  --afj-size-icon: 20px;
+  --afj-size-icon-large: 32px;
+  --afj-size-moon: 18px;
+  --afj-size-avatar: 36px;
+  --afj-size-logo: 30px;
+  --afj-size-trajectory-width: 46px;
+  --afj-size-trajectory-height: 20px;
+  --afj-size-progress: 8px;
+  /* Story 12 */
+  --afj-size-video-poster: 120px;
+  --afj-size-video-max-height: 480px;
+}
+
+/* La nuit (colorsDark) : suit le système, sauf choix explicite dans la barre ; .mq-dark force un cadre en sombre. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --afj-color-primary: #B6A6FF;
+    --afj-color-primary-hover: #CDC2FF;
+    --afj-color-primary-active: #E0D9FF;
+    --afj-color-primary-contrast: #15122B;
+    --afj-color-background: #110F24;
+    --afj-color-surface: #1A1733;
+    --afj-color-surface-hover: #252148;
+    --afj-color-text: #ECE8F8;
+    --afj-color-text-muted: #ABA4C8;
+    --afj-color-border: #6F6896;
+    --afj-color-divider: #322D57;
+    --afj-color-focus: #8FC1F3;
+    --afj-color-danger: #FF9C8F;
+    --afj-color-danger-surface: #3A1714;
+    --afj-color-disabled-surface: #252148;
+    --afj-color-selected: #CDC2FF;
+    --afj-color-selected-surface: #2A2456;
+    --afj-color-base: #82CDA2;
+    --afj-color-base-surface: #163024;
+    --afj-color-flyer: #8FC1F3;
+    --afj-color-flyer-surface: #13283F;
+    --afj-color-sun: #F5C15A;
+    --afj-color-sun-strong: #F5C15A;
+    --afj-color-sun-surface: #3A2E14;
+    --afj-color-tag-surface: #2A2733;
+    --afj-color-tag-border: #4D4858;
+    --afj-color-photo-mat: #2A2833;
+  }
+}
+
+:root[data-theme="dark"],
+.mq-dark {
+  color-scheme: dark;
+  --afj-color-primary: #B6A6FF;
+  --afj-color-primary-hover: #CDC2FF;
+  --afj-color-primary-active: #E0D9FF;
+  --afj-color-primary-contrast: #15122B;
+  --afj-color-background: #110F24;
+  --afj-color-surface: #1A1733;
+  --afj-color-surface-hover: #252148;
+  --afj-color-text: #ECE8F8;
+  --afj-color-text-muted: #ABA4C8;
+  --afj-color-border: #6F6896;
+  --afj-color-divider: #322D57;
+  --afj-color-focus: #8FC1F3;
+  --afj-color-danger: #FF9C8F;
+  --afj-color-danger-surface: #3A1714;
+  --afj-color-disabled-surface: #252148;
+  --afj-color-selected: #CDC2FF;
+  --afj-color-selected-surface: #2A2456;
+  --afj-color-base: #82CDA2;
+  --afj-color-base-surface: #163024;
+  --afj-color-flyer: #8FC1F3;
+  --afj-color-flyer-surface: #13283F;
+  --afj-color-sun: #F5C15A;
+  --afj-color-sun-strong: #F5C15A;
+  --afj-color-sun-surface: #3A2E14;
+  --afj-color-tag-surface: #2A2733;
+  --afj-color-tag-border: #4D4858;
+  --afj-color-photo-mat: #2A2833;
+}
+
+/* ---------- Base ---------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: var(--afj-spacing-lg) var(--afj-spacing-md) var(--afj-spacing-xxl);
+  font-family: var(--afj-font-family);
+  font-size: var(--afj-font-size-md);
+  line-height: var(--afj-line-height-normal);
+  color: var(--afj-color-text);
+  background: var(--afj-color-background);
+}
+
+h1, h2, h3, h4 { text-wrap: balance; }
+h1 {
+  margin: 0 0 var(--afj-spacing-lg);
+  font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-xl);
+  font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-tight);
+  letter-spacing: -0.02em; overflow-wrap: anywhere;
+}
+a { color: var(--afj-color-primary); }
+:focus-visible { outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus); outline-offset: var(--afj-size-focus-ring-offset); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.icon { inline-size: var(--afj-size-icon); block-size: var(--afj-size-icon); flex-shrink: 0; }
+.icon--large { inline-size: var(--afj-size-icon-large); block-size: var(--afj-size-icon-large); flex-shrink: 0; }
+.moon { inline-size: var(--afj-size-moon); block-size: var(--afj-size-moon); flex-shrink: 0; }
+
+/* ---------- Habillage de la maquette (hors site) ---------- */
+
+.mq-intro { max-width: 1120px; margin: 0 auto var(--afj-spacing-xl); }
+.mq-intro h1 { margin-bottom: var(--afj-spacing-sm); }
+.mq-intro p { margin: 0 0 var(--afj-spacing-sm); max-width: 80ch; color: var(--afj-color-text-muted); }
+.mq-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-sm); margin-top: var(--afj-spacing-md); }
+.mq-theme[aria-pressed="true"] { background: var(--afj-color-selected-surface); border: var(--afj-size-border-width-strong) solid var(--afj-color-selected); }
+.mq-section { max-width: 1440px; margin: 0 auto var(--afj-spacing-xxl); }
+.mq-section > h2 {
+  margin: 0 0 var(--afj-spacing-xs); font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-medium); line-height: var(--afj-line-height-tight);
+}
+.mq-section > p { margin: 0 0 var(--afj-spacing-md); max-width: 90ch; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.mq-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--afj-spacing-lg); margin-bottom: var(--afj-spacing-lg); }
+.mq-frame { margin: 0; min-width: 0; }
+.mq-frame--mobile { flex: 0 0 320px; width: 320px; max-width: 100%; }
+.mq-frame--wide { width: min(100%, 1074px); }
+.mq-frame > figcaption { margin-bottom: var(--afj-spacing-xs); font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text-muted); }
+.mq-screen {
+  container: screen / inline-size; position: relative; overflow: hidden;
+  color: var(--afj-color-text); background: var(--afj-color-background);
+  border: var(--afj-size-border-width) solid var(--afj-color-border); border-radius: var(--afj-radius-md);
+}
+.mq-omitted {
+  margin: 0; padding: var(--afj-spacing-sm) var(--afj-spacing-md); font-size: var(--afj-font-size-sm); font-style: italic;
+  color: var(--afj-color-text-muted); border: var(--afj-size-border-width) dashed var(--afj-color-border); border-radius: var(--afj-radius-sm);
+}
+/* Contrôles du navigateur simulés (ce n'est pas le site : couleurs du lecteur natif, écrites en dur). */
+.mq-native {
+  position: absolute; inset-inline: 0; inset-block-end: 0; display: flex; align-items: center; gap: 8px;
+  padding: 18px 10px 8px; font-size: 12px; color: #FFFFFF;
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.65)); font-variant-numeric: tabular-nums;
+}
+.mq-native svg { inline-size: 18px; block-size: 18px; flex: none; }
+.mq-native__track { flex: 1; block-size: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.4); overflow: hidden; }
+.mq-native__track span { display: block; block-size: 100%; background: #FFFFFF; }
+
+/* ---------- En-tête, boutons, champs ---------- */
+
+.site-header { background: var(--afj-color-background); border-bottom: var(--afj-size-border-width) solid var(--afj-color-divider); }
+.site-header__inner { display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-md); max-width: var(--afj-size-content-max-width); margin-inline: auto; padding: var(--afj-spacing-sm) var(--afj-spacing-md); }
+.site-header__brand { display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); min-height: var(--afj-size-touch-target); font-family: var(--afj-font-family-display); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text); text-decoration: none; }
+.logo { inline-size: var(--afj-size-logo); block-size: var(--afj-size-logo); flex-shrink: 0; }
+.site-header__account { display: flex; align-items: center; gap: var(--afj-spacing-sm); margin-inline-start: auto; }
+.site-header__avatar { display: inline-grid; place-items: center; inline-size: var(--afj-size-avatar); block-size: var(--afj-size-avatar); border-radius: 50%; font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-bold); color: var(--afj-color-text); background: var(--afj-color-sun-surface); }
+.site-header .button { min-height: var(--afj-size-touch-target); padding: 0 var(--afj-spacing-md); font-size: var(--afj-font-size-sm); background: var(--afj-color-surface-hover); border-color: transparent; }
+main { max-width: var(--afj-size-content-max-width); margin: 0 auto; padding: var(--afj-spacing-lg) var(--afj-spacing-md); }
+
+.button {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--afj-spacing-xs);
+  min-height: var(--afj-size-touch-target); padding: 0 var(--afj-spacing-lg);
+  border: var(--afj-size-border-width) solid transparent; border-radius: var(--afj-radius-pill);
+  font: inherit; font-weight: var(--afj-font-weight-semibold); text-align: center; text-decoration: none; cursor: pointer;
+}
+.button--primary { min-height: var(--afj-size-control); width: 100%; color: var(--afj-color-primary-contrast); background: var(--afj-color-primary); }
+.button--secondary { color: var(--afj-color-text); background: transparent; border-color: var(--afj-color-border); }
+.button--small { padding: 0 var(--afj-spacing-md); }
+.button[aria-disabled="true"] { cursor: progress; }
+@media (hover: hover) {
+  .button--primary:not([aria-disabled="true"]):hover { background: var(--afj-color-primary-hover); }
+  .button--secondary:hover { background: var(--afj-color-surface-hover); border-color: var(--afj-color-text); }
+}
+.button--primary:active { background: var(--afj-color-primary-active); }
+.button--secondary:active { background: var(--afj-color-divider); }
+
+.back-link { display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); min-block-size: var(--afj-size-touch-target); margin-bottom: var(--afj-spacing-xs); color: var(--afj-color-primary); text-decoration: underline; }
+
+.field { display: grid; gap: var(--afj-spacing-xs); min-width: 0; }
+.field label { margin-bottom: var(--afj-spacing-xs); font-weight: var(--afj-font-weight-semibold); }
+.field__optional { font-weight: var(--afj-font-weight-regular); color: var(--afj-color-text-muted); }
+.field input, .field textarea {
+  width: 100%; min-width: 0; min-height: var(--afj-size-control); padding: 0 var(--afj-spacing-md);
+  font: inherit; color: var(--afj-color-text); background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-border); border-radius: var(--afj-radius-md);
+}
+.field textarea { padding: var(--afj-spacing-sm) var(--afj-spacing-md); resize: vertical; overflow-wrap: anywhere; }
+.field__help { margin: 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.field__help b { font-weight: var(--afj-font-weight-semibold); }
+.field__counter { margin: 0; text-align: end; font-size: var(--afj-font-size-sm); font-variant-numeric: tabular-nums; color: var(--afj-color-text-muted); }
+.field__error { display: flex; align-items: flex-start; gap: var(--afj-spacing-xs); margin: 0; font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-danger); }
+
+/* ---------- Page d'une pose : élément de transition (existant) ---------- */
+
+.pose-page__body { display: grid; gap: var(--afj-spacing-lg); align-items: start; }
+.pose-page__section { min-width: 0; container-type: inline-size; }
+.pose-page__section-title { margin: 0 0 var(--afj-spacing-sm); font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-lg); font-weight: var(--afj-font-weight-medium); line-height: var(--afj-line-height-tight); overflow-wrap: anywhere; }
+.transition-list { display: grid; gap: var(--afj-spacing-sm); margin: 0; padding: 0; list-style: none; }
+.transition {
+  display: grid; gap: var(--afj-spacing-sm); padding: var(--afj-spacing-md); min-width: 0;
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider); border-radius: var(--afj-radius-md);
+  scroll-margin-block-start: var(--afj-spacing-lg);
+}
+.transition__title { margin: 0; font-family: var(--afj-font-family-display); font-size: var(--afj-font-size-md); font-weight: var(--afj-font-weight-medium); line-height: var(--afj-line-height-tight); overflow-wrap: anywhere; }
+.transition__poses { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-sm); }
+.icon--trajectory { inline-size: var(--afj-size-trajectory-width); block-size: var(--afj-size-trajectory-height); color: var(--afj-color-sun-strong); }
+.transition__other-pose { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--afj-spacing-xs); margin: 0; color: var(--afj-color-text-muted); }
+.transition__other-pose-link { display: inline-flex; align-items: center; min-block-size: var(--afj-size-touch-target); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-primary); text-decoration: underline; }
+.transition__description { margin: 0; color: var(--afj-color-text-muted); white-space: pre-line; overflow-wrap: anywhere; }
+
+.pose-card__roles { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-sm); margin: 0; }
+.role-pill { display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); max-width: 100%; padding: var(--afj-spacing-xs) var(--afj-spacing-md) var(--afj-spacing-xs) var(--afj-spacing-xs); border-radius: var(--afj-radius-pill); font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-tight); }
+.role-pill--base { color: var(--afj-color-base); background: var(--afj-color-base-surface); }
+.role-pill--flyer { color: var(--afj-color-flyer); background: var(--afj-color-flyer-surface); }
+.role-pill__word { padding: 0.125rem var(--afj-spacing-sm); border-radius: var(--afj-radius-pill); font-size: var(--afj-font-size-xs); font-weight: var(--afj-font-weight-bold); color: var(--afj-color-surface); }
+.role-pill--base .role-pill__word { background: var(--afj-color-base); }
+.role-pill--flyer .role-pill__word { background: var(--afj-color-flyer); }
+.role-pill__level { display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); margin: 0; color: var(--afj-color-text); }
+
+.tag-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-sm); margin: 0; }
+.tag-line__term { font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text-muted); }
+.tag-line__list { display: flex; flex-wrap: wrap; gap: var(--afj-spacing-xs) var(--afj-spacing-sm); margin: 0; padding: 0; list-style: none; }
+.tag-pill { display: inline-flex; align-items: center; padding: var(--afj-spacing-xs) calc(var(--afj-spacing-sm) + var(--afj-spacing-xs)); background: var(--afj-color-tag-surface); border: var(--afj-size-border-width) solid var(--afj-color-tag-border); border-radius: var(--afj-radius-pill); font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-medium); line-height: var(--afj-line-height-tight); color: var(--afj-color-text); }
+
+/* Replis (repli-descriptions-etiquettes.md) : le même rendu pour « Description de la vidéo ». */
+.tag-meanings__summary, .video__description > summary {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-xs); min-block-size: var(--afj-size-touch-target);
+  font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-tight);
+  color: var(--afj-color-primary); list-style: none; cursor: pointer;
+}
+.tag-meanings__summary::-webkit-details-marker, .video__description > summary::-webkit-details-marker { display: none; }
+.tag-meanings__summary:focus-visible, .video__description > summary:focus-visible { border-radius: var(--afj-radius-sm); }
+.tag-meanings[open] > .tag-meanings__summary .icon, .video__description[open] > summary .icon { transform: rotate(180deg); }
+
+/* Pied de gestion (zone-etiqueter.md), complété par la story 12 (rangee-videos.md). */
+.transition__manage {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-sm) var(--afj-spacing-md);
+  padding-top: var(--afj-spacing-sm); border-top: var(--afj-size-border-width) dotted var(--afj-color-divider);
+}
+.transition__videos-manage { display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-sm) var(--afj-spacing-md); }
+.transition__videos-count { margin: 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); font-variant-numeric: tabular-nums; }
+.transition__videos-max { margin: 0; color: var(--afj-color-text-muted); }
+
+/* ---------- Story 12 : bloc « Vidéos » (rangee-videos.md) ---------- */
+
+.transition-videos { display: grid; gap: var(--afj-spacing-sm); margin-top: var(--afj-spacing-xs); min-width: 0; }
+.transition-videos__title { margin: 0; font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-tight); color: var(--afj-color-text-muted); }
+.transition-videos__reminder { display: flex; align-items: flex-start; gap: var(--afj-spacing-xs); margin: 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text); }
+.transition-videos__reminder .icon { color: var(--afj-color-sun-strong); }
+.transition-videos__list {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--afj-size-video-poster), 1fr));
+  gap: var(--afj-spacing-md) var(--afj-spacing-sm); margin: 0; padding: 0; list-style: none;
+}
+.transition-videos__alert {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-sm); margin: 0;
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md); font-size: var(--afj-font-size-sm); color: var(--afj-color-text);
+  background: var(--afj-color-danger-surface); border-left: var(--afj-size-accent-bar) solid var(--afj-color-danger); border-radius: var(--afj-radius-md);
+}
+.transition-videos__alert .icon { color: var(--afj-color-danger); }
+
+/* ---------- Story 12 : une vidéo (lecteur-video.md) ---------- */
+
+.video { display: grid; gap: var(--afj-spacing-xs); align-content: start; min-width: 0; }
+.video--active { grid-column: 1 / -1; }
+.video__figure { display: grid; gap: var(--afj-spacing-xs); margin: 0; min-width: 0; }
+
+/* Le bouton « Lire » est toute l'affiche : cadre 3:4, affiche contenue sur le passe-partout. */
+.video__play {
+  position: relative; display: block; inline-size: 100%; aspect-ratio: 3 / 4; padding: 0; border: 0;
+  font: inherit; color: inherit; background: var(--afj-color-photo-mat); border-radius: var(--afj-radius-md);
+  overflow: hidden; cursor: pointer;
+}
+.video__poster { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; }
+.video__play-pill {
+  position: absolute; inset-block-end: var(--afj-spacing-sm); inset-inline-start: var(--afj-spacing-sm);
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-xs);
+  min-block-size: var(--afj-size-touch-target); padding: 0 var(--afj-spacing-md) 0 var(--afj-spacing-sm);
+  font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text);
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-border); border-radius: var(--afj-radius-pill);
+}
+.video__duration {
+  position: absolute; inset-block-start: var(--afj-spacing-sm); inset-inline-end: var(--afj-spacing-sm);
+  padding: 0 var(--afj-spacing-sm); font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold);
+  font-variant-numeric: tabular-nums; color: var(--afj-color-text); background: var(--afj-color-surface); border-radius: var(--afj-radius-pill);
+}
+@media (hover: hover) {
+  .video__play:hover .video__play-pill { background: var(--afj-color-surface-hover); border-color: var(--afj-color-text); }
+}
+.video__play:active .video__play-pill { background: var(--afj-color-divider); }
+/* États forcés pour la bande « États du bouton Lire ». */
+.video__play.is-hover .video__play-pill { background: var(--afj-color-surface-hover); border-color: var(--afj-color-text); }
+.video__play.is-focus { outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus); outline-offset: var(--afj-size-focus-ring-offset); }
+.video__play.is-active .video__play-pill { background: var(--afj-color-divider); }
+
+.video__caption { display: grid; min-width: 0; font-size: var(--afj-font-size-sm); overflow-wrap: anywhere; }
+.video__legend { margin: 0; font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-tight); color: var(--afj-color-text); }
+.video__credit { margin: var(--afj-spacing-xs) 0 0; color: var(--afj-color-text-muted); }
+.video__description > p {
+  margin: var(--afj-spacing-xs) 0 0; padding: var(--afj-spacing-sm); font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text); background: var(--afj-color-surface-hover); border-radius: var(--afj-radius-sm);
+  white-space: pre-line; overflow-wrap: anywhere;
+}
+
+/* Lancée : la vidéo s'agrandit à sa place, à ses proportions, hauteur au plus videoMaxHeight. */
+.video__stage {
+  position: relative; inline-size: 100%; max-block-size: var(--afj-size-video-max-height);
+  background: var(--afj-color-photo-mat); border-radius: var(--afj-radius-md); overflow: hidden;
+}
+.video__stage--portrait { aspect-ratio: 9 / 16; }
+.video__stage--landscape { aspect-ratio: 16 / 9; }
+.video__stage--failed { min-block-size: calc(var(--afj-size-video-max-height) / 2); }
+.video--active .video__caption { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--afj-spacing-sm) var(--afj-spacing-md); }
+.video--active .video__caption > div { min-width: 0; flex: 1 1 12em; }
+.video__error {
+  position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: var(--afj-spacing-sm);
+  padding: var(--afj-spacing-md); text-align: center; font-size: var(--afj-font-size-sm); color: var(--afj-color-text);
+  background: var(--afj-color-photo-mat);
+}
+.video__error p { margin: 0; max-inline-size: 30ch; }
+.video__error > .icon--large { color: var(--afj-color-danger); }
+.video__error .button { background: var(--afj-color-surface); }
+
+/* ---------- Story 12 : bloc « En préparation » / « Impossible à préparer » (bloc-preparation-video.md) ---------- */
+
+.video__frame {
+  display: grid; place-content: center; justify-items: center; gap: var(--afj-spacing-xs);
+  inline-size: 100%; aspect-ratio: 3 / 4; padding: var(--afj-spacing-sm); text-align: center;
+  font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); line-height: var(--afj-line-height-tight);
+  color: var(--afj-color-text); background: var(--afj-color-photo-mat); border-radius: var(--afj-radius-md);
+}
+.video__frame--pending { border: var(--afj-size-border-width) dashed var(--afj-color-border); }
+.video__frame--pending .icon--large { color: var(--afj-color-text-muted); }
+.video__frame--failed { border: var(--afj-size-border-width-strong) solid var(--afj-color-danger); }
+.video__frame--failed .icon--large { color: var(--afj-color-danger); }
+
+.video__actions {
+  display: grid; gap: var(--afj-spacing-sm); margin-top: var(--afj-spacing-xs);
+  padding-top: var(--afj-spacing-sm); border-top: var(--afj-size-border-width) dotted var(--afj-color-divider);
+}
+.video__actions .button { inline-size: 100%; padding: 0 var(--afj-spacing-md); }
+
+/* ---------- Story 12 : page « Ajouter une vidéo » (champ-video.md, calquée sur la page photo) ---------- */
+
+.video-page { max-width: var(--afj-size-form-wide-max-width); margin: 0 auto; }
+.video-page h1 { margin-bottom: var(--afj-spacing-sm); }
+.video-page__intro { margin: 0 0 var(--afj-spacing-lg); color: var(--afj-color-text-muted); }
+.video-form { display: grid; gap: var(--afj-spacing-lg); }
+.video-field { display: grid; gap: var(--afj-spacing-xs); min-width: 0; }
+.video-field__label { font-weight: var(--afj-font-weight-semibold); }
+.video-field__choose { justify-self: start; min-height: var(--afj-size-control); margin-top: var(--afj-spacing-xs); }
+.video-field__preview { margin-top: var(--afj-spacing-xs); }
+.video-field__unavailable {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-sm); margin: var(--afj-spacing-xs) 0 0; padding: var(--afj-spacing-md);
+  font-size: var(--afj-font-size-sm); color: var(--afj-color-text); background: var(--afj-color-photo-mat); border-radius: var(--afj-radius-md);
+}
+.video-field__unavailable .icon--large { color: var(--afj-color-text-muted); }
+.video-field__summary { margin: var(--afj-spacing-xs) 0 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.video-field__change { justify-self: start; margin-top: var(--afj-spacing-xs); padding: 0 var(--afj-spacing-md); }
+.video-field--invalid .video-field__preview, .video-field--invalid .video-field__unavailable { outline: var(--afj-size-border-width-strong) solid var(--afj-color-danger); outline-offset: 0; border-radius: var(--afj-radius-md); }
+.video-field .field__error { margin-top: var(--afj-spacing-xs); }
+
+.confirm { display: grid; gap: var(--afj-spacing-xs); }
+.confirm-box {
+  display: flex; align-items: flex-start; gap: var(--afj-spacing-sm); min-block-size: var(--afj-size-control);
+  padding: var(--afj-spacing-sm) var(--afj-spacing-md); overflow-wrap: anywhere;
+  background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-border); border-radius: var(--afj-radius-md); cursor: pointer;
+}
+.confirm-box input { flex: none; inline-size: var(--afj-size-icon); block-size: var(--afj-size-icon); margin: 0.125rem 0 0; accent-color: var(--afj-color-selected); }
+.confirm-box:has(input:checked) {
+  padding: calc(var(--afj-spacing-sm) - var(--afj-size-border-width)) calc(var(--afj-spacing-md) - var(--afj-size-border-width));
+  background: var(--afj-color-selected-surface); border: var(--afj-size-border-width-strong) solid var(--afj-color-selected);
+}
+
+.progress { display: grid; gap: var(--afj-spacing-xs); }
+.progress__label { display: flex; justify-content: space-between; align-items: baseline; gap: var(--afj-spacing-sm); font-size: var(--afj-font-size-sm); font-weight: var(--afj-font-weight-semibold); }
+.progress__value { font-variant-numeric: tabular-nums; }
+.progress progress {
+  -webkit-appearance: none; appearance: none; display: block; inline-size: 100%; block-size: var(--afj-size-progress);
+  border: 0; border-radius: var(--afj-radius-pill); overflow: hidden; color: var(--afj-color-primary); background: var(--afj-color-surface-hover);
+}
+.progress progress::-webkit-progress-bar { background: var(--afj-color-surface-hover); border-radius: var(--afj-radius-pill); }
+.progress progress::-webkit-progress-value { background: var(--afj-color-primary); border-radius: var(--afj-radius-pill); }
+.progress progress::-moz-progress-bar { background: var(--afj-color-primary); border-radius: var(--afj-radius-pill); }
+.progress progress:indeterminate {
+  background: linear-gradient(var(--afj-color-primary), var(--afj-color-primary)) no-repeat 0 0 / 30% 100%, var(--afj-color-surface-hover);
+  animation: progress-slide 1.4s linear infinite alternate;
+}
+.progress progress:indeterminate::-webkit-progress-bar { background: transparent; }
+.progress progress:indeterminate::-moz-progress-bar { background: transparent; }
+@keyframes progress-slide { to { background-position: 100% 0, 0 0; } }
+.form-actions { display: flex; flex-direction: column; gap: var(--afj-spacing-md); }
+
+/* ---------- Grand écran (par cadre) ---------- */
+
+@container screen (width >= 40em) {
+  .site-header__inner, main { padding-inline: var(--afj-spacing-lg); }
+  .video-page--carded {
+    margin-top: var(--afj-spacing-xl); padding: var(--afj-spacing-xl);
+    max-width: calc(var(--afj-size-form-wide-max-width) + 2 * var(--afj-spacing-xl));
+    background: var(--afj-color-surface); border: var(--afj-size-border-width) solid var(--afj-color-divider); border-radius: var(--afj-radius-lg);
+  }
+  .form-actions { flex-flow: row wrap; }
+  .form-actions .button { width: auto; }
+}
+@container screen (width >= 64em) {
+  .pose-page__body { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--afj-spacing-xl); }
+  .pose-page__body > .mq-omitted { grid-column: 1 / -1; }
+}
+
+@media (forced-colors: active) {
+  .transition, .video__play, .video__stage, .video__frame, .video-field__preview, .video-field__unavailable, .transition-videos__alert { border: var(--afj-size-border-width) solid CanvasText; }
+  .video__play-pill, .video__duration, .role-pill { border: var(--afj-size-border-width) solid CanvasText; }
+  .transition__other-pose-link, .video__description > summary, .tag-meanings__summary { color: LinkText; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .progress progress:indeterminate {
+    animation: none;
+    background: repeating-linear-gradient(45deg, var(--afj-color-primary) 0 var(--afj-spacing-xs), var(--afj-color-surface-hover) var(--afj-spacing-xs) var(--afj-spacing-sm));
+  }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="logo" viewBox="0 0 30 30">
+      <circle cx="15" cy="11" r="6" style="fill: var(--afj-color-sun)"/>
+      <path d="M3 27a12 12 0 0 1 24 0z" style="fill: var(--afj-color-base)"/>
+    </symbol>
+    <symbol id="m3" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16a4.5 8 0 0 1 0-16z" fill="currentColor"/></symbol>
+    <symbol id="m2" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor"/></symbol>
+    <symbol id="i-trajectory" viewBox="0 0 46 20"><path d="M3 16C12 2 32 2 41 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 5"/><path d="m36 14 5 0 0-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 20 20"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 20 20"><path d="M4.5 7.5 10 13l5.5-5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-error" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 5.5v5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="14.2" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="i-spot" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 6v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="14" r="1.2" fill="currentColor"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 20 20"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-close" viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 5.5V10l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <!-- Story 12 : nouvelles icônes (grille de 20, currentColor). -->
+    <symbol id="i-play" viewBox="0 0 20 20"><path d="M6.5 4.2v11.6a.8.8 0 0 0 1.2.7l9.3-5.8a.8.8 0 0 0 0-1.4L7.7 3.5a.8.8 0 0 0-1.2.7z" fill="currentColor"/></symbol>
+    <symbol id="i-video" viewBox="0 0 20 20"><rect x="2.5" y="4" width="15" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.3 7.4v5.2l4.3-2.6z" fill="currentColor"/></symbol>
+    <!-- Contrôles du navigateur (simulés). -->
+    <symbol id="n-pause" viewBox="0 0 20 20"><path d="M6 4h3v12H6zM11 4h3v12h-3z" fill="currentColor"/></symbol>
+    <symbol id="n-play" viewBox="0 0 20 20"><path d="M6 4v12l10-6z" fill="currentColor"/></symbol>
+    <symbol id="n-full" viewBox="0 0 20 20"><path d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+
+    <!-- Affiches et images de remplacement : dessins aux proportions réelles, aucun fichier externe.
+         Portrait 9:16 (180 × 320), paysage 16:9 (320 × 180). La première image d'une vidéo montre la pose de départ
+         (Throne) ; pv-mid montre le milieu de la transition (vidéo en lecture). -->
+    <linearGradient id="g-cool" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#CFDCE2"/><stop offset="1" stop-color="#AFC0C8"/></linearGradient>
+    <linearGradient id="g-lilac" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DCD3EA"/><stop offset="1" stop-color="#BFB2D6"/></linearGradient>
+    <linearGradient id="g-park" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3D9A6"/><stop offset="1" stop-color="#E4B98A"/></linearGradient>
+    <symbol id="pv-face" viewBox="0 0 180 320">
+      <rect width="180" height="320" fill="url(#g-cool)"/>
+      <rect y="262" width="180" height="58" fill="#8F7D6B"/>
+      <rect x="18" y="256" width="144" height="8" rx="3" fill="#5D6F7A"/>
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M48 250H120" stroke="#2F3F4C" stroke-width="15"/>
+        <path d="M112 250V170M124 250V172" stroke="#2F3F4C" stroke-width="10"/>
+        <path d="M118 160V102" stroke="#7A3F4F" stroke-width="15"/>
+        <path d="M118 162 142 178V204M118 162 96 178V204" stroke="#7A3F4F" stroke-width="9"/>
+        <path d="M118 118 92 142M118 118 144 142" stroke="#7A3F4F" stroke-width="8"/>
+      </g>
+      <circle cx="38" cy="248" r="11" fill="#2F3F4C"/>
+      <circle cx="118" cy="86" r="13" fill="#7A3F4F"/>
+    </symbol>
+    <symbol id="pv-tuto" viewBox="0 0 180 320">
+      <rect width="180" height="320" fill="url(#g-lilac)"/>
+      <circle cx="140" cy="48" r="20" fill="#F6E3B4"/>
+      <rect y="268" width="180" height="52" fill="#9A8BA8"/>
+      <rect x="14" y="262" width="152" height="8" rx="3" fill="#56506A"/>
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M36 256H108" stroke="#2D3A3A" stroke-width="15"/>
+        <path d="M104 256 110 176" stroke="#2D3A3A" stroke-width="11"/>
+        <path d="M112 166V108" stroke="#B5532F" stroke-width="15"/>
+        <path d="M112 168 140 182V208" stroke="#B5532F" stroke-width="9"/>
+        <path d="M112 124 84 150" stroke="#B5532F" stroke-width="8"/>
+      </g>
+      <circle cx="26" cy="254" r="11" fill="#2D3A3A"/>
+      <circle cx="112" cy="92" r="13" fill="#B5532F"/>
+    </symbol>
+    <symbol id="pv-mid" viewBox="0 0 180 320">
+      <rect width="180" height="320" fill="url(#g-lilac)"/>
+      <circle cx="140" cy="48" r="20" fill="#F6E3B4"/>
+      <rect y="268" width="180" height="52" fill="#9A8BA8"/>
+      <rect x="14" y="262" width="152" height="8" rx="3" fill="#56506A"/>
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M36 256H108" stroke="#2D3A3A" stroke-width="15"/>
+        <path d="M104 256 96 172" stroke="#2D3A3A" stroke-width="11"/>
+        <path d="M52 158H148" stroke="#B5532F" stroke-width="15"/>
+        <path d="M60 158 40 138M140 160 164 150" stroke="#B5532F" stroke-width="8"/>
+      </g>
+      <circle cx="26" cy="254" r="11" fill="#2D3A3A"/>
+      <circle cx="38" cy="150" r="13" fill="#B5532F"/>
+    </symbol>
+    <symbol id="pv-side" viewBox="0 0 320 180">
+      <rect width="320" height="180" fill="url(#g-park)"/>
+      <rect y="150" width="320" height="30" fill="#7D9A6A"/>
+      <rect x="40" y="146" width="240" height="7" rx="3" fill="#5D6F7A"/>
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M80 140H170" stroke="#2F3F4C" stroke-width="13"/>
+        <path d="M170 140 178 78" stroke="#2F3F4C" stroke-width="10"/>
+        <path d="M180 72V30" stroke="#7A3F4F" stroke-width="13"/>
+        <path d="M180 74 210 86V108" stroke="#7A3F4F" stroke-width="8"/>
+        <path d="M180 42 158 60" stroke="#7A3F4F" stroke-width="7"/>
+      </g>
+      <circle cx="68" cy="138" r="10" fill="#2F3F4C"/>
+      <circle cx="180" cy="18" r="11" fill="#7A3F4F"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="mq-intro">
+  <h1>Story 12 « Vidéos des transitions » : maquette</h1>
+  <p>Écrans de <code>docs/design/ecrans/12-videos-des-transitions.md</code>, avec les valeurs de <code>@acrofunjam/ui-tokens</code>. Chaque état est montré à 320 px et, quand c'est utile, sur grand écran ; les cadres réagissent à leur propre largeur. Section 4 : les mêmes écrans forcés en thème sombre, côte à côte.</p>
+  <p>Les affiches sont des dessins de remplacement aux proportions réelles : portrait 9:16 (filmé au téléphone) et paysage 16:9. Aucune n'est recadrée : le passe-partout (<code>photoMat</code>) remplit le reste de chaque cadre 3:4. Les contrôles de la vidéo lancée sont ceux du navigateur (simulés). Libellés : ceux de la carte validée le 2026-11-26 ; les libellés « proposés » des spécifications restent à confirmer par l'ux-expert.</p>
+  <div class="mq-toolbar" role="group" aria-label="Thème de la maquette">
+    <button type="button" class="button button--secondary mq-theme" data-theme-choice="light" aria-pressed="false">Aube (clair)</button>
+    <button type="button" class="button button--secondary mq-theme" data-theme-choice="dark" aria-pressed="false">Nuit (sombre)</button>
+  </div>
+</div>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-visitor">
+  <h2 id="mq-visitor">1. Visiteur : les vidéos dans l'élément de la transition</h2>
+  <p>Après la description de la transition : le titre « Vidéos », le rappel de sécurité en une phrase, puis la rangée d'affiches compactes (cellules 3:4 d'au moins 120 px : 2 colonnes à 320 px). « Lire » est écrit sur l'affiche, la durée en haut à droite. Une vidéo paysage reste entière dans sa cellule.</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>1 vidéo (portrait), 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><a class="button button--secondary" href="#">Se connecter</a></div>
+        </div></header>
+        <main>
+          <div class="pose-page__body">
+            <p class="mq-omitted">Ciel de Throne, photo, étiquettes, actions, légende (inchangés)</p>
+            <section class="pose-page__section" aria-labelledby="v1-h">
+              <h2 id="v1-h" class="pose-page__section-title">Transitions depuis Throne</h2>
+              <ul class="transition-list" role="list">
+                <li class="transition">
+                  <h3 class="transition__title">Pop to Bird</h3>
+                  <p class="transition__other-pose"><span>Vers</span><a class="transition__other-pose-link" href="#">Bird</a></p>
+                  <dl class="pose-card__roles">
+                    <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                    <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                  </dl>
+                  <div class="tag-line"><span class="tag-line__term">Étiquettes</span><ul class="tag-line__list" role="list"><li class="tag-pill">dynamique</li><li class="tag-pill">pop</li></ul></div>
+                  <p class="transition__description">Depuis Throne, la base pousse les pieds du flyer et le reçoit en Bird.</p>
+                  <div class="transition-videos" role="group" aria-labelledby="v1-vt">
+                    <h4 id="v1-vt" class="transition-videos__title">Vidéos<span class="visually-hidden"> de Pop to Bird</span></h4>
+                    <p class="transition-videos__reminder"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Une vidéo montre une façon de faire ; elle ne remplace ni un cours ni un spotter.</span></p>
+                    <ul class="transition-videos__list" role="list">
+                      <li class="video">
+                        <figure class="video__figure">
+                          <button type="button" class="video__play">
+                            <svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-face"/></svg>
+                            <span class="video__duration" aria-hidden="true">0:12</span>
+                            <span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire<span class="visually-hidden"> Pop to Bird, démonstration de face (12 secondes)</span></span>
+                          </button>
+                          <figcaption class="video__caption"><p class="video__legend">Pop to Bird, démonstration de face</p><p class="video__credit">Vidéo : Léa Martin</p></figcaption>
+                        </figure>
+                      </li>
+                    </ul>
+                  </div>
+                  <details class="tag-meanings"><summary class="tag-meanings__summary">Ce que veulent dire ces étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary></details>
+                </li>
+              </ul>
+            </section>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>3 vidéos (portrait, portrait, paysage), description ouverte, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <ul class="transition-list" role="list">
+            <li class="transition">
+              <h3 class="transition__title">Pop to Bird</h3>
+              <p class="transition__other-pose"><span>Vers</span><a class="transition__other-pose-link" href="#">Bird</a></p>
+              <p class="mq-omitted">Difficultés, étiquettes, description</p>
+              <div class="transition-videos" role="group" aria-labelledby="v2-vt">
+                <h4 id="v2-vt" class="transition-videos__title">Vidéos<span class="visually-hidden"> de Pop to Bird</span></h4>
+                <p class="transition-videos__reminder"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Une vidéo montre une façon de faire ; elle ne remplace ni un cours ni un spotter.</span></p>
+                <ul class="transition-videos__list" role="list">
+                  <li class="video">
+                    <figure class="video__figure">
+                      <button type="button" class="video__play">
+                        <svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-face"/></svg>
+                        <span class="video__duration" aria-hidden="true">0:12</span>
+                        <span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire<span class="visually-hidden"> Pop to Bird, démonstration de face (12 secondes)</span></span>
+                      </button>
+                      <figcaption class="video__caption"><p class="video__legend">Pop to Bird, démonstration de face</p><p class="video__credit">Vidéo : Léa Martin</p></figcaption>
+                    </figure>
+                  </li>
+                  <li class="video">
+                    <figure class="video__figure">
+                      <button type="button" class="video__play">
+                        <svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-tuto"/></svg>
+                        <span class="video__duration" aria-hidden="true">0:20</span>
+                        <span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire<span class="visually-hidden"> Pop to Bird, tutoriel (20 secondes)</span></span>
+                      </button>
+                      <figcaption class="video__caption"><p class="video__legend">Pop to Bird, tutoriel</p><p class="video__credit">Vidéo : Hugo Bernard</p></figcaption>
+                    </figure>
+                    <details class="video__description" open><summary>Description de la vidéo<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary><p>La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol.</p></details>
+                  </li>
+                  <li class="video">
+                    <figure class="video__figure">
+                      <button type="button" class="video__play">
+                        <svg class="video__poster" viewBox="0 0 320 180" aria-hidden="true"><use href="#pv-side"/></svg>
+                        <span class="video__duration" aria-hidden="true">0:09</span>
+                        <span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire<span class="visually-hidden"> Pop to Bird, vue de côté (9 secondes)</span></span>
+                      </button>
+                      <figcaption class="video__caption"><p class="video__legend">Pop to Bird, vue de côté</p><p class="video__credit">Vidéo : Collectif AcroLyon</p></figcaption>
+                    </figure>
+                  </li>
+                </ul>
+              </div>
+              <details class="tag-meanings"><summary class="tag-meanings__summary">Ce que veulent dire ces étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary></details>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Lecture en cours (la 2e vidéo, agrandie à sa place), 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <ul class="transition-list" role="list">
+            <li class="transition">
+              <h3 class="transition__title">Pop to Bird</h3>
+              <p class="mq-omitted">Autre pose, difficultés, étiquettes, description</p>
+              <div class="transition-videos" role="group" aria-labelledby="v3-vt">
+                <h4 id="v3-vt" class="transition-videos__title">Vidéos<span class="visually-hidden"> de Pop to Bird</span></h4>
+                <p class="transition-videos__reminder"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Une vidéo montre une façon de faire ; elle ne remplace ni un cours ni un spotter.</span></p>
+                <ul class="transition-videos__list" role="list">
+                  <li class="video">
+                    <figure class="video__figure">
+                      <button type="button" class="video__play">
+                        <svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-face"/></svg>
+                        <span class="video__duration" aria-hidden="true">0:12</span>
+                        <span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire<span class="visually-hidden"> Pop to Bird, démonstration de face (12 secondes)</span></span>
+                      </button>
+                      <figcaption class="video__caption"><p class="video__legend">Pop to Bird, démonstration de face</p><p class="video__credit">Vidéo : Léa Martin</p></figcaption>
+                    </figure>
+                  </li>
+                  <li class="video video--active">
+                    <figure class="video__figure">
+                      <div class="video__stage video__stage--portrait" role="img" aria-label="Lecteur : Pop to Bird, tutoriel (simulé)">
+                        <svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-mid"/></svg>
+                        <div class="mq-native" aria-hidden="true"><svg><use href="#n-pause"/></svg><span>0:07 / 0:20</span><span class="mq-native__track"><span style="inline-size: 35%"></span></span><svg><use href="#n-full"/></svg></div>
+                      </div>
+                      <figcaption class="video__caption">
+                        <div><p class="video__legend">Pop to Bird, tutoriel</p><p class="video__credit">Vidéo : Hugo Bernard</p></div>
+                        <button type="button" class="button button--secondary button--small"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>Fermer la vidéo<span class="visually-hidden"> Pop to Bird, tutoriel</span></button>
+                      </figcaption>
+                    </figure>
+                    <details class="video__description"><summary>Description de la vidéo<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary><p>La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol.</p></details>
+                  </li>
+                  <li class="video">
+                    <figure class="video__figure">
+                      <button type="button" class="video__play">
+                        <svg class="video__poster" viewBox="0 0 320 180" aria-hidden="true"><use href="#pv-side"/></svg>
+                        <span class="video__duration" aria-hidden="true">0:09</span>
+                        <span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire<span class="visually-hidden"> Pop to Bird, vue de côté (9 secondes)</span></span>
+                      </button>
+                      <figcaption class="video__caption"><p class="video__legend">Pop to Bird, vue de côté</p><p class="video__credit">Vidéo : Collectif AcroLyon</p></figcaption>
+                    </figure>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Échec de lecture, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <ul class="transition-list" role="list">
+            <li class="transition">
+              <h3 class="transition__title">Pop to Bird</h3>
+              <p class="mq-omitted">Autre pose, difficultés, étiquettes, description</p>
+              <div class="transition-videos" role="group" aria-labelledby="v4-vt">
+                <h4 id="v4-vt" class="transition-videos__title">Vidéos<span class="visually-hidden"> de Pop to Bird</span></h4>
+                <p class="transition-videos__reminder"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Une vidéo montre une façon de faire ; elle ne remplace ni un cours ni un spotter.</span></p>
+                <ul class="transition-videos__list" role="list">
+                  <li class="video video--active">
+                    <figure class="video__figure">
+                      <div class="video__stage video__stage--portrait video__stage--failed">
+                        <div class="video__error" role="status">
+                          <svg class="icon--large" aria-hidden="true"><use href="#i-error"/></svg>
+                          <p>La vidéo n'a pas pu être lue. Vérifie ta connexion Internet, puis réessaie.</p>
+                          <button type="button" class="button button--secondary button--small">Réessayer</button>
+                        </div>
+                      </div>
+                      <figcaption class="video__caption">
+                        <div><p class="video__legend">Pop to Bird, démonstration de face</p><p class="video__credit">Vidéo : Léa Martin</p></div>
+                        <button type="button" class="button button--secondary button--small"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>Fermer la vidéo</button>
+                      </figcaption>
+                    </figure>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>États du bouton « Lire » : repos, survol, focus, pressé</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="transition">
+            <ul class="transition-videos__list" role="list">
+              <li class="video"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-face"/></svg><span class="video__duration" aria-hidden="true">0:12</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><p class="field__help">Repos</p></li>
+              <li class="video"><button type="button" class="video__play is-hover"><svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-face"/></svg><span class="video__duration" aria-hidden="true">0:12</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><p class="field__help">Survol</p></li>
+              <li class="video"><button type="button" class="video__play is-focus"><svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-face"/></svg><span class="video__duration" aria-hidden="true">0:12</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><p class="field__help">Focus (anneau autour de l'affiche)</p></li>
+              <li class="video"><button type="button" class="video__play is-active"><svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-face"/></svg><span class="video__duration" aria-hidden="true">0:12</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><p class="field__help">Pressé</p></li>
+            </ul>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Grand écran : transitions côte à côte, les 3 affiches sur une rangée (144 px chacune) ; une transition sans vidéo n'a pas de bloc</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><a class="button button--secondary" href="#">Se connecter</a></div>
+        </div></header>
+        <main>
+          <div class="pose-page__body">
+            <p class="mq-omitted">Ciel de Throne, photo, étiquettes, actions, légende (inchangés)</p>
+            <section class="pose-page__section" aria-labelledby="w1-from">
+              <h2 id="w1-from" class="pose-page__section-title">Transitions depuis Throne</h2>
+              <ul class="transition-list" role="list">
+                <li class="transition">
+                  <h3 class="transition__title">Pop to Bird</h3>
+                  <p class="transition__other-pose"><span>Vers</span><a class="transition__other-pose-link" href="#">Bird</a></p>
+                  <dl class="pose-card__roles">
+                    <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                    <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m3"/></svg>Intermédiaire</dd></div>
+                  </dl>
+                  <div class="tag-line"><span class="tag-line__term">Étiquettes</span><ul class="tag-line__list" role="list"><li class="tag-pill">dynamique</li><li class="tag-pill">pop</li></ul></div>
+                  <p class="transition__description">Depuis Throne, la base pousse les pieds du flyer et le reçoit en Bird.</p>
+                  <div class="transition-videos" role="group" aria-labelledby="w1-vt">
+                    <h4 id="w1-vt" class="transition-videos__title">Vidéos<span class="visually-hidden"> de Pop to Bird</span></h4>
+                    <p class="transition-videos__reminder"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Une vidéo montre une façon de faire ; elle ne remplace ni un cours ni un spotter.</span></p>
+                    <ul class="transition-videos__list" role="list">
+                      <li class="video"><figure class="video__figure"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-face"/></svg><span class="video__duration" aria-hidden="true">0:12</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire<span class="visually-hidden"> Pop to Bird, démonstration de face (12 secondes)</span></span></button><figcaption class="video__caption"><p class="video__legend">Pop to Bird, démonstration de face</p><p class="video__credit">Vidéo : Léa Martin</p></figcaption></figure></li>
+                      <li class="video"><figure class="video__figure"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-tuto"/></svg><span class="video__duration" aria-hidden="true">0:20</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire<span class="visually-hidden"> Pop to Bird, tutoriel (20 secondes)</span></span></button><figcaption class="video__caption"><p class="video__legend">Pop to Bird, tutoriel</p><p class="video__credit">Vidéo : Hugo Bernard</p></figcaption></figure><details class="video__description"><summary>Description de la vidéo<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary><p>La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol.</p></details></li>
+                      <li class="video"><figure class="video__figure"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 320 180" aria-hidden="true"><use href="#pv-side"/></svg><span class="video__duration" aria-hidden="true">0:09</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire<span class="visually-hidden"> Pop to Bird, vue de côté (9 secondes)</span></span></button><figcaption class="video__caption"><p class="video__legend">Pop to Bird, vue de côté</p><p class="video__credit">Vidéo : Collectif AcroLyon</p></figcaption></figure></li>
+                    </ul>
+                  </div>
+                  <details class="tag-meanings"><summary class="tag-meanings__summary">Ce que veulent dire ces étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary></details>
+                </li>
+              </ul>
+            </section>
+            <section class="pose-page__section" aria-labelledby="w1-to">
+              <h2 id="w1-to" class="pose-page__section-title">Transitions vers Throne</h2>
+              <ul class="transition-list" role="list">
+                <li class="transition">
+                  <h3 class="transition__title"><span class="visually-hidden">de Bird vers Throne</span><span class="transition__poses" aria-hidden="true">Bird<svg class="icon--trajectory"><use href="#i-trajectory"/></svg>Throne</span></h3>
+                  <p class="transition__other-pose"><span>Depuis</span><a class="transition__other-pose-link" href="#">Bird</a></p>
+                  <dl class="pose-card__roles">
+                    <div class="role-pill role-pill--base"><dt class="role-pill__word">Base</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                    <div class="role-pill role-pill--flyer"><dt class="role-pill__word">Flyer</dt><dd class="role-pill__level"><svg class="moon" aria-hidden="true"><use href="#m2"/></svg>Débutant</dd></div>
+                  </dl>
+                </li>
+              </ul>
+            </section>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Grand écran, lecture en cours : la vidéo portrait est plafonnée à 480 px de haut, le passe-partout l'entoure</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="pose-page__body">
+            <section class="pose-page__section" aria-labelledby="w2-from">
+              <h2 id="w2-from" class="pose-page__section-title">Transitions depuis Throne</h2>
+              <ul class="transition-list" role="list">
+                <li class="transition">
+                  <h3 class="transition__title">Pop to Bird</h3>
+                  <p class="mq-omitted">Autre pose, difficultés, étiquettes, description</p>
+                  <div class="transition-videos" role="group" aria-labelledby="w2-vt">
+                    <h4 id="w2-vt" class="transition-videos__title">Vidéos<span class="visually-hidden"> de Pop to Bird</span></h4>
+                    <p class="transition-videos__reminder"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Une vidéo montre une façon de faire ; elle ne remplace ni un cours ni un spotter.</span></p>
+                    <ul class="transition-videos__list" role="list">
+                      <li class="video"><figure class="video__figure"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-face"/></svg><span class="video__duration" aria-hidden="true">0:12</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><figcaption class="video__caption"><p class="video__legend">Pop to Bird, démonstration de face</p><p class="video__credit">Vidéo : Léa Martin</p></figcaption></figure></li>
+                      <li class="video video--active">
+                        <figure class="video__figure">
+                          <div class="video__stage video__stage--portrait" role="img" aria-label="Lecteur : Pop to Bird, tutoriel (simulé)">
+                            <svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-mid"/></svg>
+                            <div class="mq-native" aria-hidden="true"><svg><use href="#n-pause"/></svg><span>0:07 / 0:20</span><span class="mq-native__track"><span style="inline-size: 35%"></span></span><svg><use href="#n-full"/></svg></div>
+                          </div>
+                          <figcaption class="video__caption">
+                            <div><p class="video__legend">Pop to Bird, tutoriel</p><p class="video__credit">Vidéo : Hugo Bernard</p></div>
+                            <button type="button" class="button button--secondary button--small"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>Fermer la vidéo</button>
+                          </figcaption>
+                        </figure>
+                        <details class="video__description"><summary>Description de la vidéo<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary><p>La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol.</p></details>
+                      </li>
+                      <li class="video"><figure class="video__figure"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 320 180" aria-hidden="true"><use href="#pv-side"/></svg><span class="video__duration" aria-hidden="true">0:09</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><figcaption class="video__caption"><p class="video__legend">Pop to Bird, vue de côté</p><p class="video__credit">Vidéo : Collectif AcroLyon</p></figcaption></figure></li>
+                    </ul>
+                  </div>
+                </li>
+              </ul>
+            </section>
+            <section class="pose-page__section" aria-labelledby="w2-to">
+              <h2 id="w2-to" class="pose-page__section-title">Transitions vers Throne</h2>
+              <p class="mq-omitted">Bird → Throne, sans vidéo (inchangé)</p>
+            </section>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-manage">
+  <h2 id="mq-manage">2. Validateur : préparation, gestion et maximum</h2>
+  <p>Une vidéo pas encore prête garde la place de son affiche : cadre tireté et horloge pour « En préparation », contour 2 px et icône d'erreur pour « Impossible à préparer » (le message d'aide est sous la grille). Sous chaque vidéo, « Modifier » et « Retirer » empilés ; le pied de la transition ajoute « Ajouter une vidéo » et le repère, ou la phrase du maximum.</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>1 vidéo prête + 1 en préparation, « 2 vidéos sur 3 », 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <ul class="transition-list" role="list">
+            <li class="transition">
+              <h3 class="transition__title">Pop to Bird</h3>
+              <p class="mq-omitted">Autre pose, difficultés, étiquettes, description</p>
+              <div class="transition-videos" role="group" aria-labelledby="m1-vt">
+                <h4 id="m1-vt" class="transition-videos__title">Vidéos<span class="visually-hidden"> de Pop to Bird</span></h4>
+                <p class="transition-videos__reminder"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Une vidéo montre une façon de faire ; elle ne remplace ni un cours ni un spotter.</span></p>
+                <ul class="transition-videos__list" role="list">
+                  <li class="video">
+                    <figure class="video__figure"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-face"/></svg><span class="video__duration" aria-hidden="true">0:12</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><figcaption class="video__caption"><p class="video__legend">Pop to Bird, démonstration de face</p><p class="video__credit">Vidéo : Léa Martin</p></figcaption></figure>
+                    <div class="video__actions"><button type="button" class="button button--secondary">Modifier<span class="visually-hidden"> Pop to Bird, démonstration de face</span></button><button type="button" class="button button--secondary">Retirer<span class="visually-hidden"> Pop to Bird, démonstration de face</span></button></div>
+                  </li>
+                  <li class="video">
+                    <figure class="video__figure"><div class="video__frame video__frame--pending"><svg class="icon--large" aria-hidden="true"><use href="#i-clock"/></svg><span>En préparation</span></div><figcaption class="video__caption"><p class="video__legend">Pop to Bird, vue de côté</p><p class="video__credit">Vidéo : Léa Martin</p></figcaption></figure>
+                    <div class="video__actions"><button type="button" class="button button--secondary">Modifier</button><button type="button" class="button button--secondary">Retirer</button></div>
+                  </li>
+                </ul>
+              </div>
+              <details class="tag-meanings"><summary class="tag-meanings__summary">Ce que veulent dire ces étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary></details>
+              <div class="transition__manage">
+                <button type="button" class="button button--secondary button--small">Étiqueter<span class="visually-hidden"> Pop to Bird</span></button>
+                <div class="transition__videos-manage">
+                  <a class="button button--secondary button--small" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une vidéo<span class="visually-hidden"> à Pop to Bird</span></a>
+                  <p class="transition__videos-count">2 vidéos sur 3</p>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>« Impossible à préparer », « 1 vidéo sur 3 », 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <ul class="transition-list" role="list">
+            <li class="transition">
+              <h3 class="transition__title">Pop to Bird</h3>
+              <p class="mq-omitted">Autre pose, difficultés, étiquettes, description</p>
+              <div class="transition-videos" role="group" aria-labelledby="m2-vt">
+                <h4 id="m2-vt" class="transition-videos__title">Vidéos<span class="visually-hidden"> de Pop to Bird</span></h4>
+                <p class="transition-videos__reminder"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Une vidéo montre une façon de faire ; elle ne remplace ni un cours ni un spotter.</span></p>
+                <ul class="transition-videos__list" role="list">
+                  <li class="video">
+                    <figure class="video__figure"><div class="video__frame video__frame--failed"><svg class="icon--large" aria-hidden="true"><use href="#i-error"/></svg><span>Impossible à préparer</span></div><figcaption class="video__caption"><p class="video__legend">Pop to Bird, vue de côté</p><p class="video__credit">Vidéo : Léa Martin</p></figcaption></figure>
+                    <div class="video__actions"><button type="button" class="button button--secondary">Modifier</button><button type="button" class="button button--secondary">Retirer<span class="visually-hidden"> Pop to Bird, vue de côté</span></button></div>
+                  </li>
+                </ul>
+                <p class="transition-videos__alert"><svg class="icon" aria-hidden="true"><use href="#i-error"/></svg><span>La vidéo « Pop to Bird, vue de côté » n'a pas pu être préparée. Retire-la, puis envoie-la de nouveau ou choisis-en une autre.</span></p>
+              </div>
+              <details class="tag-meanings"><summary class="tag-meanings__summary">Ce que veulent dire ces étiquettes<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary></details>
+              <div class="transition__manage">
+                <button type="button" class="button button--secondary button--small">Étiqueter</button>
+                <div class="transition__videos-manage">
+                  <a class="button button--secondary button--small" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une vidéo</a>
+                  <p class="transition__videos-count">1 vidéo sur 3</p>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Maximum : 3 vidéos (dont 1 en préparation), 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <ul class="transition-list" role="list">
+            <li class="transition">
+              <h3 class="transition__title">Pop to Bird</h3>
+              <p class="mq-omitted">Autre pose, difficultés, étiquettes, description, titre « Vidéos », rappel</p>
+              <ul class="transition-videos__list" role="list">
+                <li class="video"><figure class="video__figure"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-face"/></svg><span class="video__duration" aria-hidden="true">0:12</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><figcaption class="video__caption"><p class="video__legend">Pop to Bird, démonstration de face</p><p class="video__credit">Vidéo : Léa Martin</p></figcaption></figure><div class="video__actions"><button type="button" class="button button--secondary">Modifier</button><button type="button" class="button button--secondary">Retirer</button></div></li>
+                <li class="video"><figure class="video__figure"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-tuto"/></svg><span class="video__duration" aria-hidden="true">0:20</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><figcaption class="video__caption"><p class="video__legend">Pop to Bird, tutoriel</p><p class="video__credit">Vidéo : Hugo Bernard</p></figcaption></figure><div class="video__actions"><button type="button" class="button button--secondary">Modifier</button><button type="button" class="button button--secondary">Retirer</button></div></li>
+                <li class="video"><figure class="video__figure"><div class="video__frame video__frame--pending"><svg class="icon--large" aria-hidden="true"><use href="#i-clock"/></svg><span>En préparation</span></div><figcaption class="video__caption"><p class="video__legend">Pop to Bird, vue de côté</p><p class="video__credit">Vidéo : Collectif AcroLyon</p></figcaption></figure><div class="video__actions"><button type="button" class="button button--secondary">Modifier</button><button type="button" class="button button--secondary">Retirer</button></div></li>
+              </ul>
+              <div class="transition__manage">
+                <button type="button" class="button button--secondary button--small">Étiqueter</button>
+                <p class="transition__videos-max">Pop to Bird a déjà 3 vidéos, le maximum. Retire une vidéo pour en ajouter une autre.</p>
+              </div>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Grand écran, validateur : une transition à 1 vidéo (« 1 vidéo sur 3 », tout sur une ligne), une autre au maximum</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="pose-page__body">
+            <section class="pose-page__section" aria-labelledby="mw-from">
+              <h2 id="mw-from" class="pose-page__section-title">Transitions depuis Throne</h2>
+              <ul class="transition-list" role="list">
+                <li class="transition">
+                  <h3 class="transition__title">Pop to Bird</h3>
+                  <p class="transition__other-pose"><span>Vers</span><a class="transition__other-pose-link" href="#">Bird</a></p>
+                  <div class="transition-videos" role="group" aria-labelledby="mw-vt1">
+                    <h4 id="mw-vt1" class="transition-videos__title">Vidéos<span class="visually-hidden"> de Pop to Bird</span></h4>
+                    <p class="transition-videos__reminder"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Une vidéo montre une façon de faire ; elle ne remplace ni un cours ni un spotter.</span></p>
+                    <ul class="transition-videos__list" role="list">
+                      <li class="video"><figure class="video__figure"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-face"/></svg><span class="video__duration" aria-hidden="true">0:12</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><figcaption class="video__caption"><p class="video__legend">Pop to Bird, démonstration de face</p><p class="video__credit">Vidéo : Léa Martin</p></figcaption></figure><div class="video__actions"><button type="button" class="button button--secondary">Modifier</button><button type="button" class="button button--secondary">Retirer</button></div></li>
+                    </ul>
+                  </div>
+                  <div class="transition__manage">
+                    <button type="button" class="button button--secondary button--small">Étiqueter</button>
+                    <div class="transition__videos-manage"><a class="button button--secondary button--small" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une vidéo</a><p class="transition__videos-count">1 vidéo sur 3</p></div>
+                  </div>
+                </li>
+              </ul>
+            </section>
+            <section class="pose-page__section" aria-labelledby="mw-to">
+              <h2 id="mw-to" class="pose-page__section-title">Transitions vers Throne</h2>
+              <ul class="transition-list" role="list">
+                <li class="transition">
+                  <h3 class="transition__title">Back to Throne</h3>
+                  <p class="transition__other-pose"><span>Depuis</span><a class="transition__other-pose-link" href="#">Bird</a></p>
+                  <div class="transition-videos" role="group" aria-labelledby="mw-vt2">
+                    <h4 id="mw-vt2" class="transition-videos__title">Vidéos<span class="visually-hidden"> de Back to Throne</span></h4>
+                    <p class="transition-videos__reminder"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Une vidéo montre une façon de faire ; elle ne remplace ni un cours ni un spotter.</span></p>
+                    <ul class="transition-videos__list" role="list">
+                      <li class="video"><figure class="video__figure"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-tuto"/></svg><span class="video__duration" aria-hidden="true">0:15</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><figcaption class="video__caption"><p class="video__legend">Back to Throne, démonstration</p><p class="video__credit">Vidéo : Léa et Hugo</p></figcaption></figure><div class="video__actions"><button type="button" class="button button--secondary">Modifier</button><button type="button" class="button button--secondary">Retirer</button></div></li>
+                      <li class="video"><figure class="video__figure"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 320 180" aria-hidden="true"><use href="#pv-side"/></svg><span class="video__duration" aria-hidden="true">0:28</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><figcaption class="video__caption"><p class="video__legend">Back to Throne, tutoriel</p><p class="video__credit">Vidéo : Lulu Acro</p></figcaption></figure><div class="video__actions"><button type="button" class="button button--secondary">Modifier</button><button type="button" class="button button--secondary">Retirer</button></div></li>
+                      <li class="video"><figure class="video__figure"><div class="video__frame video__frame--pending"><svg class="icon--large" aria-hidden="true"><use href="#i-clock"/></svg><span>En préparation</span></div><figcaption class="video__caption"><p class="video__legend">Back to Throne, de face</p><p class="video__credit">Vidéo : Collectif AcroLyon</p></figcaption></figure><div class="video__actions"><button type="button" class="button button--secondary">Modifier</button><button type="button" class="button button--secondary">Retirer</button></div></li>
+                    </ul>
+                  </div>
+                  <div class="transition__manage">
+                    <button type="button" class="button button--secondary button--small">Étiqueter</button>
+                    <p class="transition__videos-max">Back to Throne a déjà 3 vidéos, le maximum. Retire une vidéo pour en ajouter une autre.</p>
+                  </div>
+                </li>
+              </ul>
+            </section>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-add">
+  <h2 id="mq-add">3. Page « Ajouter une vidéo à Pop to Bird »</h2>
+  <p>La page « Ajouter une photo », champ pour champ. L'aperçu est une vidéo muette avec les contrôles du navigateur, sur le passe-partout, au plus 480 px de haut. Une vidéo HEVC que le navigateur ne sait pas lire n'a pas d'aperçu, mais son résumé (lu dans l'en-tête) permet les contrôles dès le choix.</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Au repos, 320 px</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <div class="video-page">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Throne</a>
+            <h1>Ajouter une vidéo à Pop to Bird</h1>
+            <p class="video-page__intro">Tous les champs sont obligatoires, sauf la description de la vidéo.</p>
+            <form class="video-form">
+              <div class="video-field">
+                <label class="video-field__label" for="a1-file">Vidéo</label>
+                <p class="field__help">MP4, MOV ou WebM, 30 secondes et 100 Mo au plus, au moins 480 pixels sur le plus petit côté.</p>
+                <input id="a1-file" class="visually-hidden" type="file" accept="video/mp4,video/quicktime,video/webm">
+                <label for="a1-file" class="button button--secondary video-field__choose"><svg class="icon" aria-hidden="true"><use href="#i-video"/></svg>Choisir une vidéo</label>
+              </div>
+              <div class="field">
+                <label for="a1-caption">Légende</label>
+                <input id="a1-caption" type="text">
+                <p class="field__help">Ce que montre la vidéo, et s'il s'agit d'une démonstration ou d'un tutoriel. Ne nomme pas les personnes filmées.</p>
+                <p class="field__help"><b>Exemple :</b> Pop to Bird, vue de côté, tutoriel</p>
+                <p class="field__counter">0 / 100</p>
+              </div>
+              <div class="field">
+                <label for="a1-credit">Crédit</label>
+                <input id="a1-credit" type="text">
+                <p class="field__help">La personne, le duo ou le collectif à qui appartient la vidéo, présenté sous elle : « Vidéo : Léa Martin ».</p>
+                <p class="field__counter">0 / 100</p>
+              </div>
+              <div class="field">
+                <label for="a1-desc">Description de la vidéo <span class="field__optional">(facultative)</span></label>
+                <textarea id="a1-desc" rows="4"></textarea>
+                <p class="field__help">Décris le mouvement pour qui ne voit pas la vidéo : ce que font la base et le flyer. Ne nomme pas les personnes filmées.</p>
+                <p class="field__help"><b>Exemple :</b> La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol.</p>
+                <p class="field__counter">0 / 300</p>
+              </div>
+              <div class="confirm">
+                <label class="confirm-box"><input type="checkbox"><span>Je confirme que l'auteur de la vidéo a autorisé sa publication sur AcroFunJam, que chaque personne filmée l'a acceptée, et qu'aucune personne mineure n'y est reconnaissable.</span></label>
+                <p class="field__help">AcroFunJam garde ta confirmation avec la vidéo (ton compte et la date).</p>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="button button--primary">Ajouter la vidéo</button>
+                <button type="button" class="button button--secondary">Annuler</button>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Vidéo choisie (portrait) : aperçu muet, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="video-page">
+            <p class="mq-omitted">En-tête, lien retour, titre, introduction</p>
+            <form class="video-form" style="margin-top: var(--afj-spacing-lg)">
+              <div class="video-field">
+                <label class="video-field__label" for="a2-file">Vidéo</label>
+                <p class="field__help">MP4, MOV ou WebM, 30 secondes et 100 Mo au plus, au moins 480 pixels sur le plus petit côté.</p>
+                <input id="a2-file" class="visually-hidden" type="file">
+                <div class="video-field__preview video__stage video__stage--portrait" role="img" aria-label="Aperçu de la vidéo choisie (simulé)">
+                  <svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-tuto"/></svg>
+                  <div class="mq-native" aria-hidden="true"><svg><use href="#n-play"/></svg><span>0:00 / 0:12</span><span class="mq-native__track"><span style="inline-size: 0%"></span></span><svg><use href="#n-full"/></svg></div>
+                </div>
+                <p class="video-field__summary">pop-to-bird-cote.mp4 · 18,4 Mo · 12 secondes · 1080 × 1920 pixels</p>
+                <label for="a2-file" class="button button--secondary video-field__change">Changer de vidéo</label>
+              </div>
+              <div class="field">
+                <label for="a2-caption">Légende</label>
+                <input id="a2-caption" type="text" value="Pop to Bird, vue de côté">
+                <p class="field__counter">24 / 100</p>
+              </div>
+              <p class="mq-omitted">Aides, crédit, description, case des droits, actions</p>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Aperçu indisponible (HEVC), en-tête lu, 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="video-page">
+            <p class="mq-omitted">En-tête, lien retour, titre, introduction</p>
+            <form class="video-form" style="margin-top: var(--afj-spacing-lg)">
+              <div class="video-field">
+                <label class="video-field__label" for="a3-file">Vidéo</label>
+                <p class="field__help">MP4, MOV ou WebM, 30 secondes et 100 Mo au plus, au moins 480 pixels sur le plus petit côté.</p>
+                <input id="a3-file" class="visually-hidden" type="file">
+                <div class="video-field__unavailable"><svg class="icon--large" aria-hidden="true"><use href="#i-video"/></svg><span>Ton navigateur ne sait pas lire cette vidéo HEVC : pas d'aperçu. AcroFunJam la préparera après l'envoi.</span></div>
+                <p class="video-field__summary">IMG_4721.MOV · 24,6 Mo · 12 secondes · 1080 × 1920 pixels</p>
+                <label for="a3-file" class="button button--secondary video-field__change">Changer de vidéo</label>
+              </div>
+              <p class="mq-omitted">Légende, crédit, description, case des droits, actions</p>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Erreur de durée (31,7 s, dite « 31 secondes »), 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="video-page">
+            <p class="mq-omitted">En-tête, lien retour, titre, introduction</p>
+            <form class="video-form" style="margin-top: var(--afj-spacing-lg)">
+              <div class="video-field video-field--invalid">
+                <label class="video-field__label" for="a4-file">Vidéo</label>
+                <p class="field__help">MP4, MOV ou WebM, 30 secondes et 100 Mo au plus, au moins 480 pixels sur le plus petit côté.</p>
+                <input id="a4-file" class="visually-hidden" type="file" aria-invalid="true">
+                <div class="video-field__preview video__stage video__stage--portrait" role="img" aria-label="Aperçu de la vidéo choisie (simulé)">
+                  <svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-face"/></svg>
+                  <div class="mq-native" aria-hidden="true"><svg><use href="#n-play"/></svg><span>0:00 / 0:31</span><span class="mq-native__track"><span style="inline-size: 0%"></span></span><svg><use href="#n-full"/></svg></div>
+                </div>
+                <p class="video-field__summary">pop-to-bird-long.mp4 · 46,2 Mo · 31 secondes · 1080 × 1920 pixels</p>
+                <label for="a4-file" class="button button--secondary video-field__change">Changer de vidéo</label>
+                <p class="field__error"><svg class="icon" aria-hidden="true"><use href="#i-error"/></svg><span>Cette vidéo dure 31 secondes : 30 secondes au plus. Raccourcis-la sur ton appareil, puis choisis-la de nouveau.</span></p>
+              </div>
+              <p class="mq-omitted">Légende, crédit, description et case des droits conservés</p>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Envoi à 42 %, puis « Vérification de la vidéo… », 320 px</figcaption>
+      <div class="mq-screen">
+        <main>
+          <div class="video-page">
+            <p class="mq-omitted">En-tête, titre, champs (affichés tels quels, ni grisés ni masqués)</p>
+            <form class="video-form" style="margin-top: var(--afj-spacing-lg)">
+              <div class="progress">
+                <label class="progress__label" for="p1"><span>Envoi de la vidéo</span><span class="progress__value" aria-hidden="true">42 %</span></label>
+                <progress id="p1" max="100" value="42">42 %</progress>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="button button--primary" aria-disabled="true">Envoi de la vidéo…</button>
+                <button type="button" class="button button--secondary">Annuler l'envoi</button>
+              </div>
+              <p class="mq-omitted">Puis, une fois le fichier envoyé, pendant les contrôles :</p>
+              <div class="progress">
+                <label class="progress__label" for="p2"><span>Vérification de la vidéo…</span></label>
+                <progress id="p2" max="100"></progress>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="button button--primary" aria-disabled="true">Envoi de la vidéo…</button>
+                <button type="button" class="button button--secondary">Annuler l'envoi</button>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Grand écran : panneau de 640 px, aperçu portrait plafonné à 480 px, envoi en cours</figcaption>
+      <div class="mq-screen">
+        <header class="site-header"><div class="site-header__inner">
+          <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+          <div class="site-header__account"><span class="site-header__avatar" aria-hidden="true">B</span><button type="button" class="button button--secondary">Se déconnecter</button></div>
+        </div></header>
+        <main>
+          <div class="video-page video-page--carded">
+            <a class="back-link" href="#"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Throne</a>
+            <h1>Ajouter une vidéo à Pop to Bird</h1>
+            <p class="video-page__intro">Tous les champs sont obligatoires, sauf la description de la vidéo.</p>
+            <form class="video-form">
+              <div class="video-field">
+                <label class="video-field__label" for="w-file">Vidéo</label>
+                <p class="field__help">MP4, MOV ou WebM, 30 secondes et 100 Mo au plus, au moins 480 pixels sur le plus petit côté.</p>
+                <input id="w-file" class="visually-hidden" type="file">
+                <div class="video-field__preview video__stage video__stage--portrait" role="img" aria-label="Aperçu de la vidéo choisie (simulé)">
+                  <svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-tuto"/></svg>
+                  <div class="mq-native" aria-hidden="true"><svg><use href="#n-play"/></svg><span>0:00 / 0:12</span><span class="mq-native__track"><span style="inline-size: 0%"></span></span><svg><use href="#n-full"/></svg></div>
+                </div>
+                <p class="video-field__summary">pop-to-bird-cote.mp4 · 18,4 Mo · 12 secondes · 1080 × 1920 pixels</p>
+                <label for="w-file" class="button button--secondary video-field__change">Changer de vidéo</label>
+              </div>
+              <div class="field">
+                <label for="w-caption">Légende</label>
+                <input id="w-caption" type="text" value="Pop to Bird, vue de côté">
+                <p class="field__help">Ce que montre la vidéo, et s'il s'agit d'une démonstration ou d'un tutoriel. Ne nomme pas les personnes filmées.</p>
+                <p class="field__counter">24 / 100</p>
+              </div>
+              <div class="field">
+                <label for="w-credit">Crédit</label>
+                <input id="w-credit" type="text" value="Léa Martin">
+                <p class="field__help">La personne, le duo ou le collectif à qui appartient la vidéo, présenté sous elle : « Vidéo : Léa Martin ».</p>
+                <p class="field__counter">10 / 100</p>
+              </div>
+              <div class="field">
+                <label for="w-desc">Description de la vidéo <span class="field__optional">(facultative)</span></label>
+                <textarea id="w-desc" rows="4">La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol.</textarea>
+                <p class="field__counter">87 / 300</p>
+              </div>
+              <div class="confirm">
+                <label class="confirm-box"><input type="checkbox" checked><span>Je confirme que l'auteur de la vidéo a autorisé sa publication sur AcroFunJam, que chaque personne filmée l'a acceptée, et qu'aucune personne mineure n'y est reconnaissable.</span></label>
+                <p class="field__help">AcroFunJam garde ta confirmation avec la vidéo (ton compte et la date).</p>
+              </div>
+              <div class="progress">
+                <label class="progress__label" for="wp"><span>Envoi de la vidéo</span><span class="progress__value" aria-hidden="true">42 %</span></label>
+                <progress id="wp" max="100" value="42">42 %</progress>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="button button--primary" aria-disabled="true">Envoi de la vidéo…</button>
+                <button type="button" class="button button--secondary">Annuler l'envoi</button>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================================================================== -->
+<section class="mq-section" aria-labelledby="mq-night">
+  <h2 id="mq-night">4. La nuit : les mêmes écrans en thème sombre</h2>
+  <p>Cadres forcés en sombre (<code>colorsDark</code>), quel que soit le thème choisi en haut : le passe-partout devient <code>#2A2833</code>, les pastilles « Lire » et de durée restent opaques (<code>surface</code> de la nuit), l'icône d'échec passe à <code>#FF9C8F</code> (7,2:1 sur le passe-partout).</p>
+
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Visiteur, 3 vidéos, nuit, 320 px</figcaption>
+      <div class="mq-screen mq-dark">
+        <main>
+          <ul class="transition-list" role="list">
+            <li class="transition">
+              <h3 class="transition__title">Pop to Bird</h3>
+              <p class="transition__other-pose"><span>Vers</span><a class="transition__other-pose-link" href="#">Bird</a></p>
+              <div class="tag-line"><span class="tag-line__term">Étiquettes</span><ul class="tag-line__list" role="list"><li class="tag-pill">dynamique</li><li class="tag-pill">pop</li></ul></div>
+              <div class="transition-videos" role="group" aria-labelledby="n1-vt">
+                <h4 id="n1-vt" class="transition-videos__title">Vidéos<span class="visually-hidden"> de Pop to Bird</span></h4>
+                <p class="transition-videos__reminder"><svg class="icon" aria-hidden="true"><use href="#i-spot"/></svg><span>Une vidéo montre une façon de faire ; elle ne remplace ni un cours ni un spotter.</span></p>
+                <ul class="transition-videos__list" role="list">
+                  <li class="video"><figure class="video__figure"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-face"/></svg><span class="video__duration" aria-hidden="true">0:12</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><figcaption class="video__caption"><p class="video__legend">Pop to Bird, démonstration de face</p><p class="video__credit">Vidéo : Léa Martin</p></figcaption></figure></li>
+                  <li class="video"><figure class="video__figure"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 180 320" aria-hidden="true"><use href="#pv-tuto"/></svg><span class="video__duration" aria-hidden="true">0:20</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><figcaption class="video__caption"><p class="video__legend">Pop to Bird, tutoriel</p><p class="video__credit">Vidéo : Hugo Bernard</p></figcaption></figure><details class="video__description"><summary>Description de la vidéo<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary><p>La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol.</p></details></li>
+                  <li class="video"><figure class="video__figure"><button type="button" class="video__play"><svg class="video__poster" viewBox="0 0 320 180" aria-hidden="true"><use href="#pv-side"/></svg><span class="video__duration" aria-hidden="true">0:09</span><span class="video__play-pill"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Lire</span></button><figcaption class="video__caption"><p class="video__legend">Pop to Bird, vue de côté</p><p class="video__credit">Vidéo : Collectif AcroLyon</p></figcaption></figure></li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Validateur, préparation et échec, nuit, 320 px</figcaption>
+      <div class="mq-screen mq-dark">
+        <main>
+          <ul class="transition-list" role="list">
+            <li class="transition">
+              <h3 class="transition__title">Pop to Bird</h3>
+              <p class="mq-omitted">Autre pose, difficultés, titre « Vidéos », rappel</p>
+              <ul class="transition-videos__list" role="list">
+                <li class="video"><figure class="video__figure"><div class="video__frame video__frame--pending"><svg class="icon--large" aria-hidden="true"><use href="#i-clock"/></svg><span>En préparation</span></div><figcaption class="video__caption"><p class="video__legend">Pop to Bird, tutoriel</p><p class="video__credit">Vidéo : Hugo Bernard</p></figcaption></figure><div class="video__actions"><button type="button" class="button button--secondary">Modifier</button><button type="button" class="button button--secondary">Retirer</button></div></li>
+                <li class="video"><figure class="video__figure"><div class="video__frame video__frame--failed"><svg class="icon--large" aria-hidden="true"><use href="#i-error"/></svg><span>Impossible à préparer</span></div><figcaption class="video__caption"><p class="video__legend">Pop to Bird, vue de côté</p><p class="video__credit">Vidéo : Léa Martin</p></figcaption></figure><div class="video__actions"><button type="button" class="button button--secondary">Modifier</button><button type="button" class="button button--secondary">Retirer</button></div></li>
+              </ul>
+              <p class="transition-videos__alert"><svg class="icon" aria-hidden="true"><use href="#i-error"/></svg><span>La vidéo « Pop to Bird, vue de côté » n'a pas pu être préparée. Retire-la, puis envoie-la de nouveau ou choisis-en une autre.</span></p>
+              <div class="transition__manage">
+                <button type="button" class="button button--secondary button--small">Étiqueter</button>
+                <div class="transition__videos-manage"><a class="button button--secondary button--small" href="#"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une vidéo</a><p class="transition__videos-count">2 vidéos sur 3</p></div>
+              </div>
+            </li>
+          </ul>
+        </main>
+      </div>
+    </figure>
+
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>Lecture en cours et ajout (aperçu, envoi), nuit, 320 px</figcaption>
+      <div class="mq-screen mq-dark">
+        <main>
+          <ul class="transition-list" role="list">
+            <li class="transition">
+              <ul class="transition-videos__list" role="list">
+                <li class="video video--active">
+                  <figure class="video__figure">
+                    <div class="video__stage video__stage--landscape" role="img" aria-label="Lecteur : Pop to Bird, vue de côté (simulé)">
+                      <svg class="video__poster" viewBox="0 0 320 180" aria-hidden="true"><use href="#pv-side"/></svg>
+                      <div class="mq-native" aria-hidden="true"><svg><use href="#n-pause"/></svg><span>0:04 / 0:09</span><span class="mq-native__track"><span style="inline-size: 45%"></span></span><svg><use href="#n-full"/></svg></div>
+                    </div>
+                    <figcaption class="video__caption">
+                      <div><p class="video__legend">Pop to Bird, vue de côté</p><p class="video__credit">Vidéo : Collectif AcroLyon</p></div>
+                      <button type="button" class="button button--secondary button--small"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>Fermer la vidéo</button>
+                    </figcaption>
+                  </figure>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <div class="video-page" style="margin-top: var(--afj-spacing-lg)">
+            <form class="video-form">
+              <div class="video-field video-field--invalid">
+                <span class="video-field__label">Vidéo</span>
+                <div class="video-field__unavailable"><svg class="icon--large" aria-hidden="true"><use href="#i-video"/></svg><span>Ton navigateur ne sait pas lire cette vidéo HEVC : pas d'aperçu. AcroFunJam la préparera après l'envoi.</span></div>
+                <p class="video-field__summary">IMG_4722.MOV · 51,0 Mo · 31 secondes · 1080 × 1920 pixels</p>
+                <span class="button button--secondary video-field__change">Changer de vidéo</span>
+                <p class="field__error"><svg class="icon" aria-hidden="true"><use href="#i-error"/></svg><span>Cette vidéo dure 31 secondes : 30 secondes au plus. Raccourcis-la sur ton appareil, puis choisis-la de nouveau.</span></p>
+              </div>
+              <div class="progress">
+                <label class="progress__label" for="np"><span>Envoi de la vidéo</span><span class="progress__value" aria-hidden="true">42 %</span></label>
+                <progress id="np" max="100" value="42">42 %</progress>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<script>
+  // Bascule du thème de la maquette : par défaut celui du système, puis le choix explicite.
+  (function () {
+    var root = document.documentElement;
+    var media = window.matchMedia('(prefers-color-scheme: dark)');
+    var buttons = document.querySelectorAll('[data-theme-choice]');
+    function effective() { return root.getAttribute('data-theme') || (media.matches ? 'dark' : 'light'); }
+    function sync() {
+      var current = effective();
+      buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.themeChoice === current)); });
+    }
+    buttons.forEach(function (b) {
+      b.addEventListener('click', function () { root.setAttribute('data-theme', b.dataset.themeChoice); sync(); });
+    });
+    media.addEventListener('change', sync);
+    sync();
+  })();
+</script>
+</body>
+</html>

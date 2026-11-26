@@ -86,6 +86,17 @@ Une photo montre une pose **tenue, entière** (charte des photos) : l'interface 
 
 Détail : `ecrans/10-photos-des-poses.md`.
 
+## Les vidéos des transitions (story 12)
+
+Une vidéo se traite **comme une photo** : contenue, jamais recadrée, sur le passe-partout `photoMat`, sans ombre ni effet. Elle vit **dans l'élément de sa transition**, jamais dans le ciel ni dans une section à part.
+
+- **Rangée d'affiches compactes** (`composants/rangee-videos.md`) : grille `auto-fill` de cellules 3:4 d'au moins `sizes.videoPoster` (120) : 2 colonnes à 320 px, 3 dans une colonne de grand écran ; rien n'est caché, rien ne défile horizontalement. Précédée du titre « Vidéos » et du **rappel de sécurité en une phrase** (icône `spot` en `sunStrong`, sans fond : la note de sécurité encadrée reste unique dans la page).
+- **Bouton « Lire » du site** (`composants/lecteur-video.md`) : pastille écrite en bas à gauche de l'affiche, rendu de la pastille loupe des photos (`surface`, contour `border`) ; **pastille de durée** « 0:12 » en haut à droite. Lancée, la vidéo **s'agrandit à sa place** sur toute la rangée (hauteur ≤ `sizes.videoMaxHeight`, 480) avec les contrôles du navigateur ; une seule à la fois ; aucune animation.
+- **Préparation** (`composants/bloc-preparation-video.md`, validateurs) : cadre 3:4 sur le passe-partout, **tireté** `border` + horloge `textMuted` pour « En préparation », **contour 2 px `danger`** + icône erreur pour « Impossible à préparer » ; le mot porte toujours le sens.
+- **Ajout** (`composants/champ-video.md`) : la page « Ajouter une photo » avec un aperçu vidéo muet, « Envoi de la vidéo », puis « Vérification de la vidéo… ».
+
+Tokens nouveaux : `sizes.videoPoster` (120), `sizes.videoMaxHeight` (480) ; aucune couleur nouvelle. Icônes nouvelles : **lecture** (triangle), **vidéo** (cadre arrondi et triangle), **plein écran** n'est pas à dessiner (contrôles du navigateur) ; **horloge** existe. Paire de contraste nouvelle : `danger` sur `photoMat` (5,3 / 7,2:1). Détail : `ecrans/12-videos-des-transitions.md`.
+
 ## Pied de page et pages de lecture (story « Mentions légales et confidentialité »)
 
 Un **pied de page** discret ferme toutes les pages, en bas de la fenêtre même sur une page courte : filet `divider`, texte `sm`, liens soulignés `primary`, « Contact : » en `textMuted` (`composants/pied-de-page.md`). Les **pages légales** sont des pages de lecture : texte sur le fond de page, colonne de 70 caractères (`sizes.readingMaxWidth`) alignée à gauche, hiérarchie par la typographie seule ; un seul encadré, « En bref » sur `surface` (`composants/encadre-en-bref.md`). Aucune nouvelle couleur. Détail : `ecrans/informations-legales.md`.
@@ -180,6 +191,7 @@ Contrôles et icônes porteuses de sens (seuil 3:1) :
 | `base` / `flyer` | `surface` | 6,4 / 5,7 | 9,2 / 9,1 |
 | `primary` (remplissage d'une barre de progression) | `surfaceHover` (piste) | 5,9 | 7,1 |
 | `textMuted` (icône photo) | `photoMat` | 5,7 | 6,1 |
+| `danger` (icône d'échec de lecture ou de préparation d'une vidéo, story 12 ; à ajouter à `contrast.test.ts`) | `photoMat` | 5,3 | 7,2 |
 
 `photoMat` et `scrim` sont décoratifs (aucun contrôle ne s'en sert de limite). `sun` à l'aube (2,2:1 sur `background`) est **décoratif** : jamais du texte ni une icône porteuse de sens (le test le vérifie). `divider` ne délimite jamais un contrôle.
 
@@ -193,7 +205,7 @@ Contrôles et icônes porteuses de sens (seuil 3:1) :
 
 ## Espacements, tailles, points de rupture
 
-Espacements (`spacing.*`, base 4) inchangés. Tailles (`sizes.*`) : cible 44, contrôle 48, phases de lune 18 (texte) / 24 (tuile), trajectoire 46 × 20, avatar 36, logo 30, astre 180 / 300, horizon 26, éclat 54, emplacement de glyphe 52, vignette 80, hauteur maximale d'une photo 560, barre de progression 8, mesure de lecture `readingMaxWidth` `'70ch'` (web seulement, en caractères pour suivre la taille de texte). Points de rupture : `md` 640 (40em), `lg` 1024 (64em). Catalogue : 1, 2 puis 3 colonnes ; page d'une pose : sections côte à côte à partir de 64em.
+Espacements (`spacing.*`, base 4) inchangés. Tailles (`sizes.*`) : cible 44, contrôle 48, phases de lune 18 (texte) / 24 (tuile), trajectoire 46 × 20, avatar 36, logo 30, astre 180 / 300, horizon 26, éclat 54, emplacement de glyphe 52, vignette 80, hauteur maximale d'une photo 560, barre de progression 8, affiche compacte d'une vidéo 120 (largeur minimale), hauteur maximale d'une vidéo lancée 480, mesure de lecture `readingMaxWidth` `'70ch'` (web seulement, en caractères pour suivre la taille de texte). Points de rupture : `md` 640 (40em), `lg` 1024 (64em). Catalogue : 1, 2 puis 3 colonnes ; page d'une pose : sections côte à côte à partir de 64em.
 
 ## Traduction côté web (ADR 0012)
 

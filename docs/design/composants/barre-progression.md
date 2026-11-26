@@ -38,6 +38,10 @@ Balisage : `div.progress` > `label[for]` (libellé + pourcentage en `span`, `ari
 
 La piste contre le fond (`surfaceHover` sur `surface`, 1,2:1) est décorative : la progression se lit par le remplissage et le pourcentage écrit.
 
+## Story 12 : envoi d'une vidéo
+
+Même composant, sans changement visuel : « Envoi de la vidéo » + « 42 % » (déterminée), puis « Vérification de la vidéo… » (indéterminée, pendant les contrôles de l'envoi, UX-59) ; bouton primaire « Envoi de la vidéo… » (`aria-disabled`), « Annuler l'envoi » secondaire. La **préparation** qui suit (des dizaines de secondes, en différé) n'a **pas** de barre : elle se lit sur la page de la pose (« En préparation », `bloc-preparation-video.md`).
+
 ## Couleurs forcées
 
 `forced-colors: active` : rendu natif du système (`appearance: auto`) ; contour `CanvasText` sur la piste.

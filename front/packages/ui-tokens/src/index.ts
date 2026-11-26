@@ -246,6 +246,17 @@ export const sizes = {
   /** Thickness of a progress bar (sending a photo). */
   progress: 8,
   /**
+   * Story 12: smallest width of a compact poster in the row of videos of a transition (rangee-videos.md). The row
+   * fits as many 3:4 cells of at least this width as it can: 2 at 320 px, 3 in a transition beside another
+   * (≥ 64em), 4 in a transition on the whole width; a transition has 3 videos at most.
+   */
+  videoPoster: 120,
+  /**
+   * Story 12: largest height of a launched video, grown to the whole row, and of the preview before adding one; lower
+   * than photoMaxHeight so that a video, the controls of the browser and its legend fit in a laptop window.
+   */
+  videoMaxHeight: 480,
+  /**
    * Web only: the measure of a long text to read (legal pages, story « Mentions légales et confidentialité »),
    * in characters so that it follows the text size chosen in the browser (about 670 px at 16 px in Figtree).
    * Written as is by toCssVariables (a string is not converted to pixels). The mobile app does not use it.

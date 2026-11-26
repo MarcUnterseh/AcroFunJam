@@ -38,13 +38,26 @@ Balisage : `section` (nommée par son `h2`) > `ul role="list"` > `li` > `h3`, `p
 | Difficultés (`dl`) | lignes « Base » / « Flyer » de `carte-pose.md` sans changement (terme `textMuted`, valeur `semibold` à droite, échelle à points) ; à partir de `breakpoints.md` (conteneur ≥ 40em), les deux lignes côte à côte : grille de deux colonnes égales, écart `spacing.xl` |
 | Description (`p`) | `size.md`, `regular`, `text` ; marge haute `spacing.xs` (en plus de l'écart) ; **`white-space: pre-line`** (retours à la ligne conservés, Q105) ; `overflow-wrap: anywhere` (adresse web longue) ; texte brut, aucune adresse transformée en lien |
 
-- **Pourquoi « Vers Bird » même quand le titre dit « Throne → Bird »** : le lien vers l'autre pose est toujours au même endroit, quel que soit le nom ; la ligne porte aussi « (même pose) ». Le titre reste un texte, jamais un lien (un seul lien par élément, pas de page propre à une transition).
+- **Pourquoi « Vers Bird » même quand le titre dit « Throne → Bird »** : le lien vers l'autre pose est toujours au même endroit, quel que soit le nom ; la ligne porte aussi « (même pose) ». Le titre reste un texte, jamais un lien (pas de page propre à une transition). **Révisé par la story 12** : la règle « un seul lien par élément » ne tient plus (voir « Story 12 : vidéos ») ; ce qui reste vrai, c'est que « Vers Bird » est le **seul lien vers une autre page** pour un visiteur, et que l'élément n'est jamais une carte cliquable en entier.
 - Pas de couleur par difficulté (règle de `legende-echelle.md`).
 - Pas de séparateur entre difficultés et description : l'écart suffit, la description appartient à l'élément.
 
 ## Story 8 : étiquettes
 
 Ordre dans l'élément : titre, autre pose, difficultés, **ligne « Étiquettes »** (`pilule-etiquette.md`, absente s'il n'y en a aucune), description, **repli « Ce que veulent dire ces étiquettes »** (`repli-descriptions-etiquettes.md`, absent s'il n'y en a aucune), **pied de gestion « Étiqueter »** (`zone-etiqueter.md`, validateurs et administrateurs seulement, présent même sans étiquette). Écart entre ces blocs : celui de l'élément (`spacing.sm`). Écran : `../ecrans/8-etiquettes.md`.
+
+## Story 12 : vidéos
+
+Ordre dans l'élément : titre, autre pose, difficultés, ligne « Étiquettes », description, **bloc « Vidéos »** (`rangee-videos.md` : titre « Vidéos », rappel de sécurité, rangée d'affiches compactes ; absent sans vidéo présentée), repli « Ce que veulent dire ces étiquettes », pied de gestion (« Étiqueter », puis « Ajouter une vidéo » et « 1 vidéo sur 3 », ou la phrase du maximum). Écran : `../ecrans/12-videos-des-transitions.md`.
+
+**Fin de « un seul lien par élément »** : un élément peut désormais contenir, en plus du lien « Vers Bird », jusqu'à 3 boutons « Lire », 3 replis « Description de la vidéo », le repli des étiquettes, et pour un validateur « Étiqueter », « Ajouter une vidéo » (lien-bouton vers une autre page), « Modifier » et « Retirer » par vidéo. Conséquences :
+
+- l'élément **n'est jamais cliquable en entier** (pas de `::after` étendu sur l'élément) ; chaque action a sa propre cible de 44 px ;
+- les cibles restent **distinctes par la forme** : lien souligné (`primary`), repli (`primary` + chevron, non souligné), pastille « Lire » sur l'image, boutons secondaires en pilule sous un pointillé (gestion) ;
+- chaque nom accessible est **suffixé** de ce qu'il vise (« Lire Pop to Bird, tutoriel… », « Ajouter une vidéo à Pop to Bird », « Retirer Pop to Bird, tutoriel ») : plusieurs « Lire » ou « Retirer » dans la page ne se confondent pas dans une liste des boutons ;
+- l'ordre de tabulation suit l'ordre de lecture : lien de l'autre pose, affiches et leurs replis (dans l'ordre d'ajout), repli des étiquettes, gestion.
+
+L'élément garde son rendu de petite carte (`surface`, `divider`, `radius.md`, padding `spacing.md`) ; à 320 px, son contenu fait 256 px, ce qui fixe la rangée à 2 colonnes. Ancre de retour après l'ajout : `scroll-margin-block-start: spacing.lg`.
 
 ## États
 
