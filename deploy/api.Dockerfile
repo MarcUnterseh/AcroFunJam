@@ -30,6 +30,8 @@ ENTRYPOINT ["/bin/sh", "-c", "exec /efbundle --connection \"$MIGRATIONS_CONNECTI
 
 # The full Debian image, not the chiseled one: Magick.NET loads native libraries (ADR 0039).
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS api
+# Npgsql looks for the Kerberos library when it starts, and logs an error without it.
+RUN apt-get update && apt-get install -y --no-install-recommends libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /out/api ./
 USER $APP_UID

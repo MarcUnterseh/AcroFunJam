@@ -50,5 +50,5 @@ Story 9b « Générer un flow sur mobile » (decouverte.md, règles M1 à M9, d�
 - **Développement** : `LogBox.ignoreLogs(['Cannot connect to Expo CLI'])` sous `__DEV__`, le bandeau masquant la barre d'actions.
 - **Revenir au flow précédent** : cas d'usage `showPreviousFlow(store, state)` dans le cœur ; le flow rétabli est aussi gardé sur l'appareil (au mieux).
 - **Focus** : React Native 0.88 n'a plus `InteractionManager` ; le focus des lecteurs d'écran est posé après `focusDelayMillis` (300 ms), une fois la transition de la pile passée.
-- **Profils** : `preview` et `production` n'ont pas encore d'adresse d'API ; l'écran de démarrage n'est pas encore retenu pendant la lecture du flow gardé.
+- **Profils** : `production` pointe sur `https://acrofunjam.fr` (ADR 0040) ; `preview` n'a pas encore d'adresse d'API ; l'écran de démarrage n'est pas encore retenu pendant la lecture du flow gardé.
 - **Build Android sous Windows** : chemins longs activés (`LongPathsEnabled`), CMake 3.31.6 désigné par `cmake.dir` dans `android/local.properties` (généré, non versionné), `JAVA_HOME` sur le JDK embarqué d'Android Studio (`jbr`).

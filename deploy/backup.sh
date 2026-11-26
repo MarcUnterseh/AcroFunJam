@@ -1,6 +1,6 @@
 #!/bin/sh
 # Nightly backup of the database to Cloudflare R2 (ADR 0040). Run by cron on the server:
-#   15 3 * * * /opt/acrofunjam/backup.sh >> /var/log/acrofunjam-backup.log 2>&1
+#   15 3 * * * /opt/acrofunjam/backup.sh >> /home/deploy/backup.log 2>&1
 # Restore: gunzip -c <file> | docker compose exec -T postgres psql -U acrofunjam -d acrofunjam
 set -eu
 cd "$(dirname "$0")"
