@@ -37,7 +37,7 @@ public sealed class PosePhotos : AggregateRoot<PoseId>
     public IReadOnlyList<Photo> InPresentationOrder() =>
         [.. _photos.OrderBy(p => p.Id == MainPhotoId ? 0 : 1).ThenBy(p => p.AdditionRank)];
 
-    public Result<Photo> Add(PhotoId id, PhotoFile file, AltText altText, PhotoCredit credit, RightsConfirmation rights, DateTimeOffset now)
+    public Result<Photo> Add(PhotoId id, PhotoFile file, AltText? altText, PhotoCredit credit, RightsConfirmation rights, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(file);
         if (IsFull) return CatalogErrors.PhotoLimitReached;
@@ -72,7 +72,7 @@ public sealed class PosePhotos : AggregateRoot<PoseId>
     }
 
     /// <summary>Corrects the alternative text and the credit; changing the file is removing then adding (R14).</summary>
-    public Result<Photo> Correct(PhotoId id, AltText altText, PhotoCredit credit, DateTimeOffset now)
+    public Result<Photo> Correct(PhotoId id, AltText? altText, PhotoCredit credit, DateTimeOffset now)
     {
         if (Find(id) is not { } photo) return CatalogErrors.PhotoNotFound;
 

@@ -8,8 +8,6 @@ namespace AcroFunJam.Domain.SharedKernel;
 /// </summary>
 public static class PhotoContentErrors
 {
-    public static readonly Error AltTextRequired = new("photo.alt-text-required", "Décris la photo : le texte alternatif est obligatoire.");
-
     public static readonly Error AltTextTooLong =
         new("photo.alt-text-too-long", $"Le texte alternatif ne doit pas dépasser {AltText.MaxLength} caractères.");
 

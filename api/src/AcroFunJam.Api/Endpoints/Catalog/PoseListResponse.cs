@@ -30,9 +30,10 @@ public sealed record PublishedPoseResponse(
 
 /// <summary>
 /// A photo of a pose (story 10, ADR 0039): the main photo is the first of <c>photos</c>; its upright dimensions; the addresses of
-/// its generated sizes. The confirmation of the rights is never given.
+/// its generated sizes; <c>altText</c> is null when the photo has none (the client then describes it). The confirmation of the
+/// rights is never given.
 /// </summary>
-public sealed record PhotoResponse(Guid Id, string AltText, string Credit, int Width, int Height, PhotoSourcesResponse Sources);
+public sealed record PhotoResponse(Guid Id, string? AltText, string Credit, int Width, int Height, PhotoSourcesResponse Sources);
 
 /// <summary>The addresses of the generated sizes of a photo, under the origin of the API (ADR 0039).</summary>
 public sealed record PhotoSourcesResponse(string Thumbnail, string Page, string Enlarged);

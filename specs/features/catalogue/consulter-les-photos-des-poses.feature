@@ -22,6 +22,7 @@ Fonctionnalité: Consulter les photos des poses
   #   « Photo précédente », « Photo suivante » ; Échap ferme ; l'adresse porte la photo agrandie, si bien que revenir
   #   en arrière la ferme ;
   # - vignette du catalogue : à revoir avec de vraies photos (remarque du porteur du produit) ;
+  # - révisé le 2026-11-26 : texte alternatif facultatif ; sans lui, le site présente « Photo 2 de Bird » (pose et rang) ;
   # - le repère « Photo principale » n'est présenté qu'aux validateurs et aux administrateurs.
   # Règles d'interface sans scénario dédié (tests unitaires, revue des captures, ui-designer) : cadrage de la vignette
   # (qui ne coupe pas les poses verticales), disposition de la galerie, avertissement de responsabilité visible avant
@@ -104,6 +105,17 @@ Fonctionnalité: Consulter les photos des poses
     Scénario: Un visiteur ne voit pas quelle photo est la photo principale
       Quand un visiteur consulte la pose "Bird" du catalogue
       Alors aucune photo de la pose "Bird" n'est marquée « Photo principale »
+
+  # Révision du porteur du produit (2026-11-26) : le texte alternatif est facultatif. Le site, pas l'API, présente un
+  # texte de repli tiré de la pose et du rang de la photo dans l'ordre de présentation ; la vignette du catalogue reste
+  # décorative (règle de la vignette inchangée).
+  Règle: Sur le site, une photo sans texte alternatif est décrite par la pose et son rang
+
+    @web
+    Scénario: Une photo sans texte alternatif porte le texte « Photo 2 de Bird »
+      Soit la photo « Bird vue de face » de la pose "Bird" n'a plus de texte alternatif
+      Quand un visiteur consulte la pose "Bird" du catalogue
+      Alors la section « Autres photos de Bird » présente dans cet ordre « Photo 2 de Bird » et « Bird, les prises »
 
   Règle: Une pose sans photo n'en présente aucune
 

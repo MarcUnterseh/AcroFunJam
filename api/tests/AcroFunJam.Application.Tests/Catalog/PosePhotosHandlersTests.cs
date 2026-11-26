@@ -53,7 +53,7 @@ public sealed class PosePhotosHandlersTests
         return ids;
     }
 
-    private string[] PresentedAltTexts() => [.. _photos.Stored[_bird.Id].InPresentationOrder().Select(p => p.AltText.Value)];
+    private string?[] PresentedAltTexts() => [.. _photos.Stored[_bird.Id].InPresentationOrder().Select(p => p.AltText?.Value)];
 
     // --- Removing (R13) --------------------------------------------------------------------------
 
@@ -142,11 +142,28 @@ public sealed class PosePhotosHandlersTests
     }
 
     [Theory]
-    [InlineData("  ", "Léa Martin", "photo.alt-text-required")]
+    [InlineData(null)]
+    [InlineData("   ")]
+    public async Task CorrectPhoto_Should_RemoveTheAltText_When_ItIsCorrectedToNothingOrOnlySpaces(string? altText)
+    {
+        var ids = BirdHas("Bird");
+
+        PresentedPhoto corrected = (await new CorrectPhotoHandler(_photos, _lock, _addresses, _unitOfWork, _clock)
+            .Handle(new CorrectPhoto(_bird.Id, ids[0], altText, "Léa Martin"), Ct)).Value!;
+
+        corrected.AltText.ShouldBeNull();
+        PresentedAltTexts().ShouldBe([null]);
+        _unitOfWork.Saves.ShouldBe(1);
+    }
+
+    [Theory]
+    [InlineData("TOO-LONG", "Léa Martin", "photo.alt-text-too-long")]
     [InlineData("Bird", "Auteur inconnu", "photo.credit-not-an-author")]
     public async Task CorrectPhoto_Should_RefuseWithTheRulesOfAnAddition_When_ATextIsInvalid(string altText, string credit, string code)
     {
         var ids = BirdHas("Bird");
+
+        if (altText == "TOO-LONG") altText = new string('a', AltText.MaxLength + 1);
 
         (await new CorrectPhotoHandler(_photos, _lock, _addresses, _unitOfWork, _clock).Handle(new CorrectPhoto(_bird.Id, ids[0], altText, credit), Ct))
             .Error!.Code.ShouldBe(code);

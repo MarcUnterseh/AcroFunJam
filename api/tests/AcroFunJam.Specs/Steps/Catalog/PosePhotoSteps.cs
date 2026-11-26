@@ -118,6 +118,10 @@ public sealed class PosePhotoSteps(People people, RoleSetter roles, Deployment d
     [When(@"^(\w+) change le texte alternatif de la photo « ([^»]+) » en un texte fait seulement d'espaces$")]
     public Task WhenSomeoneChangesTheAltTextToSpaces(string person, string altText) => Correct(person, altText, "le texte alternatif", "    ");
 
+    [When(@"^(\w+) change le texte alternatif de la photo « ([^»]+) » en un texte alternatif de (\d+) caractères$")]
+    public Task WhenSomeoneChangesTheAltTextToALongOne(string person, string altText, int length) =>
+        Correct(person, altText, "le texte alternatif", new string('a', length));
+
     [When(@"^un visiteur ouvre l'adresse de la photo retirée « ([^»]+) »$")]
     public async Task WhenAVisitorOpensTheAddressOfARemovedPhoto(string altText)
     {
@@ -143,7 +147,6 @@ public sealed class PosePhotoSteps(People people, RoleSetter roles, Deployment d
             "la photo dépasse 10 Mo" => (HttpStatusCode.RequestEntityTooLarge, "photo.too-large"),
             "la photo doit mesurer au moins 800 pixels sur son plus petit côté" => (HttpStatusCode.BadRequest, "photo.too-small"),
             "le texte alternatif est trop long" => (HttpStatusCode.BadRequest, "photo.alt-text-too-long"),
-            "le texte alternatif est obligatoire" => (HttpStatusCode.BadRequest, "photo.alt-text-required"),
             "le crédit doit nommer l'auteur de la photo" => (HttpStatusCode.BadRequest, "photo.credit-not-an-author"),
             "le crédit de la photo est obligatoire" => (HttpStatusCode.BadRequest, "photo.credit-required"),
             "le crédit de la photo est trop long" => (HttpStatusCode.BadRequest, "photo.credit-too-long"),
@@ -165,7 +168,8 @@ public sealed class PosePhotoSteps(People people, RoleSetter roles, Deployment d
 
     [Then(@"^la page présente la pose ""([^""]+)"" avec exactement les photos :$")]
     public async Task ThenThePagePresentsExactlyThePhotos(string pose, DataTable expected) =>
-        (await Photos(pose)).Select(p => (p.AltText, p.Credit)).ShouldBe(expected.Rows.Select(r => (r["texte alternatif"], r["crédit"])));
+        (await Photos(pose)).Select(p => (p.AltText, p.Credit))
+            .ShouldBe(expected.Rows.Select(r => ((string?)r["texte alternatif"], r["crédit"])));
 
     [Then(@"^la pose ""([^""]+)"" présente (\d+) photos?$")]
     public Task ThenThePosePresentsSoManyPhotos(string pose, int count) => ThenThePosePresentsSoManyPhotosAmong(pose, count, null);
@@ -182,6 +186,14 @@ public sealed class PosePhotoSteps(People people, RoleSetter roles, Deployment d
     [Then(@"^la page présente la pose ""([^""]+)"" avec la photo « ([^»]+) »$")]
     public async Task ThenThePosePresentsThePhoto(string pose, string altText) =>
         (await Photos(pose)).Select(p => p.AltText).ShouldContain(altText);
+
+    [Then(@"^la page présente la pose ""([^""]+)"" avec (\d+) photos?, sans texte alternatif$")]
+    public async Task ThenThePagePresentsPhotosWithoutAltText(string pose, int count)
+    {
+        var photos = await Photos(pose);
+        photos.Count.ShouldBe(count);
+        photos.ShouldAllBe(p => p.AltText == null);
+    }
 
     [Then(@"^la page présente la pose ""([^""]+)"" sans photo$")]
     public async Task ThenThePagePresentsThePoseWithoutPhoto(string pose) => (await Photos(pose)).ShouldBeEmpty();
@@ -318,7 +330,9 @@ public sealed class PosePhotoSteps(People people, RoleSetter roles, Deployment d
     {
         var client = await people.SignedInClient(person);
         var (poseId, photo) = await PhotoOfAnyPose(client, altText);
-        var body = field == "le texte alternatif" ? new { altText = value, credit = photo.Credit } : new { altText = photo.AltText, credit = value };
+        var body = field == "le texte alternatif"
+            ? new { altText = (string?)value, credit = photo.Credit }
+            : new { altText = photo.AltText, credit = value };
         responses.Last = await client.PutAsJsonAsync(new Uri($"/catalog/poses/{poseId}/photos/{photo.Id}", UriKind.Relative), body);
     }
 
@@ -371,7 +385,7 @@ public sealed class PosePhotoSteps(People people, RoleSetter roles, Deployment d
 
     private sealed record PosePage(Guid Id, string Name, IReadOnlyList<PhotoItem> Photos);
 
-    private sealed record PhotoItem(Guid Id, string AltText, string Credit, int Width, int Height, PhotoSourcesItem Sources);
+    private sealed record PhotoItem(Guid Id, string? AltText, string Credit, int Width, int Height, PhotoSourcesItem Sources);
 
     private sealed record PhotoSourcesItem(string Thumbnail, string Page, string Enlarged)
     {

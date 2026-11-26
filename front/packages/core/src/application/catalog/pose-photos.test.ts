@@ -119,7 +119,7 @@ describe('addPosePhoto', () => {
     );
 
     expect(result).toEqual(
-      fail({ kind: 'invalid-input', errors: { file: 'required', altText: 'required', rights: 'required' } }),
+      fail({ kind: 'invalid-input', errors: { file: 'required', rights: 'required' } }),
     );
     expect(sent).toEqual([]);
   });
@@ -205,13 +205,22 @@ describe('managing the photos', () => {
 
   it('should check the texts before correcting a photo', async () => {
     expect(
-      await correctPosePhoto(gateway(null), 'pose-bird', 'photo-1', { altText: ' ', credit: 'Léa Martin' }),
-    ).toEqual(fail({ kind: 'invalid-input', errors: { altText: 'required' } }));
+      await correctPosePhoto(gateway(null), 'pose-bird', 'photo-1', {
+        altText: 'a'.repeat(201),
+        credit: 'Léa Martin',
+      }),
+    ).toEqual(fail({ kind: 'invalid-input', errors: { altText: 'too-long' } }));
     expect(
       await correctPosePhoto(gateway({ kind: 'forbidden' }), 'pose-bird', 'photo-1', {
         altText: 'Bird',
         credit: 'Léa',
       }),
     ).toEqual(fail({ kind: 'role-withdrawn' }));
+  });
+
+  it('should correct a photo when its alternative text is emptied, which is optional', async () => {
+    expect(
+      await correctPosePhoto(gateway(null), 'pose-bird', 'photo-1', { altText: '  ', credit: 'Léa Martin' }),
+    ).toEqual(ok(added));
   });
 });

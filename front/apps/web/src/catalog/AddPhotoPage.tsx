@@ -55,12 +55,7 @@ type FieldMessages = {
 
 const fieldMessages = (errors: PhotoInputErrors): FieldMessages => ({
   file: errors.file ? labels.fileRequired : undefined,
-  altText:
-    errors.altText === 'required'
-      ? labels.altTextRequired
-      : errors.altText
-        ? labels.altTextTooLong
-        : undefined,
+  altText: errors.altText ? labels.altTextTooLong : undefined,
   credit:
     errors.credit === 'required' ? labels.creditRequired : errors.credit ? labels.creditTooLong : undefined,
   rights: errors.rights ? labels.rightsRequired : undefined,

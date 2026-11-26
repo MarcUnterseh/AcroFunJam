@@ -31,14 +31,14 @@ public sealed class PhotoRecordConfiguration : IEntityTypeConfiguration<PhotoRec
 
         builder.ToTable("photos", "catalog", table =>
         {
-            table.HasCheckConstraint("ck_photos_alt_text", $"alt_text <> '' AND char_length(alt_text) <= {AltText.MaxLength}");
+            table.HasCheckConstraint("ck_photos_alt_text", $"alt_text IS NULL OR (alt_text <> '' AND char_length(alt_text) <= {AltText.MaxLength})");
             table.HasCheckConstraint("ck_photos_credit", $"credit <> '' AND char_length(credit) <= {PhotoCredit.MaxLength}");
             table.HasCheckConstraint("ck_photos_dimensions", "width > 0 AND height > 0");
         });
         builder.HasKey(p => p.Id);
         builder.Property(p => p.Id).HasColumnName("id").ValueGeneratedNever();
         builder.Property(p => p.PoseId).HasColumnName("pose_id");
-        builder.Property(p => p.AltText).HasColumnName("alt_text").IsRequired();
+        builder.Property(p => p.AltText).HasColumnName("alt_text");
         builder.Property(p => p.Credit).HasColumnName("credit").IsRequired();
         builder.Property(p => p.Width).HasColumnName("width");
         builder.Property(p => p.Height).HasColumnName("height");

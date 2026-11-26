@@ -37,7 +37,6 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .HasColumnName("addition_rank");
 
                     b.Property<string>("AltText")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("alt_text");
 
@@ -73,7 +72,7 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
 
                     b.ToTable("photos", "catalog", t =>
                         {
-                            t.HasCheckConstraint("ck_photos_alt_text", "alt_text <> '' AND char_length(alt_text) <= 200");
+                            t.HasCheckConstraint("ck_photos_alt_text", "alt_text IS NULL OR (alt_text <> '' AND char_length(alt_text) <= 200)");
 
                             t.HasCheckConstraint("ck_photos_credit", "credit <> '' AND char_length(credit) <= 100");
 

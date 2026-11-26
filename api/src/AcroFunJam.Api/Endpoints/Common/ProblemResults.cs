@@ -94,7 +94,6 @@ public static class ProblemResults
         ["photo.too-large"] = StatusCodes.Status413PayloadTooLarge,
         ["photo.too-small"] = StatusCodes.Status400BadRequest,
         ["photo.unreadable"] = StatusCodes.Status400BadRequest,
-        ["photo.alt-text-required"] = StatusCodes.Status400BadRequest,
         ["photo.alt-text-too-long"] = StatusCodes.Status400BadRequest,
         ["photo.credit-required"] = StatusCodes.Status400BadRequest,
         ["photo.credit-too-long"] = StatusCodes.Status400BadRequest,

@@ -4,10 +4,13 @@
 /** The addresses of the sizes the API generated for a photo, under its origin. */
 export type PhotoSources = { readonly thumbnail: string; readonly page: string; readonly enlarged: string };
 
-/** A photo of a pose (glossary « Photo »): its alternative text, its credit, its upright dimensions, its sizes. */
+/**
+ * A photo of a pose (glossary « Photo »): its alternative text (null when it has none, revision of 2026-11-26), its
+ * credit, its upright dimensions, its sizes.
+ */
 export type PosePhoto = {
   readonly id: string;
-  readonly altText: string;
+  readonly altText: string | null;
   readonly credit: string;
   readonly width: number;
   readonly height: number;
@@ -99,12 +102,9 @@ const length = (text: string) => [...text].length;
 
 export type TextError = 'required' | 'too-long';
 
-/** The alternative text is mandatory and has 200 characters at most (R7). */
-export const checkAltText = (text: string): TextError | null => {
-  const value = normalized(text);
-  if (value.length === 0) return 'required';
-  return length(value) > altTextMaxLength ? 'too-long' : null;
-};
+/** The alternative text is optional (revision of 2026-11-26) and has 200 characters at most (R7). */
+export const checkAltText = (text: string): 'too-long' | null =>
+  length(normalized(text)) > altTextMaxLength ? 'too-long' : null;
 
 /** The credit is mandatory and has 100 characters at most (R8); a credit naming nobody is the API's refusal. */
 export const checkPhotoCredit = (credit: string): TextError | null => {
@@ -122,7 +122,7 @@ export type PhotoInput = {
 
 export type PhotoInputErrors = {
   readonly file?: 'required';
-  readonly altText?: TextError;
+  readonly altText?: 'too-long';
   readonly credit?: TextError;
   readonly rights?: 'required';
 };

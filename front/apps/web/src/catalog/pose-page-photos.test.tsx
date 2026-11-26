@@ -180,6 +180,49 @@ describe('the photos of a pose, for a visitor', () => {
   });
 });
 
+describe('the photos of a pose without alternative text', () => {
+  const untold = aPosePhoto({ id: 'p2', altText: null, credit: 'Hugo Bernard' });
+
+  it('should describe a photo without alternative text by its rank and its pose', async () => {
+    const { user } = open({ page: bird([profile, untold, grips]) });
+
+    const bottom = await screen.findByRole('region', { name: 'Autres photos de Bird' });
+    expect(
+      within(bottom)
+        .getAllByRole('img')
+        .map((img) => img.getAttribute('alt')),
+    ).toEqual(['Photo 2 de Bird', 'Bird, les prises']);
+    await user.click(within(bottom).getByRole('button', { name: 'Agrandir la photo : Photo 2 de Bird' }));
+    const dialog = screen.getByRole('dialog', { name: 'Photo 2 sur 3 de Bird' });
+    expect(within(dialog).getByRole('img', { name: 'Photo 2 de Bird' })).toBeInTheDocument();
+  });
+
+  it('should describe the main photo without alternative text as the first one', async () => {
+    open({ page: bird([aPosePhoto({ id: 'p1', altText: null }), front]) });
+
+    const top = await screen.findByRole('region', { name: 'Photos de Bird' });
+    expect(within(top).getByRole('img', { name: 'Photo 1 de Bird' })).toBeInTheDocument();
+  });
+
+  it('should name the buttons of a photo without alternative text after its rank and its pose', async () => {
+    const { user } = open({ gateway: validator(), page: bird([profile, untold, grips]) });
+
+    const bottom = await screen.findByRole('region', { name: 'Autres photos de Bird' });
+    for (const name of [
+      'Choisir comme photo principale : Photo 2 de Bird',
+      'Modifier le texte alternatif et le crédit : Photo 2 de Bird',
+      'Retirer la photo : Photo 2 de Bird',
+    ])
+      expect(within(bottom).getByRole('button', { name })).toBeInTheDocument();
+    await user.click(within(bottom).getByRole('button', { name: /^Modifier .*Photo 2 de Bird$/ }));
+    expect(
+      within(screen.getByRole('group', { name: 'Texte alternatif et crédit' })).getByLabelText(
+        'Texte alternatif (facultatif)',
+      ),
+    ).toHaveValue('');
+  });
+});
+
 describe('the photos of a pose, for a validator', () => {
   it('should invite to add the first photo at the top of a pose without photo', async () => {
     open({ page: bird([]), gateway: validator() });
@@ -307,7 +350,7 @@ describe('the photos of a pose, for a validator', () => {
       }),
     );
 
-    expect(screen.getByLabelText('Texte alternatif')).toHaveFocus();
+    expect(screen.getByLabelText('Texte alternatif (facultatif)')).toHaveFocus();
   });
 
   it('should count the characters and give the example when correcting in place', async () => {
@@ -322,7 +365,7 @@ describe('the photos of a pose, for a validator', () => {
     const zone = screen.getByRole('group', { name: 'Texte alternatif et crédit' });
     expect(within(zone).getByText('16 / 200')).toBeInTheDocument();
     expect(within(zone).getByText('12 / 100')).toBeInTheDocument();
-    expect(within(zone).getByLabelText('Texte alternatif')).toHaveAccessibleDescription(
+    expect(within(zone).getByLabelText('Texte alternatif (facultatif)')).toHaveAccessibleDescription(
       expect.stringContaining('Exemple : Bird'),
     );
   });
@@ -417,7 +460,7 @@ describe('the photos of a pose, for a validator', () => {
     expect(await screen.findByText('Texte alternatif et crédit enregistrés.')).toBeInTheDocument();
   });
 
-  it('should keep the correction when the alternative text is emptied', async () => {
+  it('should save the correction when the alternative text is emptied, which is optional', async () => {
     const photos = new FakePosePhotos();
     const { user } = open({ gateway: validator(), photos });
 
@@ -427,13 +470,14 @@ describe('the photos of a pose, for a validator', () => {
       }),
     );
     const zone = screen.getByRole('group', { name: 'Texte alternatif et crédit' });
-    await user.clear(within(zone).getByLabelText('Texte alternatif'));
+    await user.clear(within(zone).getByLabelText('Texte alternatif (facultatif)'));
     await user.click(within(zone).getByRole('button', { name: 'Enregistrer' }));
 
-    expect(
-      await within(zone).findByText('Décris la photo : le texte alternatif est obligatoire.'),
-    ).toBeInTheDocument();
-    expect(photos.corrected).toEqual([]);
+    await waitFor(() =>
+      expect(photos.corrected).toEqual([
+        { poseId: 'pose-bird', photoId: 'p2', altText: '', credit: 'Hugo Bernard' },
+      ]),
+    );
   });
 
   it('should tell the session expired when a removal is refused', async () => {

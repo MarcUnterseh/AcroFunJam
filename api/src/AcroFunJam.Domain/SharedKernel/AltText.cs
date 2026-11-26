@@ -4,7 +4,8 @@ namespace AcroFunJam.Domain.SharedKernel;
 
 /// <summary>
 /// The alternative text of a photo (story 10, R7, Q251): what the base and the flyer do, for whoever does not see the photo.
-/// Mandatory, never shown as a caption.
+/// Optional since the revision of 2026-11-26: a photo may have none (the site then describes it by its pose and rank). Never
+/// shown as a caption.
 /// </summary>
 public sealed record AltText
 {
@@ -15,12 +16,15 @@ public sealed record AltText
 
     private AltText(string value) => Value = value;
 
-    /// <summary>NFC, without superfluous spaces (a line break counts as a space).</summary>
-    public static Result<AltText> Create(string? raw)
+    /// <summary>
+    /// NFC, without superfluous spaces (a line break counts as a space). Missing, or only spaces: no alternative text
+    /// (<c>null</c>).
+    /// </summary>
+    public static Result<AltText?> Create(string? raw)
     {
         var text = NameText.Normalize(raw);
-        if (text.Length == 0) return PhotoContentErrors.AltTextRequired;
+        if (text.Length == 0) return Result<AltText?>.Success(null);
         if (NameText.IsLongerThan(text, MaxLength)) return PhotoContentErrors.AltTextTooLong;
-        return Result<AltText>.Success(new AltText(text));
+        return Result<AltText?>.Success(new AltText(text));
     }
 }

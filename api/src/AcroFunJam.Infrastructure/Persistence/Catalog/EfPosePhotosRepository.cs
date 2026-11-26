@@ -68,7 +68,7 @@ public sealed class EfPosePhotosRepository(AcroFunJamDbContext context, TrackedA
 
         foreach (var removed in stored.Except(current.Select(p => p.Id)).ToList())
         {
-            context.Set<PhotoRecord>().Remove(new PhotoRecord { Id = removed.Value, AltText = string.Empty, Credit = string.Empty });
+            context.Set<PhotoRecord>().Remove(new PhotoRecord { Id = removed.Value, Credit = string.Empty });
             stored.Remove(removed);
         }
 
@@ -79,7 +79,7 @@ public sealed class EfPosePhotosRepository(AcroFunJamDbContext context, TrackedA
     {
         Id = photo.Id.Value,
         PoseId = pose.Value,
-        AltText = photo.AltText.Value,
+        AltText = photo.AltText?.Value,
         Credit = photo.Credit.Value,
         Width = photo.Dimensions.Width,
         Height = photo.Dimensions.Height,
@@ -93,12 +93,18 @@ public sealed class EfPosePhotosRepository(AcroFunJamDbContext context, TrackedA
     private static Photo ToPhoto(PhotoRecord record) =>
         Photo.Rehydrate(
             new PhotoId(record.Id),
-            AltText.Create(record.AltText).Value ?? throw Invalid(record, "alternative text"),
+            StoredAltText(record),
             PhotoCredit.Create(record.Credit).Value ?? throw Invalid(record, "credit"),
             new PhotoDimensions(record.Width, record.Height),
             new RightsConfirmation(new PhotoManagerId(record.RightsConfirmedBy), record.RightsConfirmedAt),
             record.AdditionRank,
             record.AddedAt);
+
+    private static AltText? StoredAltText(PhotoRecord record)
+    {
+        var altText = AltText.Create(record.AltText);
+        return altText.IsSuccess ? altText.Value : throw Invalid(record, "alternative text");
+    }
 
     private static InvalidOperationException Invalid(PhotoRecord record, string what) => new($"Invalid stored {what} of the photo {record.Id}.");
 }

@@ -52,7 +52,7 @@ internal sealed class AddPosePhotoHandler(
             added = await photosLock.Run(command.Pose, async lockedCt =>
             {
                 var posePhotos = await photos.GetFor(command.Pose, lockedCt) ?? PosePhotos.For(command.Pose);
-                var photo = posePhotos.Add(id, file.Value!, altText.Value!, credit.Value!, rights.Value!, now);
+                var photo = posePhotos.Add(id, file.Value!, altText.Value, credit.Value!, rights.Value!, now);
                 if (photo.IsFailure) return photo.Error!;
 
                 photos.Save(posePhotos);

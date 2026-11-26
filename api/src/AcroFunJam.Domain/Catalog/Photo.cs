@@ -9,7 +9,8 @@ namespace AcroFunJam.Domain.Catalog;
 /// </summary>
 public sealed class Photo : Entity<PhotoId>
 {
-    public AltText AltText { get; private set; }
+    /// <summary>None when the photo was added or corrected without one (revision of 2026-11-26).</summary>
+    public AltText? AltText { get; private set; }
     public PhotoCredit Credit { get; private set; }
     public PhotoDimensions Dimensions { get; }
     public RightsConfirmation Rights { get; }
@@ -17,7 +18,7 @@ public sealed class Photo : Entity<PhotoId>
     public DateTimeOffset AddedAt { get; }
 
     private Photo(
-        PhotoId id, AltText altText, PhotoCredit credit, PhotoDimensions dimensions, RightsConfirmation rights, int additionRank,
+        PhotoId id, AltText? altText, PhotoCredit credit, PhotoDimensions dimensions, RightsConfirmation rights, int additionRank,
         DateTimeOffset addedAt) : base(id)
     {
         AltText = altText;
@@ -28,16 +29,16 @@ public sealed class Photo : Entity<PhotoId>
         AddedAt = addedAt;
     }
 
-    internal static Photo New(PhotoId id, PhotoFile file, AltText altText, PhotoCredit credit, RightsConfirmation rights, int rank, DateTimeOffset now) =>
+    internal static Photo New(PhotoId id, PhotoFile file, AltText? altText, PhotoCredit credit, RightsConfirmation rights, int rank, DateTimeOffset now) =>
         new(id, altText, credit, file.Dimensions, rights, rank, now);
 
     /// <summary>Restores a photo loaded from storage.</summary>
     public static Photo Rehydrate(
-        PhotoId id, AltText altText, PhotoCredit credit, PhotoDimensions dimensions, RightsConfirmation rights, int additionRank,
+        PhotoId id, AltText? altText, PhotoCredit credit, PhotoDimensions dimensions, RightsConfirmation rights, int additionRank,
         DateTimeOffset addedAt) => new(id, altText, credit, dimensions, rights, additionRank, addedAt);
 
     /// <returns>Whether anything changed.</returns>
-    internal bool Correct(AltText altText, PhotoCredit credit)
+    internal bool Correct(AltText? altText, PhotoCredit credit)
     {
         if (AltText == altText && Credit == credit) return false;
         AltText = altText;

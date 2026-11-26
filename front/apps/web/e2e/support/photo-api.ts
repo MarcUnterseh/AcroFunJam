@@ -7,7 +7,13 @@ type PhotoResponse = components['schemas']['PhotoResponse'];
 type ProblemDetails = components['schemas']['ProblemDetails'];
 
 /** A photo as the simulated catalog keeps it: its texts and its upright dimensions. */
-export type StoredPhoto = { id: string; altText: string; credit: string; width: number; height: number };
+export type StoredPhoto = {
+  id: string;
+  altText: string | null;
+  credit: string;
+  width: number;
+  height: number;
+};
 
 const maxPhotosPerPose = 5;
 const maxPhotoBytes = 10 * 1024 * 1024;
@@ -105,6 +111,15 @@ export class PhotoApi {
     photos.splice(index, 1);
   }
 
+  /** Its alternative text removed (by a validator, before the step): it has none any more. */
+  removeAltText(poseName: string, altText: string): void {
+    const photo = this.photosOfPose(this.catalogApi.poseNamed(poseName).id).find(
+      (p) => p.altText === altText,
+    );
+    if (!photo) throw new Error(`Aucune photo « ${altText} » pour la pose ${poseName}`);
+    photo.altText = null;
+  }
+
   /** The photos of the pose, the main one first. */
   of(poseName: string): readonly StoredPhoto[] {
     return this.photosOfPose(this.catalogApi.poseNamed(poseName).id);
@@ -177,7 +192,7 @@ export class PhotoApi {
     const field = (name: string) =>
       parts.find((part) => part.name === name && part.filename === null)?.content.toString('utf8');
     const file = parts.find((part) => part.name === 'file' && part.filename !== null)?.content;
-    const altText = normalized(field('altText') ?? '');
+    const altText = normalized(field('altText') ?? '') || null;
     const credit = normalized(field('credit') ?? '');
     if (!file || file.length === 0) return this.problem(route, 400, 'photo.file-required');
     if (file.length > maxPhotoBytes) return this.problem(route, 413, 'photo.too-large');
@@ -185,8 +200,8 @@ export class PhotoApi {
     if (!format) return this.problem(route, 400, 'photo.format-not-accepted');
     const { width, height } = dimensionsOf(file, format);
     if (Math.min(width, height) < minShortSide) return this.problem(route, 400, 'photo.too-small');
-    if (altText === '') return this.problem(route, 400, 'photo.alt-text-required');
-    if ([...altText].length > 200) return this.problem(route, 400, 'photo.alt-text-too-long');
+    if (altText !== null && [...altText].length > 200)
+      return this.problem(route, 400, 'photo.alt-text-too-long');
     if (credit === '') return this.problem(route, 400, 'photo.credit-required');
     if ([...credit].length > 100) return this.problem(route, 400, 'photo.credit-too-long');
     if (field('rightsConfirmed') !== 'true')
@@ -211,9 +226,10 @@ export class PhotoApi {
     const photo = this.photosOfRoute(route, 2)?.find((stored) => stored.id === this.segment(route, 0));
     if (!photo) return this.problem(route, 404, 'catalog.photo-not-found');
     const body = route.request().postDataJSON() as { altText: string | null; credit: string | null };
-    const altText = normalized(body.altText ?? '');
+    const altText = normalized(body.altText ?? '') || null;
     const credit = normalized(body.credit ?? '');
-    if (altText === '') return this.problem(route, 400, 'photo.alt-text-required');
+    if (altText !== null && [...altText].length > 200)
+      return this.problem(route, 400, 'photo.alt-text-too-long');
     if (credit === '') return this.problem(route, 400, 'photo.credit-required');
     Object.assign(photo, { altText, credit });
     return route.fulfill({ json: this.response(photo) });

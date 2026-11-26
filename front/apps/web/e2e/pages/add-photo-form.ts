@@ -37,7 +37,7 @@ export class AddPhotoForm {
   }
 
   get altText(): Locator {
-    return this.form.getByRole('textbox', { name: 'Texte alternatif', exact: true });
+    return this.form.getByRole('textbox', { name: 'Texte alternatif (facultatif)', exact: true });
   }
 
   get credit(): Locator {

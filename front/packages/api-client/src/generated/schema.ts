@@ -1211,7 +1211,7 @@ export interface components {
     PhotoResponse: {
       /** Format: uuid */
       id: string;
-      altText: string;
+      altText: null | string;
       credit: string;
       /** Format: int32 */
       width: number | string;

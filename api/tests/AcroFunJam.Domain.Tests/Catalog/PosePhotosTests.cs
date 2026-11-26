@@ -53,12 +53,23 @@ public sealed class PosePhotosTests
         var added = photos.Add(Id(1), Landscape, Alt("Bird vue de profil"), Credit("Léa Martin"), Rights(), Now).Value!;
 
         added.Id.ShouldBe(Id(1));
-        added.AltText.Value.ShouldBe("Bird vue de profil");
+        added.AltText!.Value.ShouldBe("Bird vue de profil");
         added.Credit.Value.ShouldBe("Léa Martin");
         added.Dimensions.ShouldBe(new PhotoDimensions(1600, 1200));
         added.Rights.ShouldBe(Rights());
         added.AddedAt.ShouldBe(Now);
         photos.MainPhotoId.ShouldBe(Id(1));
+        photos.DomainEvents.ShouldBe([new PhotoAdded(Bird, Id(1), Now)]);
+    }
+
+    [Fact]
+    public void Add_Should_AddThePhotoWithoutAltText_When_ItHasNone()
+    {
+        var photos = PosePhotos.For(Bird);
+
+        var added = photos.Add(Id(1), Landscape, null, Credit("Léa Martin"), Rights(), Now).Value!;
+
+        added.AltText.ShouldBeNull();
         photos.DomainEvents.ShouldBe([new PhotoAdded(Bird, Id(1), Now)]);
     }
 
@@ -172,9 +183,20 @@ public sealed class PosePhotosTests
 
         var corrected = photos.Correct(Id(2), Alt("Bird vue de face"), Credit("Hugo Bernard"), Now).Value!;
 
-        corrected.AltText.Value.ShouldBe("Bird vue de face");
+        corrected.AltText!.Value.ShouldBe("Bird vue de face");
         corrected.Credit.Value.ShouldBe("Hugo Bernard");
         photos.DomainEvents.ShouldBe([new PhotoCorrected(Bird, Id(2), Now)]);
+    }
+
+    [Fact]
+    public void Correct_Should_RemoveTheAltText_When_ItIsCorrectedToNone()
+    {
+        var photos = WithPhotos(1);
+
+        var corrected = photos.Correct(Id(1), null, Credit("Léa Martin"), Now).Value!;
+
+        corrected.AltText.ShouldBeNull();
+        photos.DomainEvents.ShouldBe([new PhotoCorrected(Bird, Id(1), Now)]);
     }
 
     [Fact]

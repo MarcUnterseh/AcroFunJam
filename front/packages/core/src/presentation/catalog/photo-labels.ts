@@ -46,14 +46,14 @@ export const posePhotoLabels = {
   addPageTitle: (pose: string) => `Ajouter une photo de ${pose}`,
   /** The link back to the page of the pose while its name is not known yet. */
   back: 'Retour',
-  allFieldsRequired: 'Tous les champs sont obligatoires.',
+  allFieldsRequired: 'Tous les champs sont obligatoires, sauf le texte alternatif.',
   photo: 'Photo',
   photoHelp: 'JPEG, PNG, WebP ou HEIC, au moins 800 pixels sur le plus petit côté.',
   choosePhoto: 'Choisir une photo',
   changePhoto: 'Changer de photo',
   heicPreviewUnavailable:
     "Ton navigateur ne sait pas afficher cette photo HEIC. AcroFunJam la vérifiera après l'envoi.",
-  altText: 'Texte alternatif',
+  altText: 'Texte alternatif (facultatif)',
   altTextHelp:
     "Décris la pose pour qui ne voit pas la photo : ce que font la base et le flyer. Inutile d'écrire « Photo de ». Si la pose a plusieurs photos, précise l'angle (vue de côté, détail des prises).",
   altTextExample:
@@ -80,7 +80,6 @@ export const posePhotoLabels = {
   /** UX-20: the dimensions of the photo chosen, when the browser can read them. */
   tooSmallMeasured: (width: number, height: number) =>
     `Cette photo mesure ${width} × ${height} pixels : il faut au moins 800 pixels sur le plus petit côté. Choisis une photo plus grande.`,
-  altTextRequired: 'Décris la photo : le texte alternatif est obligatoire.',
   altTextTooLong: 'Le texte alternatif ne doit pas dépasser 200 caractères.',
   creditRequired: "Indique le crédit de la photo : le nom de la personne qui l'a prise.",
   creditTooLong: 'Le crédit ne doit pas dépasser 100 caractères.',
@@ -98,6 +97,13 @@ export const photoCountLabel = (count: number) =>
 /** The link under the main photo towards the other photos, at the bottom of the page. */
 export const morePhotosLink = (others: number) =>
   others === 1 ? "Voir l'autre photo" : `Voir les ${others} autres photos`;
+
+/**
+ * What a photo is said to be: its alternative text, or, when it has none (revision of 2026-11-26), its rank in the order
+ * of presentation (the main photo is the first) and its pose: « Photo 2 de Bird ».
+ */
+export const photoDescription = (photo: { readonly altText: string | null }, rank: number, pose: string) =>
+  photo.altText ?? `Photo ${rank} de ${pose}`;
 
 export const enlargedPhotoTitle = (position: number, count: number, pose: string) =>
   `Photo ${position} sur ${count} de ${pose}`;
@@ -130,7 +136,6 @@ const messageOfCode: Readonly<Record<string, string>> = {
   'photo.too-large': posePhotoLabels.tooLarge,
   'photo.too-small': posePhotoLabels.tooSmall,
   'photo.unreadable': "Cette photo n'a pas pu être lue. Choisis une autre photo.",
-  'photo.alt-text-required': posePhotoLabels.altTextRequired,
   'photo.alt-text-too-long': posePhotoLabels.altTextTooLong,
   'photo.credit-required': posePhotoLabels.creditRequired,
   'photo.credit-too-long': posePhotoLabels.creditTooLong,

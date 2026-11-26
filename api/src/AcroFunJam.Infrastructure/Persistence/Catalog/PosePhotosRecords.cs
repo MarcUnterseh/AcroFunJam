@@ -16,7 +16,8 @@ public sealed class PhotoRecord
 
     public Guid PoseId { get; set; }
 
-    public required string AltText { get; set; }
+    /// <summary>None when the photo has no alternative text (revision of 2026-11-26).</summary>
+    public string? AltText { get; set; }
 
     public required string Credit { get; set; }
 

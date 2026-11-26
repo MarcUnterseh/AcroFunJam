@@ -6,6 +6,7 @@ import {
   photoCountLabel,
   photoCreditLabel,
   photoErrorMessage,
+  photoDescription,
   photoFileSummary,
   posePhotoLabels as labels,
   removalConsequenceText,
@@ -35,6 +36,23 @@ describe('the texts of the photos', () => {
 
   it('should title the enlargement', () => {
     expect(enlargedPhotoTitle(2, 3, 'Bird')).toBe('Photo 2 sur 3 de Bird');
+  });
+
+  it('should describe a photo by its alternative text when it has one', () => {
+    expect(photoDescription({ altText: 'Bird vue de face' }, 2, 'Bird')).toBe('Bird vue de face');
+  });
+
+  it('should describe a photo without alternative text by its rank and its pose', () => {
+    expect(photoDescription({ altText: null }, 2, 'Bird')).toBe('Photo 2 de Bird');
+    expect(photoDescription({ altText: null }, 1, 'Bird')).toBe('Photo 1 de Bird');
+  });
+
+  it('should present the field of the alternative text as optional', () => {
+    expect(labels.altText).toBe('Texte alternatif (facultatif)');
+  });
+
+  it('should tell which field of the form is optional', () => {
+    expect(labels.allFieldsRequired).toBe('Tous les champs sont obligatoires, sauf le texte alternatif.');
   });
 
   it('should announce the photo shown in the enlargement', () => {

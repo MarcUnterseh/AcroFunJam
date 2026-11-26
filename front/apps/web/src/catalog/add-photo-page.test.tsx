@@ -50,9 +50,12 @@ const photoFile = () =>
     type: 'image/jpeg',
   });
 
-const fill = async (user: ReturnType<typeof userEvent.setup>, { file = true, rights = true } = {}) => {
+const fill = async (
+  user: ReturnType<typeof userEvent.setup>,
+  { file = true, rights = true, altText = 'Throne vu de profil' } = {},
+) => {
   if (file) await user.upload(screen.getByLabelText('Photo'), photoFile());
-  await user.type(screen.getByLabelText('Texte alternatif'), 'Throne vu de profil');
+  if (altText) await user.type(screen.getByLabelText('Texte alternatif (facultatif)'), altText);
   await user.type(screen.getByLabelText('Crédit'), 'Léa Martin');
   if (rights) await user.click(screen.getByRole('checkbox'));
 };
@@ -64,7 +67,9 @@ describe('the page « Ajouter une photo »', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Ajouter une photo de Throne' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Tous les champs sont obligatoires.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Tous les champs sont obligatoires, sauf le texte alternatif.'),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText('Photo')).toHaveAttribute('type', 'file');
     const rights = screen.getByRole('checkbox', {
       name: /Je confirme que l'auteur de la photo a autorisé sa publication/,
@@ -127,7 +132,6 @@ describe('the page « Ajouter une photo »', () => {
     await user.click(screen.getByRole('button', { name: 'Ajouter la photo' }));
 
     expect(screen.getByText('Choisis une photo.')).toBeInTheDocument();
-    expect(screen.getByText('Décris la photo : le texte alternatif est obligatoire.')).toBeInTheDocument();
     expect(
       screen.getByText("Indique le crédit de la photo : le nom de la personne qui l'a prise."),
     ).toBeInTheDocument();
@@ -153,6 +157,17 @@ describe('the page « Ajouter une photo »', () => {
     expect(await screen.findByText('Photo ajoutée à Throne.')).toBeInTheDocument();
   });
 
+  it('should send a photo without alternative text, which is optional', async () => {
+    const { user, photos } = open();
+    await screen.findByRole('heading', { level: 1, name: 'Ajouter une photo de Throne' });
+
+    await fill(user, { altText: '' });
+    await user.click(screen.getByRole('button', { name: 'Ajouter la photo' }));
+
+    expect(await screen.findByText('Photo ajoutée à Throne.')).toBeInTheDocument();
+    expect(photos.added).toMatchObject([{ poseId: 'pose-throne', altText: '', credit: 'Léa Martin' }]);
+  });
+
   it('should keep the input and tell why when AcroFunJam cannot be reached', async () => {
     const photos = new FakePosePhotos();
     photos.addAnswer.set(fail({ kind: 'unreachable' }));
@@ -167,14 +182,14 @@ describe('the page « Ajouter une photo »', () => {
         "La photo n'a pas pu être envoyée : impossible de joindre AcroFunJam. Vérifie ta connexion Internet, puis réessaie.",
       ),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText('Texte alternatif')).toHaveValue('Throne vu de profil');
+    expect(screen.getByLabelText('Texte alternatif (facultatif)')).toHaveValue('Throne vu de profil');
     expect(screen.getByRole('checkbox')).toBeChecked();
   });
 
   it('should ask to confirm before leaving the page with an input', async () => {
     const { user } = open();
     await screen.findByRole('heading', { level: 1, name: 'Ajouter une photo de Throne' });
-    await user.type(screen.getByLabelText('Texte alternatif'), 'Throne');
+    await user.type(screen.getByLabelText('Texte alternatif (facultatif)'), 'Throne');
 
     await user.click(screen.getByRole('button', { name: 'Annuler' }));
 
@@ -203,7 +218,7 @@ describe('the page « Ajouter une photo »', () => {
     it('should bring the question into view with the focus, then give it back to « Annuler »', async () => {
       const { user } = open();
       await screen.findByRole('heading', { level: 1, name: 'Ajouter une photo de Throne' });
-      await user.type(screen.getByLabelText('Texte alternatif'), 'Throne');
+      await user.type(screen.getByLabelText('Texte alternatif (facultatif)'), 'Throne');
 
       await user.click(screen.getByRole('button', { name: 'Annuler' }));
 
@@ -262,7 +277,7 @@ describe('the page « Ajouter une photo »', () => {
         'Ta session a expiré. Connecte-toi de nouveau, puis choisis de nouveau la photo.',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText('Texte alternatif')).toHaveValue('Throne vu de profil');
+    expect(screen.getByLabelText('Texte alternatif (facultatif)')).toHaveValue('Throne vu de profil');
     expect(screen.getByLabelText('Crédit')).toHaveValue('Léa Martin');
   });
 
@@ -414,7 +429,6 @@ describe('the sending of a photo', () => {
 
     await user.click(screen.getByRole('button', { name: 'Ajouter la photo' }));
 
-    expect(screen.getByText('Décris la photo : le texte alternatif est obligatoire.')).toBeInTheDocument();
     expect(
       screen.getByText("Confirme tes droits sur la photo et l'accord des personnes photographiées."),
     ).toBeInTheDocument();

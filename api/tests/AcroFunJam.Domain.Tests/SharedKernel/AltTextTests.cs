@@ -2,7 +2,7 @@ using AcroFunJam.Domain.SharedKernel;
 
 namespace AcroFunJam.Domain.Tests.SharedKernel;
 
-/// <summary>The alternative text of a photo (story 10, R7): mandatory, without superfluous spaces, 200 characters at most.</summary>
+/// <summary>The alternative text of a photo (story 10, R7): optional (revision of 2026-11-26), without superfluous spaces, 200 characters at most.</summary>
 public sealed class AltTextTests
 {
     [Fact]
@@ -22,9 +22,13 @@ public sealed class AltTextTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("    ")]
-    public void Create_Should_FailWithAltTextRequired_When_TheTextIsMissingOrOnlySpaces(string? raw)
+    [InlineData(" \n\t ")]
+    public void Create_Should_SucceedWithoutAltText_When_TheTextIsMissingOrOnlySpaces(string? raw)
     {
-        AltText.Create(raw).Error.ShouldBe(PhotoContentErrors.AltTextRequired);
+        var result = AltText.Create(raw);
+
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBeNull();
     }
 
     [Fact]

@@ -17,8 +17,9 @@ Fonctionnalité: Ajouter des photos à une pose publiée
   # - pose publiée seulement ; formats JPEG, PNG, WebP, HEIC reconnus au contenu ; 10 Mo au plus pour l'API ; au moins
   #   800 pixels sur le plus petit côté (Q254 à Q256) ; le site réduit avant l'envoi une photo plus lourde qu'il sait
   #   lire (JPEG, environ 2400 pixels sur le plus grand côté) ;
-  # - texte alternatif obligatoire, 200 caractères au plus, sur le modèle de la charte : position de la base, prises,
-  #   orientation du flyer, vue (Q251) ;
+  # - texte alternatif, 200 caractères au plus, sur le modèle de la charte : position de la base, prises,
+  #   orientation du flyer, vue (Q251) ; FACULTATIF depuis la révision du 2026-11-26 (porteur du produit) : sans lui, le
+  #   site présente un texte de repli (« Photo 2 de Bird ») ;
   # - crédit : l'auteur de la photo seulement, obligatoire, 100 caractères au plus ; pseudonyme ou collectif acceptés,
   #   « inconnu » refusé ; les personnes photographiées restent anonymes (Q252) ;
   # - une seule case, jamais cochée par défaut : « Je confirme que l'auteur de la photo a autorisé sa publication sur
@@ -32,8 +33,8 @@ Fonctionnalité: Ajouter des photos à une pose publiée
   # validation, sans scénario.
   #
   # Fichiers des scénarios : des fixtures nommées par leur format, leur poids et leurs dimensions (« une photo JPEG de
-  # 2 Mo de 1600×1200 »). Sauf mention contraire, une photo est ajoutée avec un texte alternatif, un crédit et la case
-  # des droits cochée. Les textes alternatifs courts (« Bird vue de face ») abrègent les exemples ; la charte demande
+  # 2 Mo de 1600×1200 »). Sauf mention contraire (« sans texte alternatif »), une photo est ajoutée avec un texte
+  # alternatif, un crédit et la case des droits cochée. Les textes alternatifs courts (« Bird vue de face ») abrègent les exemples ; la charte demande
   # le modèle en quatre parties.
   #
   # Personnages : Alice est utilisatrice, Bruno validateur, Paul administrateur.
@@ -163,8 +164,11 @@ Fonctionnalité: Ajouter des photos à une pose publiée
       Quand Bruno ajoute à la pose "Throne" une photo JPEG de 1 Mo de 1200×799
       Alors l'ajout est impossible car la photo doit mesurer au moins 800 pixels sur son plus petit côté
 
-  # Q251 et charte des photos : position de la base, prises, orientation du flyer, vue.
-  Règle: Le texte alternatif est obligatoire, sans espaces superflus, et compte au plus 200 caractères
+  # Q251 et charte des photos : position de la base, prises, orientation du flyer, vue (recommandé).
+  # Révisée le 2026-11-26 par le porteur du produit : le texte alternatif devient FACULTATIF (decouverte.md, story 10,
+  # « Révision du porteur du produit (2026-11-26) »). Sans lui, le site présente un texte de repli (« Photo 2 de Bird »,
+  # consulter-les-photos-des-poses.feature).
+  Règle: Le texte alternatif est facultatif, sans espaces superflus, et compte au plus 200 caractères
 
     Contexte:
       Soit Bruno est validateur
@@ -185,14 +189,14 @@ Fonctionnalité: Ajouter des photos à une pose publiée
       Alors l'ajout est impossible car le texte alternatif est trop long
 
     @api
-    Scénario: Une photo sans texte alternatif ne peut pas être ajoutée
+    Scénario: Une photo sans texte alternatif est ajoutée sans texte alternatif
       Quand Bruno ajoute à la pose "Folded Leaf" une photo JPEG de 2 Mo de 1600×1200, sans texte alternatif
-      Alors l'ajout est impossible car le texte alternatif est obligatoire
+      Alors la page présente la pose "Folded Leaf" avec 1 photo, sans texte alternatif
 
     @api
     Scénario: Un texte alternatif fait seulement d'espaces vaut absence de texte alternatif
       Quand Bruno ajoute à la pose "Folded Leaf" une photo JPEG de 2 Mo de 1600×1200, avec un texte alternatif fait seulement d'espaces
-      Alors l'ajout est impossible car le texte alternatif est obligatoire
+      Alors la page présente la pose "Folded Leaf" avec 1 photo, sans texte alternatif
 
   # Q252, décision 3 : le crédit nomme l'auteur de la photo, jamais les personnes photographiées. « Inconnu » est
   # comparé avec la clé de comparaison du nom (casse, accents, ponctuation), sur la clé entière ; valeurs refusées :
@@ -351,7 +355,7 @@ Fonctionnalité: Ajouter des photos à une pose publiée
       Alors le retrait est impossible car la photo n'est plus dans le catalogue
 
   # Q260 : corriger une description ne demande pas de téléverser de nouveau ; changer de fichier, c'est retirer, puis
-  # ajouter.
+  # ajouter. Révisée le 2026-11-26 (texte alternatif facultatif) : le vider laisse la photo sans texte alternatif.
   Règle: Un validateur ou un administrateur change le texte alternatif et le crédit d'une photo
 
     Contexte:
@@ -371,9 +375,14 @@ Fonctionnalité: Ajouter des photos à une pose publiée
       Alors la photo « Photo de Folded Leaf » de la pose "Folded Leaf" est créditée « Léa Martin »
 
     @api
-    Scénario: Un texte alternatif corrigé suit les mêmes règles qu'à l'ajout
+    Scénario: Un texte alternatif corrigé fait seulement d'espaces laisse la photo sans texte alternatif
       Quand Bruno change le texte alternatif de la photo « Photo de Folded Leaf » en un texte fait seulement d'espaces
-      Alors le changement est impossible car le texte alternatif est obligatoire
+      Alors la page présente la pose "Folded Leaf" avec 1 photo, sans texte alternatif
+
+    @api
+    Scénario: Un texte alternatif corrigé suit les mêmes règles qu'à l'ajout
+      Quand Bruno change le texte alternatif de la photo « Photo de Folded Leaf » en un texte alternatif de 201 caractères
+      Alors le changement est impossible car le texte alternatif est trop long
 
   # Q264 : les photos ne font pas partie du contenu d'une modification de pose (story 6) ; contrairement à
   # l'étiquetage direct (story 9a), elles ne changent pas la version de la pose.
@@ -506,9 +515,16 @@ Fonctionnalité: Ajouter des photos à une pose publiée
       Exemples:
         | cas              | manque                         | message                                                                   |
         | photo            | sans choisir de fichier        | Choisis une photo.                                                        |
-        | texte alternatif | sans texte alternatif          | Décris la photo : le texte alternatif est obligatoire.                    |
         | crédit           | sans crédit                    | Indique le crédit de la photo : le nom de la personne qui l'a prise.      |
         | case des droits  | sans cocher la case des droits | Confirme tes droits sur la photo et l'accord des personnes photographiées. |
+
+    # Révisé le 2026-11-26 : le texte alternatif est facultatif (l'exemple « texte alternatif » du plan ci-dessus est
+    # retiré) ; la photo est présentée avec le texte de repli « Photo 1 de Throne ».
+    @web
+    Scénario: Le validateur ajoute sur le site une photo sans texte alternatif
+      Quand Bruno ajoute sur le site, depuis la pose "Throne", une photo JPEG de 2 Mo de 1600×1200, sans texte alternatif, avec le crédit « Léa Martin »
+      Alors le site présente la page de la pose "Throne" et annonce « Photo ajoutée à Throne. »
+      Et la page présente la pose "Throne" avec la photo « Photo 1 de Throne », créditée « Photo : Léa Martin »
 
     @web
     Scénario: AcroFunJam injoignable pendant l'ajout : le site le signale et garde la saisie

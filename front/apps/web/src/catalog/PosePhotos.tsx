@@ -11,6 +11,7 @@ import {
   photoCountLabel,
   photoCreditLabel,
   photoCreditMaxLength,
+  photoDescription,
   photoErrorMessage,
   posePhotoLabels as labels,
   removalConsequence,
@@ -87,13 +88,18 @@ export function PhotoFocus({ page, children }: { readonly page: PosePage; readon
   );
 }
 
-/** A photo, entire on its mat, a button that enlarges it; its credit under it. */
+/**
+ * A photo, entire on its mat, a button that enlarges it; its credit under it. Described by its alternative text, or by
+ * its rank and its pose when it has none.
+ */
 function PhotoFigure({
   photo,
+  description,
   main = false,
   onEnlarge,
 }: {
   readonly photo: PosePhoto;
+  readonly description: string;
   readonly main?: boolean;
   readonly onEnlarge: () => void;
 }) {
@@ -104,7 +110,7 @@ function PhotoFigure({
         id={enlargeButtonId(photo.id)}
         type="button"
         className="pose-photo__enlarge"
-        aria-label={labels.enlarge(photo.altText)}
+        aria-label={labels.enlarge(description)}
         onClick={onEnlarge}
       >
         {broken ? (
@@ -113,7 +119,7 @@ function PhotoFigure({
           <img
             className="photo-img"
             src={photo.sources.page}
-            alt={photo.altText}
+            alt={description}
             width={photo.width}
             height={photo.height}
             loading={main ? 'eager' : 'lazy'}
@@ -182,7 +188,7 @@ function PhotoManagement({
   const [zone, setZone] = useState<Zone>('actions');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<PosePhotosError | null>(null);
-  const [altText, setAltText] = useState(photo.altText);
+  const [altText, setAltText] = useState(photo.altText ?? '');
   const [credit, setCredit] = useState(photo.credit);
   const [fieldErrors, setFieldErrors] = useState<{ altText?: string; credit?: string }>({});
   const questionId = useId();
@@ -190,6 +196,7 @@ function PhotoManagement({
   const altTextId = useId();
   const creditId = useId();
   const isMain = photos[0]?.id === photo.id;
+  const description = photoDescription(photo, photos.findIndex((p) => p.id === photo.id) + 1, page.name);
   const focus = useContext(PhotoFocusContext);
   const question = useRef<HTMLParagraphElement>(null);
   const correctButton = useRef<HTMLButtonElement>(null);
@@ -224,7 +231,7 @@ function PhotoManagement({
     setBusy(false);
     if (!result.ok) return failed(result.error);
     // The photo goes to the top of the body: the focus follows it.
-    await done(labels.mainChosen(photo.altText, page.name), () =>
+    await done(labels.mainChosen(description, page.name), () =>
       document.getElementById(enlargeButtonId(photo.id)),
     );
   };
@@ -249,7 +256,7 @@ function PhotoManagement({
     const creditError = checkPhotoCredit(credit);
     setFieldErrors({
       ...(altTextError
-        ? { altText: altTextError === 'required' ? labels.altTextRequired : labels.altTextTooLong }
+        ? { altText: labels.altTextTooLong }
         : {}),
       ...(creditError
         ? { credit: creditError === 'required' ? labels.creditRequired : labels.creditTooLong }
@@ -359,7 +366,7 @@ function PhotoManagement({
             onClick={() => (busy ? undefined : void choose())}
           >
             <span aria-hidden="true">{labels.chooseAsMain}</span>
-            <span className="visually-hidden">{labels.chooseAsMainName(photo.altText)}</span>
+            <span className="visually-hidden">{labels.chooseAsMainName(description)}</span>
           </button>
         )}
         <button
@@ -367,7 +374,7 @@ function PhotoManagement({
           type="button"
           className="button button--secondary button--small"
           onClick={() => {
-            setAltText(photo.altText);
+            setAltText(photo.altText ?? '');
             setCredit(photo.credit);
             setFieldErrors({});
             setError(null);
@@ -375,7 +382,7 @@ function PhotoManagement({
           }}
         >
           <span aria-hidden="true">{labels.correct}</span>
-          <span className="visually-hidden">{labels.correctName(photo.altText)}</span>
+          <span className="visually-hidden">{labels.correctName(description)}</span>
         </button>
         <button
           ref={removeButton}
@@ -387,7 +394,7 @@ function PhotoManagement({
           }}
         >
           <span aria-hidden="true">{labels.remove}</span>
-          <span className="visually-hidden">{labels.removeName(photo.altText)}</span>
+          <span className="visually-hidden">{labels.removeName(description)}</span>
         </button>
       </div>
     </>
@@ -475,7 +482,12 @@ export function MainPhotoSection({
         <div className="pose-photos__lead">
           {safetyNote}
           <div className="pose-photo-item">
-            <PhotoFigure photo={main} main onEnlarge={() => onEnlarge(0)} />
+            <PhotoFigure
+              photo={main}
+              description={photoDescription(main, 1, page.name)}
+              main
+              onEnlarge={() => onEnlarge(0)}
+            />
             {manages && (
               <>
                 <p className="pose-photo__main-mark">
@@ -529,7 +541,11 @@ export function OtherPhotosSection({
       <ul className={`pose-photos__grid${manages ? ' pose-photos__grid--manage' : ''}`} role="list">
         {photos.slice(1).map((photo, index) => (
           <li key={photo.id} className="pose-photo-item">
-            <PhotoFigure photo={photo} onEnlarge={() => onEnlarge(index + 1)} />
+            <PhotoFigure
+              photo={photo}
+              description={photoDescription(photo, index + 2, page.name)}
+              onEnlarge={() => onEnlarge(index + 1)}
+            />
             {manages && <PhotoManagement page={page} photos={photos} photo={photo} />}
           </li>
         ))}
@@ -580,7 +596,9 @@ export function PhotoViewer({
   useEffect(() => {
     if (shown.current === index || !photo) return;
     shown.current = index;
-    announce(enlargedPhotoAnnouncement(index + 1, photos.length, page.name, photo.altText));
+    announce(
+      enlargedPhotoAnnouncement(index + 1, photos.length, page.name, photoDescription(photo, index + 1, page.name)),
+    );
   }, [index, photo, photos.length, page.name, announce]);
 
   if (!photo) return null;
@@ -610,7 +628,7 @@ export function PhotoViewer({
         <img
           className="photo-img"
           src={photo.sources.enlarged}
-          alt={photo.altText}
+          alt={photoDescription(photo, index + 1, page.name)}
           width={photo.width}
           height={photo.height}
         />

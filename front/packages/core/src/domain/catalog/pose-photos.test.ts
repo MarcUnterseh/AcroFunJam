@@ -110,12 +110,12 @@ describe('planPhotoUpload', () => {
 });
 
 describe('checkAltText and checkPhotoCredit', () => {
-  it.each([
-    ['', 'required'],
-    ['    ', 'required'],
-    ['a'.repeat(201), 'too-long'],
-  ])('should refuse the alternative text %j', (text, error) => {
-    expect(checkAltText(text)).toBe(error);
+  it('should refuse an alternative text longer than 200 characters', () => {
+    expect(checkAltText('a'.repeat(201))).toBe('too-long');
+  });
+
+  it.each(['', '    '])('should accept a missing alternative text %j, which is optional', (text) => {
+    expect(checkAltText(text)).toBeNull();
   });
 
   it('should accept an alternative text of 200 characters', () => {
@@ -139,7 +139,6 @@ describe('checkPhotoInput', () => {
   it('should give every missing field at once', () => {
     expect(checkPhotoInput({ hasFile: false, altText: '', credit: ' ', rightsConfirmed: false })).toEqual({
       file: 'required',
-      altText: 'required',
       credit: 'required',
       rights: 'required',
     });

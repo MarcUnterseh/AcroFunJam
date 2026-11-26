@@ -104,7 +104,7 @@ test.describe('the catalog', () => {
     shoot,
   }) => {
     seedExamples(site, photoApi);
-    photoApi.removeElsewhere('Throne', photoApi.of('Throne')[0]!.altText);
+    photoApi.removeElsewhere('Throne', photoApi.of('Throne')[0]!.altText!);
     await new CatalogPage(page).open();
     await expect(page.locator('.pose-card img')).toHaveCount(1);
     await imagesLoaded(page);
@@ -236,7 +236,7 @@ test.describe('the page « Ajouter une photo de Throne »', () => {
   /** Throne without photo, Bruno validator on the page « Ajouter une photo de Throne ». */
   const openAddPhoto = async (page: Page, site: SimulatedSite, photoApi: PhotoApi) => {
     seedExamples(site, photoApi);
-    photoApi.removeElsewhere('Throne', photoApi.of('Throne')[0]!.altText);
+    photoApi.removeElsewhere('Throne', photoApi.of('Throne')[0]!.altText!);
     await signIn(page, site, bruno, 'validator');
     await openPose(page, site, 'Throne');
     await page

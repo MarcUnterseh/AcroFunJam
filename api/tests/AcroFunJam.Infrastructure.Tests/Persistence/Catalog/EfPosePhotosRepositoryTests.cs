@@ -35,9 +35,9 @@ public sealed class EfPosePhotosRepositoryTests(PostgreSqlFixture database) : IC
 
     private static PhotoId NewId() => new(Guid.NewGuid());
 
-    private static void AddTo(PosePhotos photos, PhotoId id, string altText, int width = 1600, int height = 1200) =>
+    private static void AddTo(PosePhotos photos, PhotoId id, string? altText, int width = 1600, int height = 1200) =>
         photos.Add(id, PhotoFile.Accept(PhotoFormat.Jpeg, PhotoFileSize.Create(1).Value!, new PhotoDimensions(width, height)).Value!,
-            AltText.Create(altText).Value!, PhotoCredit.Create("Léa Martin").Value!, new RightsConfirmation(Bruno, Now), Now).IsSuccess.ShouldBeTrue();
+            AltText.Create(altText).Value, PhotoCredit.Create("Léa Martin").Value!, new RightsConfirmation(Bruno, Now), Now).IsSuccess.ShouldBeTrue();
 
     /// <summary>Reads the stored photos of Bird in a new context (none when absent), changes them and saves them, as a use case does.</summary>
     private async Task<AcroFunJam.Domain.Common.Result<bool>> Change(Action<PosePhotos> change)
@@ -72,11 +72,23 @@ public sealed class EfPosePhotosRepositoryTests(PostgreSqlFixture database) : IC
 
         var stored = (await Stored()).ShouldNotBeNull();
         stored.MainPhotoId.ShouldBe(first);
-        stored.InPresentationOrder().Select(p => (p.Id, p.AltText.Value, p.Credit.Value, p.Dimensions, p.Rights, p.AddedAt))
+        stored.InPresentationOrder().Select(p => (p.Id, p.AltText!.Value, p.Credit.Value, p.Dimensions, p.Rights, p.AddedAt))
             .ShouldBe([
                 (first, "Bird vue de profil", "Léa Martin", new PhotoDimensions(1600, 1200), new RightsConfirmation(Bruno, Now), Now),
                 (second, "Bird vue de face", "Léa Martin", new PhotoDimensions(900, 1200), new RightsConfirmation(Bruno, Now), Now),
             ]);
+    }
+
+    [Fact]
+    public async Task Save_Should_StoreAPhotoWithoutAltText_When_ItHasNoneOrItIsRemovedByACorrection()
+    {
+        var (first, second) = (NewId(), NewId());
+        await Change(p => { AddTo(p, first, null); AddTo(p, second, "Bird vue de face"); });
+
+        (await Change(p => p.Correct(second, null, PhotoCredit.Create("Léa Martin").Value!, Now))).IsSuccess.ShouldBeTrue();
+
+        var stored = (await Stored()).ShouldNotBeNull();
+        stored.InPresentationOrder().Select(p => p.AltText).ShouldBe([null, null]);
     }
 
     [Fact]
@@ -94,7 +106,7 @@ public sealed class EfPosePhotosRepositoryTests(PostgreSqlFixture database) : IC
 
         var stored = (await Stored()).ShouldNotBeNull();
         stored.MainPhotoId.ShouldBe(third);
-        stored.InPresentationOrder().Select(p => (p.AltText.Value, p.Credit.Value)).ShouldBe([("Bird 3", "Léa Martin"), ("Bird vue de face", "Hugo Bernard")]);
+        stored.InPresentationOrder().Select(p => (p.AltText!.Value, p.Credit.Value)).ShouldBe([("Bird 3", "Léa Martin"), ("Bird vue de face", "Hugo Bernard")]);
         await using var context = database.CreateDbContext();
         (await context.Set<PhotoRecord>().AnyAsync(p => p.Id == first.Value, Ct)).ShouldBeFalse();
     }
@@ -145,6 +157,6 @@ public sealed class EfPosePhotosRepositoryTests(PostgreSqlFixture database) : IC
         repository.Save(photos);
 
         (await UnitOfWorks.For(context, aggregates).SaveChanges(Ct)).IsSuccess.ShouldBeTrue();
-        (await Stored()).ShouldNotBeNull().InPresentationOrder().Select(p => p.AltText.Value).ShouldBe(["Bird 2", "Bird 3"]);
+        (await Stored()).ShouldNotBeNull().InPresentationOrder().Select(p => p.AltText!.Value).ShouldBe(["Bird 2", "Bird 3"]);
     }
 }

@@ -95,6 +95,15 @@ describe('createPosePageGateway', () => {
     expect(new URL(requests[0]!.url).pathname).toBe(`/catalog/poses/${starId}`);
   });
 
+  it.each([null, undefined])('should read a photo without alternative text (%s) as such', async (altText) => {
+    const [photo] = star.photos;
+    const gateway = createPosePageGateway(apiAnswering(200, { ...star, photos: [{ ...photo, altText }] }));
+
+    const result = await gateway.getPosePage(starId);
+
+    expect(result.ok && result.value.photos).toEqual([{ ...photo, altText: null }]);
+  });
+
   it('should report photos it cannot read as an outdated site', async () => {
     const gateway = createPosePageGateway(apiAnswering(200, { ...star, photos: [{ id: 'photo-1' }] }));
 

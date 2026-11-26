@@ -55,6 +55,17 @@ public sealed class AddPosePhotoHandlerTests
         _unitOfWork.Saves.ShouldBe(1);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("    ")]
+    public async Task Handle_Should_AddThePhotoWithoutAltText_When_TheAltTextIsMissingOrOnlySpaces(string? altText)
+    {
+        PresentedPhoto added = (await Handler().Handle(Adding(altText: altText), Ct)).Value!;
+
+        added.AltText.ShouldBeNull();
+        _photos.Stored[_bird.Id].InPresentationOrder().Single().AltText.ShouldBeNull();
+    }
+
     [Fact]
     public async Task Handle_Should_NotChangeThePose_When_APhotoIsAdded()
     {
@@ -77,7 +88,7 @@ public sealed class AddPosePhotoHandlerTests
     }
 
     [Theory]
-    [InlineData(null, "Léa Martin", true, "photo.alt-text-required")]
+    [InlineData("Bird", "  ", true, "photo.credit-required")]
     [InlineData("Bird", "inconnu", true, "photo.credit-not-an-author")]
     [InlineData("Bird", "Léa Martin", false, "photo.rights-confirmation-required")]
     public async Task Handle_Should_RefuseBeforeAnyProcessing_When_ATextOrTheConfirmationIsInvalid(

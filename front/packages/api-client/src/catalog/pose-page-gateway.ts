@@ -59,13 +59,13 @@ const toLinkedTransition = (value: unknown): LinkedTransition | null => {
   };
 };
 
-/** A photo of a pose (story 10, ADR 0039), or null when it cannot be read. */
+/** A photo of a pose (story 10, ADR 0039), with or without alternative text, or null when it cannot be read. */
 export const toPosePhoto = (value: unknown): PosePhoto | null => {
   if (!isRecord(value)) return null;
   const { id, altText, credit, width, height, sources } = value;
   if (
     !isString(id) ||
-    !isString(altText) ||
+    !(altText === null || altText === undefined || isString(altText)) ||
     !isString(credit) ||
     typeof width !== 'number' ||
     typeof height !== 'number' ||
@@ -77,7 +77,7 @@ export const toPosePhoto = (value: unknown): PosePhoto | null => {
     return null;
   return {
     id,
-    altText,
+    altText: altText ?? null,
     credit,
     width,
     height,

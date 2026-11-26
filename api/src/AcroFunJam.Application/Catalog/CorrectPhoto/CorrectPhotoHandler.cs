@@ -20,7 +20,7 @@ internal sealed class CorrectPhotoHandler(
         return photosLock.Run(command.Pose, async lockedCt =>
         {
             if (await photos.GetFor(command.Pose, lockedCt) is not { } posePhotos) return CatalogErrors.PhotoNotFound;
-            var corrected = posePhotos.Correct(command.Photo, altText.Value!, credit.Value!, clock.GetUtcNow());
+            var corrected = posePhotos.Correct(command.Photo, altText.Value, credit.Value!, clock.GetUtcNow());
             if (corrected.IsFailure) return corrected.Error!;
 
             photos.Save(posePhotos);

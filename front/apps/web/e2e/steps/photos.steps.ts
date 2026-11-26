@@ -94,6 +94,11 @@ Given(
 );
 
 Given(
+  /^la photo « ([^»]+) » de la pose "([^"]+)" n'a plus de texte alternatif$/,
+  async ({ photoApi }, altText: string, pose: string) => photoApi.removeAltText(pose, altText),
+);
+
+Given(
   /^(\S+) a retiré de la pose "([^"]+)" la photo « ([^»]+) »$/,
   async ({ photoApi }, _who: string, pose: string, altText: string) =>
     photoApi.removeElsewhere(pose, altText),
@@ -135,10 +140,11 @@ When(
   ) => {
     await openAddPhotoPage(page, { identityApi, catalogApi, contributionApi }, addPhotoForm, pose);
     const texts = details && /^avec le texte alternatif « ([^»]+) » et le crédit « ([^»]+) »$/.exec(details);
+    const creditOnly = details && /^sans texte alternatif, avec le crédit « ([^»]+) »$/.exec(details);
     if (details !== 'sans choisir de fichier') await addPhotoForm.choose(await fileNamed(page, file));
     await addPhotoForm.fill({
-      altText: texts ? texts[1] : details === 'sans texte alternatif' ? '' : defaultAltText(pose),
-      credit: texts ? texts[2] : details === 'sans crédit' ? '' : defaultCredit,
+      altText: texts ? texts[1] : creditOnly ? '' : defaultAltText(pose),
+      credit: texts ? texts[2] : creditOnly ? creditOnly[1] : details === 'sans crédit' ? '' : defaultCredit,
       rights: details !== 'sans cocher la case des droits',
     });
     await addPhotoForm.submit();
@@ -349,7 +355,7 @@ When(
       .getByRole('button', { name: `Modifier le texte alternatif et le crédit : ${altText}`, exact: true })
       .click();
     const zone = page.getByRole('group', { name: 'Texte alternatif et crédit', exact: true });
-    await zone.getByRole('textbox', { name: 'Texte alternatif', exact: true }).fill(newAltText);
+    await zone.getByRole('textbox', { name: 'Texte alternatif (facultatif)', exact: true }).fill(newAltText);
     await zone.getByRole('textbox', { name: 'Crédit', exact: true }).fill(credit);
     await zone.getByRole('button', { name: 'Enregistrer', exact: true }).click();
     await expect(
@@ -490,6 +496,13 @@ Then(
       await section.elementHandle(),
     );
     expect(follows).toBe(true);
+  },
+);
+
+Then(
+  /^la section « (.+) » présente dans cet ordre (« .+ »)$/,
+  async ({ page }, title: string, texts: string) => {
+    await expect.poll(() => altTextsIn(otherSection(page, title))).toEqual(quotedTexts(texts));
   },
 );
 
