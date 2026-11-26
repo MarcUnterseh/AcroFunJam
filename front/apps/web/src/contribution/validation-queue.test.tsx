@@ -39,7 +39,7 @@ describe('page « Propositions à valider »', () => {
   it('should introduce the queue, tell how many proposals are pending, and list them in the order received', async () => {
     openQueue(new FakeValidationGateway(aPendingProposal(), star));
 
-    const list = await screen.findByRole('list');
+    const list = await within(screen.getByRole('main')).findByRole('list');
     expect(
       screen.getByText(/^Vérifie chaque proposition de pose, de modification ou de transition/),
     ).toBeInTheDocument();

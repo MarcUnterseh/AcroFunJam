@@ -245,6 +245,12 @@ export const sizes = {
   photoMaxHeight: 560,
   /** Thickness of a progress bar (sending a photo). */
   progress: 8,
+  /**
+   * Web only: the measure of a long text to read (legal pages, story « Mentions légales et confidentialité »),
+   * in characters so that it follows the text size chosen in the browser (about 670 px at 16 px in Figtree).
+   * Written as is by toCssVariables (a string is not converted to pixels). The mobile app does not use it.
+   */
+  readingMaxWidth: '70ch',
 } as const;
 
 /** Minimum viewport widths (web media queries, mobile tablets). */

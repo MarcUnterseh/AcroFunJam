@@ -33,7 +33,7 @@ const star = aMyProposal({
 });
 
 const names = () =>
-  within(screen.getByRole('list'))
+  within(within(screen.getByRole('main')).getByRole('list'))
     .getAllByRole('article')
     .map((card) => within(card).getByRole('heading', { level: 2 }).textContent);
 
@@ -61,7 +61,7 @@ describe('page « Mes propositions »', () => {
   it('should introduce the list, tell how many proposals there are and list them in the order received', async () => {
     openMyProposals(withProposals(aMyProposal(), star));
 
-    await screen.findByRole('list');
+    await within(screen.getByRole('main')).findByRole('list');
     expect(
       screen.getByText(
         "Les poses, les modifications et les transitions que tu proposes apparaissent ici, avec ce qu'elles deviennent.",
@@ -194,7 +194,7 @@ describe('page « Mes propositions »', () => {
       withProposals(adjusted('Merci !'), { ...star, status: { kind: 'rejected', decidedAt, reason } }),
     );
 
-    const list = await screen.findByRole('list');
+    const list = await within(screen.getByRole('main')).findByRole('list');
     expect(list).not.toHaveTextContent(/@|\btoi\b|par /);
   });
 

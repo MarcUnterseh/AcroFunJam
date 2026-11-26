@@ -26,6 +26,10 @@ describe('toCssVariables', () => {
     expect(css).toContain('--afj-spacing-lg: 24px;');
   });
 
+  it('should keep a size written as text, such as the reading width in characters, as it is', () => {
+    expect(css).toContain('--afj-size-reading-max-width: 70ch;');
+  });
+
   it('should express font sizes in rem so that the browser text size is respected', () => {
     expect(css).toContain('--afj-font-size-xl: 1.75rem;');
     expect(css).toContain('--afj-font-size-md: 1rem;');

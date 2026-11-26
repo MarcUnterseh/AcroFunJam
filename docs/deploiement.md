@@ -67,6 +67,12 @@ ufw allow OpenSSH && ufw allow 80/tcp && ufw allow 443/tcp && ufw allow 443/udp 
 fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
 echo '/swapfile none swap sw 0 0' >> /etc/fstab
 
+# Journaux des conteneurs gardés 14 jours au plus, comme l'annonce la politique de confidentialité
+mkdir -p /etc/systemd/journald.conf.d
+# journald efface des fichiers entiers : un fichier par jour, pour que rien ne dépasse 14 jours.
+printf "[Journal]\nMaxRetentionSec=14day\nMaxFileSec=1day\n" > /etc/systemd/journald.conf.d/acrofunjam.conf
+systemctl restart systemd-journald
+
 # Connexion SSH par clé seulement
 printf "PasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin prohibit-password\n" > /etc/ssh/sshd_config.d/10-acrofunjam.conf
 systemctl reload ssh
@@ -177,6 +183,24 @@ Si quelque chose échoue :
 - **Journaux** : `docker compose logs -f api` ou `docker compose logs -f web`, dans `/opt/acrofunjam`.
 - **État** : `docker compose ps`.
 - **Migrations** : elles doivent rester compatibles avec la version de l'API qui tourne encore pendant le déploiement. Pour supprimer une colonne ou une table, il faut deux livraisons.
+
+## Demandes reçues à contact@acrofunjam.fr
+
+La politique de confidentialité promet une réponse **sous un mois**. Les commandes se lancent sur le serveur, dans `/opt/acrofunjam`.
+
+- **Retirer une photo** (une seule demande, de la base ou du flyer, suffit, sans compte) : retire-la depuis la page de la pose, en administrateur. Elle n'est plus accessible, même par son adresse.
+- **Supprimer un compte** : la demande doit venir de l'adresse du compte ; sinon, écris à cette adresse pour la faire confirmer.
+  1. Retrouve le compte :
+     ```sh
+     docker compose exec -T postgres psql -U acrofunjam -d acrofunjam -c "select \"Id\", role from identity.users where \"NormalizedEmail\" = upper('<adresse>')"
+     ```
+  2. Supprime-le :
+     ```sh
+     docker compose exec -T postgres psql -U acrofunjam -d acrofunjam -c "delete from identity.users where \"NormalizedEmail\" = upper('<adresse>')"
+     ```
+     Ses propositions et décisions restent, mais ne sont plus rattachées à aucune adresse ; une proposition en attente reste dans la file, un validateur la refuse (Q11).
+  3. Réponds que c'est fait, en précisant que les sauvegardes en gardent trace 30 jours au plus.
+- **Accéder à ses données** : envoie l'adresse, le rôle, la date d'inscription si elle existe, et la liste de ses propositions (« Mes propositions » sur le site, en se connectant, en donne l'essentiel).
 
 ## Grandir plus tard
 

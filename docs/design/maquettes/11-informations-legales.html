@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maquette : mentions légales et confidentialité</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap">
+<style>
+/* Maquette statique de la story « Mentions légales et confidentialité » (docs/design/ecrans/informations-legales.md,
+   composants pied-de-page.md et encadre-en-bref.md).
+   Valeurs : @acrofunjam/ui-tokens (front/packages/ui-tokens/src/index.ts), mêmes noms de variables que le site
+   (--afj-*). Nouveau token : sizes.readingMaxWidth ('70ch'). Le site n'utilise pas les polices de Google : elles
+   sont auto-hébergées (@fontsource) ; la maquette les charge ici pour rester un fichier autonome.
+   Chaque écran est un conteneur (requêtes de conteneur) : 40em = breakpoints.md. Les pages sont écrites une fois
+   dans des <template> et recopiées dans chaque cadre par le script en bas de page (identifiants préfixés). */
+
+:root {
+  color-scheme: light;
+  --afj-color-primary: #5B3FC4;
+  --afj-color-primary-hover: #47309F;
+  --afj-color-primary-active: #38267E;
+  --afj-color-primary-contrast: #FFFFFF;
+  --afj-color-background: #F5F2FA;
+  --afj-color-surface: #FFFFFF;
+  --afj-color-surface-hover: #EDE8F7;
+  --afj-color-text: #211C3B;
+  --afj-color-text-muted: #5B5577;
+  --afj-color-border: #8F87A8;
+  --afj-color-divider: #DCD5EA;
+  --afj-color-focus: #1D69AE;
+  --afj-color-selected: #47309F;
+  --afj-color-selected-surface: #EBE5FB;
+  --afj-color-base: #2C6A4C;
+  --afj-color-sun: #E8961E;
+  --afj-color-sun-surface: #FFEBC4;
+
+  --afj-spacing-xs: 4px;
+  --afj-spacing-sm: 8px;
+  --afj-spacing-md: 16px;
+  --afj-spacing-lg: 24px;
+  --afj-spacing-xl: 32px;
+  --afj-spacing-xxl: 48px;
+
+  --afj-radius-sm: 10px;
+  --afj-radius-md: 16px;
+  --afj-radius-lg: 26px;
+  --afj-radius-pill: 9999px;
+
+  --afj-font-family: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --afj-font-family-display: "Unbounded", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --afj-font-size-xs: 0.75rem;
+  --afj-font-size-sm: 0.875rem;
+  --afj-font-size-md: 1rem;
+  --afj-font-size-lg: 1.25rem;
+  --afj-font-size-xl: 1.75rem;
+  --afj-font-size-xxl: 2.5rem;
+  --afj-font-weight-regular: 400;
+  --afj-font-weight-medium: 500;
+  --afj-font-weight-semibold: 600;
+  --afj-font-weight-bold: 700;
+  --afj-line-height-tight: 1.25;
+  --afj-line-height-normal: 1.5;
+
+  --afj-size-touch-target: 44px;
+  --afj-size-control: 48px;
+  --afj-size-border-width: 1px;
+  --afj-size-border-width-strong: 2px;
+  --afj-size-focus-ring-width: 3px;
+  --afj-size-focus-ring-offset: 2px;
+  --afj-size-form-max-width: 400px;
+  --afj-size-content-max-width: 1040px;
+  --afj-size-icon: 20px;
+  --afj-size-avatar: 36px;
+  --afj-size-logo: 30px;
+  --afj-size-reading-max-width: 70ch; /* nouveau */
+}
+
+/* La nuit (colorsDark) : suit le système, sauf choix explicite dans la barre de la maquette. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --afj-color-primary: #B6A6FF;
+    --afj-color-primary-hover: #CDC2FF;
+    --afj-color-primary-active: #E0D9FF;
+    --afj-color-primary-contrast: #15122B;
+    --afj-color-background: #110F24;
+    --afj-color-surface: #1A1733;
+    --afj-color-surface-hover: #252148;
+    --afj-color-text: #ECE8F8;
+    --afj-color-text-muted: #ABA4C8;
+    --afj-color-border: #6F6896;
+    --afj-color-divider: #322D57;
+    --afj-color-focus: #8FC1F3;
+    --afj-color-selected: #CDC2FF;
+    --afj-color-selected-surface: #2A2456;
+    --afj-color-base: #82CDA2;
+    --afj-color-sun: #F5C15A;
+    --afj-color-sun-surface: #3A2E14;
+  }
+}
+
+/* Choix explicite, et cadres toujours en nuit (section « La nuit »). */
+:root[data-theme="dark"],
+.mq-dark {
+  color-scheme: dark;
+  --afj-color-primary: #B6A6FF;
+  --afj-color-primary-hover: #CDC2FF;
+  --afj-color-primary-active: #E0D9FF;
+  --afj-color-primary-contrast: #15122B;
+  --afj-color-background: #110F24;
+  --afj-color-surface: #1A1733;
+  --afj-color-surface-hover: #252148;
+  --afj-color-text: #ECE8F8;
+  --afj-color-text-muted: #ABA4C8;
+  --afj-color-border: #6F6896;
+  --afj-color-divider: #322D57;
+  --afj-color-focus: #8FC1F3;
+  --afj-color-selected: #CDC2FF;
+  --afj-color-selected-surface: #2A2456;
+  --afj-color-base: #82CDA2;
+  --afj-color-sun: #F5C15A;
+  --afj-color-sun-surface: #3A2E14;
+}
+
+/* ---------- Base (index.css) ---------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: var(--afj-spacing-lg) var(--afj-spacing-md) var(--afj-spacing-xxl);
+  font-family: var(--afj-font-family);
+  font-size: var(--afj-font-size-md);
+  line-height: var(--afj-line-height-normal);
+  color: var(--afj-color-text);
+  background: var(--afj-color-background);
+}
+
+h1, h2, h3 { text-wrap: balance; }
+
+h1 {
+  margin: 0 0 var(--afj-spacing-lg);
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-xl);
+  font-weight: var(--afj-font-weight-semibold);
+  line-height: var(--afj-line-height-tight);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+a { color: var(--afj-color-primary); }
+
+:focus-visible {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus);
+  outline-offset: var(--afj-size-focus-ring-offset);
+}
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+
+.icon { inline-size: var(--afj-size-icon); block-size: var(--afj-size-icon); flex-shrink: 0; }
+
+/* ---------- Habillage de la maquette (hors site) ---------- */
+
+.mq-intro { max-width: 1120px; margin: 0 auto var(--afj-spacing-xl); }
+.mq-intro h1 { margin-bottom: var(--afj-spacing-sm); }
+.mq-intro p { margin: 0 0 var(--afj-spacing-sm); max-width: 80ch; color: var(--afj-color-text-muted); }
+.mq-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-sm); margin-top: var(--afj-spacing-md); }
+.mq-theme[aria-pressed="true"] {
+  background: var(--afj-color-selected-surface);
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-selected);
+}
+
+.mq-section { max-width: 1440px; margin: 0 auto var(--afj-spacing-xxl); }
+.mq-section > h2 {
+  margin: 0 0 var(--afj-spacing-xs);
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-medium);
+  line-height: var(--afj-line-height-tight);
+}
+.mq-section > p { margin: 0 0 var(--afj-spacing-md); max-width: 90ch; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+.mq-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--afj-spacing-lg); margin-bottom: var(--afj-spacing-lg); }
+.mq-frame { margin: 0; min-width: 0; }
+.mq-frame--mobile { flex: 0 0 320px; width: 320px; max-width: 100%; }
+.mq-frame--wide { width: min(100%, 1074px); }
+.mq-frame figcaption {
+  margin-bottom: var(--afj-spacing-xs);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text-muted);
+}
+.mq-screen {
+  container: screen / inline-size;
+  position: relative;
+  overflow: hidden;
+  color: var(--afj-color-text);
+  background: var(--afj-color-background);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+  border-radius: var(--afj-radius-md);
+}
+/* Hauteur d'une fenêtre : montre que le pied de page reste en bas d'une page courte. */
+.mq-screen--phone { block-size: 568px; }
+.mq-screen--desktop { block-size: 600px; }
+
+/* ---------- Mise en page : le pied de page ne flotte pas (pied-de-page.md) ---------- */
+
+/* Sur le site : min-height 100dvh. Dans la maquette, la hauteur du cadre. */
+.site { display: flex; flex-direction: column; min-height: 100%; }
+
+main {
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: var(--afj-size-content-max-width);
+  margin: 0 auto;
+  padding: var(--afj-spacing-lg) var(--afj-spacing-md);
+}
+
+/* ---------- En-tête du site (en-tete.md, inchangé) ---------- */
+
+.site-header { flex-shrink: 0; background: var(--afj-color-background); border-bottom: var(--afj-size-border-width) solid var(--afj-color-divider); }
+.site-header__inner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--afj-spacing-xs) var(--afj-spacing-md);
+  max-width: var(--afj-size-content-max-width); margin-inline: auto; padding: var(--afj-spacing-sm) var(--afj-spacing-md);
+}
+.site-header__brand {
+  display: inline-flex; align-items: center; gap: var(--afj-spacing-sm); min-height: var(--afj-size-touch-target);
+  font-family: var(--afj-font-family-display); font-weight: var(--afj-font-weight-semibold); letter-spacing: -0.01em;
+  color: var(--afj-color-text); text-decoration: none;
+}
+.logo { inline-size: var(--afj-size-logo); block-size: var(--afj-size-logo); flex-shrink: 0; }
+.site-header__account {
+  flex-basis: 100%; display: flex; align-items: center; justify-content: flex-end; gap: var(--afj-spacing-sm);
+  min-height: var(--afj-size-touch-target);
+}
+.site-header .button { width: auto; min-height: var(--afj-size-touch-target); padding: 0 var(--afj-spacing-md); font-size: var(--afj-font-size-sm); }
+.site-header .button--secondary { background: var(--afj-color-surface-hover); border-color: transparent; }
+
+/* ---------- Boutons, champs (bouton.md, champ.md, inchangés) ---------- */
+
+.button {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--afj-spacing-xs);
+  min-height: var(--afj-size-touch-target); padding: 0 var(--afj-spacing-lg);
+  border: var(--afj-size-border-width) solid transparent; border-radius: var(--afj-radius-pill);
+  font: inherit; font-weight: var(--afj-font-weight-semibold); white-space: nowrap; text-align: center;
+  text-decoration: none; cursor: pointer;
+}
+.button--primary {
+  min-height: var(--afj-size-control); width: 100%; white-space: normal;
+  color: var(--afj-color-primary-contrast); background: var(--afj-color-primary);
+}
+.button--secondary { color: var(--afj-color-text); background: transparent; border-color: var(--afj-color-border); }
+.link-button { min-height: var(--afj-size-control); white-space: normal; }
+@media (hover: hover) {
+  .button--primary:hover { color: var(--afj-color-primary-contrast); background: var(--afj-color-primary-hover); }
+  .button--secondary:hover { background: var(--afj-color-surface-hover); border-color: var(--afj-color-text); }
+  a:hover { text-decoration-thickness: var(--afj-size-border-width-strong); }
+  .site-header__brand:hover { text-decoration: underline; }
+}
+.button--primary:active { background: var(--afj-color-primary-active); }
+.button--secondary:active { background: var(--afj-color-divider); }
+
+.not-found p { margin: 0 0 var(--afj-spacing-md); }
+
+.identity-page { max-width: var(--afj-size-form-max-width); margin: 0 auto; }
+.identity-page h1 { margin-bottom: var(--afj-spacing-sm); }
+.identity-page__context { margin: 0 0 var(--afj-spacing-lg); color: var(--afj-color-text-muted); }
+.identity-page form { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--afj-spacing-md); }
+.identity-page form > .button--primary { margin-top: var(--afj-spacing-sm); }
+.identity-page__switch { margin: var(--afj-spacing-lg) 0 0; }
+.field { display: grid; gap: var(--afj-spacing-xs); }
+.field label { margin-bottom: calc(var(--afj-spacing-sm) - var(--afj-spacing-xs)); font-weight: var(--afj-font-weight-semibold); }
+.field__control { display: flex; gap: var(--afj-spacing-sm); }
+.field input {
+  flex: 1; width: 100%; min-width: 0; min-height: var(--afj-size-control); padding: 0 var(--afj-spacing-md);
+  font: inherit; color: var(--afj-color-text); background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-border); border-radius: var(--afj-radius-md);
+}
+.field__toggle {
+  min-width: var(--afj-size-touch-target); min-height: var(--afj-size-control); padding: 0 var(--afj-spacing-md);
+  font: inherit; font-weight: var(--afj-font-weight-semibold); color: var(--afj-color-text); background: transparent;
+  border: var(--afj-size-border-width) solid var(--afj-color-border); border-radius: var(--afj-radius-pill); cursor: pointer;
+}
+.field__help { margin: 0; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+
+/* ---------- NOUVEAU : pied de page (pied-de-page.md) ---------- */
+
+.site-footer {
+  flex-shrink: 0;
+  font-size: var(--afj-font-size-sm);
+  background: var(--afj-color-background);
+  border-top: var(--afj-size-border-width) solid var(--afj-color-divider);
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: var(--afj-size-content-max-width);
+  margin-inline: auto;
+  padding: var(--afj-spacing-md) var(--afj-spacing-md) calc(var(--afj-spacing-lg) + env(safe-area-inset-bottom, 0px));
+}
+
+.site-footer__legal ul {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-footer__contact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--afj-spacing-xs);
+  margin: 0;
+  color: var(--afj-color-text-muted);
+}
+
+.site-footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--afj-size-touch-target);
+  color: var(--afj-color-primary);
+  text-decoration: underline;
+  text-decoration-thickness: var(--afj-size-border-width);
+  overflow-wrap: anywhere;
+}
+
+.site-footer a:focus-visible { border-radius: var(--afj-radius-sm); }
+.site-footer a:active { color: var(--afj-color-primary-active); }
+
+/* Page courante : couleur du texte, semi-gras, soulignement épais (jamais la couleur seule). */
+.site-footer a[aria-current="page"] {
+  color: var(--afj-color-text);
+  font-weight: var(--afj-font-weight-semibold);
+  text-decoration-thickness: var(--afj-size-border-width-strong);
+}
+
+/* ---------- NOUVEAU : pages légales (ecrans/informations-legales.md) ---------- */
+
+.legal-page { max-width: var(--afj-size-reading-max-width); }
+.legal-page h1 { margin-bottom: var(--afj-spacing-sm); }
+
+.legal-page__updated {
+  margin: 0 0 var(--afj-spacing-lg);
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+.legal-page h2 {
+  margin: var(--afj-spacing-xl) 0 var(--afj-spacing-sm);
+  font-family: var(--afj-font-family-display);
+  font-size: var(--afj-font-size-lg);
+  font-weight: var(--afj-font-weight-medium);
+  line-height: var(--afj-line-height-tight);
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  scroll-margin-top: var(--afj-spacing-lg);
+}
+
+.legal-page h3 {
+  margin: var(--afj-spacing-md) 0 var(--afj-spacing-xs);
+  font-size: var(--afj-font-size-md);
+  font-weight: var(--afj-font-weight-bold);
+  line-height: var(--afj-line-height-tight);
+}
+
+.legal-page p,
+.legal-page ul,
+.legal-page address { margin: 0 0 var(--afj-spacing-md); }
+.legal-page address { font-style: normal; }
+.legal-page ul { padding-inline-start: var(--afj-spacing-lg); }
+.legal-page li + li { margin-top: var(--afj-spacing-xs); }
+.legal-page li::marker { color: var(--afj-color-text-muted); }
+.legal-page strong { font-weight: var(--afj-font-weight-semibold); }
+.legal-page a { overflow-wrap: anywhere; }
+.legal-page a:focus-visible { border-radius: var(--afj-radius-sm); }
+
+/* Encadré « En bref » (encadre-en-bref.md). */
+.summary-box {
+  margin: 0 0 var(--afj-spacing-lg);
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-divider);
+  border-radius: var(--afj-radius-md);
+}
+.legal-page .summary-box h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--afj-spacing-sm);
+  margin-top: 0;
+}
+.summary-box h2 .icon { color: var(--afj-color-sun); }
+.legal-page .summary-box ul { margin: 0; }
+
+/* Sommaire (politique seulement). */
+.legal-toc {
+  margin: 0 0 var(--afj-spacing-lg);
+  padding-bottom: var(--afj-spacing-md);
+  border-bottom: var(--afj-size-border-width) solid var(--afj-color-divider);
+}
+.legal-toc__title {
+  margin: 0 0 var(--afj-spacing-xs);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text-muted);
+}
+.legal-page .legal-toc ul { margin: 0; padding: 0; list-style: none; }
+.legal-page .legal-toc li { margin: 0; break-inside: avoid; }
+.legal-toc a {
+  display: flex;
+  align-items: center;
+  min-height: var(--afj-size-touch-target);
+  line-height: var(--afj-line-height-tight);
+}
+
+/* Tableau des durées de conservation. */
+.legal-table {
+  width: 100%;
+  margin: 0 0 var(--afj-spacing-md);
+  border-collapse: collapse;
+}
+.legal-table caption {
+  margin-bottom: var(--afj-spacing-sm);
+  caption-side: top;
+  text-align: start;
+  font-weight: var(--afj-font-weight-semibold);
+}
+.legal-table th,
+.legal-table td {
+  padding: var(--afj-spacing-sm);
+  vertical-align: top;
+  text-align: start;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  border-bottom: var(--afj-size-border-width) solid var(--afj-color-divider);
+}
+.legal-table th:first-child,
+.legal-table td:first-child { width: 55%; padding-inline-start: 0; }
+.legal-table th:last-child,
+.legal-table td:last-child { padding-inline-end: 0; }
+.legal-table thead th {
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text-muted);
+  border-bottom-width: var(--afj-size-border-width-strong);
+}
+.legal-table tbody th { font-weight: var(--afj-font-weight-regular); }
+.legal-table__category { display: block; font-weight: var(--afj-font-weight-semibold); }
+.legal-table__detail { display: block; font-size: var(--afj-font-size-sm); color: var(--afj-color-text-muted); }
+
+/* ---------- Grands écrans (≥ 40em = breakpoints.md) ---------- */
+
+@container screen (width >= 40em) {
+  .site-header__inner { justify-content: space-between; padding-inline: var(--afj-spacing-lg); }
+  .site-header__account { flex-basis: auto; margin-inline-start: auto; }
+
+  .identity-page {
+    max-width: calc(var(--afj-size-form-max-width) + 2 * var(--afj-spacing-xl));
+    margin-top: var(--afj-spacing-xl);
+    padding: var(--afj-spacing-xl);
+    background: var(--afj-color-surface);
+    border: var(--afj-size-border-width) solid var(--afj-color-divider);
+    border-radius: var(--afj-radius-lg);
+  }
+
+  .site-footer__inner {
+    flex-flow: row wrap;
+    align-items: center;
+    gap: var(--afj-spacing-xs) var(--afj-spacing-lg);
+    padding-inline: var(--afj-spacing-lg);
+  }
+  .site-footer__legal ul { flex-flow: row wrap; column-gap: var(--afj-spacing-lg); }
+  .site-footer__contact { margin-inline-start: auto; }
+
+  .summary-box { padding: var(--afj-spacing-lg); }
+  .legal-page .legal-toc ul { columns: 2; column-gap: var(--afj-spacing-lg); }
+}
+
+@media (forced-colors: active) {
+  .site-footer a, .legal-page a { color: LinkText; }
+  .summary-box h2 .icon { color: CanvasText; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+  <defs>
+    <symbol id="logo" viewBox="0 0 30 30">
+      <circle cx="15" cy="11" r="6" style="fill: var(--afj-color-sun)"/>
+      <path d="M3 27a12 12 0 0 1 24 0z" style="fill: var(--afj-color-base)"/>
+    </symbol>
+    <symbol id="sun" viewBox="0 0 20 20">
+      <circle cx="10" cy="10" r="4" fill="currentColor"/>
+      <path d="M10 1.5v2.2M10 16.3v2.2M1.5 10h2.2M16.3 10h2.2M4 4l1.6 1.6M14.4 14.4L16 16M4 16l1.6-1.6M14.4 5.6L16 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ================================================================== Modèles ================== -->
+
+<template id="tpl-header">
+  <header class="site-header"><div class="site-header__inner">
+    <a class="site-header__brand" href="#"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg>AcroFunJam</a>
+    <nav class="site-header__account" aria-label="Compte">
+      <a class="button button--secondary" href="#">Se connecter</a>
+      <a class="button button--primary" href="#">S'inscrire</a>
+    </nav>
+  </div></header>
+</template>
+
+<template id="tpl-footer">
+  <footer class="site-footer"><div class="site-footer__inner">
+    <nav class="site-footer__legal" aria-label="Informations légales">
+      <ul>
+        <li><a href="#" data-page="mentions">Mentions légales</a></li>
+        <li><a href="#" data-page="confidentialite">Politique de confidentialité</a></li>
+      </ul>
+    </nav>
+    <p class="site-footer__contact">
+      <span>Contact :</span>
+      <a href="mailto:contact@acrofunjam.fr">contact@acrofunjam.fr<span class="visually-hidden"> (écrire un e-mail)</span></a>
+    </p>
+  </div></footer>
+</template>
+
+<template id="tpl-not-found">
+  <div class="not-found">
+    <h1 tabindex="-1">Page introuvable</h1>
+    <p>Cette page n'existe pas, ou plus.</p>
+    <a class="button button--secondary link-button" href="#">Retour au catalogue</a>
+  </div>
+</template>
+
+<template id="tpl-mentions">
+  <div class="legal-page">
+    <h1 tabindex="-1">Mentions légales</h1>
+    <p class="legal-page__updated">Dernière mise à jour : <time datetime="2026-11-26">26 novembre 2026</time></p>
+
+    <section aria-labelledby="editeur">
+      <h2 id="editeur">Éditeur du site</h2>
+      <p>AcroFunJam (acrofunjam.fr) est un <strong>site personnel non professionnel</strong>, sans publicité ni activité commerciale. Comme la loi le permet à un éditeur non professionnel, son éditeur ne publie pas son identité : il l'a communiquée à l'hébergeur du site. L'éditeur est aussi le responsable de la publication.</p>
+    </section>
+
+    <section aria-labelledby="contact">
+      <h2 id="contact">Contact</h2>
+      <p>Pour une question, une erreur dans le catalogue ou une demande sur tes données, écris à <a href="mailto:contact@acrofunjam.fr">contact@acrofunjam.fr<span class="visually-hidden"> (écrire un e-mail)</span></a>. AcroFunJam te répond sous un mois au plus.</p>
+    </section>
+
+    <section aria-labelledby="hebergeur">
+      <h2 id="hebergeur">Hébergeur du site</h2>
+      <p>Le site, son serveur et sa base de données sont hébergés par :</p>
+      <address><strong>IONOS SARL</strong><br>7 place de la Gare, BP 70109<br>57201 Sarreguemines Cedex, France<br>Téléphone : 09 70 80 89 11</address>
+    </section>
+
+    <section aria-labelledby="contenus">
+      <h2 id="contenus">Contenus et crédits des photos</h2>
+      <p>Les poses et les transitions du catalogue sont proposées par les personnes qui pratiquent l'acroyoga, puis relues par des validateurs avant leur publication.</p>
+      <p>Chaque photo porte le nom ou le pseudonyme de son auteur. Elle reste sa propriété : ne la reprends pas ailleurs sans son accord.</p>
+    </section>
+
+    <section aria-labelledby="retrait">
+      <h2 id="retrait">Signaler un contenu ou demander un retrait</h2>
+      <p>Un contenu te semble faux, dangereux ou publié sans accord ? Écris à <a href="mailto:contact@acrofunjam.fr">contact@acrofunjam.fr<span class="visually-hidden"> (écrire un e-mail)</span></a> en indiquant la page concernée.</p>
+      <p>Pour une photo où tu figures, une seule demande suffit, que tu sois la base ou le flyer, même sans compte.</p>
+    </section>
+
+    <section aria-labelledby="donnees-personnelles">
+      <h2 id="donnees-personnelles">Données personnelles</h2>
+      <p>Ce qu'AcroFunJam fait de tes données, et comment exercer tes droits : <a href="#">politique de confidentialité</a>.</p>
+    </section>
+  </div>
+</template>
+
+<template id="tpl-politique">
+  <div class="legal-page">
+    <h1 tabindex="-1">Politique de confidentialité</h1>
+    <p class="legal-page__updated">Dernière mise à jour : <time datetime="2026-11-26">26 novembre 2026</time></p>
+
+    <section class="summary-box" aria-labelledby="en-bref">
+      <h2 id="en-bref"><svg class="icon" aria-hidden="true"><use href="#sun"/></svg>En bref</h2>
+      <ul>
+        <li>Consulter le catalogue et générer un flow ne demandent rien. Pour créer un compte, AcroFunJam ne demande que ton adresse e-mail et un mot de passe.</li>
+        <li>Aucune mesure d'audience, aucun traceur, aucune publicité : le seul cookie est celui de ta session.</li>
+        <li>Tes données restent dans l'Union européenne, chez IONOS et Cloudflare. Elles ne sont jamais vendues.</li>
+        <li>Une photo où tu figures est retirée sur une seule demande, de la base ou du flyer.</li>
+        <li>Pour supprimer ton compte ou exercer tes droits, écris à <a href="mailto:contact@acrofunjam.fr">contact@acrofunjam.fr<span class="visually-hidden"> (écrire un e-mail)</span></a> : réponse sous un mois.</li>
+      </ul>
+    </section>
+
+    <nav class="legal-toc" aria-label="Sommaire">
+      <p class="legal-toc__title" aria-hidden="true">Sommaire</p>
+      <ul role="list">
+        <li><a href="#responsable">Qui traite tes données</a></li>
+        <li><a href="#donnees">Les données et à quoi elles servent</a></li>
+        <li><a href="#bases-legales">Bases légales</a></li>
+        <li><a href="#durees">Durées de conservation</a></li>
+        <li><a href="#sous-traitants">Où sont tes données</a></li>
+        <li><a href="#cookie">Cookie et stockage dans le navigateur</a></li>
+        <li><a href="#ce-qui-n-est-pas-fait">Ce qu'AcroFunJam ne fait pas</a></li>
+        <li><a href="#securite">Sécurité</a></li>
+        <li><a href="#droits">Tes droits</a></li>
+        <li><a href="#retrait-photo">Retirer une photo</a></li>
+        <li><a href="#suppression-compte">Supprimer ton compte</a></li>
+        <li><a href="#cnil">Réclamation auprès de la CNIL</a></li>
+        <li><a href="#mineurs">Mineurs</a></li>
+      </ul>
+    </nav>
+
+    <section aria-labelledby="responsable">
+      <h2 id="responsable">Qui traite tes données</h2>
+      <p>Tes données sont traitées par l'éditeur d'AcroFunJam, un site personnel non professionnel (voir les <a href="#">mentions légales</a>). Pour le joindre : <a href="mailto:contact@acrofunjam.fr">contact@acrofunjam.fr<span class="visually-hidden"> (écrire un e-mail)</span></a>.</p>
+    </section>
+
+    <section aria-labelledby="donnees">
+      <h2 id="donnees">Les données et à quoi elles servent</h2>
+      <ul>
+        <li><strong>Ton compte</strong> : ton adresse e-mail, ton mot de passe haché (personne ne peut le lire) et ton rôle, pour te connecter et savoir ce que tu peux faire sur le site.</li>
+        <li><strong>La sécurité de la connexion</strong> : le nombre d'essais manqués et un éventuel blocage temporaire, pour protéger ton compte.</li>
+        <li><strong>Tes contributions</strong> : tes propositions, leurs messages, leurs dates et les décisions des validateurs, pour faire vivre le catalogue.</li>
+        <li><strong>Les photos</strong> : le crédit de l'auteur et le texte alternatif. Les personnes photographiées ne sont jamais nommées, et la position et l'appareil sont retirés de chaque photo.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="bases-legales">
+      <h2 id="bases-legales">Bases légales</h2>
+      <p>Ton compte et tes contributions servent le service que tu demandes. La confirmation des droits sur une photo et les sauvegardes relèvent de l'intérêt légitime d'AcroFunJam : prouver l'accord donné et ne rien perdre. La publication d'une personne photographiée repose sur son accord.</p>
+    </section>
+
+    <section aria-labelledby="durees">
+      <h2 id="durees">Durées de conservation</h2>
+      <table class="legal-table">
+        <caption>Combien de temps AcroFunJam garde chaque donnée</caption>
+        <thead>
+          <tr><th scope="col">Données</th><th scope="col">Durée de conservation</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><span class="legal-table__category">Ton compte</span><span class="legal-table__detail">adresse e-mail, mot de passe haché, rôle</span></th>
+            <td>Jusqu'à la suppression du compte</td>
+          </tr>
+          <tr>
+            <th scope="row"><span class="legal-table__category">Les propositions et les décisions</span><span class="legal-table__detail">contenu, messages, dates</span></th>
+            <td>Tant qu'AcroFunJam existe ; à la suppression du compte, elles ne sont plus rattachées à ton adresse</td>
+          </tr>
+          <tr>
+            <th scope="row"><span class="legal-table__category">La confirmation des droits sur une photo</span><span class="legal-table__detail">compte et date, jamais affichés</span></th>
+            <td>Aussi longtemps que la photo</td>
+          </tr>
+          <tr>
+            <th scope="row"><span class="legal-table__category">Les photos</span><span class="legal-table__detail">crédit et texte alternatif</span></th>
+            <td>Jusqu'à leur retrait</td>
+          </tr>
+          <tr>
+            <th scope="row"><span class="legal-table__category">Le cookie de session</span></th>
+            <td>Jusqu'à la déconnexion, au plus 14 jours après ta dernière visite</td>
+          </tr>
+          <tr>
+            <th scope="row"><span class="legal-table__category">Les journaux du serveur</span><span class="legal-table__detail">adresses IP</span></th>
+            <td>14 jours</td>
+          </tr>
+          <tr>
+            <th scope="row"><span class="legal-table__category">Les sauvegardes de la base</span><span class="legal-table__detail">toute la base, comptes compris</span></th>
+            <td>30 jours</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="sous-traitants">
+      <h2 id="sous-traitants">Où sont tes données</h2>
+      <ul>
+        <li><strong>IONOS</strong> héberge le serveur et la base, en France.</li>
+        <li><strong>Cloudflare</strong> héberge les photos et les sauvegardes, dans l'Union européenne.</li>
+      </ul>
+      <p>Aucune donnée ne quitte l'Union européenne. Ton navigateur ne contacte jamais Cloudflare : les photos passent par le site.</p>
+    </section>
+
+    <section aria-labelledby="cookie">
+      <h2 id="cookie">Cookie et stockage dans le navigateur</h2>
+      <p>Le site ne dépose qu'<strong>un seul cookie</strong>, celui de ta session, strictement nécessaire pour rester connecté. Il garde aussi dans ton navigateur un repère « tu avais une session » et ce que tu as commencé à saisir dans un formulaire, effacé à la déconnexion. Rien de tout cela ne demande ton consentement.</p>
+    </section>
+
+    <section aria-labelledby="ce-qui-n-est-pas-fait">
+      <h2 id="ce-qui-n-est-pas-fait">Ce qu'AcroFunJam ne fait pas</h2>
+      <p>Pas de mesure d'audience, pas de traceur, pas de publicité, pas de revente. Les polices sont servies par le site lui-même : aucune autre société ne voit tes visites.</p>
+    </section>
+
+    <section aria-labelledby="securite">
+      <h2 id="securite">Sécurité</h2>
+      <p>Les échanges sont chiffrés (HTTPS) et ton mot de passe n'est jamais gardé en clair.</p>
+    </section>
+
+    <section aria-labelledby="droits">
+      <h2 id="droits">Tes droits</h2>
+      <p>Tu peux accéder à tes données, les rectifier ou les faire effacer, t'opposer à un traitement ou le limiter. Écris à <a href="mailto:contact@acrofunjam.fr">contact@acrofunjam.fr<span class="visually-hidden"> (écrire un e-mail)</span></a> depuis l'adresse de ton compte : AcroFunJam te répond sous un mois.</p>
+    </section>
+
+    <section aria-labelledby="retrait-photo">
+      <h2 id="retrait-photo">Retirer une photo</h2>
+      <p>Tu figures sur une photo ? Une seule demande, de la base ou du flyer, suffit pour la retirer, même sans compte. Elle disparaît du site aussitôt ; ton navigateur peut encore l'afficher un moment s'il l'avait gardée.</p>
+    </section>
+
+    <section aria-labelledby="suppression-compte">
+      <h2 id="suppression-compte">Supprimer ton compte</h2>
+      <p>Écris depuis l'adresse de ton compte. Tes propositions restent dans le catalogue sans être rattachées à ton adresse ; les sauvegardes en gardent la trace 30 jours au plus.</p>
+    </section>
+
+    <section aria-labelledby="cnil">
+      <h2 id="cnil">Réclamation auprès de la CNIL</h2>
+      <p>Si la réponse ne te convient pas, tu peux adresser une réclamation à la CNIL (cnil.fr).</p>
+    </section>
+
+    <section aria-labelledby="mineurs">
+      <h2 id="mineurs">Mineurs</h2>
+      <p>Il faut avoir au moins 15 ans pour créer un compte. Aucune personne mineure reconnaissable ne figure sur les photos.</p>
+    </section>
+  </div>
+</template>
+
+<template id="tpl-inscription">
+  <section class="identity-page">
+    <h1 tabindex="-1">S'inscrire</h1>
+    <p class="identity-page__context identity-page__privacy">Avant de créer ton compte, tu peux lire ce qu'AcroFunJam fait de tes données dans la <a href="#">politique de confidentialité</a>.</p>
+    <form aria-label="S'inscrire" novalidate onsubmit="return false">
+      <div class="field">
+        <label for="email">Adresse e-mail</label>
+        <div class="field__control"><input id="email" type="email" autocomplete="off"></div>
+      </div>
+      <div class="field">
+        <label for="password">Mot de passe</label>
+        <div class="field__control">
+          <input id="password" type="password" autocomplete="off" aria-describedby="password-help">
+          <button type="button" class="field__toggle">Afficher</button>
+        </div>
+        <p class="field__help" id="password-help">Ton mot de passe doit contenir au moins 10 caractères.</p>
+      </div>
+      <button type="submit" class="button button--primary">Créer mon compte</button>
+    </form>
+    <p class="identity-page__switch">Déjà un compte ? <a href="#">Se connecter</a></p>
+  </section>
+</template>
+
+<!-- ================================================================== Planches ================= -->
+
+<div class="mq-intro">
+  <h1>Mentions légales et confidentialité</h1>
+  <p>Maquette statique : pied de page sur toutes les pages, pages « Mentions légales » et « Politique de confidentialité », renvoi depuis « S'inscrire ». Spécifications : <code>docs/design/ecrans/informations-legales.md</code>, <code>composants/pied-de-page.md</code>, <code>composants/encadre-en-bref.md</code>.</p>
+  <p>Le texte juridique est un texte de remplissage plausible : le texte définitif est rédigé à part, puis relu (coordonnées de l'hébergeur reprises de la facture). Nouveau token : <code>sizes.readingMaxWidth</code> (70 caractères).</p>
+  <div class="mq-toolbar" role="group" aria-label="Thème de la maquette">
+    <button type="button" class="button button--secondary mq-theme" data-theme-choice="light" aria-pressed="false">Aube (clair)</button>
+    <button type="button" class="button button--secondary mq-theme" data-theme-choice="dark" aria-pressed="false">Nuit (sombre)</button>
+  </div>
+</div>
+
+<section class="mq-section">
+  <h2>1. Pied de page sur une page courte</h2>
+  <p>« Page introuvable » dans une fenêtre de téléphone (320 × 568) et de bureau : <code>main</code> prend la place libre, le pied de page reste en bas. Empilé sous 40em, une rangée au-delà, contact poussé à droite.</p>
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>320 px</figcaption>
+      <div class="mq-screen mq-screen--phone"><div class="site">
+        <div data-template="tpl-header"></div>
+        <main><div data-template="tpl-not-found"></div></main>
+        <div data-template="tpl-footer"></div>
+      </div></div>
+    </figure>
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Grand écran</figcaption>
+      <div class="mq-screen mq-screen--desktop"><div class="site">
+        <div data-template="tpl-header"></div>
+        <main><div data-template="tpl-not-found"></div></main>
+        <div data-template="tpl-footer"></div>
+      </div></div>
+    </figure>
+  </div>
+</section>
+
+<section class="mq-section">
+  <h2>2. Mentions légales</h2>
+  <p>Colonne de lecture de 70 caractères, alignée à gauche ; date sous le titre ; pas de sommaire. Dans le pied de page, « Mentions légales » est la page courante : couleur du texte, semi-gras, soulignement épais.</p>
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>320 px</figcaption>
+      <div class="mq-screen"><div class="site">
+        <div data-template="tpl-header"></div>
+        <main><div data-template="tpl-mentions"></div></main>
+        <div data-template="tpl-footer" data-current="mentions"></div>
+      </div></div>
+    </figure>
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Grand écran</figcaption>
+      <div class="mq-screen"><div class="site">
+        <div data-template="tpl-header"></div>
+        <main><div data-template="tpl-mentions"></div></main>
+        <div data-template="tpl-footer" data-current="mentions"></div>
+      </div></div>
+    </figure>
+  </div>
+</section>
+
+<section class="mq-section">
+  <h2>3. Politique de confidentialité</h2>
+  <p>Encadré « En bref » sur <code>surface</code>, puis le sommaire (une colonne, puis deux à partir de 40em ; cibles de 44 px), puis les rubriques. Le tableau des durées reste un tableau à 320 px, sans défilement horizontal.</p>
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>320 px</figcaption>
+      <div class="mq-screen"><div class="site">
+        <div data-template="tpl-header"></div>
+        <main><div data-template="tpl-politique"></div></main>
+        <div data-template="tpl-footer" data-current="confidentialite"></div>
+      </div></div>
+    </figure>
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Grand écran</figcaption>
+      <div class="mq-screen"><div class="site">
+        <div data-template="tpl-header"></div>
+        <main><div data-template="tpl-politique"></div></main>
+        <div data-template="tpl-footer" data-current="confidentialite"></div>
+      </div></div>
+    </figure>
+  </div>
+</section>
+
+<section class="mq-section">
+  <h2>4. S'inscrire : renvoi à la politique</h2>
+  <p>Une phrase avant le champ « Adresse e-mail », dans le style de <code>identity-page__context</code> (<code>textMuted</code>), le lien en <code>primary</code> souligné. Libellé proposé, à confirmer par l'<code>ux-expert</code>.</p>
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>320 px</figcaption>
+      <div class="mq-screen"><div class="site">
+        <div data-template="tpl-header"></div>
+        <main><div data-template="tpl-inscription"></div></main>
+        <div data-template="tpl-footer"></div>
+      </div></div>
+    </figure>
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Grand écran</figcaption>
+      <div class="mq-screen"><div class="site">
+        <div data-template="tpl-header"></div>
+        <main><div data-template="tpl-inscription"></div></main>
+        <div data-template="tpl-footer"></div>
+      </div></div>
+    </figure>
+  </div>
+</section>
+
+<section class="mq-section">
+  <h2>5. La nuit</h2>
+  <p>Les mêmes écrans, toujours en thème sombre (<code>colorsDark</code>), quel que soit le choix de la barre : liens <code>primary</code> 8,9:1 sur le fond, <code>textMuted</code> 7,9:1, encadré sur <code>surface</code>.</p>
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>320 px, nuit : page introuvable</figcaption>
+      <div class="mq-screen mq-screen--phone mq-dark"><div class="site">
+        <div data-template="tpl-header"></div>
+        <main><div data-template="tpl-not-found"></div></main>
+        <div data-template="tpl-footer"></div>
+      </div></div>
+    </figure>
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>320 px, nuit : politique</figcaption>
+      <div class="mq-screen mq-dark"><div class="site">
+        <div data-template="tpl-header"></div>
+        <main><div data-template="tpl-politique"></div></main>
+        <div data-template="tpl-footer" data-current="confidentialite"></div>
+      </div></div>
+    </figure>
+    <figure class="mq-frame mq-frame--mobile">
+      <figcaption>320 px, nuit : s'inscrire</figcaption>
+      <div class="mq-screen mq-dark"><div class="site">
+        <div data-template="tpl-header"></div>
+        <main><div data-template="tpl-inscription"></div></main>
+        <div data-template="tpl-footer"></div>
+      </div></div>
+    </figure>
+  </div>
+  <div class="mq-row">
+    <figure class="mq-frame mq-frame--wide">
+      <figcaption>Grand écran, nuit : politique</figcaption>
+      <div class="mq-screen mq-dark"><div class="site">
+        <div data-template="tpl-header"></div>
+        <main><div data-template="tpl-politique"></div></main>
+        <div data-template="tpl-footer" data-current="confidentialite"></div>
+      </div></div>
+    </figure>
+  </div>
+</section>
+
+<script>
+  // Recopie chaque modèle dans son cadre ; les identifiants (ancres, libellés) sont préfixés pour rester uniques.
+  document.querySelectorAll('[data-template]').forEach((host, index) => {
+    const fragment = document.getElementById(host.dataset.template).content.cloneNode(true);
+    const prefix = `c${index}-`;
+    fragment.querySelectorAll('[id]').forEach((element) => { element.id = prefix + element.id; });
+    fragment.querySelectorAll('label[for]').forEach((label) => label.setAttribute('for', prefix + label.getAttribute('for')));
+    fragment.querySelectorAll('[aria-labelledby], [aria-describedby]').forEach((element) => {
+      ['aria-labelledby', 'aria-describedby'].forEach((name) => {
+        if (element.hasAttribute(name)) element.setAttribute(name, prefix + element.getAttribute(name));
+      });
+    });
+    fragment.querySelectorAll('a[href^="#"]').forEach((link) => {
+      const target = link.getAttribute('href').slice(1);
+      if (target) link.setAttribute('href', `#${prefix}${target}`);
+    });
+    if (host.dataset.current) {
+      const current = fragment.querySelector(`a[data-page="${host.dataset.current}"]`);
+      if (current) current.setAttribute('aria-current', 'page');
+    }
+    host.replaceWith(fragment);
+  });
+
+  // Thème de la maquette : suit le système, ou le choix fait dans la barre.
+  const buttons = document.querySelectorAll('.mq-theme');
+  const showChoice = () => {
+    const chosen = document.documentElement.dataset.theme
+      ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    buttons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.themeChoice === chosen)));
+  };
+  buttons.forEach((button) => button.addEventListener('click', () => {
+    document.documentElement.dataset.theme = button.dataset.themeChoice;
+    showChoice();
+  }));
+  showChoice();
+</script>
+</body>
+</html>

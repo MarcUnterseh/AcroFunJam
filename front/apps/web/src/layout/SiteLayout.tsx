@@ -4,6 +4,7 @@ import { SessionExpiredBanner } from '../identity/SessionExpiredBanner';
 import { SessionProvider } from '../identity/SessionContext';
 import { AnnouncerProvider } from './Announcer';
 import { focusPageTitle } from './focus';
+import { SiteFooter } from './SiteFooter';
 import { SiteHeader } from './SiteHeader';
 
 /** After each navigation (not on the first display), the focus goes to the new page's title. */
@@ -20,7 +21,7 @@ function FocusOnNavigation() {
   return null;
 }
 
-/** Layout of every page: skip link, header, expiry banner, main content, live region. */
+/** Layout of every page: skip link, header, expiry banner, main content, footer, live region. */
 export function SiteLayout({ extra }: { readonly extra?: ReactNode }) {
   return (
     <AnnouncerProvider>
@@ -33,6 +34,7 @@ export function SiteLayout({ extra }: { readonly extra?: ReactNode }) {
         <main id="contenu" tabIndex={-1}>
           <Outlet />
         </main>
+        <SiteFooter />
         <FocusOnNavigation />
         {extra}
       </SessionProvider>

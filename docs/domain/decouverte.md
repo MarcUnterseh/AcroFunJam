@@ -1095,6 +1095,100 @@ Architecture : aucune infrastructure nouvelle ; un ADR court pour le contrat HTT
 
 **Ordre d'implémentation conseillé** (le moment venu) : V1, V6 côté API, puis V2 à V5, puis le site (V6, V7).
 
+### Story « Mentions légales et confidentialité » (validée le 2026-11-26)
+Carte d'example mapping du 2026-11-26 (bdd-analyst). Le site est en production sur https://acrofunjam.fr depuis le 2026-11-25 (ADR 0040), qui laissait la politique de confidentialité à écrire (ADR 0039, 0040). Scénarios (tous `@wip`) : `specs/features/informations-legales/mentions-legales-et-confidentialite.feature`. Pas un contexte métier : présentation du site seule, cible @web.
+
+**Story** : en tant que visiteur ou utilisateur, connecté ou non, je trouve depuis le pied de page de toute page du site les mentions légales et la politique de confidentialité d'AcroFunJam, et une adresse de contact (contact@acrofunjam.fr) pour demander le retrait d'une photo ou exercer mes droits sur mes données, afin de savoir qui publie le site, ce qu'il fait de mes données et comment faire valoir mes droits.
+
+**Décisions du porteur du produit (prises avant la carte, non rouvertes)**
+1. **Éditeur anonyme** : « site personnel non professionnel » ; le responsable de la publication n'est pas nommé ; l'hébergeur est identifié (IONOS SARL) ; adresse de contact contact@acrofunjam.fr.
+2. **Site seulement** : l'application pointera vers ces pages à sa publication (hors story).
+3. **Suppression du compte** : aucun écran ; la demande passe par l'adresse de contact.
+4. **Retrait d'une photo** (Q267) : une seule demande, de la base ou du flyer, suffit ; la story transverse « Signaler un contenu ou demander son retrait » viendra plus tard.
+
+**Existant vérifié** (code, `deploy/`, `docs/deploiement.md`, ADR 0008, 0011, 0038, 0039, 0040)
+- **Compte** (table `identity`, ASP.NET Core Identity) : adresse e-mail (et sa forme normalisée), mot de passe **haché**, rôle, et des données techniques de sécurité (nombre d'échecs de connexion, fin du verrouillage, tampons de sécurité). Ni nom, ni date de naissance, ni téléphone renseigné.
+- **Contribution** : chaque proposition garde l'identifiant de son contributeur, sa date de soumission, son contenu et ses messages ; chaque décision, l'identifiant du validateur et sa date. Les propositions d'un compte supprimé restent (Q11).
+- **Confirmation des droits** : identifiant du compte et date (`rights_confirmed_by`, `rights_confirmed_at`), jamais présentés, gardés aussi longtemps que la photo, même après la suppression du compte (ADR 0039).
+- **Photos** : crédit (nom ou pseudonyme de l'auteur), texte alternatif, tailles générées **sans métadonnées** (ni position GPS ni appareil) ; personnes photographiées jamais nommées ; fichier d'origine jamais gardé ; retrait immédiat, fichiers supprimés du stockage dans la foulée (un navigateur peut encore montrer une photo qu'il avait en cache).
+- **Session** : un seul cookie, `__Host-afj-session`, HttpOnly, 14 jours glissants (renouvelé à mi-vie), strictement nécessaire. Le site garde aussi dans le navigateur un indicateur non secret « avait une session » (`localStorage`, ADR 0013) et la saisie conservée des formulaires (`sessionStorage`, effacée à la déconnexion).
+- **Aucun tiers dans le navigateur** : polices auto-hébergées, CSP limitée à la même origine, aucune mesure d'audience ni traceur ; les photos sont servies par l'API (le navigateur ne contacte jamais Cloudflare).
+- **Hébergement** : VPS IONOS (serveur, base PostgreSQL, journaux) ; Cloudflare R2 (seau des photos, seau des sauvegardes) ; domaine chez IONOS.
+- **Sauvegardes** : `pg_dump` chaque nuit vers R2, supprimées après **30 jours** par une règle de cycle de vie du seau (`docs/deploiement.md`, étape 3) ; elles contiennent toute la base (comptes compris). **Le seau des photos n'est pas sauvegardé.**
+- **Journaux** : Caddy sans journal d'accès ; journaux de l'API dans Docker, **sans rotation configurée** dans `deploy/compose.yml` (Q275).
+- **Application** (ADR 0038) : ni compte ni donnée personnelle ; le dernier flow affiché est gardé sur l'appareil seulement.
+
+**Règles et exemples** (scénarios dans le fichier ci-dessus)
+- **R1. Toute page du site présente un pied de page qui mène aux mentions légales, à la politique de confidentialité et à l'adresse de contact.**
+  - Un visiteur sur les poses du catalogue, la page de la pose Throne, « Générer un flow », « Étiquettes », « Se connecter », une page introuvable, et les deux pages légales elles-mêmes : le pied de page est là.
+  - Alice, connectée, sur « Mes propositions » : le pied de page est là, identique.
+- **R2. Les mentions légales et la politique de confidentialité se consultent sans compte, y compris en y arrivant directement** (lien partagé, rechargement) : un visiteur qui ouvre directement la politique de confidentialité la lit, sans qu'on lui demande de se connecter.
+- **R3. Les mentions légales présentent l'éditeur comme un site personnel non professionnel, l'hébergeur et l'adresse de contact** (décision 1).
+  - Éditeur : « site personnel non professionnel », responsable de la publication non nommé.
+  - Hébergeur : IONOS SARL, avec son adresse et son téléphone (Q270).
+  - Contact : contact@acrofunjam.fr.
+- **R4. La politique de confidentialité présente chaque catégorie de données, sa finalité et sa durée de conservation.**
+  - Compte (adresse e-mail, mot de passe haché, rôle) : jusqu'à la suppression du compte.
+  - Propositions et décisions : durée à trancher (Q273).
+  - Confirmation des droits sur une photo (compte et date, jamais présentée) : aussi longtemps que la photo.
+  - Photos (crédit, texte alternatif ; personnes photographiées jamais nommées, métadonnées retirées) : jusqu'à leur retrait.
+  - Cookie de session : au plus 14 jours après la dernière visite.
+  - Sauvegardes de la base : 30 jours.
+- **R5. La politique de confidentialité nomme les sous-traitants et ce qu'ils hébergent** : IONOS (serveur et base) ; Cloudflare (photos et sauvegardes), avec le lieu de stockage (Q276).
+- **R6. Le site ne dépose que le cookie de session, strictement nécessaire : aucun consentement n'est demandé.**
+  - La politique le dit, avec « aucune mesure d'audience, aucun traceur ».
+  - Un visiteur qui arrive pour la première fois ne voit aucune demande de consentement aux cookies.
+- **R7. La politique de confidentialité explique les droits de chacun et comment les exercer, par l'adresse de contact.**
+  - Accéder à ses données, les rectifier, les faire effacer, s'opposer à un traitement ou le limiter : en écrivant à contact@acrofunjam.fr.
+  - Supprimer son compte : en écrivant depuis l'adresse du compte (décision 3, Q274).
+  - Faire retirer une photo où l'on figure : une seule demande, de la base ou du flyer, suffit, sans compte (décision 4).
+  - Réclamation auprès de la CNIL.
+- **R8. L'adresse de contact s'écrit depuis sa messagerie** : là où elle est présentée (pied de page, pages légales), elle ouvre un message à contact@acrofunjam.fr.
+- **R9. La page d'inscription renvoie à la politique de confidentialité** (recommandation de Q279, à confirmer) : une personne qui commence à s'inscrire voit où lire la politique avant de donner son adresse.
+
+**Rubriques attendues** (le texte juridique n'est pas dans le Gherkin ; seuls les éléments essentiels y sont vérifiés)
+- *Mentions légales* : éditeur (site personnel non professionnel, responsable de la publication non nommé) ; contact ; hébergeur (raison sociale, adresse, téléphone) ; propriété des contenus et crédits des photos ; signaler un contenu ou demander un retrait ; renvoi à la politique de confidentialité ; date de mise à jour.
+- *Politique de confidentialité* : qui traite les données et comment le joindre ; données et finalités (compte, contribution, confirmation des droits, photos et personnes photographiées) ; bases légales ; durées de conservation ; destinataires et sous-traitants, lieu de stockage ; cookie et stockage dans le navigateur ; ce qu'AcroFunJam ne fait pas (mesure d'audience, traceurs, publicité, revente) ; sécurité ; droits et comment les exercer (délai de réponse) ; retrait d'une photo ; suppression du compte ; réclamation auprès de la CNIL ; mineurs ; date de mise à jour.
+
+**Questions ouvertes** (recommandation en gras ; les scénarios la suivent quand ils en dépendent)
+- **Q270 Coordonnées de l'hébergeur.** La LCEN exige le nom, l'adresse et le téléphone de l'hébergeur. **Recommandation : reprendre ceux d'IONOS SARL de son site ou du contrat** (de mémoire : 7 place de la Gare, BP 70109, 57201 Sarreguemines Cedex, 09 70 80 89 11 ; à vérifier). Rappel : l'anonymat d'un éditeur non professionnel suppose que l'hébergeur connaisse son identité (c'est le cas par le contrat).
+- **Q271 Identité du responsable du traitement (point d'attention, décision 1 non rouverte).** Le RGPD (art. 13) demande l'identité et les coordonnées du responsable du traitement ; la politique ne peut donner que « l'éditeur du site, joignable à contact@acrofunjam.fr ». **Recommandation : faire confirmer ce point par une personne compétente en droit** ; la carte s'en tient à la décision 1.
+- **Q272 Bases légales.** **Recommandation** : compte et contribution, exécution du service demandé ; confirmation des droits et sauvegardes, intérêt légitime (preuve, continuité) ; publication des personnes photographiées, leur accord, recueilli par la personne qui ajoute la photo et confirmé par la case.
+- **Q273 Durée de conservation des propositions et décisions**, refusées comprises, et ce qu'elles deviennent à la suppression du compte. **Recommandation : aussi longtemps que le catalogue, pour la traçabilité ; à la suppression du compte, elles ne renvoient plus à personne** (identifiant seul, comme la confirmation des droits, Q11).
+- **Q274 Suppression du compte sur demande.** Qui la fait, comment (aucun écran, sans doute directement dans la base), en combien de temps ? **Recommandation : réponse sous un mois (RGPD, art. 12) ; demande envoyée depuis l'adresse du compte, sinon vérification ; la politique précise que les sauvegardes en gardent trace jusqu'à 30 jours.** Prérequis : une procédure écrite dans `docs/deploiement.md`.
+- **Q275 Journaux techniques.** `deploy/compose.yml` ne configure aucune rotation des journaux Docker : ils sont gardés sans limite. Les journaux de l'API contiennent-ils des adresses e-mail ou IP ? **Recommandation : vérifier, configurer une rotation (par exemple 14 jours) et l'écrire dans la politique** ; « adresse IP traitée par le serveur pour répondre, sans être enregistrée » si c'est vrai.
+- **Q276 Lieu de stockage chez Cloudflare.** Les seaux R2 ont-ils été créés dans la juridiction UE ? **Recommandation : vérifier dans le tableau de bord ; sinon, mentionner le transfert hors de l'UE (Cloudflare, société américaine, Data Privacy Framework).**
+- **Q277 Stockage dans le navigateur hors cookie** (indicateur « avait une session », saisie conservée). **Recommandation : le mentionner dans la rubrique « cookie et stockage », comme strictement nécessaire, sans consentement.**
+- **Q278 Application et flow gardé sur l'appareil.** **Recommandation : rien dans cette story** (application non publiée, et le flow gardé n'est pas une donnée personnelle) ; à sa publication, une rubrique « Application » : aucun compte, le dernier flow reste sur l'appareil, seuls les critères partent pour générer.
+- **Q279 Lien depuis l'inscription.** Le RGPD demande d'informer au moment de la collecte. **Recommandation : oui, une phrase sous le formulaire « S'inscrire » qui renvoie à la politique de confidentialité** (R9, scénario `@wip` qui suit la recommandation).
+- **Q280 Âge minimum.** Options : (a) rien ; (b) « il faut avoir au moins 15 ans pour créer un compte » ; (c) accord parental en dessous. **Recommandation : (b)**, à confirmer ; sans scénario tant que non tranchée. Rappel : aucune personne mineure reconnaissable sur une photo (case des droits).
+- **Q281 Date de mise à jour.** **Recommandation : « Dernière mise à jour : <date> » en bas de chaque page** ; pas d'historique des versions.
+- **Q282 Libellés et ton.** Libellés du pied de page (« Mentions légales », « Confidentialité » ou « Politique de confidentialité », « Contact »), tutoiement comme le reste du site, place de l'avertissement de responsabilité (question ouverte « Identité et présentation ») : **ux-expert**. **Recommandation : tutoiement ; pas d'avertissement de responsabilité dans le pied de page pour l'instant.**
+- **Q283 Boîte contact@acrofunjam.fr.** Existe-t-elle, qui la lit, à quel rythme ? **Prérequis avant la mise en production** de la story ; la politique annonce un délai de réponse d'un mois au plus.
+- **Q284 Conditions d'utilisation et licence des contenus contribués.** Hors story ; **recommandation : story à part**, avant l'ouverture des propositions de photos (story 11).
+
+**Décisions du porteur du produit (2026-11-26) : toutes les recommandations sont retenues**, avec celles de l'ux-expert (UX-30 à UX-36). En particulier :
+- **Q270** : l'hébergeur est la société IONOS qui facture le VPS. La facture du 2026-11-26 est émise par **IONOS SARL** (SARL au capital de 100 000 €, 57201 Sarreguemines Cedex), malgré la cession de l'activité cloud à IONOS Cloud France SAS annoncée en juin 2026 ; téléphone du service client donné par IONOS : 09 70 80 89 11.
+- **Q273** : les propositions et décisions sont gardées tant qu'AcroFunJam existe ; à la suppression du compte, elles ne sont plus rattachées à son adresse (UX-36).
+- **Q274** : réponse sous un mois ; demande envoyée depuis l'adresse du compte ; trace dans les sauvegardes 30 jours au plus. Procédure dans `docs/deploiement.md`.
+- **Q275** : rotation des journaux Docker à 14 jours (les journaux de l'API contenaient quelques adresses IP, aucune adresse e-mail).
+- **Q276** : les seaux R2 sont dans la juridiction par défaut de Cloudflare. Leur recréation dans la **juridiction UE** est **reportée** (2026-11-26) ; d'ici là, la politique annonce que les photos et les sauvegardes peuvent être stockées hors de l'UE, sous le Data Privacy Framework. Après la migration, retirer cette mention.
+- **Q280** : **15 ans** au moins pour créer un compte, annoncé dans la politique (rubrique « Mineurs ») ; pas de contrôle à l'inscription.
+- **Q281, UX-31** : « Dernière mise à jour » **sous le titre** de chaque page.
+- **Q283** : la boîte contact@acrofunjam.fr doit exister et être lue avant la mise en production.
+- **UX-30** : `/mentions-legales` et `/confidentialite`. **UX-32** : AcroFunJam à la troisième personne, tutoiement du lecteur. **UX-33** : encadré « En bref ». **UX-34** : les pages légales ne font aucun appel à l'API. **UX-35** : données de sécurité de connexion citées en une ligne.
+
+**Termes proposés au glossaire** (section « Site et informations légales », proposés le 2026-11-26) : Pied de page, Mentions légales, Politique de confidentialité, Adresse de contact, Éditeur (du site), Hébergeur (du site), Sous-traitant, Demande de retrait (d'une photo). « Hébergeur » désigne déjà, en proposition (story 12), un hébergeur de vidéos : on précise toujours « hébergeur du site » ou « hébergeur de vidéos ».
+
+**Hors périmètre** : écran de suppression du compte ; export de ses données ; formulaire de signalement (story transverse) ; application mobile ; conditions d'utilisation ; texte juridique complet (rédigé à part, puis relu).
+
+**Ordre d'implémentation conseillé**
+1. Pied de page sur les poses du catalogue, avec les deux liens et l'adresse de contact (R1, premier exemple), et la page « Mentions légales » (R3).
+2. Page « Politique de confidentialité » : données et durées (R4), sous-traitants (R5), cookie (R6), droits (R7).
+3. Pied de page sur toutes les pages, visiteur puis personne connectée (R1, tous les exemples) ; arrivée directe sur les pages légales (R2).
+4. Adresse de contact en lien de messagerie (R8) ; absence de demande de consentement (R6).
+5. Renvoi depuis l'inscription (R9), une fois Q279 tranchée.
+
 ### Découpage des stories suivantes (décidé le 2026-11-02)
 1. **Comptes et rôles** (Identité) : s’inscrire, se connecter, un administrateur attribue ou retire un rôle.
 2. **Proposer une pose** (Contribution) : reprend les règles de contenu de `specs/features/catalogue/publier-une-pose.feature` (brouillon) ; publication directe pour un validateur ou un administrateur.

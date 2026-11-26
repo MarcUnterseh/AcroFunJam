@@ -86,6 +86,10 @@ Une photo montre une pose **tenue, entière** (charte des photos) : l'interface 
 
 Détail : `ecrans/10-photos-des-poses.md`.
 
+## Pied de page et pages de lecture (story « Mentions légales et confidentialité »)
+
+Un **pied de page** discret ferme toutes les pages, en bas de la fenêtre même sur une page courte : filet `divider`, texte `sm`, liens soulignés `primary`, « Contact : » en `textMuted` (`composants/pied-de-page.md`). Les **pages légales** sont des pages de lecture : texte sur le fond de page, colonne de 70 caractères (`sizes.readingMaxWidth`) alignée à gauche, hiérarchie par la typographie seule ; un seul encadré, « En bref » sur `surface` (`composants/encadre-en-bref.md`). Aucune nouvelle couleur. Détail : `ecrans/informations-legales.md`.
+
 ## Difficulté en phases de lune
 
 | Niveau | Phase |
@@ -189,7 +193,7 @@ Contrôles et icônes porteuses de sens (seuil 3:1) :
 
 ## Espacements, tailles, points de rupture
 
-Espacements (`spacing.*`, base 4) inchangés. Tailles (`sizes.*`) : cible 44, contrôle 48, phases de lune 18 (texte) / 24 (tuile), trajectoire 46 × 20, avatar 36, logo 30, astre 180 / 300, horizon 26, éclat 54, emplacement de glyphe 52, vignette 80, hauteur maximale d'une photo 560, barre de progression 8. Points de rupture : `md` 640 (40em), `lg` 1024 (64em). Catalogue : 1, 2 puis 3 colonnes ; page d'une pose : sections côte à côte à partir de 64em.
+Espacements (`spacing.*`, base 4) inchangés. Tailles (`sizes.*`) : cible 44, contrôle 48, phases de lune 18 (texte) / 24 (tuile), trajectoire 46 × 20, avatar 36, logo 30, astre 180 / 300, horizon 26, éclat 54, emplacement de glyphe 52, vignette 80, hauteur maximale d'une photo 560, barre de progression 8, mesure de lecture `readingMaxWidth` `'70ch'` (web seulement, en caractères pour suivre la taille de texte). Points de rupture : `md` 640 (40em), `lg` 1024 (64em). Catalogue : 1, 2 puis 3 colonnes ; page d'une pose : sections côte à côte à partir de 64em.
 
 ## Traduction côté web (ADR 0012)
 

@@ -11,7 +11,7 @@ import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { useAnnounce } from '../layout/Announcer';
 import { Icon } from '../layout/Icon';
 import { Field, FormAlert, PasswordField } from '../layout/form-controls';
-import { signInPath } from '../paths';
+import { privacyPolicyPath, signInPath } from '../paths';
 import { safeReturnPath } from './return-path';
 import { useSession } from './SessionContext';
 
@@ -134,6 +134,12 @@ export function IdentityForm({
     <section className="identity-page">
       <h1 tabIndex={-1}>{text.title}</h1>
       {context && <p className="identity-page__context">{context}</p>}
+      {kind === 'registration' && (
+        <p className="identity-page__privacy">
+          Avant de créer ton compte, tu peux lire ce qu&apos;AcroFunJam fait de tes données dans la{' '}
+          <Link to={privacyPolicyPath}>politique de confidentialité</Link>.
+        </p>
+      )}
       <form aria-label={text.title} noValidate onSubmit={(event) => void submit(event)}>
         {refusal && (
           <FormAlert key={attempt}>

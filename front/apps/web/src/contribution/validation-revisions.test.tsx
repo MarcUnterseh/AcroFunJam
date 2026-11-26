@@ -39,7 +39,7 @@ describe('a revision in the validation queue', () => {
   it('should be mixed with the pose proposals, in the order received', async () => {
     await openQueue(new FakeValidationGateway(aPendingProposal({ id: 'proposal-star' }), aPendingRevision()));
 
-    const names = within(screen.getByRole('list'))
+    const names = within(within(screen.getByRole('main')).getByRole('list'))
       .getAllByRole('article')
       .map((card) => within(card).getByRole('heading', { level: 2 }).textContent);
     expect(names).toEqual(['Throne', 'Modification de Throne']);

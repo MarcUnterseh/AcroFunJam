@@ -18,14 +18,18 @@ import { ProposeRevisionPage } from './contribution/ProposeRevisionPage';
 import { ProposeTransitionPage } from './contribution/ProposeTransitionPage';
 import { ValidationPage } from './contribution/ValidationPage';
 import { RegisterPage, SignInPage } from './identity/IdentityPages';
+import { LegalNoticePage } from './legal/LegalNoticePage';
+import { PrivacyPolicyPage } from './legal/PrivacyPolicyPage';
 import { NotFoundPage } from './layout/NotFoundPage';
 import type { SiteRouteHandle } from './layout/route-handle';
 import { SiteLayout } from './layout/SiteLayout';
 import {
   addPhotoPagePattern,
   flowGeneratorPath,
+  legalNoticePath,
   myProposalsPath,
   posePagePattern,
+  privacyPolicyPath,
   proposePosePath,
   registrationPagePath,
   revisionPagePattern,
@@ -69,6 +73,8 @@ export const routes = (extra?: ReactNode): RouteObject[] => [
       { path: addPhotoPagePattern, element: <AddPhotoPage />, handle: ownSessionNotice },
       { path: tagsPath, element: <TagsPage /> },
       { path: flowGeneratorPath, element: <FlowGeneratorPage /> },
+      { path: legalNoticePath, element: <LegalNoticePage /> },
+      { path: privacyPolicyPath, element: <PrivacyPolicyPage /> },
       { path: signInPagePath, element: <SignInPage contextOf={signInContextOf} />, handle: ownSessionNotice },
       { path: registrationPagePath, element: <RegisterPage />, handle: ownSessionNotice },
       { path: proposePosePath, element: <ProposePosePage />, handle: ownSessionNotice },

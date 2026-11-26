@@ -3,10 +3,18 @@
 #   docker compose run --rm migrate && docker compose up -d
 name: acrofunjam
 
+# Logs go to the journal of the server, which keeps them 14 days at most, as the privacy policy says: they may hold
+# IP addresses. The retention is set on the server (docs/deploiement.md, MaxRetentionSec=14day).
+x-logging: &logging
+  driver: journald
+  options:
+    tag: "acrofunjam-{{.Name}}"
+
 services:
   web:
     image: ghcr.io/${IMAGE_OWNER}/acrofunjam-web:${IMAGE_TAG}
     restart: unless-stopped
+    logging: *logging
     ports:
       - "80:80"
       - "443:443"
@@ -21,6 +29,7 @@ services:
 
   api:
     image: ghcr.io/${IMAGE_OWNER}/acrofunjam-api:${IMAGE_TAG}
+    logging: *logging
     restart: unless-stopped
     environment:
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true" # behind Caddy, the only service that reaches it
@@ -37,6 +46,7 @@ services:
 
   migrate:
     image: ghcr.io/${IMAGE_OWNER}/acrofunjam-migrations:${IMAGE_TAG}
+    logging: *logging
     profiles: [tools] # run by the deployment only, never by "up"
     environment:
       MIGRATIONS_CONNECTION: Host=postgres;Database=acrofunjam;Username=acrofunjam;Password=${POSTGRES_PASSWORD}
@@ -46,6 +56,7 @@ services:
 
   postgres:
     image: postgres:17-alpine
+    logging: *logging
     restart: unless-stopped
     environment:
       POSTGRES_DB: acrofunjam

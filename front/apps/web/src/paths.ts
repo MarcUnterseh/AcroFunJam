@@ -40,3 +40,9 @@ export const registrationPagePath = '/inscription';
 /** The sign-in page, coming back to `returnPath` afterwards (parameter « retour »). */
 export const signInPath = (returnPath: string): string =>
   `${signInPagePath}?retour=${encodeURIComponent(returnPath)}`;
+
+/** Page « Mentions légales », for everybody, without any call to the API. */
+export const legalNoticePath = '/mentions-legales';
+
+/** Page « Politique de confidentialité », for everybody, without any call to the API. */
+export const privacyPolicyPath = '/confidentialite';

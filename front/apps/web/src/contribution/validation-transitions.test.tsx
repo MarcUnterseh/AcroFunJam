@@ -59,7 +59,7 @@ describe('a transition in the validation queue', () => {
       'Star',
       'Star',
     ]);
-    const names = within(screen.getByRole('list'))
+    const names = within(within(screen.getByRole('main')).getByRole('list'))
       .getAllByRole('article')
       .map((article) => within(article).getByRole('heading', { level: 2 }).textContent);
     expect(names).toEqual(['Throne', ninjaStar]);
