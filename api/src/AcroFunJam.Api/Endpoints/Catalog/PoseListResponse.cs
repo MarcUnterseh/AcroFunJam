@@ -44,7 +44,7 @@ public sealed record PhotoSourcesResponse(string Thumbnail, string Page, string 
 /// </summary>
 public sealed record LinkedTransitionResponse(
     Guid Id, OtherPoseResponse OtherPose, string? Name, DifficultyCode BaseDifficulty, DifficultyCode FlyerDifficulty, string? Description,
-    IReadOnlyList<TransitionTagResponse> Tags);
+    IReadOnlyList<TransitionTagResponse> Tags, IReadOnlyList<VideoResponse> Videos);
 
 /// <summary>A tag of a pose or of a transition on the page of a pose, with its description, in catalog order (ADR 0034, ADR 0036).</summary>
 public sealed record TransitionTagResponse(Guid Id, string Name, string Description);

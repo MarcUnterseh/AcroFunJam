@@ -20,8 +20,9 @@ Composants : `rangee-videos.md`, `lecteur-video.md`, `bloc-preparation-video.md`
 |---|---|---|
 | `sizes.videoPoster` | 120 | largeur minimale d'une affiche compacte dans la rangée (`repeat(auto-fill, minmax(…, 1fr))`) |
 | `sizes.videoMaxHeight` | 480 | hauteur maximale d'une vidéo lancée et de l'aperçu (vidéo + contrôles + légende tiennent dans une fenêtre d'ordinateur portable) |
+| `sizes.centeredMessageMaxWidth` | `'30ch'` (web) | mesure d'un message court centré sur un cadre (échec de lecture) ; ajouté à la revue visuelle du 2026-11-27 |
 
-Variables CSS produites sans changement de code : `--afj-size-video-poster`, `--afj-size-video-max-height`. Paire à ajouter à `contrast.test.ts` (contrôles, 3:1) : `danger` / `photoMat` (5,3 / 7,2:1).
+Variables CSS produites sans changement de code : `--afj-size-video-poster`, `--afj-size-video-max-height`, `--afj-size-centered-message-max-width`. Paire à ajouter à `contrast.test.ts` (contrôles, 3:1) : `danger` / `photoMat` (5,3 / 7,2:1).
 
 ## 1. Page d'une pose : élément de transition (visiteur)
 
@@ -136,7 +137,7 @@ Ajouter une vidéo à Pop to Bird             h1
 Tous les champs sont obligatoires, sauf     introduction (proposée), textMuted
 la description de la vidéo.
 Vidéo
-MP4, MOV ou WebM, 30 secondes et 100 Mo…    aide (proposée)
+MP4, MOV ou WebM, de 2 à 30 secondes, 100 Mo…    aide
 [ (▷) Choisir une vidéo ]                   → aperçu muet ≤ 480 px de haut, résumé, « Changer de vidéo »
 Légende                         0 / 100
 Crédit                          0 / 100
@@ -153,10 +154,10 @@ AcroFunJam garde ta confirmation avec la vidéo (ton compte et la date).
 |---|---|
 | Repos | ci-dessus |
 | Aperçu | `<video>` muet sur le passe-partout, contrôles du navigateur, puis « pop-to-bird-cote.mp4 · 18,4 Mo · 12 secondes · 1080 × 1920 pixels » |
-| Aperçu indisponible (HEVC) | cadre `photoMat`, icône vidéo `textMuted`, « Ton navigateur ne sait pas lire cette vidéo HEVC : pas d'aperçu. AcroFunJam la préparera après l'envoi. » (proposé) ; résumé tiré de l'en-tête |
+| Aperçu indisponible (HEVC) | bande `.photo-field__unavailable` de la page photo (`photoMat`, icône vidéo en tête de ligne), « Pas d'aperçu : ton navigateur ne sait pas lire cette vidéo. AcroFunJam la préparera après l'envoi. » (seulement pour une vidéo acceptée) ; résumé tiré de l'en-tête |
 | Erreur de durée | aperçu entouré de 2 px `danger`, résumé « … · 31 secondes · … », message validé sous « Changer de vidéo » |
-| Envoi | barre « Envoi de la vidéo » 42 % au-dessus des actions ; « Envoi de la vidéo… » (`aria-disabled`), « Annuler l'envoi » |
-| Vérification | barre indéterminée « Vérification de la vidéo… » (hachurée et immobile en mouvement réduit) |
+| Envoi | barre « Envoi de la vidéo » 42 % au-dessus des actions ; « Envoi de la vidéo… » (`aria-disabled`), « Annuler l'envoi » ; annulé : « Envoi annulé. Ta saisie est gardée : tu peux renvoyer la vidéo. » |
+| Vérification | barre indéterminée « Vérification de la vidéo… » qui va et vient (hachurée et immobile en mouvement réduit) ; bouton primaire « Vérification de la vidéo… », sans « Annuler l'envoi » |
 | Abandon | « Abandonner cette vidéo ? Ta saisie sera perdue. », « Abandonner » / « Continuer l'ajout » (deux secondaires) |
 
 Grand écran : panneau de 640 px centré, actions en ligne ; un aperçu portrait est plafonné à 480 px (270 px de large, centré sur le passe-partout).
@@ -169,7 +170,7 @@ Grand écran : panneau de 640 px centré, actions en ligne ; un aperçu portrait
 | `textMuted` sur `surface` (crédit, titre « Vidéos », repère, maximum) | 7,0:1 | 7,3:1 |
 | `sunStrong` (icône du rappel) sur `surface` | 5,2:1 | 10,4:1 |
 | `border` (contour de la pastille « Lire », boutons) sur `surface` | 3,4:1 | 3,4:1 |
-| `primary` (repli « Description de la vidéo ») sur `surface` | 7,1:1 | 8,1:1 |
+| `primary` (repli « Description ») sur `surface` | 7,1:1 | 8,1:1 |
 | `text` / `textMuted` sur `photoMat` (repères, aperçu indisponible, échec) | 13,2 / 5,7:1 | 12,0 / 6,1:1 |
 | `danger` (icône et contour d'échec) sur `photoMat` | 5,3:1 | 7,2:1 |
 | `focus` (anneau autour d'une affiche) sur `surface` | 5,7:1 | 9,1:1 |

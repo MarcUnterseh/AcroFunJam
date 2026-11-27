@@ -384,7 +384,7 @@ describe('the photos of a pose, for a validator', () => {
     expect(screen.getByRole('button', { name })).toHaveFocus();
   });
 
-  it('should tell under the field « Crédit » that the credit must name the author', async () => {
+  it('should tell under the field « Crédit » that the credit must name the author, or the photo be removed', async () => {
     const photos = new FakePosePhotos();
     photos.answer.set(fail({ kind: 'invalid', code: 'photo.credit-not-an-author' }));
     const { user } = open({ gateway: validator(), photos });
@@ -399,7 +399,7 @@ describe('the photos of a pose, for a validator', () => {
     const credit = screen.getByLabelText('Crédit');
     await waitFor(() => expect(credit).toHaveFocus());
     expect(credit).toHaveAccessibleDescription(
-      expect.stringContaining("Si tu ne sais pas qui l'a prise, n'ajoute pas cette photo."),
+      expect.stringContaining("Si tu ne sais pas qui l'a prise, retire cette photo."),
     );
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
@@ -478,6 +478,25 @@ describe('the photos of a pose, for a validator', () => {
         { poseId: 'pose-bird', photoId: 'p2', altText: '', credit: 'Hugo Bernard' },
       ]),
     );
+  });
+
+  it('should tell AcroFunJam unreachable when removing a photo, without speaking of a sending', async () => {
+    const photos = new FakePosePhotos();
+    photos.answer.set(fail({ kind: 'unreachable' }));
+    const { user } = open({ gateway: validator(), photos });
+
+    await user.click(await screen.findByRole('button', { name: 'Retirer la photo : Bird, les prises' }));
+    await user.click(
+      within(screen.getByRole('group', { name: 'Retirer cette photo de Bird ?' })).getByRole('button', {
+        name: 'Retirer la photo',
+      }),
+    );
+
+    expect(
+      await screen.findByText(
+        'Impossible de joindre AcroFunJam. Vérifie ta connexion Internet, puis réessaie.',
+      ),
+    ).toBeInTheDocument();
   });
 
   it('should tell the session expired when a removal is refused', async () => {

@@ -7,4 +7,4 @@ namespace AcroFunJam.Application.Catalog.AddPosePhoto;
 /// credit and the confirmation of the rights.
 /// </summary>
 public sealed record AddPosePhoto(
-    PoseId Pose, ReadOnlyMemory<byte> Content, string? AltText, string? Credit, bool RightsConfirmed, PhotoManagerId By);
+    PoseId Pose, ReadOnlyMemory<byte> Content, string? AltText, string? Credit, bool RightsConfirmed, CatalogManagerId By);

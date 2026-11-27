@@ -11,7 +11,7 @@ namespace AcroFunJam.Application.Tests.Catalog;
 public sealed class AddPosePhotoHandlerTests
 {
     private static readonly DateTimeOffset On21November = new(2026, 11, 21, 10, 0, 0, TimeSpan.Zero);
-    private static readonly PhotoManagerId Bruno = new(Guid.Parse("0b000000-0000-0000-0000-000000000001"));
+    private static readonly CatalogManagerId Bruno = new(Guid.Parse("0b000000-0000-0000-0000-000000000001"));
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     private readonly FakePoseRepository _poses = new();

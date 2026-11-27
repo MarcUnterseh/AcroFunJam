@@ -18,6 +18,8 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
+      - name: ffmpeg (integration tests of the videos, ADR 0041)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
       - name: Build
         run: dotnet build api/AcroFunJam.slnx
       - name: Test (unit, architecture, specs @api, integration via Testcontainers)

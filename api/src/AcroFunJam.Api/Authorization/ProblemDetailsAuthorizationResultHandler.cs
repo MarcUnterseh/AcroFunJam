@@ -41,6 +41,7 @@ internal sealed class ProblemDetailsAuthorizationResultHandler : IAuthorizationM
         Capability.ManageRoles => "Seul un administrateur gère les rôles.",
         Capability.ManageTags => "Seul un validateur ou un administrateur gère la liste des étiquettes.",
         Capability.ManagePhotos => "Seul un validateur ou un administrateur gère les photos.",
+        Capability.ManageVideos => "Seul un validateur ou un administrateur gère les vidéos.",
         Capability.ValidateProposals => "Seul un validateur peut accepter ou refuser une proposition.",
         Capability.Propose => "Il faut être utilisateur pour proposer.",
         _ => "Votre rôle ne permet pas cette action.",

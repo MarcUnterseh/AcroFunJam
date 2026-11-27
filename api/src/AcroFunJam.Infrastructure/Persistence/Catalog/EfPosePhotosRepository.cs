@@ -96,7 +96,7 @@ public sealed class EfPosePhotosRepository(AcroFunJamDbContext context, TrackedA
             StoredAltText(record),
             PhotoCredit.Create(record.Credit).Value ?? throw Invalid(record, "credit"),
             new PhotoDimensions(record.Width, record.Height),
-            new RightsConfirmation(new PhotoManagerId(record.RightsConfirmedBy), record.RightsConfirmedAt),
+            new RightsConfirmation(new CatalogManagerId(record.RightsConfirmedBy), record.RightsConfirmedAt),
             record.AdditionRank,
             record.AddedAt);
 

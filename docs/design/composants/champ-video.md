@@ -6,7 +6,7 @@ Story 12 (V4 à V7, V22 ; UX-55, Q300). Page « Ajouter une vidéo à Pop to Bir
 
 ```
 Vidéo                                          <- libellé
-MP4, MOV ou WebM, 30 secondes et 100 Mo au     <- aide (proposée), size.sm, textMuted
+MP4, MOV ou WebM, de 2 à 30 secondes, 100 Mo  <- aide, size.sm, textMuted
 plus, au moins 480 pixels sur le plus petit
 côté.
 [ (▷) Choisir une vidéo ]                      <- secondaire 48 px, icône vidéo
@@ -24,7 +24,7 @@ pop-to-bird-cote.mp4 · 18,4 Mo · 12 secondes · 1080 × 1920 pixels
 | Élément | Écart avec `champ-photo.md` |
 |---|---|
 | `input type="file"` | `accept="video/mp4,video/quicktime,video/webm"` |
-| Aide (**proposée**) | « MP4, MOV ou WebM, 30 secondes et 100 Mo au plus, au moins 480 pixels sur le plus petit côté. » |
+| Aide | « MP4, MOV ou WebM, de 2 à 30 secondes, 100 Mo au plus, au moins 480 pixels sur le plus petit côté. » (revue UX, G2) |
 | Bouton | « Choisir une vidéo », icône **vidéo** (cadre arrondi et triangle de lecture, nouvelle) |
 | Aperçu (`.video-field__preview`) | `<video muted playsinline controls preload="metadata">` (pas de lecture automatique, pas de boucle) ; `inline-size: 100%`, `block-size: auto`, **`max-block-size: sizes.videoMaxHeight`**, `object-fit: contain`, fond `photoMat`, rayon `radius.md`, `overflow: hidden` ; nom accessible « Aperçu de la vidéo choisie » (proposé) |
 | Résumé | nom · poids · **durée en toutes lettres** (« 12 secondes », comme dans les messages ; la pastille « 0:12 » est réservée à l'affiche) · dimensions une fois redressée (« 1080 × 1920 pixels ») ; `tabular-nums` |
@@ -36,7 +36,7 @@ pop-to-bird-cote.mp4 · 18,4 Mo · 12 secondes · 1080 × 1920 pixels
 |---|---|
 | Vide | libellé, aide, « Choisir une vidéo » |
 | Vidéo choisie, lisible | aperçu, résumé complet, « Changer de vidéo » |
-| Vidéo choisie, **illisible par le navigateur (HEVC)**, en-tête lu (UX-55) | cadre « aperçu indisponible » (`photoMat`, padding `spacing.md`, icône **vidéo** `iconLarge` en `textMuted`, texte `size.sm` `text`) : « Ton navigateur ne sait pas lire cette vidéo HEVC : pas d'aperçu. AcroFunJam la préparera après l'envoi. » (**proposé**) ; résumé **complet** (durée et dimensions tirées de l'en-tête) ; les contrôles s'appliquent dès le choix |
+| Vidéo choisie, **illisible par le navigateur (HEVC)**, en-tête lu (UX-55) | bande « aperçu indisponible » **de `champ-photo.md`** (`.photo-field__unavailable`, retenue à l'implémentation : une seule forme pour les deux champs) : fond `photoMat`, rayon `radius.md`, icône **vidéo** `sizes.icon` en tête de ligne, texte `size.sm` `text` (13,2 / 12,0:1) : « Pas d'aperçu : ton navigateur ne sait pas lire cette vidéo. AcroFunJam la préparera après l'envoi. » (revue UX, R3 : la bande n'est montrée que pour une vidéo **acceptée** ; une vidéo refusée n'a que son message d'erreur) (le mot « HEVC », jargon, est retiré) ; en erreur, la bande prend le contour 2 px `danger` comme l'aperçu ; résumé **complet** (durée et dimensions tirées de l'en-tête) ; les contrôles s'appliquent dès le choix |
 | Idem, en-tête non lu (si l'ADR écarte cette lecture) | même cadre, texte « … AcroFunJam la vérifiera après l'envoi. » ; résumé sans durée ni dimensions |
 | Erreur sans vidéo (« Choisis une vidéo. ») | bouton avec contour 2 px `danger` + message sous le bouton |
 | Erreur avec vidéo (format, poids, **durée**, dimensions) | aperçu (ou cadre indisponible) entouré de **2 px `danger`** ; le résumé montre la valeur en cause (« 31 secondes ») ; message sous « Changer de vidéo » : « Cette vidéo dure 31 secondes : 30 secondes au plus. Raccourcis-la sur ton appareil, puis choisis-la de nouveau. » |

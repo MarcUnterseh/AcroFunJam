@@ -4,7 +4,8 @@
  * - session cookie: 14 days, renewed at each visit (api, Authentication/SessionCookie.cs);
  * - backups: 30 days (lifecycle rule of the R2 bucket, docs/deploiement.md);
  * - logs: 14 days (journald of the server, docs/deploiement.md);
- * - storage: IONOS (server, database, mailbox) in the European Union; Cloudflare R2 in its default jurisdiction, possibly
+ * - storage: IONOS (server, database, mailbox) in the European Union; Cloudflare R2 (photos, videos, backups, story 12:
+ *   ADR 0041) in its default jurisdiction, possibly
  *   outside the European Union until the buckets move to its EU jurisdiction (Q276).
  */
 export const contactAddress = 'contact@acrofunjam.fr';
@@ -12,7 +13,7 @@ export const contactAddress = 'contact@acrofunjam.fr';
 export const contactMailto = `mailto:${contactAddress}`;
 
 /** Date of the last update of the legal pages: shown under their titles. */
-export const legalPagesUpdatedOn = { iso: '2026-11-26', label: '26 novembre 2026' } as const;
+export const legalPagesUpdatedOn = { iso: '2026-11-27', label: '27 novembre 2026' } as const;
 
 /**
  * The host of the site (LCEN, art. 6): IONOS SARL, which bills the server (invoice of 2026-11-26, Q270); its phone is

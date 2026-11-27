@@ -36,6 +36,8 @@ export const xhrUploadTransport: UploadTransport = (request) =>
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) request.onProgress?.(event.loaded / event.total);
     };
+    // The whole file is sent: the server checks it before answering (« Vérification de la vidéo… », ADR 0041).
+    xhr.upload.onload = () => request.onProgress?.(1);
     const abort = () => xhr.abort();
     const settled = () => request.signal?.removeEventListener('abort', abort);
     xhr.onload = () => {

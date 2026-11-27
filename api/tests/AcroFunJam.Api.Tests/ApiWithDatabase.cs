@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Time.Testing;
 using Testcontainers.PostgreSql;
+using AcroFunJam.TestSupport;
 
 namespace AcroFunJam.Api.Tests;
 
@@ -48,6 +49,7 @@ public sealed class ApiWithDatabase : WebApplicationFactory<Program>, IAsyncLife
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        builder.UseOwnVideoWorkspace();
         builder.UseSetting("ConnectionStrings:AcroFunJam", _database.GetConnectionString());
         builder.ConfigureTestServices(services =>
         {

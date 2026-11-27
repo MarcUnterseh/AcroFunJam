@@ -3,6 +3,8 @@ using AcroFunJam.Application.Catalog.ListPublishedPoses;
 using AcroFunJam.Domain.Catalog;
 using AcroFunJam.Application.Common;
 using AcroFunJam.Api.Endpoints.Common;
+using AcroFunJam.Api.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AcroFunJam.Api.Endpoints.Catalog;
@@ -24,6 +26,7 @@ public static class CatalogEndpoints
 
         catalog.MapTagEndpoints();
         catalog.MapPhotoEndpoints();
+        catalog.MapVideoEndpoints();
 
         return app;
     }
@@ -43,15 +46,23 @@ public static class CatalogEndpoints
 
     /// <summary>
     /// The page of a published pose (story 7, ADR 0030): the pose with its version, to start a revision of it (story 6, ADR 0024),
-    /// and its transitions from and to it, in the order of the domain.
+    /// and its transitions from and to it, in the order of the domain. The videos of the transitions depend on the caller (story 12,
+    /// ADR 0041): whoever manages the videos, as the policy evaluates it, sees them all; a visitor the ready ones only. Hence no
+    /// shared cache.
     /// </summary>
     private static async Task<Results<Ok<PublishedPoseResponse>, ProblemHttpResult>> GetPublishedPose(
         Guid id,
+        HttpContext http,
+        IAuthorizationService authorization,
         IQueryHandler<GetPosePage, PosePage> handler,
         CancellationToken ct)
     {
-        var result = await handler.Handle(new GetPosePage(new PoseId(id)), ct);
+        var managesVideos = http.User.Identity?.IsAuthenticated == true &&
+                            (await authorization.AuthorizeAsync(http.User, Capabilities.CanManageVideos)).Succeeded;
+        var result = await handler.Handle(
+            new GetPosePage(new PoseId(id)) { Audience = managesVideos ? VideoAudience.Manager : VideoAudience.Visitor }, ct);
         if (result.IsFailure) return result.Error!.ToProblem();
+        http.Response.Headers.CacheControl = "private, no-cache";
 
         var pose = result.Value!;
         return TypedResults.Ok(new PublishedPoseResponse(
@@ -77,7 +88,8 @@ public static class CatalogEndpoints
             DifficultyCodes.From(transition.Difficulty.Base),
             DifficultyCodes.From(transition.Difficulty.Flyer),
             transition.Description?.Value,
-            [.. page.TagsOf(transition).Select(ToResponse)]);
+            [.. page.TagsOf(transition).Select(ToResponse)],
+            [.. page.VideosOf(transition).Select(VideoEndpoints.ToResponse)]);
 
     private static TransitionTagResponse ToResponse(PresentedTag tag) => new(tag.Id.Value, tag.Name.Value, tag.Description.Value);
 

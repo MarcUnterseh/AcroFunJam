@@ -8,8 +8,18 @@
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		Permissions-Policy "camera=(), microphone=(), geolocation=()"
-		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 		-Server
+	}
+
+	# The sending of a video (ADR 0041): 100 MiB and the margin of the form, on this route only. One MiB above the limit of
+	# the API (101 MiB): beyond the file, the API itself answers 413 video.too-large, with its message.
+	@videoUpload {
+		method POST
+		path_regexp ^/catalog/transitions/[^/]+/videos$
+	}
+	request_body @videoUpload {
+		max_size 102MiB
 	}
 
 	# Anchored on a slash: pages of the site such as /catalogue are not API routes.

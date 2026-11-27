@@ -6,6 +6,7 @@ import {
   photoCountLabel,
   photoCreditLabel,
   photoErrorMessage,
+  photoManagementErrorMessage,
   photoDescription,
   photoFileSummary,
   posePhotoLabels as labels,
@@ -130,4 +131,25 @@ describe('the texts of the photos', () => {
   ] as const)('should explain the error %j', (error, text) => {
     expect(photoErrorMessage(error, 'Bird')).toBe(text);
   });
+});
+
+describe('photoManagementErrorMessage', () => {
+  it.each([
+    [
+      { kind: 'unreachable' },
+      'Impossible de joindre AcroFunJam. Vérifie ta connexion Internet, puis réessaie.',
+    ],
+    [{ kind: 'session-expired' }, 'Ta session a expiré. Connecte-toi de nouveau, puis réessaie.'],
+    [{ kind: 'outdated' }, 'Le site doit être mis à jour. Recharge la page, puis réessaie.'],
+    [
+      { kind: 'invalid', code: 'photo.credit-not-an-author' },
+      "Le crédit doit nommer la personne qui a pris la photo. Si tu ne sais pas qui l'a prise, retire cette photo.",
+    ],
+    [{ kind: 'photo-not-found' }, "Cette photo n'est plus dans le catalogue."],
+  ] as const)(
+    'should explain the error %j without speaking of a sending (« Modifier », « Retirer », photo principale)',
+    (error, text) => {
+      expect(photoManagementErrorMessage(error, 'Bird')).toBe(text);
+    },
+  );
 });

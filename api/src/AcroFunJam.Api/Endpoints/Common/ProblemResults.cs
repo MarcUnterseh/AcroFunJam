@@ -2,6 +2,7 @@ using AcroFunJam.Domain.Catalog;
 using AcroFunJam.Domain.Common;
 using AcroFunJam.Domain.Contribution;
 using AcroFunJam.Domain.FlowGeneration;
+using AcroFunJam.Domain.SharedKernel;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AcroFunJam.Api.Endpoints.Common;
@@ -101,6 +102,23 @@ public static class ProblemResults
         ["photo.rights-confirmation-required"] = StatusCodes.Status400BadRequest,
         ["catalog.photo-not-found"] = StatusCodes.Status404NotFound,
         ["catalog.photo-limit-reached"] = StatusCodes.Status409Conflict,
+        // Story 12 (ADR 0041): the videos of the transitions.
+        ["video.file-required"] = StatusCodes.Status400BadRequest,
+        ["video.format-not-accepted"] = StatusCodes.Status400BadRequest,
+        ["video.too-large"] = StatusCodes.Status413PayloadTooLarge,
+        ["video.too-long"] = StatusCodes.Status400BadRequest,
+        ["video.too-short"] = StatusCodes.Status400BadRequest,
+        ["video.too-small"] = StatusCodes.Status400BadRequest,
+        ["video.unreadable"] = StatusCodes.Status400BadRequest,
+        ["video.caption-required"] = StatusCodes.Status400BadRequest,
+        ["video.caption-too-long"] = StatusCodes.Status400BadRequest,
+        ["video.credit-required"] = StatusCodes.Status400BadRequest,
+        ["video.credit-too-long"] = StatusCodes.Status400BadRequest,
+        ["video.credit-not-an-author"] = StatusCodes.Status400BadRequest,
+        ["video.description-too-long"] = StatusCodes.Status400BadRequest,
+        ["video.rights-confirmation-required"] = StatusCodes.Status400BadRequest,
+        ["catalog.video-not-found"] = StatusCodes.Status404NotFound,
+        ["catalog.video-limit-reached"] = StatusCodes.Status409Conflict,
     };
 
     /// <summary>
@@ -125,6 +143,8 @@ public static class ProblemResults
 
     private static Dictionary<string, object?>? ExtensionsOf(Error error) => error switch
     {
+        // Story 12 (ADR 0041): the seconds, truncated, for the message of the site.
+        VideoTooLongError tooLong => new() { ["durationSeconds"] = tooLong.DurationSeconds },
         TagNotInListError notInList => new() { ["tagIds"] = notInList.Tags.Ids.Select(t => t.Value).ToList() },
         TagsNotInListError notInList => new() { ["tagIds"] = notInList.Tags.Ids.Select(t => t.Value).ToList() },
         ProposedTagsNotInListError notInList => new() { ["tagIds"] = notInList.Tags.Ids.Select(t => t.Value).ToList() },

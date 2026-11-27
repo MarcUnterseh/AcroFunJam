@@ -73,7 +73,9 @@ describe('PoseList', () => {
   // Story 10 (R16): the thumbnail of the main photo next to the name, decorative; no space kept without a photo.
   it('should present the thumbnail of the main photo next to the name, decorative, and none without photo', () => {
     const [throne, highBird] = poses as [PoseSummary, PoseSummary];
-    const { container } = render(<PoseList poses={[{ ...throne, thumbnail: '/catalog/photos/p/thumbnail' }, highBird]} />);
+    const { container } = render(
+      <PoseList poses={[{ ...throne, thumbnail: '/catalog/photos/p/thumbnail' }, highBird]} />,
+    );
 
     const thumbnails = container.querySelectorAll('img.pose-card__thumbnail');
     expect(thumbnails).toHaveLength(1);

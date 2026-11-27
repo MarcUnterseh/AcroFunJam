@@ -22,6 +22,7 @@ public sealed class DependencyRuleTests
             .Should().NotDependOnAny(Layers.Application)
             .AndShould().NotDependOnAny(Layers.Infrastructure)
             .AndShould().NotDependOnAny(Layers.Api)
+            .AndShould().NotDependOnAny(Layers.Worker)
             .Because("the domain is the core of the clean architecture")
             .Check(Layers.Architecture);
     }
@@ -43,6 +44,7 @@ public sealed class DependencyRuleTests
         Types().That().Are(Layers.Application)
             .Should().NotDependOnAny(Layers.Infrastructure)
             .AndShould().NotDependOnAny(Layers.Api)
+            .AndShould().NotDependOnAny(Layers.Worker)
             .Because("use cases only know ports, adapters are plugged in by the composition root")
             .Check(Layers.Architecture);
     }
@@ -64,6 +66,21 @@ public sealed class DependencyRuleTests
     {
         Types().That().Are(Layers.Infrastructure)
             .Should().NotDependOnAny(Layers.Api)
+            .AndShould().NotDependOnAny(Layers.Worker)
             .Check(Layers.Architecture);
+    }
+
+    /// <summary>ADR 0041: the worker is a composition root of its own, which never borrows the Api.</summary>
+    [Fact]
+    public void Worker_Should_NotDependOnApi_When_Compiled()
+    {
+        Types().That().Are(Layers.Worker)
+            .Should().NotDependOnAny(Layers.Api)
+            .Because("the worker prepares the videos with the use cases and the adapters, never with the presentation of the Api")
+            .Check(Layers.Architecture);
+        Layers.WorkerAssembly.GetReferencedAssemblies()
+            .Select(a => a.Name ?? string.Empty)
+            .Where(n => n.StartsWith("AcroFunJam.", StringComparison.Ordinal))
+            .ShouldBeSubsetOf(["AcroFunJam.Domain", "AcroFunJam.Application", "AcroFunJam.Infrastructure"]);
     }
 }

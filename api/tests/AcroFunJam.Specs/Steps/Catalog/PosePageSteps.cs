@@ -13,7 +13,7 @@ namespace AcroFunJam.Specs.Steps.Catalog;
 /// « Soit » step through the PublishTransition command (ADR 0020).
 /// </summary>
 [Binding]
-public sealed class PosePageSteps(Deployment deployment, People people, CatalogPublishing catalog)
+public sealed class PosePageSteps(Deployment deployment, People people, CatalogPublishing catalog, ConsultedPosePage consulted)
 {
     private const string Transition = @"(sans nom|""[^""]*"")";
     private const string Poses = @"de ""([^""]*)"" vers ""([^""]*)""";
@@ -88,6 +88,7 @@ public sealed class PosePageSteps(Deployment deployment, People people, CatalogP
         var list = await client.GetFromJsonAsync<PoseListResponse>(new Uri("/catalog/poses", UriKind.Relative));
         var id = list!.Poses.Single(p => p.Name == pose).Id;
         _response = await client.GetAsync(new Uri($"/catalog/poses/{id}", UriKind.Relative));
+        consulted.Response = _response;
     }
 
     // --- Outcome ------------------------------------------------------------------------------

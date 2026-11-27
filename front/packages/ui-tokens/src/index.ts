@@ -257,6 +257,13 @@ export const sizes = {
    */
   videoMaxHeight: 480,
   /**
+   * Web only: the measure of a short message centred on a frame (story 12, « La vidéo n'a pas pu être lue. » on the
+   * passe-partout of a launched video, lecteur-video.md), so that centred lines stay short and even whatever the width
+   * of the frame (about 250 px at 14 px in Figtree). In characters, written as is by toCssVariables, like
+   * readingMaxWidth. The mobile app does not use it.
+   */
+  centeredMessageMaxWidth: '30ch',
+  /**
    * Web only: the measure of a long text to read (legal pages, story « Mentions légales et confidentialité »),
    * in characters so that it follows the text size chosen in the browser (about 670 px at 16 px in Figtree).
    * Written as is by toCssVariables (a string is not converted to pixels). The mobile app does not use it.

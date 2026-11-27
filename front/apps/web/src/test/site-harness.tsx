@@ -7,6 +7,11 @@ import {
   type PosePhoto,
   type PosePhotosFailure,
   type PosePhotosGateway,
+  type TransitionVideo,
+  type TransitionVideosFailure,
+  type TransitionVideosGateway,
+  type VideoFacts,
+  type VideoInspector,
   type Acceptance,
   type AcceptanceOutcome,
   type AccessFailure,
@@ -86,6 +91,7 @@ import { PosePageProvider } from '../catalog/PosePageContext';
 import { TagListProvider } from '../catalog/TagListContext';
 import { PoseTaggingProvider } from '../catalog/PoseTaggingContext';
 import { PosePhotosProvider, type PosePhotosPorts } from '../catalog/PosePhotosContext';
+import { TransitionVideosProvider, type TransitionVideosPorts } from '../catalog/TransitionVideosContext';
 import { FlowGenerationProvider } from '../flow-generation/FlowGenerationContext';
 import { TransitionTaggingProvider } from '../catalog/TransitionTaggingContext';
 import { ContributionProvider } from '../contribution/ContributionContext';
@@ -511,6 +517,90 @@ export class FakePosePhotos implements PosePhotosPorts {
   };
 }
 
+/**
+ * Story 12: the videos of the transitions (ADR 0041), the requests sent, answered in turn. A file is inspected as an MP4 of
+ * 20 MiB, 12 s, 1920 × 1080, unless the test says otherwise.
+ */
+export class FakeTransitionVideos implements TransitionVideosPorts {
+  readonly added: Array<{
+    transitionId: string;
+    file: File;
+    caption: string;
+    credit: string;
+    description: string;
+    rightsConfirmed: boolean;
+  }> = [];
+  readonly listed: string[] = [];
+  readonly removed: Array<{ transitionId: string; videoId: string }> = [];
+  readonly corrected: Array<{
+    transitionId: string;
+    videoId: string;
+    caption: string;
+    credit: string;
+    description: string;
+  }> = [];
+  readonly addAnswer = new Answers<Result<TransitionVideo, TransitionVideosFailure>>([
+    ok(aTransitionVideo({ preparation: 'in-preparation', sources: null })),
+  ]);
+  readonly listAnswer = new Answers<Result<readonly TransitionVideo[], TransitionVideosFailure>>([ok([])]);
+  readonly answer = new Answers<Result<void, TransitionVideosFailure>>([ok(undefined)]);
+  /** The progress the sending reports before the answer (1: the whole file is sent). */
+  progress = 0.5;
+  facts: VideoFacts = {
+    format: 'mp4',
+    size: 20 * 1024 * 1024,
+    durationMs: 12_000,
+    dimensions: { width: 1920, height: 1080 },
+  };
+
+  readonly inspector: VideoInspector<File> = { inspect: async () => this.facts };
+  readonly gateway: TransitionVideosGateway<File> = {
+    addVideo: async (transitionId, input, options) => {
+      this.added.push({ transitionId, ...input });
+      options.onProgress?.(this.progress);
+      const answer = this.addAnswer.next();
+      const signal = options.signal;
+      if (!signal) return answer;
+      const cancelled = new Promise<Result<TransitionVideo, TransitionVideosFailure>>((resolve) =>
+        signal.addEventListener('abort', () => resolve(fail({ kind: 'cancelled' })), { once: true }),
+      );
+      return Promise.race([answer, cancelled]);
+    },
+    listVideos: async (transitionId) => {
+      this.listed.push(transitionId);
+      return this.listAnswer.next();
+    },
+    correctVideo: async (transitionId, videoId, texts) => {
+      this.corrected.push({ transitionId, videoId, ...texts });
+      const result = await this.answer.next();
+      return result.ok
+        ? ok(aTransitionVideo({ id: videoId, ...texts, description: texts.description || null }))
+        : result;
+    },
+    removeVideo: async (transitionId, videoId) => {
+      this.removed.push({ transitionId, videoId });
+      return this.answer.next();
+    },
+  };
+}
+
+/** A ready video of a transition, as the API presents it. */
+export const aTransitionVideo = (overrides: Partial<TransitionVideo> = {}): TransitionVideo => {
+  const id = overrides.id ?? 'video-1';
+  return {
+    id,
+    caption: 'Pop to Bird, démonstration de face',
+    credit: 'Léa Martin',
+    description: null,
+    width: 720,
+    height: 1280,
+    durationMs: 12_400,
+    preparation: 'ready',
+    sources: { video: `/catalog/videos/${id}/video`, poster: `/catalog/videos/${id}/poster` },
+    ...overrides,
+  };
+};
+
 /** A photo of a pose, as the API presents it. */
 export const aPosePhoto = (overrides: Partial<PosePhoto> = {}): PosePhoto => {
   const id = overrides.id ?? 'photo-1';
@@ -676,6 +766,7 @@ export const renderSite = (
     tagging = new FakeTransitionTaggingGateway(),
     poseTagging = new FakePoseTaggingGateway(),
     photos = new FakePosePhotos(),
+    videos = new FakeTransitionVideos(),
     transitions = new FakeTransitionProposalGateway(),
     transitionStore = new MemoryTransitionInputStore(),
     flowGeneration = new FakeFlowGenerationGateway(),
@@ -695,6 +786,7 @@ export const renderSite = (
     tagging?: FakeTransitionTaggingGateway;
     poseTagging?: FakePoseTaggingGateway;
     photos?: FakePosePhotos;
+    videos?: FakeTransitionVideos;
     transitions?: FakeTransitionProposalGateway;
     transitionStore?: MemoryTransitionInputStore;
     flowGeneration?: FakeFlowGenerationGateway;
@@ -711,23 +803,25 @@ export const renderSite = (
             <TransitionTaggingProvider gateway={tagging}>
               <PoseTaggingProvider gateway={poseTagging}>
                 <PosePhotosProvider ports={photos}>
-                  <ContributionProvider gateway={contribution} store={store}>
-                    <ValidationProvider gateway={validation} store={decisionStore}>
-                      <PoseRevisionProvider gateway={revision} store={revisionStore}>
-                        <TransitionProposalProvider gateway={transitions} store={transitionStore}>
-                          <IdentityProvider
-                            gateway={gateway}
-                            memory={memory}
-                            forgetOnSignOut={[store, decisionStore, revisionStore, transitionStore]}
-                          >
-                            <FlowGenerationProvider gateway={flowGeneration}>
-                              <RouterProvider router={router} />
-                            </FlowGenerationProvider>
-                          </IdentityProvider>
-                        </TransitionProposalProvider>
-                      </PoseRevisionProvider>
-                    </ValidationProvider>
-                  </ContributionProvider>
+                  <TransitionVideosProvider ports={videos}>
+                    <ContributionProvider gateway={contribution} store={store}>
+                      <ValidationProvider gateway={validation} store={decisionStore}>
+                        <PoseRevisionProvider gateway={revision} store={revisionStore}>
+                          <TransitionProposalProvider gateway={transitions} store={transitionStore}>
+                            <IdentityProvider
+                              gateway={gateway}
+                              memory={memory}
+                              forgetOnSignOut={[store, decisionStore, revisionStore, transitionStore]}
+                            >
+                              <FlowGenerationProvider gateway={flowGeneration}>
+                                <RouterProvider router={router} />
+                              </FlowGenerationProvider>
+                            </IdentityProvider>
+                          </TransitionProposalProvider>
+                        </PoseRevisionProvider>
+                      </ValidationProvider>
+                    </ContributionProvider>
+                  </TransitionVideosProvider>
                 </PosePhotosProvider>
               </PoseTaggingProvider>
             </TransitionTaggingProvider>
@@ -750,6 +844,7 @@ export const renderSite = (
     posePage,
     tagging,
     photos,
+    videos,
     transitions,
     transitionStore,
     flowGeneration,

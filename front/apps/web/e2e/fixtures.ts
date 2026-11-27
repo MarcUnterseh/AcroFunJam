@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 import { test as base, createBdd } from 'playwright-bdd';
 import { AddPhotoForm } from './pages/add-photo-form';
+import { AddVideoForm } from './pages/add-video-form';
 import { CatalogPage } from './pages/catalog-page';
 import { FlowGenerator } from './pages/flow-generator';
 import { IdentityForm, SiteHeader } from './pages/identity-pages';
@@ -21,6 +22,7 @@ import { PoseRevisionApi } from './support/pose-revision-api';
 import { TagApi } from './support/tag-api';
 import { TransitionApi } from './support/transition-api';
 import { ValidationApi } from './support/validation-api';
+import { VideoApi } from './support/video-api';
 
 type Fixtures = {
   catalogApi: CatalogApi;
@@ -33,7 +35,9 @@ type Fixtures = {
   tagApi: TagApi;
   flowGenerationApi: FlowGenerationApi;
   photoApi: PhotoApi;
+  videoApi: VideoApi;
   addPhotoForm: AddPhotoForm;
+  addVideoForm: AddVideoForm;
   flowGenerator: FlowGenerator;
   catalogPage: CatalogPage;
   posePage: PosePage;
@@ -134,7 +138,16 @@ export const test = base.extend<Fixtures>({
     },
     { auto: true },
   ],
+  videoApi: [
+    async ({ context, identityApi, catalogApi }, use) => {
+      const api = new VideoApi(context, identityApi, catalogApi);
+      await api.start();
+      await use(api);
+    },
+    { auto: true },
+  ],
   addPhotoForm: async ({ page }, use) => use(new AddPhotoForm(page)),
+  addVideoForm: async ({ page }, use) => use(new AddVideoForm(page)),
   flowGenerator: async ({ page }, use) => use(new FlowGenerator(page)),
   catalogPage: async ({ page }, use) => use(new CatalogPage(page)),
   posePage: async ({ page }, use) => use(new PosePage(page)),

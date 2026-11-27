@@ -1,4 +1,4 @@
-import type { BrowserContext } from '@playwright/test';
+import type { BrowserContext, Route } from '@playwright/test';
 import type { components } from '@acrofunjam/api-client/schema';
 
 type PoseListResponse = components['schemas']['PoseListResponse'];
@@ -7,6 +7,7 @@ type PublishedPoseResponse = components['schemas']['PublishedPoseResponse'];
 type LinkedTransitionResponse = components['schemas']['LinkedTransitionResponse'];
 type ProblemDetails = components['schemas']['ProblemDetails'];
 type PhotoResponse = components['schemas']['PhotoResponse'];
+type VideoResponse = components['schemas']['VideoResponse'];
 export type DifficultyCode = components['schemas']['DifficultyCode'];
 
 type PublishedPose = {
@@ -84,6 +85,11 @@ export class CatalogApi {
   hasPendingRevision: (poseId: string) => boolean = () => false;
   /** Story 10: the photos of the pose, the main one first, set by the simulated photos (PhotoApi). */
   photosOf: (poseId: string) => PhotoResponse[] = () => [];
+  /**
+   * Story 12: the videos of the transition presented to the caller of the request, in the order of addition (a visitor:
+   * the ready ones only), set by the simulated videos (VideoApi).
+   */
+  videosOf: (transitionId: string, route: Route) => VideoResponse[] = () => [];
 
   constructor(private readonly context: BrowserContext) {}
 
@@ -191,8 +197,8 @@ export class CatalogApi {
       const { tagIds, ...values } = pose;
       const body: PublishedPoseResponse = {
         ...values,
-        transitionsFrom: this.linked(pose.id, 'from'),
-        transitionsTo: this.linked(pose.id, 'to'),
+        transitionsFrom: this.linked(pose.id, 'from', route),
+        transitionsTo: this.linked(pose.id, 'to', route),
         tags: this.tags.describe(tagIds),
         pendingRevision: this.hasPendingRevision(pose.id),
         photos: this.photosOf(pose.id),
@@ -205,7 +211,7 @@ export class CatalogApi {
    * The transitions from or to a pose (ADR 0030), each with the other pose under its current name: ordered on the
    * other pose (catalog order), then on the name, the transitions without a name first.
    */
-  private linked(poseId: string, direction: 'from' | 'to'): LinkedTransitionResponse[] {
+  private linked(poseId: string, direction: 'from' | 'to', route: Route): LinkedTransitionResponse[] {
     return this.transitions
       .filter((transition) => (direction === 'from' ? transition.fromPoseId : transition.toPoseId) === poseId)
       .map((transition) => {
@@ -219,6 +225,7 @@ export class CatalogApi {
           flyerDifficulty,
           description,
           tags: this.tags.describe(tagIds),
+          videos: this.videosOf(id, route),
         };
       })
       .sort(

@@ -7,7 +7,7 @@ namespace AcroFunJam.Application.Catalog.GetPosePage;
 
 internal sealed class GetPosePageHandler(
     IPoseRepository poses, IPoseTransitionsReader transitions, ITagListRepository tagLists, IPendingPoseRevisions revisions,
-    IPosePhotosRepository photos, IPhotoAddresses addresses)
+    IPosePhotosRepository photos, IPhotoAddresses addresses, ITransitionVideosRepository videos, IVideoAddresses videoAddresses)
     : IQueryHandler<GetPosePage, PosePage>
 {
     public async Task<Result<PosePage>> Handle(GetPosePage query, CancellationToken ct)
@@ -19,6 +19,7 @@ internal sealed class GetPosePageHandler(
         var from = await transitions.TransitionsFrom(pose.Id, ct);
         var to = await transitions.TransitionsTo(pose.Id, ct);
         // Removed tags included: a published transition never carries one (ADR 0033), but a removal must not break the page.
+        var videosOfTransitions = await videos.GetFor([.. from.Concat(to).Select(t => t.Id).Distinct()], ct);
         var tags = (await tagLists.Get(ct))?.AllTags.ToDictionary(t => t.Id, t => new PresentedTag(t.Id, t.Name, t.Description))
                    ?? new Dictionary<TagId, PresentedTag>();
         return Result<PosePage>.Success(new PosePage(
@@ -27,6 +28,9 @@ internal sealed class GetPosePageHandler(
             PosePage.Presented(pose.Tags, tags), await revisions.IsPending(pose.Id, ct))
         {
             Photos = [.. ((await photos.GetFor(pose.Id, ct))?.InPresentationOrder() ?? []).Select(p => PresentedPhoto.Of(p, addresses))],
+            Videos = videosOfTransitions.ToDictionary(
+                v => v.Key,
+                v => (IReadOnlyList<PresentedVideo>)[.. v.Value.PresentedTo(query.Audience).Select(video => PresentedVideo.Of(video, videoAddresses))]),
         });
     }
 }

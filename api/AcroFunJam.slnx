@@ -4,6 +4,7 @@
     <Project Path="src/AcroFunJam.Application/AcroFunJam.Application.csproj" />
     <Project Path="src/AcroFunJam.Domain/AcroFunJam.Domain.csproj" />
     <Project Path="src/AcroFunJam.Infrastructure/AcroFunJam.Infrastructure.csproj" />
+    <Project Path="src/AcroFunJam.Worker/AcroFunJam.Worker.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/AcroFunJam.Api.Tests/AcroFunJam.Api.Tests.csproj" />
@@ -12,5 +13,6 @@
     <Project Path="tests/AcroFunJam.Domain.Tests/AcroFunJam.Domain.Tests.csproj" />
     <Project Path="tests/AcroFunJam.Infrastructure.Tests/AcroFunJam.Infrastructure.Tests.csproj" />
     <Project Path="tests/AcroFunJam.Specs/AcroFunJam.Specs.csproj" />
+    <Project Path="tests/AcroFunJam.Worker.Tests/AcroFunJam.Worker.Tests.csproj" />
   </Folder>
 </Solution>

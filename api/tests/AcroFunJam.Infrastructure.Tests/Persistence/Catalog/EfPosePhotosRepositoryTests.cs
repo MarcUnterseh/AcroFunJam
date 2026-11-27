@@ -14,7 +14,7 @@ namespace AcroFunJam.Infrastructure.Tests.Persistence.Catalog;
 public sealed class EfPosePhotosRepositoryTests(PostgreSqlFixture database) : IClassFixture<PostgreSqlFixture>, IAsyncLifetime
 {
     private static readonly DateTimeOffset Now = new(2026, 11, 21, 10, 0, 0, TimeSpan.Zero);
-    private static readonly PhotoManagerId Bruno = new(Guid.Parse("0b000000-0000-0000-0000-000000000001"));
+    private static readonly CatalogManagerId Bruno = new(Guid.Parse("0b000000-0000-0000-0000-000000000001"));
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     private readonly Pose _bird = EfPoseRepositoryTests.APublishedPose("Bird");

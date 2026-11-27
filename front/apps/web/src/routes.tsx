@@ -8,6 +8,7 @@ import {
 import type { ReactNode } from 'react';
 import { matchPath, type RouteObject } from 'react-router';
 import { AddPhotoPage } from './catalog/AddPhotoPage';
+import { AddVideoPage } from './catalog/AddVideoPage';
 import { CatalogRoute } from './catalog/CatalogRoute';
 import { PosePageRoute } from './catalog/PosePageRoute';
 import { TagsPage } from './catalog/TagsPage';
@@ -25,6 +26,7 @@ import type { SiteRouteHandle } from './layout/route-handle';
 import { SiteLayout } from './layout/SiteLayout';
 import {
   addPhotoPagePattern,
+  addVideoPagePattern,
   flowGeneratorPath,
   legalNoticePath,
   myProposalsPath,
@@ -71,6 +73,7 @@ export const routes = (extra?: ReactNode): RouteObject[] => [
       { index: true, element: <CatalogRoute /> },
       { path: posePagePattern, element: <PosePageRoute /> },
       { path: addPhotoPagePattern, element: <AddPhotoPage />, handle: ownSessionNotice },
+      { path: addVideoPagePattern, element: <AddVideoPage />, handle: ownSessionNotice },
       { path: tagsPath, element: <TagsPage /> },
       { path: flowGeneratorPath, element: <FlowGeneratorPage /> },
       { path: legalNoticePath, element: <LegalNoticePage /> },

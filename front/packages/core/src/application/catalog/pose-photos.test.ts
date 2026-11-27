@@ -95,7 +95,8 @@ describe('addPosePhoto', () => {
     await addPosePhoto(
       {
         inspector: {
-          inspect: async (file) => (file.includes('@') ? jpeg(3 * mb, 2400, 1600) : jpeg(12 * mb, 6000, 4000)),
+          inspect: async (file) =>
+            file.includes('@') ? jpeg(3 * mb, 2400, 1600) : jpeg(12 * mb, 6000, 4000),
         },
         reducer,
         gateway,
@@ -118,9 +119,7 @@ describe('addPosePhoto', () => {
       {},
     );
 
-    expect(result).toEqual(
-      fail({ kind: 'invalid-input', errors: { file: 'required', rights: 'required' } }),
-    );
+    expect(result).toEqual(fail({ kind: 'invalid-input', errors: { file: 'required', rights: 'required' } }));
     expect(sent).toEqual([]);
   });
 

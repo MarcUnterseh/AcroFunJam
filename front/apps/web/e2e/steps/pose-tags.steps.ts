@@ -146,8 +146,13 @@ When(
 
 // --- Tagging a published pose directly -------------------------------------------------------------------------
 
-Then(/^la page de la pose invite (\S+) à « (.+) »$/, async ({ page }, _who: string, button: string) => {
-  await expect(page.getByRole('button', { name: button, exact: true })).toBeVisible();
+// Story 12: « Ajouter une vidéo à Pop to Bird » is a link to its page.
+Then(/^la page de la pose invite (\S+) à « (.+) »$/, async ({ page }, _who: string, name: string) => {
+  const invitation = page
+    .getByRole('main')
+    .getByRole('button', { name, exact: true })
+    .or(page.getByRole('main').getByRole('link', { name, exact: true }));
+  await expect(invitation.first()).toBeVisible();
 });
 
 Then(

@@ -337,6 +337,112 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.VideoPreparationJobRecord", b =>
+                {
+                    b.Property<Guid>("VideoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("video_id");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempts");
+
+                    b.Property<DateTimeOffset>("EnqueuedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("enqueued_at");
+
+                    b.Property<DateTimeOffset?>("LeaseUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lease_until");
+
+                    b.Property<Guid>("TransitionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("transition_id");
+
+                    b.HasKey("VideoId");
+
+                    b.HasIndex("EnqueuedAt")
+                        .HasDatabaseName("ix_video_preparation_jobs_enqueued_at");
+
+                    b.ToTable("video_preparation_jobs", "catalog");
+                });
+
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.VideoRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("AddedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("added_at");
+
+                    b.Property<int>("AdditionRank")
+                        .HasColumnType("integer")
+                        .HasColumnName("addition_rank");
+
+                    b.Property<string>("Caption")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("caption");
+
+                    b.Property<string>("Credit")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("credit");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<long>("DurationMs")
+                        .HasColumnType("bigint")
+                        .HasColumnName("duration_ms");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("integer")
+                        .HasColumnName("height");
+
+                    b.Property<string>("Preparation")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("preparation");
+
+                    b.Property<DateTimeOffset>("RightsConfirmedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("rights_confirmed_at");
+
+                    b.Property<Guid>("RightsConfirmedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("rights_confirmed_by");
+
+                    b.Property<Guid>("TransitionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("transition_id");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("integer")
+                        .HasColumnName("width");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TransitionId")
+                        .HasDatabaseName("ix_videos_transition_id");
+
+                    b.ToTable("videos", "catalog", t =>
+                        {
+                            t.HasCheckConstraint("ck_videos_caption", "caption <> '' AND char_length(caption) <= 100");
+
+                            t.HasCheckConstraint("ck_videos_credit", "credit <> '' AND char_length(credit) <= 100");
+
+                            t.HasCheckConstraint("ck_videos_description", "description IS NULL OR (description <> '' AND char_length(description) <= 300)");
+
+                            t.HasCheckConstraint("ck_videos_dimensions", "width > 0 AND height > 0");
+
+                            t.HasCheckConstraint("ck_videos_preparation", "preparation IN ('in-preparation', 'ready', 'failed')");
+                        });
+                });
+
             modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Contribution.PoseProposalRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1065,6 +1171,26 @@ namespace AcroFunJam.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_transitions_to_pose");
+                });
+
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.VideoPreparationJobRecord", b =>
+                {
+                    b.HasOne("AcroFunJam.Infrastructure.Persistence.Catalog.VideoRecord", null)
+                        .WithOne()
+                        .HasForeignKey("AcroFunJam.Infrastructure.Persistence.Catalog.VideoPreparationJobRecord", "VideoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_video_preparation_jobs_videos");
+                });
+
+            modelBuilder.Entity("AcroFunJam.Infrastructure.Persistence.Catalog.VideoRecord", b =>
+                {
+                    b.HasOne("AcroFunJam.Infrastructure.Persistence.Catalog.TransitionRecord", null)
+                        .WithMany()
+                        .HasForeignKey("TransitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_videos_transitions");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>

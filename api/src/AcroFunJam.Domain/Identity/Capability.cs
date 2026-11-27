@@ -7,5 +7,6 @@ public enum Capability
     ValidateProposals,
     ManageTags,
     ManagePhotos,
+    ManageVideos,
     ManageRoles,
 }

@@ -16,7 +16,7 @@ namespace AcroFunJam.Application.Tests.Catalog;
 public sealed class PosePhotosHandlersTests
 {
     private static readonly DateTimeOffset Now = new(2026, 11, 21, 10, 0, 0, TimeSpan.Zero);
-    private static readonly PhotoManagerId Bruno = new(Guid.Parse("0b000000-0000-0000-0000-000000000001"));
+    private static readonly CatalogManagerId Bruno = new(Guid.Parse("0b000000-0000-0000-0000-000000000001"));
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     private readonly FakePoseRepository _poses = new();
@@ -179,7 +179,7 @@ public sealed class PosePhotosHandlersTests
         _photos.Stored[_bird.Id].ChooseAsMain(ids[1], Now);
 
         var page = (await new GetPosePageHandler(_poses, new FakePoseTransitionsReader(), new FakeTagListRepository(), new FakePendingPoseRevisions(),
-            _photos, _addresses).Handle(new GetPosePage(_bird.Id), Ct)).Value!;
+            _photos, _addresses, new FakeTransitionVideosRepository(), new FakeVideoAddresses()).Handle(new GetPosePage(_bird.Id), Ct)).Value!;
 
         page.Photos.Select(p => p.AltText).ShouldBe(["Bird vue de face", "Bird vue de profil"]);
         page.Photos[0].Credit.ShouldBe("Léa Martin");
@@ -190,7 +190,7 @@ public sealed class PosePhotosHandlersTests
     public async Task GetPosePage_Should_PresentNoPhoto_When_ThePoseHasNone()
     {
         var page = (await new GetPosePageHandler(_poses, new FakePoseTransitionsReader(), new FakeTagListRepository(), new FakePendingPoseRevisions(),
-            _photos, _addresses).Handle(new GetPosePage(_bird.Id), Ct)).Value!;
+            _photos, _addresses, new FakeTransitionVideosRepository(), new FakeVideoAddresses()).Handle(new GetPosePage(_bird.Id), Ct)).Value!;
 
         page.Photos.ShouldBeEmpty();
     }

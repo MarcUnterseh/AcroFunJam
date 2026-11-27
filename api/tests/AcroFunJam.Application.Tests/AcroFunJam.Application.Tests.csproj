@@ -4,4 +4,8 @@
     <ProjectReference Include="../../src/AcroFunJam.Application/AcroFunJam.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="../Shared/ByteRangeInMemory.cs" Link="Shared/ByteRangeInMemory.cs" />
+  </ItemGroup>
+
 </Project>

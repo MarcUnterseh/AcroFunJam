@@ -60,3 +60,10 @@ export const noticeDismissed = (session: Session): Session =>
  */
 export const canManagePhotos = (session: Session): boolean =>
   session.status === 'signedIn' && session.capabilities.includes('manage-photos');
+
+/**
+ * The person is signed in and the role allows managing the videos of the transitions (capability "manage-videos", story
+ * 12, Q230): a validator or an administrator.
+ */
+export const canManageVideos = (session: Session): boolean =>
+  session.status === 'signedIn' && session.capabilities.includes('manage-videos');

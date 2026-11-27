@@ -14,6 +14,30 @@ const ninjaStar = {
   flyerDifficulty: 'advanced',
   description: 'Rotation complète, retour en Star.',
   tags: [{ id: 'tag-inversion', name: 'inversion', description: 'Le flyer passe tête en bas.' }],
+  videos: [
+    {
+      id: 'video-1',
+      caption: 'Ninja Star, deux tours',
+      credit: 'Lulu Acro',
+      description: 'La base fait tourner le flyer deux fois.',
+      width: 720,
+      height: 1280,
+      durationMs: 15000,
+      preparation: 'ready',
+      sources: { video: '/catalog/videos/video-1/video', poster: '/catalog/videos/video-1/poster' },
+    },
+    {
+      id: 'video-2',
+      caption: 'Ninja Star, de face',
+      credit: 'Léa Martin',
+      description: null,
+      width: 1280,
+      height: 720,
+      durationMs: 9000,
+      preparation: 'in-preparation',
+      sources: null,
+    },
+  ],
 };
 
 const starToBird = {
@@ -24,6 +48,7 @@ const starToBird = {
   flyerDifficulty: 'intermediate',
   description: null,
   tags: [],
+  videos: [],
 };
 
 const star = {
@@ -45,7 +70,11 @@ const star = {
       credit: 'Léa Martin',
       width: 1600,
       height: 1200,
-      sources: { thumbnail: '/catalog/photos/photo-1/thumbnail', page: '/catalog/photos/photo-1/page', enlarged: '/catalog/photos/photo-1/enlarged' },
+      sources: {
+        thumbnail: '/catalog/photos/photo-1/thumbnail',
+        page: '/catalog/photos/photo-1/page',
+        enlarged: '/catalog/photos/photo-1/enlarged',
+      },
     },
   ],
 };
@@ -104,6 +133,22 @@ describe('createPosePageGateway', () => {
     expect(result.ok && result.value.photos).toEqual([{ ...photo, altText: null }]);
   });
 
+  it('should leave out a video in a preparation the site does not know yet (ADR 0041)', async () => {
+    const [ready] = ninjaStar.videos;
+    const gateway = createPosePageGateway(
+      apiAnswering(200, {
+        ...star,
+        transitionsTo: [
+          { ...ninjaStar, videos: [ready, { ...ready, id: 'video-3', preparation: 'archived' }] },
+        ],
+      }),
+    );
+
+    const result = await gateway.getPosePage(starId);
+
+    expect(result.ok && result.value.transitionsTo[0]?.videos).toEqual([ready]);
+  });
+
   it('should report photos it cannot read as an outdated site', async () => {
     const gateway = createPosePageGateway(apiAnswering(200, { ...star, photos: [{ id: 'photo-1' }] }));
 
@@ -149,6 +194,12 @@ describe('createPosePageGateway', () => {
     ['no list of tags of the pose', { tags: undefined }],
     ['a tag of the pose without its description', { tags: [{ id: 'tag-pop', name: 'pop' }] }],
     ['no pending revision', { pendingRevision: undefined }],
+    ['no list of videos', { transitionsTo: [{ ...ninjaStar, videos: undefined }] }],
+    ['a video without its caption', { transitionsTo: [{ ...ninjaStar, videos: [{ id: 'video-1' }] }] }],
+    [
+      'a ready video without its sources',
+      { transitionsTo: [{ ...ninjaStar, videos: [{ ...ninjaStar.videos[0], sources: null }] }] },
+    ],
   ])('should report an answer it cannot read (%s) as an outdated site', async (_case, change) => {
     const gateway = createPosePageGateway(apiAnswering(200, { ...star, ...change }));
 

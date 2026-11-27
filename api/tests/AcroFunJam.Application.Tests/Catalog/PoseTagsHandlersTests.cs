@@ -42,7 +42,7 @@ public sealed class PoseTagsHandlersTests
     {
         var pose = FoldedLeaf("lunaire", "inversion");
 
-        var page = (await new GetPosePageHandler(_poses, new FakePoseTransitionsReader(), _lists, _pending, new FakePosePhotosRepository(), new FakePhotoAddresses()).Handle(new GetPosePage(pose.Id), Ct)).Value!;
+        var page = (await new GetPosePageHandler(_poses, new FakePoseTransitionsReader(), _lists, _pending, new FakePosePhotosRepository(), new FakePhotoAddresses(), new FakeTransitionVideosRepository(), new FakeVideoAddresses()).Handle(new GetPosePage(pose.Id), Ct)).Value!;
 
         page.PoseTags.Select(t => t.Name.Value).ShouldBe(["inversion", "lunaire"]);
         page.PoseTags[0].Description.ShouldBe(_lists.Stored!.Tags.Single(t => t.Name.Value == "inversion").Description);
@@ -55,7 +55,7 @@ public sealed class PoseTagsHandlersTests
         var pose = FoldedLeaf();
         _pending.Pending.Add(pose.Id);
 
-        var page = (await new GetPosePageHandler(_poses, new FakePoseTransitionsReader(), _lists, _pending, new FakePosePhotosRepository(), new FakePhotoAddresses()).Handle(new GetPosePage(pose.Id), Ct)).Value!;
+        var page = (await new GetPosePageHandler(_poses, new FakePoseTransitionsReader(), _lists, _pending, new FakePosePhotosRepository(), new FakePhotoAddresses(), new FakeTransitionVideosRepository(), new FakeVideoAddresses()).Handle(new GetPosePage(pose.Id), Ct)).Value!;
 
         page.HasPendingRevision.ShouldBeTrue();
         page.PoseTags.ShouldBeEmpty();

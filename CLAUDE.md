@@ -65,6 +65,7 @@ dotnet tool restore                                                             
 dotnet ef database update --project api/src/AcroFunJam.Infrastructure --startup-project api/src/AcroFunJam.Infrastructure   # applique les migrations à la base du docker-compose
 dotnet ef migrations add <Nom> --project api/src/AcroFunJam.Infrastructure --startup-project api/src/AcroFunJam.Infrastructure --output-dir Persistence/Migrations
 dotnet run --project api/src/AcroFunJam.Api --launch-profile http                      # http://localhost:5252 (/scalar, /openapi/v1.json)
+dotnet run --project api/src/AcroFunJam.Worker                                         # préparation des vidéos (ffmpeg et ffprobe dans le PATH, ADR 0041)
 # Premier administrateur (ADR 0008) : s’inscrire via /identity/register, puis relancer l’API avec
 #   Identity__InitialAdministratorEmail=<adresse> (variable d’environnement ou secrets utilisateur).
 

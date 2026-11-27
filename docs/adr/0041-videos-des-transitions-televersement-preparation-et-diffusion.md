@@ -54,7 +54,8 @@ Le modèle du domaine (domain-expert, 2026-11-26) est dans la context map, secti
 - Le binaire n'est **jamais lié** à notre code. Les adaptateurs `FfprobeVideoProbe` et `FfmpegVideoPreparer` (derrière `IVideoProcessor.Probe` / `Prepare`) lancent un processus :
   - avec des arguments passés un à un (`ProcessStartInfo.ArgumentList`, jamais une ligne de commande composée) ;
   - avec un **environnement vidé** (aucun secret transmis) ;
-  - sous un délai maximal, et tué à l'annulation.
+  - sous un délai maximal, et tué avec ses processus enfants au délai comme à l'annulation ;
+  - sans jamais garder sa sortie entière en mémoire : elle est lue ligne à ligne, une ligne de plus de 4096 caractères arrête le processus, et la sortie d'erreur est lue puis jetée.
 - **Licences** :
   - le ffmpeg de Debian est compilé `--enable-gpl` (x264, x265). Notre code n'est pas une œuvre dérivée, car il appelle un exécutable sans s'y lier : la GPL ne s'étend pas à AcroFunJam ;
   - la seule obligation porte sur la **distribution** de l'image. Si les images GHCR restent **privées** (tirées par notre seul serveur), il n'y a pas de distribution. Si elles deviennent publiques, il faut offrir les sources des paquets GPL (sources Debian correspondantes) : une mention dans le dépôt suffit ;
@@ -118,7 +119,8 @@ Le modèle du domaine (domain-expert, 2026-11-26) est dans la context map, secti
   Aucun verrou n'est gardé pendant ffmpeg : un retrait ou une correction ne sont jamais bloqués par une préparation (pourquoi pas 3(b)).
 - **Fin** :
   - succès ou fichier impossible à préparer : le travail est supprimé dans la transaction qui enregistre l'état de la vidéo ;
-  - panne (exception, worker arrêté, redémarrage) : le bail expire et le travail est repris.
+  - panne (exception, conteneur tué, redémarrage brutal) : le bail expire et le travail est repris ;
+  - arrêt demandé du worker (un déploiement) : la préparation en cours est annulée (ffmpeg tué) et le travail **rendu** aussitôt (`IVideoPreparationQueue.Release` : `lease_until = NULL`, `attempts - 1`), sans attendre le bail ni compter la tentative. `stop_grace_period: 40s` dans `deploy/compose.yml` laisse le temps de le faire.
 - **Tentatives** : 2 au plus (« une seule nouvelle tentative »). À la troisième revendication, `PrepareNextVideo` déclare la vidéo impossible à préparer sans relancer ffmpeg.
 - Pourquoi pas 3(c) : un service de plus sur 4 Go, pour quelques vidéos par semaine.
 
@@ -131,7 +133,7 @@ Le modèle du domaine (domain-expert, 2026-11-26) est dans la context map, secti
   - au démarrage, l'Api et le worker vident leur répertoire temporaire.
 - **Limites** :
   - Kestrel : `RequestSizeLimit` de 101 Mio sur ce seul point d'entrée. Le reste de l'API garde la limite par défaut ;
-  - Caddy : `request_body` avec `max_size 101MiB` sur la seule route d'ajout (`path_regexp ^/catalog/transitions/[^/]+/videos$`, méthode POST) ;
+  - Caddy : `request_body` avec `max_size 102MiB` (un Mio au-dessus de Kestrel, pour que l'API réponde elle-même `video.too-large`) sur la seule route d'ajout (`path_regexp ^/catalog/transitions/[^/]+/videos$`, méthode POST) ;
   - délais : ni Caddy ni Kestrel n'imposent de délai total par défaut (100 Mo en 4G : plus d'une minute). On garde le débit minimal de Kestrel (`MinRequestBodyDataRate`, 240 o/s), qui coupe un envoi abandonné.
 - **Envois simultanés** : 2 au plus (limiteur de concurrence ASP.NET sur ce point d'entrée, 503 au-delà, très rare : quelques gestionnaires). C'est ce qui borne le disque temporaire et les `ffprobe` parallèles.
 - **Contrôles dans la requête, avant toute écriture** :
@@ -158,7 +160,7 @@ Le modèle du domaine (domain-expert, 2026-11-26) est dans la context map, secti
   - `-probesize 50M -analyzeduration 60M` ;
   - délai de 20 s.
 - **Mesure** :
-  - **durée constatée au démultiplexage** : `-count_packets` et horodatage du dernier paquet de la piste vidéo, et non la durée déclarée dans l'en-tête. Rapide (pas de décodage), elle ne fait pas confiance au champ `duration` ;
+  - **durée constatée au démultiplexage** : horodatage du premier et du dernier paquet de la piste vidéo, et non la durée déclarée dans l'en-tête. Rapide (pas de décodage), elle ne fait pas confiance au champ `duration`. La sortie de ffprobe (format `compact`, une ligne par paquet) est lue en flux : seuls les temps extrêmes et le nombre de paquets sont gardés ;
   - dimensions et matrice de rotation de la piste vidéo.
 - **Refusées comme illisibles** (`video.unreadable`) :
   - aucune piste vidéo ;
@@ -166,6 +168,7 @@ Le modèle du domaine (domain-expert, 2026-11-26) est dans la context map, secti
   - un codec hors liste (H.264, HEVC, VP8, VP9, AV1) ;
   - plus de 8192 px de côté ;
   - plus de 120 images/s ;
+  - plus de paquets que 120 images/s pendant 31 s (3720) : ffprobe est arrêté dès ce nombre dépassé ;
   - une durée incalculable.
 - **À la préparation** :
   - ffmpeg décode réellement, avec `-protocol_whitelist file`, les décodeurs limités à la liste ci-dessus, `-t 32` (borne de calcul) et un délai de 5 min ;
@@ -266,7 +269,7 @@ Le modèle du domaine (domain-expert, 2026-11-26) est dans la context map, secti
   - la base (métadonnées des vidéos, confirmations des droits) est sauvegardée chaque nuit (ADR 0040) ;
   - **les fichiers des photos et des vidéos n'ont aujourd'hui aucune copie** hors du seau R2 : durable, mais exposé à une suppression par erreur ou à une clé compromise.
   
-  **À trancher par le porteur** : accepter ce risque, ou une copie hebdomadaire du seau (`rclone sync` vers un autre fournisseur, quelques Go). Une restauration de la base sans les fichiers laisserait des vidéos « prêtes » sans fichier : la diffusion répond alors 404, sans rien casser.
+  Tranché par le porteur (voir plus bas) : copie hebdomadaire, `deploy/backup-files.sh`. Une restauration de la base sans les fichiers laisserait des vidéos « prêtes » sans fichier : la diffusion répond alors 404, sans rien casser.
 
 ### Tests (Q311)
 - **Specs `@api`** :
@@ -277,8 +280,10 @@ Le modèle du domaine (domain-expert, 2026-11-26) est dans la context map, secti
   - `FfprobeVideoProbe` et `FfmpegVideoPreparer` sur des fichiers **générés par ffmpeg pendant le test**, dans un cache du répertoire temporaire. Durées 1, 2, 30, 30,9 et 31 s ; mire `testsrc2` avec son `sine` ; HEVC (`libx265`) avec position GPS et modèle de l'appareil (`-metadata`) et marque de rotation de 90° (`-display_rotation`) ; WebM VP9 ; 640×360, 854×480, 3840×2160 courte ; GIF et JPEG ; un faux MP4 dont l'en-tête annonce 10 s pour 40 s d'images ; un fichier tronqué ;
   - les vérifications relisent la sortie avec ffprobe : pas de piste audio, aucune étiquette de métadonnées (lieu, modèle, date), portrait, dimensions, première image de l'affiche ;
   - `S3VideoStorage`, dont les lectures partielles, sur RustFS (Testcontainers) ;
-  - la file (revendication concurrente : deux revendications simultanées ne prennent jamais le même travail ; bail expiré repris) et le verrou sur PostgreSQL.
-- **CI** : `ffmpeg` installé par `apt-get` dans le job `api` (les tests d'intégration le demandent) ; sans ffmpeg, ces tests sont ignorés en local avec un message explicite.
+  - la file (revendication concurrente : deux revendications simultanées ne prennent jamais le même travail ; bail expiré repris ; travail rendu à l'arrêt) et le verrou sur PostgreSQL ;
+  - les garde-fous des processus externes avec le shell du système (environnement vidé, processus et enfants tués au délai et à l'annulation, sortie trop longue) ;
+  - la boucle du worker (attente quand la file est vide, survie à une préparation en échec, arrêt) et sa composition (`AcroFunJam.Worker.Tests`).
+- **CI** : `ffmpeg` installé par `apt-get` dans le job `api` (les tests d'intégration le demandent) ; sans ffmpeg, ces tests sont ignorés en local avec un message explicite, mais échouent quand `CI=true`.
 - **Web** :
   - API simulée (ADR 0009) qui sert une petite vidéo et une affiche générées une fois et versionnées dans les fixtures du web (quelques Ko). Exception assumée à « aucun binaire » : Playwright doit lire une vraie vidéo ;
   - le lecteur d'en-tête MP4/MOV est testé sur des fichiers générés ;
@@ -299,7 +304,7 @@ Le modèle du domaine (domain-expert, 2026-11-26) est dans la context map, secti
   - une logique de `Range` écrite à la main dans l'Api ;
   - le site interroge l'API pendant une préparation ;
   - le VPS sert chaque octet des vidéos ;
-  - pas de copie des fichiers hors de R2 tant que ce n'est pas tranché.
+  - un miroir des fichiers sur le disque du serveur, pour la copie hebdomadaire.
 - À surveiller :
   - durée et mémoire des préparations sur le serveur (4 Go partagés) ;
   - conversion HDR des vidéos d'iPhone ;
@@ -316,3 +321,4 @@ Le modèle du domaine (domain-expert, 2026-11-26) est dans la context map, secti
 - La maquette `docs/design/maquettes/12-videos-des-transitions.html` et ce document sont acceptés.
 - **Images privées** : les images publiées sur GHCR (`acrofunjam-api`, `acrofunjam-web`, `acrofunjam-migrations`, et la future image du worker) sont passées en privé avant la publication de la première image contenant ffmpeg. Le déploiement s'y connecte déjà avec le jeton éphémère du job.
 - **Sauvegarde des fichiers** : une copie hebdomadaire des photos et des vidéos préparées va dans le seau des sauvegardes (`rclone`, ou `aws s3 sync` du conteneur déjà utilisé par `backup.sh`), gardée 30 jours comme les sauvegardes de la base.
+  - Mise en œuvre : `deploy/backup-files.sh`, lancé le dimanche par cron (`docs/deploiement.md`). `aws s3 sync` met à jour un miroir sur le serveur (hors `originals/`), lu avec la clé de l'API ; une archive `tar` de ce miroir est envoyée en flux dans le seau des sauvegardes avec la clé des sauvegardes. Aucune nouvelle clé : celle des sauvegardes ne lit pas le seau des photos, celle de l'API le lit déjà.

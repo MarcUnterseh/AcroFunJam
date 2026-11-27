@@ -101,7 +101,7 @@ Fonctionnalité: Mentions légales et confidentialité
       Exemples:
         | sous-traitant | ce qu'il héberge              |
         | IONOS         | le serveur, la base de données et la messagerie |
-        | Cloudflare    | les photos et les sauvegardes |
+        | Cloudflare    | les photos, les vidéos et les sauvegardes |
 
   Règle: Le site ne dépose que le cookie de session, strictement nécessaire : aucun consentement n'est demandé
 
@@ -130,6 +130,23 @@ Fonctionnalité: Mentions légales et confidentialité
     Scénario: La politique de confidentialité indique qu'on peut adresser une réclamation à la CNIL
       Quand un visiteur consulte la politique de confidentialité
       Alors la politique de confidentialité indique qu'on peut adresser une réclamation à la CNIL
+
+  # Story 12 « Vidéos des transitions », Q285 (recommandation révisée, V21) : des vidéos où figurent des personnes sont des
+  # données personnelles, comme les photos ; scénarios venus de catalogue/consulter-les-videos-des-transitions.feature.
+  # La date « Dernière mise à jour » change avec eux.
+  Règle: La politique de confidentialité dit ce qu'AcroFunJam fait des vidéos, et comment en faire retirer une
+
+    Scénario: La politique de confidentialité décrit les vidéos publiées
+      Quand un visiteur consulte la politique de confidentialité
+      Alors la politique de confidentialité indique qu'une vidéo est publiée avec son crédit, une légende et, s'il y en a une, une description, sans son ni métadonnées, et que les personnes filmées ne sont jamais nommées
+
+    Scénario: La politique de confidentialité indique la durée de conservation de la confirmation des droits sur une vidéo
+      Quand un visiteur consulte la politique de confidentialité
+      Alors la politique de confidentialité indique que la confirmation des droits sur une vidéo est gardée aussi longtemps que la vidéo
+
+    Scénario: La politique de confidentialité explique comment faire retirer une vidéo où l'on figure
+      Quand un visiteur consulte la politique de confidentialité
+      Alors la politique de confidentialité indique qu'on peut faire retirer une vidéo où l'on figure en écrivant à "contact@acrofunjam.fr"
 
   Règle: L'adresse de contact s'écrit depuis sa messagerie
 

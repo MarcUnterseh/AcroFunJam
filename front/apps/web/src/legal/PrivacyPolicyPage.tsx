@@ -20,7 +20,7 @@ const sections = {
   notDone: { id: 'ce-qu-acrofunjam-ne-fait-pas', title: "Ce qu'AcroFunJam ne fait pas" },
   security: { id: 'securite', title: 'Sécurité' },
   rights: { id: 'tes-droits', title: 'Tes droits et comment les exercer' },
-  photo: { id: 'retirer-une-photo', title: 'Retirer une photo où tu figures' },
+  photo: { id: 'retirer-une-photo-ou-une-video', title: 'Retirer une photo ou une vidéo où tu figures' },
   account: { id: 'supprimer-ton-compte', title: 'Supprimer ton compte' },
   cnil: { id: 'reclamation-cnil', title: 'Réclamation auprès de la CNIL' },
   minors: { id: 'mineurs', title: 'Mineurs' },
@@ -40,6 +40,12 @@ const durations: ReadonlyArray<{ category: string; detail?: string; duration: st
     duration: 'Aussi longtemps que la photo',
   },
   { category: 'Les photos', detail: 'crédit et texte alternatif', duration: "Jusqu'à leur retrait" },
+  {
+    category: 'La confirmation des droits sur une vidéo',
+    detail: 'compte et date',
+    duration: 'Aussi longtemps que la vidéo',
+  },
+  { category: 'Les vidéos', detail: 'crédit, légende et description', duration: "Jusqu'à leur retrait" },
   {
     category: 'Le cookie de session',
     duration: `Jusqu'à la déconnexion, au plus ${sessionCookieDays} jours après la dernière visite`,
@@ -115,6 +121,22 @@ export function PrivacyPolicyPage() {
           photographiée ont donné leur accord. AcroFunJam garde cette confirmation (le compte qui l&apos;a
           donnée et sa date), sans jamais l&apos;afficher.
         </p>
+        <h3>Les vidéos</h3>
+        <p>
+          Une vidéo est publiée avec le crédit de la personne, du duo ou du collectif à qui elle appartient,
+          une légende et, s&apos;il y en a une, une description du mouvement ; les personnes filmées ne sont
+          jamais nommées.
+        </p>
+        <p>
+          AcroFunJam retire de chaque vidéo la bande son et toutes ses métadonnées, comme une position GPS ou
+          le modèle de l&apos;appareil, et ne garde pas le fichier d&apos;origine.
+        </p>
+        <p>
+          Quand une personne ajoute une vidéo, elle confirme que l&apos;auteur et chaque personne filmée ont
+          donné leur accord, et qu&apos;aucune personne mineure n&apos;y est reconnaissable. AcroFunJam garde
+          cette confirmation (le compte qui l&apos;a donnée et sa date) aussi longtemps que la vidéo, sans
+          jamais l&apos;afficher.
+        </p>
         <h3>Les journaux du serveur</h3>
         <p>
           Le serveur note des informations techniques sur ses échanges avec ton navigateur, dont ton adresse
@@ -129,10 +151,10 @@ export function PrivacyPolicyPage() {
             en t&apos;inscrivant.
           </li>
           <li>
-            La confirmation des droits sur une photo, les sauvegardes et les journaux : AcroFunJam a un
-            intérêt légitime à prouver l&apos;accord donné et à protéger le site.
+            La confirmation des droits sur une photo ou une vidéo, les sauvegardes et les journaux :
+            AcroFunJam a un intérêt légitime à prouver l&apos;accord donné et à protéger le site.
           </li>
-          <li>Une photo où figure une personne : cette personne a donné son accord.</li>
+          <li>Une photo ou une vidéo où figure une personne : cette personne a donné son accord.</li>
         </ul>
       </LegalSection>
 
@@ -167,9 +189,9 @@ export function PrivacyPolicyPage() {
             contact, dans l&apos;Union européenne.
           </li>
           <li>
-            Cloudflare : les photos et les sauvegardes. Cloudflare est une société américaine : ces données
-            peuvent être stockées hors de l&apos;Union européenne, avec les garanties du cadre de protection
-            des données entre l&apos;Union européenne et les États-Unis (Data Privacy Framework).
+            Cloudflare : les photos, les vidéos et les sauvegardes. Cloudflare est une société américaine :
+            ces données peuvent être stockées hors de l&apos;Union européenne, avec les garanties du cadre de
+            protection des données entre l&apos;Union européenne et les États-Unis (Data Privacy Framework).
           </li>
         </ul>
       </LegalSection>
@@ -217,9 +239,9 @@ export function PrivacyPolicyPage() {
 
       <LegalSection {...sections.photo}>
         <p>
-          Tu figures sur une photo ? Écris à <ContactLink /> en indiquant la pose et la photo concernées : une
-          seule demande suffit, de la base ou du flyer, sans compte à créer. La photo est retirée et
-          n&apos;est plus accessible.
+          Tu figures sur une photo ou une vidéo ? Écris à <ContactLink /> en indiquant la photo ou la vidéo
+          concernée (la pose ou la transition, et sa légende) : une seule demande suffit, de la base ou du
+          flyer, sans compte à créer. La photo ou la vidéo est retirée et n&apos;est plus accessible.
         </p>
       </LegalSection>
 

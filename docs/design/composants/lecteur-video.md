@@ -27,7 +27,7 @@ Balisage : `li.video` > `figure.video__figure` > (`button.video__play` [`img.vid
 
 | Élément | Tokens |
 |---|---|
-| Élément (`li.video`) | `display: grid`, écart `spacing.xs`, `align-content: start`, `min-width: 0` |
+| Élément (`li.video`) | `display: flex`, `flex-direction: column`, écart `spacing.xs`, `min-width: 0` ; étiré à la hauteur de sa ligne de grille (comportement par défaut), pour que le pied de gestion d'un validateur se pose en bas (`rangee-videos.md`) |
 | Figure | `margin: 0` ; `display: grid`, écart `spacing.xs` (affiche → légende) |
 | Bouton « Lire » (`button.video__play`) = **toute l'affiche** | `position: relative`, `display: block`, `inline-size: 100%`, **`aspect-ratio: 3 / 4`** ; `padding: 0`, aucune bordure ; fond **`photoMat`** ; rayon `radius.md` ; `overflow: hidden` ; `cursor: pointer` |
 | Affiche (`img.video__poster`) | `position: absolute`, `inset: 0`, 100 % × 100 %, **`object-fit: contain`** ; `alt=""` (la légende nomme la vidéo) ; `width` / `height` de l'API ; `loading="lazy"` sauf pour la première transition de la page |
@@ -57,10 +57,10 @@ Présent **seulement** quand la vidéo a une description (V23). `details.video__
 
 | Élément | Tokens |
 |---|---|
-| `summary` « Description de la vidéo » | rendu de `repli-descriptions-etiquettes.md` (`.tag-meanings__summary`) : `size.sm`, `semibold`, **`primary`** (7,1 / 8,1:1 sur `surface`), `min-block-size: sizes.touchTarget`, chevron bas `sizes.icon` après le texte (retourné quand ouvert), aucun marqueur natif ; deux lignes dans une cellule de 124 px |
+| `summary` « Description » (texte masqué « de la vidéo Pop to Bird, tutoriel » : chaque repli de la rangée a un nom distinct, revue UX O6) | rendu de `repli-descriptions-etiquettes.md` (`.tag-meanings__summary`) : `size.sm`, `semibold`, **`primary`** (7,1 / 8,1:1 sur `surface`), `min-block-size: sizes.touchTarget`, chevron bas `sizes.icon` après le texte (retourné quand ouvert), aucun marqueur natif ; deux lignes dans une cellule de 124 px |
 | Texte | `p`, `size.sm`, `text`, `overflow-wrap: anywhere`, `white-space: pre-line` ; fond **`surfaceHover`** (13,5 / 12,6:1), padding `spacing.sm`, rayon `radius.sm`, marge haute `spacing.xs` |
 
-Le texte est **toujours dans le DOM** (un `details` fermé garde son contenu) : le lecteur s'y réfère par `aria-describedby` dès qu'il est lancé. Ouvert dans une cellule étroite, le repli allonge la cellule (300 caractères : ≈ 16 lignes à 124 px) ; les autres cellules de la rangée restent alignées en haut. Aucune animation d'ouverture.
+Le texte est **toujours dans le DOM** (un `details` fermé garde son contenu) : le lecteur s'y réfère par `aria-describedby` dès qu'il est lancé. Ouvert dans une cellule étroite, le repli allonge la cellule (300 caractères : ≈ 16 lignes à 124 px) ; les affiches des autres cellules restent alignées en haut, leurs pieds de gestion (validateur) en bas de la ligne. Aucune animation d'ouverture.
 
 ## Lancée : la vidéo s'agrandit à sa place
 
@@ -76,7 +76,7 @@ Pop to Bird, démonstration de face  <- cellule 1, compacte, à sa place
 └──────────────────────────────────┘
 Pop to Bird, tutoriel        [ × Fermer la vidéo ]   <- légende + crédit à gauche, bouton à droite (≥ 30em)
 Vidéo : Hugo Bernard
-Description de la vidéo ⌄
+Description ⌄
 ┌──────────┐
 │ cellule 3│                              <- la suite de la rangée, à sa place
 ```
@@ -113,10 +113,14 @@ La vidéo ne se charge pas (réseau coupé, fichier retiré entre-temps). La sc�
 |---|---|
 | Message (`div.video__error`, `role="status"` ou annonce, `ux-expert`) | `position: absolute`, `inset: 0` ; `display: grid`, `place-content: center`, `justify-items: center`, écart `spacing.sm` ; padding `spacing.md` ; `text-align: center` ; fond `photoMat` |
 | Icône | **erreur**, `sizes.iconLarge`, **`danger`** ; jamais de fond rouge (règle « danger jamais en fond plein ») |
-| Texte (**proposé**) | « La vidéo n'a pas pu être lue. Vérifie ta connexion Internet, puis réessaie. » ; `size.sm`, `text`, `max-inline-size: 30ch` |
-| « Réessayer » (**proposé**) | secondaire, 44 px, fond **`surface`** (le passe-partout ne délimite pas un bouton : `border` y tombe à 2,75:1, d'où le fond opaque) |
+| Texte | « La vidéo n'a pas pu être lue. Vérifie ta connexion Internet, puis réessaie. » ; `size.sm`, `text`, `max-inline-size: sizes.centeredMessageMaxWidth` (`30ch`, token web, variable `--afj-size-centered-message-max-width`) |
+| « Réessayer » | secondaire, 44 px, fond **`surface`** (le passe-partout ne délimite pas un bouton : `border` y tombe à 2,75:1, d'où le fond opaque) ; après « Réessayer », le **focus va au lecteur** remonté (le bouton disparaît) |
 
 Une vidéo paysage de 144 px de haut ne contient pas ce message : la scène prend alors `min-block-size: calc(sizes.videoMaxHeight / 2)` (240) pendant l'échec.
+
+## Focus (revue UX R1)
+
+« Lire » disparaît au lancement : le **focus va au lecteur** (`<video>`, `tabindex="0"` : Safari ne le rend pas focalisable seul), seulement quand la personne a lancé la vidéo ; de même après « Réessayer ». « Fermer la vidéo » rend le focus à « Lire ».
 
 ## Mouvement, couleurs forcées
 

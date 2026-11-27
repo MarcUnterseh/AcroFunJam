@@ -11,3 +11,4 @@ export { createPoseRevisionGateway } from './contribution/pose-revision-gateway'
 export { createTransitionProposalGateway } from './contribution/transition-proposal-gateway';
 export { createAuthGateway } from './identity/auth-gateway';
 export { createFlowGenerationGateway } from './flow-generation/flow-generation-gateway';
+export { createTransitionVideosGateway } from './catalog/transition-videos-gateway';

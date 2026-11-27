@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Reqnroll;
+using AcroFunJam.TestSupport;
 
 namespace AcroFunJam.Specs.Support;
 
@@ -22,6 +23,7 @@ public sealed class AcroFunJamApiFactory(CatalogTestData catalog, ScenarioClock 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        builder.UseOwnVideoWorkspace();
         // A scenario starts with an empty tag list, unless it deploys AcroFunJam (Deployment).
         builder.UseSetting(Deployment.InitialTagListSetting, "false");
         if (IntegrationDatabase.ConnectionString is { } connectionString)
@@ -45,6 +47,12 @@ public sealed class AcroFunJamApiFactory(CatalogTestData catalog, ScenarioClock 
             services.AddSingleton<IPhotoProcessor, ScenarioPhotoProcessor>();
             services.RemoveAll<IPhotoStorage>();
             services.AddSingleton<IPhotoStorage, ScenarioPhotoStorage>();
+
+            // The same for the videos (ADR 0041): the integration tests exercise ffmpeg, ffprobe and RustFS.
+            services.RemoveAll<IVideoProcessor>();
+            services.AddSingleton<IVideoProcessor, ScenarioVideoProcessor>();
+            services.RemoveAll<IVideoStorage>();
+            services.AddSingleton<IVideoStorage, ScenarioVideoStorage>();
 
             // Dates of submission and decision set by the steps ("le 2026-11-03").
             services.RemoveAll<TimeProvider>();

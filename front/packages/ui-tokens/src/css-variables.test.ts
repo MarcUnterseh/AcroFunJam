@@ -28,6 +28,7 @@ describe('toCssVariables', () => {
 
   it('should keep a size written as text, such as the reading width in characters, as it is', () => {
     expect(css).toContain('--afj-size-reading-max-width: 70ch;');
+    expect(css).toContain('--afj-size-centered-message-max-width: 30ch;');
   });
 
   it('should express font sizes in rem so that the browser text size is respected', () => {

@@ -2,6 +2,7 @@ import type { DifficultyLevel } from '../shared-kernel/difficulty-level';
 import type { TagReference } from '../shared-kernel/tags';
 import type { PosePhoto } from './pose-photos';
 import type { PoseSummary } from './pose-summary';
+import type { TransitionVideo } from './transition-videos';
 
 /** A published pose designated by a transition, under its current name in the catalog (story 7). */
 export type PoseReference = { readonly id: string; readonly name: string };
@@ -30,6 +31,11 @@ export type LinkedTransition = {
   readonly description: string | null;
   /** Story 8: its tags under their current names, in catalog order (none: an empty list). */
   readonly tags: readonly TransitionTag[];
+  /**
+   * Story 12: its videos in the order of addition; a visitor receives the ready ones only, a person who manages the videos
+   * all of them (ADR 0041).
+   */
+  readonly videos: readonly TransitionVideo[];
 };
 
 /**

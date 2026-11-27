@@ -140,7 +140,14 @@ function PoseCard({ pose, revisable }: { readonly pose: PoseSummary; readonly re
         </h2>
         {/* Story 10 (R16, carte-pose.md « Vignette », à l'essai): the main photo, decorative; nothing without one. */}
         {pose.thumbnail && (
-          <img className="pose-card__thumbnail" src={pose.thumbnail} alt="" width={80} height={80} loading="lazy" />
+          <img
+            className="pose-card__thumbnail"
+            src={pose.thumbnail}
+            alt=""
+            width={80}
+            height={80}
+            loading="lazy"
+          />
         )}
       </div>
       <PoseDetails pose={pose} tags={pose.tags} />

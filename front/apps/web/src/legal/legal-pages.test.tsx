@@ -29,7 +29,7 @@ describe('legal notice', () => {
 
     const title = await screen.findByRole('heading', { level: 1, name: 'Mentions légales' });
     const date = screen.getByText(/^Dernière mise à jour :/);
-    expect(date.querySelector('time')).toHaveAttribute('datetime', '2026-11-26');
+    expect(date.querySelector('time')).toHaveAttribute('datetime', '2026-11-27');
     expect(title.compareDocumentPosition(date) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     await waitFor(() => expect(document.title).toBe('Mentions légales – AcroFunJam'));
   });
@@ -87,7 +87,7 @@ describe('privacy policy', () => {
 
     expect(screen.getByText(/^Dernière mise à jour :/).querySelector('time')).toHaveAttribute(
       'datetime',
-      '2026-11-26',
+      '2026-11-27',
     );
     expect(screen.getByRole('region', { name: 'En bref' })).toBeInTheDocument();
     await waitFor(() => expect(document.title).toBe('Politique de confidentialité – AcroFunJam'));
@@ -106,8 +106,10 @@ describe('privacy policy', () => {
   it.each([
     ['Ton compte', "jusqu'à la suppression du compte"],
     ['Tes propositions', "tant qu'AcroFunJam existe"],
-    ['La confirmation des droits', 'aussi longtemps que la photo'],
+    ['La confirmation des droits sur une photo', 'aussi longtemps que la photo'],
     ['Les photos', "jusqu'à leur retrait"],
+    ['La confirmation des droits sur une vidéo', 'aussi longtemps que la vidéo'],
+    ['Les vidéos', "jusqu'à leur retrait"],
     ['Le cookie de session', "jusqu'à la déconnexion, au plus 14 jours après la dernière visite"],
     ['Les sauvegardes', '30 jours'],
     ['Les journaux du serveur', '14 jours'],
@@ -124,6 +126,22 @@ describe('privacy policy', () => {
     expect(row).toHaveTextContent(new RegExp(duration, 'i'));
   });
 
+  it('should say how a video is published: credit, caption, optional description, without sound nor metadata, the people filmed never named (V21)', async () => {
+    await open();
+
+    const data = section('tes-donnees');
+    expect(data.getByRole('heading', { level: 3, name: 'Les vidéos' })).toBeInTheDocument();
+    expect(data.getByText(/Une vidéo est publiée/)).toHaveTextContent(
+      /crédit.*légende.*description.*personnes filmées ne sont jamais nommées/,
+    );
+    expect(data.getByText(/retire de chaque vidéo/)).toHaveTextContent(
+      /retire de chaque vidéo la bande son et toutes ses métadonnées/,
+    );
+    expect(data.getByText(/Quand une personne ajoute une vidéo/)).toHaveTextContent(
+      /ont donné leur accord, et qu.aucune personne mineure n.y est reconnaissable\./,
+    );
+  });
+
   it('should name the data of the account, its security data, and what becomes of the proposals', async () => {
     await open();
 
@@ -134,7 +152,7 @@ describe('privacy policy', () => {
 
   it.each([
     ['IONOS', 'le serveur, la base de données et la messagerie'],
-    ['Cloudflare', 'les photos et les sauvegardes'],
+    ['Cloudflare', 'les photos, les vidéos et les sauvegardes'],
   ])('should name the processor %s, which hosts %s', async (processor, hosted) => {
     await open();
 
@@ -167,7 +185,8 @@ describe('privacy policy', () => {
     ['tes-droits', /accéder/],
     ['tes-droits', /t'opposer/],
     ['supprimer-ton-compte', /depuis l'adresse de ton compte/],
-    ['retirer-une-photo', /une seule demande/],
+    ['retirer-une-photo-ou-une-video', /une seule demande/],
+    ['retirer-une-photo-ou-une-video', /vidéo/],
   ])(
     'should explain in #%s how to make the request %s by writing to the contact address',
     async (anchor, words) => {

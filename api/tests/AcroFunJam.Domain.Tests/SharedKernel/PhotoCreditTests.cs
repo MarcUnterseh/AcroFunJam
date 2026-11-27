@@ -4,7 +4,8 @@ namespace AcroFunJam.Domain.Tests.SharedKernel;
 
 /// <summary>
 /// The credit of a photo (story 10, R8, Q252): the author of the photo, mandatory, 100 characters at most, a pseudonym or a
-/// collective accepted, never a stand-in for an unknown author (compared by its whole key).
+/// collective accepted, never a stand-in for an unknown author (compared by its whole key). The rule is CreditText, shared with
+/// the credit of a video (story 12).
 /// </summary>
 public sealed class PhotoCreditTests
 {

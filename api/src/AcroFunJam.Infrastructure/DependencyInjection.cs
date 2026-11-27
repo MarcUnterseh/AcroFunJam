@@ -19,6 +19,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using AcroFunJam.Infrastructure.Photos;
+using AcroFunJam.Infrastructure.Videos;
 
 namespace AcroFunJam.Infrastructure;
 
@@ -54,6 +55,15 @@ public static class DependencyInjection
         services.AddSingleton<IPhotoProcessor, MagickPhotoProcessor>();
         services.AddSingleton(configuration.GetSection(PhotoStorageOptions.Section).Get<PhotoStorageOptions>() ?? new PhotoStorageOptions());
         services.AddSingleton<IPhotoStorage, S3PhotoStorage>();
+        services.AddScoped<ITransitionVideosRepository, EfTransitionVideosRepository>();
+        services.AddScoped<ITransitionVideosLock, PgTransitionVideosLock>(); // transition-videos:<id>, never taken with another lock (ADR 0041)
+        services.AddScoped<IVideoPreparationQueue, PgVideoPreparationQueue>();
+        // ffmpeg and ffprobe as external processes (ADR 0041); the files in the bucket of the photos.
+        services.AddSingleton(configuration.GetSection(VideoProcessingOptions.Section).Get<VideoProcessingOptions>() ?? new VideoProcessingOptions());
+        services.AddSingleton<FfprobeVideoProbe>();
+        services.AddSingleton<FfmpegVideoPreparer>();
+        services.AddSingleton<IVideoProcessor, FfmpegVideoProcessor>();
+        services.AddSingleton<IVideoStorage, S3VideoStorage>();
 
         // Identity
         services.AddScoped<IAccountRepository, EfAccountRepository>();

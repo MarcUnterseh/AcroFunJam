@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using AcroFunJam.TestSupport;
 
 namespace AcroFunJam.Api.Tests;
 
@@ -202,7 +203,29 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
                     "tags", "pendingRevision", "photos"],
                 ignoreOrder: true);
         schemas.GetProperty("LinkedTransitionResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
-            .ShouldBe(["id", "otherPose", "name", "baseDifficulty", "flyerDifficulty", "description", "tags"], ignoreOrder: true);
+            .ShouldBe(["id", "otherPose", "name", "baseDifficulty", "flyerDifficulty", "description", "tags", "videos"], ignoreOrder: true);
+    }
+
+    /// <summary>Story 12 (ADR 0041): the videos of a transition, their preparation, and the addresses of the prepared files.</summary>
+    [Fact]
+    public async Task OpenApiDocument_Should_DescribeTheVideosOfTheTransitions_When_TheyAreManagedAndServed()
+    {
+        using var client = api.CreateClient();
+
+        var document = await client.GetFromJsonAsync<JsonElement>(new Uri("/openapi/v1.json", UriKind.Relative), Ct);
+        var paths = document.GetProperty("paths");
+        var schemas = document.GetProperty("components").GetProperty("schemas");
+
+        var videos = paths.GetProperty("/catalog/transitions/{transitionId}/videos");
+        videos.TryGetProperty("post", out _).ShouldBeTrue();
+        videos.TryGetProperty("get", out _).ShouldBeTrue();
+        var video = paths.GetProperty("/catalog/transitions/{transitionId}/videos/{videoId}");
+        video.TryGetProperty("put", out _).ShouldBeTrue();
+        video.TryGetProperty("delete", out _).ShouldBeTrue();
+        paths.TryGetProperty("/catalog/videos/{videoId}/{file}", out _).ShouldBeTrue();
+        schemas.GetProperty("VideoResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString())
+            .ShouldBe(["id", "caption", "credit", "description", "width", "height", "durationMs", "preparation", "sources"], ignoreOrder: true);
+        schemas.GetProperty("VideoListResponse").GetProperty("required").EnumerateArray().Select(p => p.GetString()).ShouldBe(["videos"]);
     }
 
     /// <summary>Story 9 (ADR 0037): anyone generates a flow, by a body of criteria; the flow names its poses and transitions.</summary>
@@ -246,6 +269,7 @@ public sealed class HttpContractTests(HttpContractTests.DevelopmentApi api) : IC
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseEnvironment("Development");
+            builder.UseOwnVideoWorkspace();
             builder.UseSetting("Catalog:SeedInitialTagList", "false"); // no database here
         }
     }

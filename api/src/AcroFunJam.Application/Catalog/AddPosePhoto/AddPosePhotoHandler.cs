@@ -29,7 +29,7 @@ internal sealed class AddPosePhotoHandler(
         if (altText.IsFailure) return altText.Error!;
         var credit = PhotoCredit.Create(command.Credit);
         if (credit.IsFailure) return credit.Error!;
-        var rights = RightsConfirmation.Give(command.RightsConfirmed, command.By, now);
+        var rights = RightsConfirmation.ForPhoto(command.RightsConfirmed, command.By, now);
         if (rights.IsFailure) return rights.Error!;
         var size = PhotoFileSize.Create(command.Content.Length);
         if (size.IsFailure) return size.Error!;

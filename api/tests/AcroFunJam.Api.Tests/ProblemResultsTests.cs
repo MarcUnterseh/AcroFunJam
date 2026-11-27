@@ -33,7 +33,31 @@ public sealed class ProblemResultsTests
         { new TagsNotInListError(TagSet.Of([new TagId(Guid.NewGuid())])), StatusCodes.Status409Conflict },
         { FlowGenerationErrors.CriteriaTooRestrictive, StatusCodes.Status422UnprocessableEntity },
         { FlowGenerationErrors.CatalogInsufficient, StatusCodes.Status422UnprocessableEntity },
+        // Story 12 (ADR 0041).
+        { VideoContentErrors.FileRequired, StatusCodes.Status400BadRequest },
+        { VideoContentErrors.FormatNotAccepted, StatusCodes.Status400BadRequest },
+        { VideoContentErrors.TooLong(31), StatusCodes.Status400BadRequest },
+        { VideoContentErrors.TooShort, StatusCodes.Status400BadRequest },
+        { VideoContentErrors.TooSmall, StatusCodes.Status400BadRequest },
+        { VideoContentErrors.Unreadable, StatusCodes.Status400BadRequest },
+        { VideoContentErrors.CaptionRequired, StatusCodes.Status400BadRequest },
+        { VideoContentErrors.CaptionTooLong, StatusCodes.Status400BadRequest },
+        { VideoContentErrors.CreditRequired, StatusCodes.Status400BadRequest },
+        { VideoContentErrors.CreditTooLong, StatusCodes.Status400BadRequest },
+        { VideoContentErrors.CreditNotAnAuthor, StatusCodes.Status400BadRequest },
+        { VideoContentErrors.DescriptionTooLong, StatusCodes.Status400BadRequest },
+        { VideoContentErrors.RightsConfirmationRequired, StatusCodes.Status400BadRequest },
+        { VideoContentErrors.TooLarge, StatusCodes.Status413PayloadTooLarge },
+        { CatalogErrors.TransitionNotFound, StatusCodes.Status404NotFound },
+        { CatalogErrors.VideoNotFound, StatusCodes.Status404NotFound },
+        { CatalogErrors.VideoLimitReached, StatusCodes.Status409Conflict },
     };
+
+    [Fact]
+    public void ToProblem_Should_GiveTheTruncatedSeconds_When_AVideoIsTooLong()
+    {
+        VideoContentErrors.TooLong(31).ToProblem().ProblemDetails.Extensions["durationSeconds"].ShouldBe(31);
+    }
 
     [Fact]
     public void ToProblem_Should_ListTheTagsNotInTheList_When_AGenerationRefusesThem()

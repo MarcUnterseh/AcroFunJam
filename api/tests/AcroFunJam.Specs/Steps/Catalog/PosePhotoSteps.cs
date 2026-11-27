@@ -131,36 +131,6 @@ public sealed class PosePhotoSteps(People people, RoleSetter roles, Deployment d
 
     // --- Outcome --------------------------------------------------------------------------------
 
-    [Then(@"^l'ajout est (?:refusé|impossible) car (.+)$")]
-    [Then(@"^le retrait est (?:refusé|impossible) car ((?:seul un validateur ou un administrateur gère les photos|la photo n'est plus dans le catalogue))$")]
-    [Then(@"^le changement est (?:refusé|impossible) car (.+)$")]
-    public async Task ThenItIsRefused(string reason)
-    {
-        var (status, code) = reason switch
-        {
-            "il faut être connecté" => (HttpStatusCode.Unauthorized, (string?)null),
-            "seul un validateur ou un administrateur gère les photos" => (HttpStatusCode.Forbidden, "identity.capability-required"),
-            "la pose est introuvable dans le catalogue" => (HttpStatusCode.NotFound, "catalog.pose-not-found"),
-            "la photo n'est plus dans le catalogue" => (HttpStatusCode.NotFound, "catalog.photo-not-found"),
-            "le fichier n'est pas une photo JPEG, PNG, WebP ou HEIC" => (HttpStatusCode.BadRequest, "photo.format-not-accepted"),
-            "le fichier de la photo est obligatoire" => (HttpStatusCode.BadRequest, "photo.file-required"),
-            "la photo dépasse 10 Mo" => (HttpStatusCode.RequestEntityTooLarge, "photo.too-large"),
-            "la photo doit mesurer au moins 800 pixels sur son plus petit côté" => (HttpStatusCode.BadRequest, "photo.too-small"),
-            "le texte alternatif est trop long" => (HttpStatusCode.BadRequest, "photo.alt-text-too-long"),
-            "le crédit doit nommer l'auteur de la photo" => (HttpStatusCode.BadRequest, "photo.credit-not-an-author"),
-            "le crédit de la photo est obligatoire" => (HttpStatusCode.BadRequest, "photo.credit-required"),
-            "le crédit de la photo est trop long" => (HttpStatusCode.BadRequest, "photo.credit-too-long"),
-            "il faut confirmer les droits sur la photo et l'accord des personnes photographiées" =>
-                (HttpStatusCode.BadRequest, "photo.rights-confirmation-required"),
-            "la pose a déjà 5 photos" => (HttpStatusCode.Conflict, "catalog.photo-limit-reached"),
-            _ => throw new ArgumentOutOfRangeException(nameof(reason), reason, "Motif de refus inconnu."),
-        };
-        var response = responses.Last.ShouldNotBeNull();
-        var body = await response.Content.ReadAsStringAsync();
-        response.StatusCode.ShouldBe(status, body);
-        if (code is not null) JsonSerializer.Deserialize<JsonElement>(body).GetProperty("title").GetString().ShouldBe(code);
-    }
-
     [Then("la photo est introuvable")]
     public void ThenThePhotoIsNotFound() => responses.Last.ShouldNotBeNull().StatusCode.ShouldBe(HttpStatusCode.NotFound);
 

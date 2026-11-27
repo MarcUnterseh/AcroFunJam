@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <!-- The host of the preparation of the videos (ADR 0041): a composition root, like the Api, referencing Application and
+       Infrastructure only. The hosting comes with the shared framework of ASP.NET Core, already in the image aspnet:10.0. -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AcroFunJam.Application\AcroFunJam.Application.csproj" />
+    <ProjectReference Include="..\AcroFunJam.Infrastructure\AcroFunJam.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

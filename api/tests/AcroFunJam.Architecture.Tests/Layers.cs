@@ -15,9 +15,10 @@ internal static class Layers
     public static readonly Assembly ApplicationAssembly = typeof(AcroFunJam.Application.DependencyInjection).Assembly;
     public static readonly Assembly InfrastructureAssembly = typeof(AcroFunJam.Infrastructure.DependencyInjection).Assembly;
     public static readonly Assembly ApiAssembly = typeof(Program).Assembly;
+    public static readonly Assembly WorkerAssembly = typeof(AcroFunJam.Worker.VideoPreparationWorker).Assembly;
 
     public static readonly ArchUnitNET.Domain.Architecture Architecture = new ArchLoader()
-        .LoadAssemblies(DomainAssembly, ApplicationAssembly, InfrastructureAssembly, ApiAssembly)
+        .LoadAssemblies(DomainAssembly, ApplicationAssembly, InfrastructureAssembly, ApiAssembly, WorkerAssembly)
         .Build();
 
     public static readonly IObjectProvider<IType> Domain =
@@ -31,6 +32,10 @@ internal static class Layers
 
     public static readonly IObjectProvider<IType> Api =
         Types().That().ResideInAssembly(ApiAssembly).As("Api");
+
+    /// <summary>The host of the preparation of the videos (ADR 0041), a composition root like the Api.</summary>
+    public static readonly IObjectProvider<IType> Worker =
+        Types().That().ResideInAssembly(WorkerAssembly).As("Worker");
 
     /// <summary>Concrete types of an assembly, compiler-generated ones excluded.</summary>
     public static IEnumerable<Type> ConcreteTypes(Assembly assembly) =>

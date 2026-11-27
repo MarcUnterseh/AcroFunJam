@@ -25,7 +25,7 @@ const normalized = (text: string) => text.split(/\s+/u).filter(Boolean).join(' '
 /** A part of a multipart/form-data body: its name, its file name if any, its content. */
 type FormPart = { name: string; filename: string | null; content: Buffer };
 
-const partsOf = (body: Buffer, contentType: string): FormPart[] => {
+export const partsOf = (body: Buffer, contentType: string): FormPart[] => {
   const boundary = /boundary=(?:"([^"]+)"|([^;]+))/.exec(contentType);
   if (!boundary) return [];
   const delimiter = Buffer.from(`--${boundary[1] ?? boundary[2]}`);

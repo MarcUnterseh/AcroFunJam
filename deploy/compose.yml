@@ -44,6 +44,31 @@ services:
       postgres:
         condition: service_healthy
 
+  # The preparation of the videos (ADR 0041): one core and 1 GB at most, so that the API and PostgreSQL keep the other core;
+  # ffmpeg runs in it at a lower priority, with 2 threads. No published port. When it stops (a deployment), the preparation in
+  # progress is cancelled and its job given back at once: the grace period leaves the time to do it before Docker kills it.
+  worker:
+    image: ghcr.io/${IMAGE_OWNER}/acrofunjam-worker:${IMAGE_TAG}
+    logging: *logging
+    restart: unless-stopped
+    stop_grace_period: 40s
+    cpus: "1.0"
+    mem_limit: 1g
+    pids_limit: 64
+    environment:
+      ConnectionStrings__AcroFunJam: Host=postgres;Database=acrofunjam;Username=acrofunjam;Password=${POSTGRES_PASSWORD}
+      PhotoStorage__ServiceUrl: ${PHOTO_STORAGE_URL}
+      PhotoStorage__Bucket: ${PHOTO_STORAGE_BUCKET}
+      PhotoStorage__AccessKey: ${PHOTO_STORAGE_ACCESS_KEY}
+      PhotoStorage__SecretKey: ${PHOTO_STORAGE_SECRET_KEY}
+      PhotoStorage__CreateBucket: "false"
+      VideoProcessing__Threads: "2"
+    volumes:
+      - worker-files:/var/tmp/acrofunjam # originals fetched and prepared files, emptied at each start
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   migrate:
     image: ghcr.io/${IMAGE_OWNER}/acrofunjam-migrations:${IMAGE_TAG}
     logging: *logging
@@ -74,3 +99,4 @@ volumes:
   caddy-data:
   caddy-config:
   postgres-data:
+  worker-files:

@@ -10,7 +10,7 @@ namespace AcroFunJam.Domain.Tests.Catalog;
 public sealed class PosePhotosTests
 {
     private static readonly PoseId Bird = new(Guid.Parse("b1000000-0000-0000-0000-000000000001"));
-    private static readonly PhotoManagerId Bruno = new(Guid.Parse("0b000000-0000-0000-0000-000000000001"));
+    private static readonly CatalogManagerId Bruno = new(Guid.Parse("0b000000-0000-0000-0000-000000000001"));
     private static readonly DateTimeOffset Now = new(2026, 11, 21, 10, 0, 0, TimeSpan.Zero);
 
     private static readonly PhotoFile Landscape =
@@ -30,7 +30,7 @@ public sealed class PosePhotosTests
         return photos;
     }
 
-    private static RightsConfirmation Rights() => RightsConfirmation.Give(true, Bruno, Now).Value!;
+    private static RightsConfirmation Rights() => RightsConfirmation.ForPhoto(true, Bruno, Now).Value!;
 
     private static PhotoId[] Order(PosePhotos photos) => [.. photos.InPresentationOrder().Select(p => p.Id)];
 

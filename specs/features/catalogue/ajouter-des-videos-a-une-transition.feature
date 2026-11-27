@@ -8,7 +8,7 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
   # Story 12 « Vidéos des transitions », volet Catalogue : ajout direct, sur le modèle des photos des poses
   # (catalogue/ajouter-des-photos-a-une-pose.feature, story 10, ADR 0039). Carte réécrite le 2026-11-26 après le
   # changement de cap du porteur du produit, VALIDÉE LE 2026-11-26 avec les avis de l'ux-expert (UX-47 à UX-59) :
-  # decouverte.md, « Story 12 Vidéos des transitions ». Tous @wip.
+  # decouverte.md, « Story 12 Vidéos des transitions ». Scénarios @api et @web implémentés.
   #
   # Décisions du porteur du produit (2026-11-26) :
   # - les vidéos sont téléversées et stockées par AcroFunJam ; aucun lien vers YouTube, Vimeo ou Instagram (Q226) ;
@@ -55,7 +55,7 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
 
   Règle: Un validateur ou un administrateur ajoute directement une vidéo à une transition publiée
 
-    @api @wip
+    @api
     Plan du Scénario: Un <rôle> ajoute une vidéo à une transition publiée, présentée une fois prête
       Soit Bruno est <rôle>
       Et Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté » et le crédit « Léa Martin »
@@ -72,18 +72,18 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
   # Q230 : capacité « gérer les vidéos », refus « Seul un validateur ou un administrateur gère les vidéos. ».
   Règle: Seul un validateur ou un administrateur gère les vidéos d'une transition
 
-    @api @wip
+    @api
     Scénario: Un utilisateur ne peut pas ajouter une vidéo à une transition publiée
       Soit Alice est utilisateur
       Quand Alice ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s
       Alors l'ajout est refusé car seul un validateur ou un administrateur gère les vidéos
 
-    @api @wip
+    @api
     Scénario: Un visiteur ne peut pas ajouter une vidéo à une transition publiée
       Quand un visiteur ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s
       Alors l'ajout est refusé car il faut être connecté
 
-    @api @wip
+    @api
     Scénario: Un utilisateur ne peut pas retirer une vidéo d'une transition
       Soit Bruno est validateur
       Et Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté »
@@ -94,7 +94,7 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
   # Q225, Q244 : ni pose (story 12c), ni proposition de transition (story 12b).
   Règle: Seule une transition publiée reçoit une vidéo
 
-    @api @wip
+    @api
     Scénario: Une transition inconnue du catalogue ne peut pas recevoir de vidéo
       Soit Bruno est validateur
       Quand Bruno ajoute à une transition qui n'existe pas dans le catalogue une vidéo MP4 de 12 s
@@ -106,7 +106,7 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
     Contexte:
       Soit Bruno est validateur
 
-    @api @wip
+    @api
     Plan du Scénario: Une vidéo <cas> est acceptée
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" <fichier>
       Alors la transition "Pop to Bird" de "Throne" vers "Bird" a 1 vidéo
@@ -118,7 +118,7 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
         | MOV filmée par un iPhone | une vidéo MOV HEVC de 12 s filmée par un iPhone |
         | WebM                    | une vidéo WebM VP9 de 12 s                    |
 
-    @api @wip
+    @api
     Plan du Scénario: Un fichier qui n'est pas une vidéo d'un format accepté rend l'ajout impossible (<cas>)
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" <fichier>
       Alors l'ajout est impossible car le fichier n'est pas une vidéo MP4, MOV ou WebM
@@ -130,7 +130,7 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
         | document PDF                | un document PDF de 1 Mo                    |
         | texte nommé comme une vidéo | un fichier texte nommé « pop-to-bird.mp4 » |
 
-    @api @wip
+    @api
     Scénario: Une vidéo sans fichier ne peut pas être ajoutée
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo sans fichier
       Alors l'ajout est impossible car le fichier de la vidéo est obligatoire
@@ -142,12 +142,12 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
     Contexte:
       Soit Bruno est validateur
 
-    @api @wip
+    @api
     Scénario: Une vidéo de 100 Mo est acceptée
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 30 s, 100 Mo, 1920×1080
       Alors la transition "Pop to Bird" de "Throne" vers "Bird" a 1 vidéo
 
-    @api @wip
+    @api
     Scénario: Une vidéo de plus de 100 Mo rend l'ajout impossible
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 30 s, 101 Mo, 3840×2160
       Alors l'ajout est impossible car la vidéo dépasse 100 Mo
@@ -160,7 +160,7 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
     Contexte:
       Soit Bruno est validateur
 
-    @api @wip
+    @api
     Plan du Scénario: Une vidéo de <durée> est acceptée
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de <durée>
       Alors la transition "Pop to Bird" de "Throne" vers "Bird" a 1 vidéo
@@ -171,12 +171,12 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
         | 30 s   |
         | 30,9 s |
 
-    @api @wip
+    @api
     Scénario: Une vidéo de plus de 30 secondes rend l'ajout impossible
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 31 s
       Alors l'ajout est impossible car la vidéo dure plus de 30 secondes
 
-    @api @wip
+    @api
     Scénario: Une vidéo de moins de 2 secondes rend l'ajout impossible
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 1 s
       Alors l'ajout est impossible car la vidéo dure moins de 2 secondes
@@ -187,7 +187,7 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
     Contexte:
       Soit Bruno est validateur
 
-    @api @wip
+    @api
     Plan du Scénario: Une vidéo de <dimensions> est acceptée
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, 10 Mo, <dimensions>
       Alors la transition "Pop to Bird" de "Throne" vers "Bird" a 1 vidéo
@@ -198,29 +198,31 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
         | 480×854    |
         | 3840×2160  |
 
-    @api @wip
+    @api
     Scénario: Une vidéo trop petite rend l'ajout impossible
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, 5 Mo, 640×360
       Alors l'ajout est impossible car la vidéo doit mesurer au moins 480 pixels sur son plus petit côté
 
   # Décision du porteur du produit : le son est retiré (musique protégée). Q257 appliquée aux vidéos : rien de ce que
   # contient le fichier d'origine en dehors de l'image ne sort d'AcroFunJam.
+  # Côté @api, ffmpeg est simulé (ADR 0041) : ces scénarios ne vérifient que ce que le faux promet. La preuve du son, des
+  # métadonnées et du redressement retirés par le vrai ffmpeg est dans FfmpegVideoProcessorTests (tests d'intégration).
   Règle: AcroFunJam retire le son et toutes les métadonnées d'une vidéo, et la présente redressée
 
     Contexte:
       Soit Bruno est validateur
 
-    @api @wip
+    @api
     Scénario: Une vidéo présentée n'a plus de son
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s avec de la musique
       Alors la vidéo présentée de la transition "Pop to Bird" de "Throne" vers "Bird" n'a pas de son
 
-    @api @wip
+    @api
     Scénario: Une vidéo présentée ne contient plus la position GPS du tournage
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MOV HEVC de 12 s filmée par un iPhone, avec une position GPS et le modèle de l'appareil
       Alors la vidéo présentée de la transition "Pop to Bird" de "Throne" vers "Bird" ne contient aucune métadonnée
 
-    @api @wip
+    @api
     Scénario: Une vidéo filmée en portrait par un téléphone est présentée en portrait
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MOV HEVC de 12 s, 20 Mo, 1920×1080, marquée « à pivoter de 90° »
       Alors la vidéo présentée de la transition "Pop to Bird" de "Throne" vers "Bird" est en portrait
@@ -231,7 +233,7 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
     Contexte:
       Soit Bruno est validateur
 
-    @api @wip
+    @api
     Plan du Scénario: Une vidéo de <envoyée> est présentée en <présentée>
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, 20 Mo, <envoyée>
       Alors la vidéo présentée de la transition "Pop to Bird" de "Throne" vers "Bird" mesure <présentée>
@@ -243,9 +245,10 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
         | 854×480   | 854×480   |
 
   # Q297 : la première image montre la pose de départ ; le gestionnaire ne la choisit pas dans cette story.
+  # Côté @api, l'affiche vient du faux ffmpeg : la preuve est dans FfmpegVideoProcessorTests (tests d'intégration).
   Règle: Une vidéo a pour affiche sa première image
 
-    @api @wip
+    @api
     Scénario: L'affiche d'une vidéo est sa première image
       Soit Bruno est validateur
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté »
@@ -258,26 +261,26 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
     Contexte:
       Soit Bruno est validateur
 
-    @api @wip
+    @api
     Scénario: Une vidéo encore en préparation n'est pas présentée aux visiteurs
       Soit Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté », encore en préparation
       Quand un visiteur consulte la pose "Throne" du catalogue
       Alors la transition "Pop to Bird" depuis la pose "Throne" ne présente aucune vidéo
 
-    @api @wip
+    @api
     Scénario: Une vidéo est présentée aux visiteurs dès qu'elle est prête
       Soit Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté », encore en préparation
       Et AcroFunJam a fini de préparer la vidéo « Pop to Bird, vue de côté »
       Quand un visiteur consulte la pose "Throne" du catalogue
       Alors la transition "Pop to Bird" depuis la pose "Throne" présente la vidéo « Pop to Bird, vue de côté »
 
-    @api @wip
+    @api
     Scénario: Le validateur voit qu'une vidéo est en préparation
       Soit Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté », encore en préparation
       Quand Bruno consulte la pose "Throne" du catalogue
       Alors la vidéo « Pop to Bird, vue de côté » de la transition "Pop to Bird" depuis la pose "Throne" est présentée à Bruno comme en préparation
 
-    @api @wip
+    @api
     Scénario: Le validateur voit qu'une vidéo n'a pas pu être préparée
       Soit Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s endommagée, avec la légende « Pop to Bird, vue de côté »
       Et AcroFunJam n'a pas pu préparer la vidéo « Pop to Bird, vue de côté »
@@ -291,27 +294,27 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
     Contexte:
       Soit Bruno est validateur
 
-    @api @wip
+    @api
     Scénario: Les espaces superflus de la légende sont retirés
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende «   Pop to Bird,   tutoriel   »
       Alors la transition "Pop to Bird" de "Throne" vers "Bird" a la vidéo « Pop to Bird, tutoriel »
 
-    @api @wip
+    @api
     Scénario: Une légende de 100 caractères est acceptée
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec une légende de 100 caractères
       Alors la transition "Pop to Bird" de "Throne" vers "Bird" a 1 vidéo
 
-    @api @wip
+    @api
     Scénario: Une légende de 101 caractères rend l'ajout impossible
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec une légende de 101 caractères
       Alors l'ajout est impossible car la légende de la vidéo est trop longue
 
-    @api @wip
+    @api
     Scénario: Une vidéo sans légende ne peut pas être ajoutée
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, sans légende
       Alors l'ajout est impossible car la légende de la vidéo est obligatoire
 
-    @api @wip
+    @api
     Scénario: Une légende faite seulement d'espaces vaut absence de légende
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec une légende faite seulement d'espaces
       Alors l'ajout est impossible car la légende de la vidéo est obligatoire
@@ -324,12 +327,12 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
     Contexte:
       Soit Bruno est validateur
 
-    @api @wip
+    @api
     Scénario: Les espaces superflus du crédit sont retirés
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec le crédit «   Léa   Martin  »
       Alors la vidéo de la transition "Pop to Bird" de "Throne" vers "Bird" est créditée « Léa Martin »
 
-    @api @wip
+    @api
     Plan du Scénario: Un crédit en pseudonyme, au nom d'un duo ou d'un collectif est accepté (<cas>)
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec le crédit « <crédit> »
       Alors la vidéo de la transition "Pop to Bird" de "Throne" vers "Bird" est créditée « <crédit> »
@@ -340,7 +343,7 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
         | duo        | Léa et Hugo        |
         | collectif  | Collectif AcroLyon |
 
-    @api @wip
+    @api
     Plan du Scénario: Un crédit qui ne nomme personne rend l'ajout impossible (« <crédit> »)
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec le crédit « <crédit> »
       Alors l'ajout est impossible car le crédit doit nommer à qui appartient la vidéo
@@ -350,12 +353,12 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
         | inconnu        |
         | Auteur inconnu |
 
-    @api @wip
+    @api
     Scénario: Une vidéo sans crédit ne peut pas être ajoutée
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, sans crédit
       Alors l'ajout est impossible car le crédit de la vidéo est obligatoire
 
-    @api @wip
+    @api
     Scénario: Un crédit de 101 caractères rend l'ajout impossible
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec un crédit de 101 caractères
       Alors l'ajout est impossible car le crédit de la vidéo est trop long
@@ -368,34 +371,34 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
     Contexte:
       Soit Bruno est validateur
 
-    @api @wip
+    @api
     Scénario: Une vidéo ajoutée avec une description la présente
       Soit Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté » et la description « La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol. »
       Quand un visiteur consulte la pose "Throne" du catalogue
       Alors la vidéo « Pop to Bird, vue de côté » de la transition "Pop to Bird" depuis la pose "Throne" a pour description « La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol. »
 
-    @api @wip
+    @api
     Scénario: Une vidéo peut être ajoutée sans description
       Soit Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté », sans description
       Quand un visiteur consulte la pose "Throne" du catalogue
       Alors la vidéo « Pop to Bird, vue de côté » de la transition "Pop to Bird" depuis la pose "Throne" n'a pas de description
 
-    @api @wip
+    @api
     Scénario: Les espaces superflus de la description sont retirés
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté » et la description «   La base pousse   les pieds du flyer.  »
       Alors la vidéo « Pop to Bird, vue de côté » de la transition "Pop to Bird" de "Throne" vers "Bird" a pour description « La base pousse les pieds du flyer. »
 
-    @api @wip
+    @api
     Scénario: Une description de 300 caractères est acceptée
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec une description de 300 caractères
       Alors la transition "Pop to Bird" de "Throne" vers "Bird" a 1 vidéo
 
-    @api @wip
+    @api
     Scénario: Une description de 301 caractères rend l'ajout impossible
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec une description de 301 caractères
       Alors l'ajout est impossible car la description de la vidéo est trop longue
 
-    @api @wip
+    @api
     Scénario: Une description faite seulement d'espaces vaut absence de description
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté » et une description faite seulement d'espaces
       Alors la vidéo « Pop to Bird, vue de côté » de la transition "Pop to Bird" de "Throne" vers "Bird" n'a pas de description
@@ -407,12 +410,12 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
     Contexte:
       Soit Bruno est validateur
 
-    @api @wip
+    @api
     Scénario: Une vidéo ne peut pas être ajoutée sans la confirmation
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, sans cocher la case des droits
       Alors l'ajout est impossible car il faut confirmer les droits sur la vidéo et l'accord des personnes filmées
 
-    @api @wip
+    @api
     Scénario: La confirmation est gardée avec la vidéo, avec le compte et la date
       Quand Bruno ajoute le 2026-12-01 à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s
       Alors la vidéo de la transition "Pop to Bird" de "Throne" vers "Bird" garde la confirmation des droits donnée par Bruno le 2026-12-01
@@ -424,26 +427,26 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
     Contexte:
       Soit Bruno est validateur
 
-    @api @wip
+    @api
     Scénario: Les vidéos d'une transition sont présentées dans l'ordre où elles ont été ajoutées
       Soit Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Vue de face »
       Et Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MOV HEVC de 12 s filmée par un iPhone, avec la légende « Vue de côté »
       Quand un visiteur consulte la pose "Throne" du catalogue
       Alors la transition "Pop to Bird" depuis la pose "Throne" présente les vidéos dans cet ordre : « Vue de face », « Vue de côté »
 
-    @api @wip
+    @api
     Scénario: Une quatrième vidéo ne peut pas être ajoutée à une transition
       Soit la transition "Pop to Bird" de "Throne" vers "Bird" a déjà 3 vidéos
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s
       Alors l'ajout est impossible car la transition a déjà 3 vidéos
 
-    @api @wip
+    @api
     Scénario: Une vidéo en préparation compte parmi les 3 vidéos d'une transition
       Soit la transition "Pop to Bird" de "Throne" vers "Bird" a déjà 2 vidéos prêtes et 1 vidéo encore en préparation
       Quand Bruno ajoute à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s
       Alors l'ajout est impossible car la transition a déjà 3 vidéos
 
-    @api @wip
+    @api
     Scénario: Retirer une vidéo libère une place pour une autre
       Soit la transition "Pop to Bird" de "Throne" vers "Bird" a déjà 3 vidéos, dont « Vue de face »
       Et Bruno a retiré de la transition "Pop to Bird" de "Throne" vers "Bird" la vidéo « Vue de face »
@@ -458,7 +461,7 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
       Soit Bruno est validateur
       Et Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Vue de face »
 
-    @api @wip
+    @api
     Plan du Scénario: Un <rôle> retire une vidéo, qui n'est plus présentée
       Soit Paul est <rôle>
       Et Paul a retiré de la transition "Pop to Bird" de "Throne" vers "Bird" la vidéo « Vue de face »
@@ -470,7 +473,7 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
         | validateur     |
         | administrateur |
 
-    @api @wip
+    @api
     Plan du Scénario: Une vidéo retirée n'est plus accessible, même par son adresse (<élément>)
       Soit Bruno a retiré de la transition "Pop to Bird" de "Throne" vers "Bird" la vidéo « Vue de face »
       Quand un visiteur ouvre l'adresse <élément> retirée « Vue de face »
@@ -481,13 +484,13 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
         | de la vidéo               |
         | de l'affiche de la vidéo  |
 
-    @api @wip
+    @api
     Scénario: Une vidéo encore en préparation peut être retirée
       Soit Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Vue de côté », encore en préparation
       Quand Bruno retire de la transition "Pop to Bird" de "Throne" vers "Bird" la vidéo « Vue de côté »
       Alors la transition "Pop to Bird" de "Throne" vers "Bird" a 1 vidéo, « Vue de face »
 
-    @api @wip
+    @api
     Scénario: Retirer une vidéo déjà retirée est impossible
       Soit Bruno a retiré de la transition "Pop to Bird" de "Throne" vers "Bird" la vidéo « Vue de face »
       Quand Bruno retire de la transition "Pop to Bird" de "Throne" vers "Bird" la vidéo « Vue de face »
@@ -503,30 +506,30 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
       Et Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Vue de face » et le crédit « Lea Martin »
       Et Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Vue de côté »
 
-    @api @wip
+    @api
     Scénario: Le validateur corrige la légende d'une vidéo, qui garde sa place
       Soit Bruno a changé la légende de la vidéo « Vue de face » de la transition "Pop to Bird" de "Throne" vers "Bird" en « Pop to Bird, démonstration de face »
       Quand un visiteur consulte la pose "Throne" du catalogue
       Alors la transition "Pop to Bird" depuis la pose "Throne" présente les vidéos dans cet ordre : « Pop to Bird, démonstration de face », « Vue de côté »
 
-    @api @wip
+    @api
     Scénario: Le validateur corrige le crédit d'une vidéo
       Soit Bruno a changé le crédit de la vidéo « Vue de face » de la transition "Pop to Bird" de "Throne" vers "Bird" en « Léa Martin »
       Quand un visiteur consulte la pose "Throne" du catalogue
       Alors la vidéo « Vue de face » de la transition "Pop to Bird" depuis la pose "Throne" est créditée « Léa Martin »
 
-    @api @wip
+    @api
     Scénario: Une légende corrigée suit les mêmes règles qu'à l'ajout
       Quand Bruno change la légende de la vidéo « Vue de face » de la transition "Pop to Bird" de "Throne" vers "Bird" en une légende faite seulement d'espaces
       Alors le changement est impossible car la légende de la vidéo est obligatoire
 
-    @api @wip
+    @api
     Scénario: Le validateur ajoute une description à une vidéo qui n'en avait pas
       Soit Bruno a changé la description de la vidéo « Vue de face » de la transition "Pop to Bird" de "Throne" vers "Bird" en « La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol. »
       Quand un visiteur consulte la pose "Throne" du catalogue
       Alors la vidéo « Vue de face » de la transition "Pop to Bird" depuis la pose "Throne" a pour description « La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol. »
 
-    @api @wip
+    @api
     Scénario: Vider la description d'une vidéo la laisse sans description
       Soit Bruno a changé la description de la vidéo « Vue de face » de la transition "Pop to Bird" de "Throne" vers "Bird" en « Vue de face, au ralenti. »
       Et Bruno a changé la description de la vidéo « Vue de face » de la transition "Pop to Bird" de "Throne" vers "Bird" en une description vide
@@ -543,26 +546,26 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
   # comme pour une photo (fichier, aperçu, progression). Q289 : repère et maximum calqués sur les photos.
   Règle: Sur le site, un validateur ou un administrateur est invité à ajouter une vidéo, jusqu'à 3 par transition
 
-    @web @wip
+    @web
     Scénario: Un validateur est invité à ajouter une vidéo à une transition qui n'en a aucune
       Soit Bruno est validateur, connecté sur le site
       Quand Bruno consulte la pose "Throne" du catalogue
       Alors la page de la pose invite Bruno à « Ajouter une vidéo à Pop to Bird »
 
-    @web @wip
+    @web
     Scénario: Un utilisateur n'est pas invité à ajouter une vidéo à une transition
       Soit Alice est connectée sur le site avec l'adresse "alice@example.org"
       Quand Alice consulte la pose "Throne" du catalogue
       Alors la page de la pose n'invite pas Alice à ajouter une vidéo à Pop to Bird
 
-    @web @wip
+    @web
     Scénario: Le validateur voit combien de vidéos la transition a sur 3
       Soit Bruno est validateur, connecté sur le site
       Et la transition "Pop to Bird" de "Throne" vers "Bird" a déjà 1 vidéo
       Quand Bruno consulte la pose "Throne" du catalogue
       Alors la page de la pose indique, pour la transition « Pop to Bird », « 1 vidéo sur 3 »
 
-    @web @wip
+    @web
     Scénario: Le validateur n'est plus invité à ajouter une vidéo à une transition qui en a 3
       Soit Bruno est validateur, connecté sur le site
       Et la transition "Pop to Bird" de "Throne" vers "Bird" a déjà 3 vidéos
@@ -580,30 +583,30 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
     Contexte:
       Soit Bruno est validateur, connecté sur le site
 
-    @web @wip
+    @web
     Scénario: Après l'ajout, le site revient à la transition sur la page de la pose et annonce que la vidéo sera présentée une fois prête
       Quand Bruno ajoute sur le site, depuis la pose "Throne", à la transition « Pop to Bird » une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté » et le crédit « Léa Martin »
       Alors le site présente la page de la pose "Throne", sur la transition « Pop to Bird », et annonce « Vidéo ajoutée à Pop to Bird. Elle sera présentée dès qu'elle sera prête. »
 
-    @web @wip
+    @web
     Scénario: Le validateur ajoute sur le site une vidéo avec sa description
       Soit Bruno a ajouté sur le site, depuis la pose "Throne", à la transition « Pop to Bird » une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté », le crédit « Léa Martin » et la description « La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol. »
       Et AcroFunJam a fini de préparer la vidéo « Pop to Bird, vue de côté »
       Quand Bruno consulte la pose "Throne" du catalogue
       Alors la transition « Pop to Bird » présente la vidéo « Pop to Bird, vue de côté » avec la description « La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol. »
 
-    @web @wip
+    @web
     Scénario: Pendant les contrôles de l'envoi, le site annonce la vérification de la vidéo
       Quand Bruno envoie sur le site, depuis la pose "Throne", à la transition « Pop to Bird » une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté » et le crédit « Léa Martin »
       Alors le site annonce « Vérification de la vidéo… » jusqu'à la fin des contrôles
 
-    @web @wip
+    @web
     Scénario: La case des droits n'est jamais cochée à l'ouverture de la page d'ajout
       Quand Bruno commence à ajouter sur le site une vidéo à la transition « Pop to Bird », depuis la pose "Throne"
       Alors la case « Je confirme que l'auteur de la vidéo a autorisé sa publication sur AcroFunJam, que chaque personne filmée l'a acceptée, et qu'aucune personne mineure n'y est reconnaissable. » n'est pas cochée
       Et le site explique « AcroFunJam garde ta confirmation avec la vidéo (ton compte et la date). »
 
-    @web @wip
+    @web
     Plan du Scénario: Le site signale dès le choix une vidéo qu'AcroFunJam n'accepte pas (<cas>), et garde la saisie
       Quand Bruno choisit sur le site, pour la transition « Pop to Bird », <fichier>, avec la légende « Pop to Bird, vue de côté » et le crédit « Léa Martin »
       Alors le site signale, sous le champ de la vidéo, <message>
@@ -618,17 +621,17 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
     # UX-55 : une vidéo HEVC que le navigateur ne sait pas lire (hors Safari) n'a pas d'aperçu ; le site lit son
     # en-tête MP4/MOV pour en connaître la durée et les dimensions. Conditionné à l'ADR : si la lecture de l'en-tête
     # n'est pas jugée fiable, ce contrôle se fait après l'envoi et ce scénario est révisé.
-    @web @wip
+    @web
     Scénario: Le site signale dès le choix une vidéo HEVC trop longue, même sans savoir la lire
       Quand Bruno choisit sur le site, pour la transition « Pop to Bird », une vidéo MOV HEVC de 31 s filmée par un iPhone, que le navigateur ne sait pas lire
       Alors le site signale, sous le champ de la vidéo, « Cette vidéo dure 31 secondes : 30 secondes au plus. Raccourcis-la sur ton appareil, puis choisis-la de nouveau. »
 
-    @web @wip
+    @web
     Scénario: Une vidéo HEVC que le navigateur ne sait pas lire est ajoutée, sans aperçu
       Quand Bruno ajoute sur le site, depuis la pose "Throne", à la transition « Pop to Bird » une vidéo MOV HEVC de 12 s filmée par un iPhone, que le navigateur ne sait pas lire, avec la légende « Pop to Bird, vue de côté » et le crédit « Léa Martin »
       Alors le site présente la page de la pose "Throne", sur la transition « Pop to Bird », et annonce « Vidéo ajoutée à Pop to Bird. Elle sera présentée dès qu'elle sera prête. »
 
-    @web @wip
+    @web
     Plan du Scénario: Le site signale un champ manquant (<cas>), et garde la saisie
       Quand Bruno ajoute sur le site, depuis la pose "Throne", à la transition « Pop to Bird » une vidéo MP4 de 12 s, <manque>
       Alors le site signale « <message> »
@@ -641,7 +644,7 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
         | crédit          | sans crédit                    | Indique le crédit de la vidéo : la personne, le duo ou le collectif à qui elle appartient. |
         | case des droits | sans cocher la case des droits | Confirme tes droits sur la vidéo et l'accord des personnes filmées.                        |
 
-    @web @wip
+    @web
     Scénario: AcroFunJam injoignable pendant l'ajout : le site le signale et garde la saisie
       Soit AcroFunJam est injoignable
       Quand Bruno ajoute sur le site, depuis la pose "Throne", à la transition « Pop to Bird » une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté » et le crédit « Léa Martin »
@@ -649,14 +652,14 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
       Et la vidéo choisie, la légende « Pop to Bird, vue de côté » et le crédit « Léa Martin » sont conservés
 
     # Comme pour une photo (décision du 2026-11-23) : le fichier ne survit pas à la reconnexion.
-    @web @wip
+    @web
     Scénario: Session expirée pendant l'envoi : le site demande de se reconnecter et garde la légende et le crédit
       Soit la session de Bruno a expiré
       Quand Bruno ajoute sur le site, depuis la pose "Throne", à la transition « Pop to Bird » une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté » et le crédit « Léa Martin »
       Alors le site signale « Ta session a expiré. Connecte-toi de nouveau, puis choisis de nouveau la vidéo. »
       Et la légende « Pop to Bird, vue de côté » et le crédit « Léa Martin » sont conservés
 
-    @web @wip
+    @web
     Scénario: Quitter la page d'ajout avec une saisie demande de confirmer l'abandon
       Quand Bruno commence à ajouter sur le site une vidéo à la transition « Pop to Bird », depuis la pose "Throne", avec la légende « Pop to Bird, vue de côté »
       Et Bruno annule l'ajout
@@ -669,20 +672,20 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
     Contexte:
       Soit Bruno est validateur, connecté sur le site
 
-    @web @wip
+    @web
     Scénario: Une vidéo en préparation est marquée « En préparation » pour le validateur
       Soit Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté », encore en préparation
       Quand Bruno consulte la pose "Throne" du catalogue
       Alors la transition « Pop to Bird » présente à Bruno la vidéo « Pop to Bird, vue de côté » marquée « En préparation »
 
-    @web @wip
+    @web
     Scénario: Une vidéo prête pendant que le validateur consulte la page n'est plus marquée « En préparation », sans recharger la page
       Soit Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Pop to Bird, vue de côté », encore en préparation
       Et Bruno consulte la pose "Throne" du catalogue
       Quand AcroFunJam finit de préparer la vidéo « Pop to Bird, vue de côté »
       Alors la transition « Pop to Bird » présente à Bruno la vidéo « Pop to Bird, vue de côté », sans le repère « En préparation », sans qu'il recharge la page
 
-    @web @wip
+    @web
     Scénario: Une vidéo qui n'a pas pu être préparée est marquée « Impossible à préparer » pour le validateur
       Soit Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s endommagée, avec la légende « Pop to Bird, vue de côté »
       Et AcroFunJam n'a pas pu préparer la vidéo « Pop to Bird, vue de côté »
@@ -690,7 +693,7 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
       Alors la transition « Pop to Bird » présente à Bruno la vidéo « Pop to Bird, vue de côté » marquée « Impossible à préparer »
       Et la transition « Pop to Bird » signale à Bruno « La vidéo « Pop to Bird, vue de côté » n'a pas pu être préparée. Retire-la, puis envoie-la de nouveau ou choisis-en une autre. »
 
-    @web @wip
+    @web
     Scénario: Le validateur peut retirer une vidéo qui n'a pas pu être préparée
       Soit Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s endommagée, avec la légende « Pop to Bird, vue de côté »
       Et AcroFunJam n'a pas pu préparer la vidéo « Pop to Bird, vue de côté »
@@ -705,28 +708,28 @@ Fonctionnalité: Ajouter des vidéos à une transition publiée
       Soit Bruno est validateur, connecté sur le site
       Et Bruno a ajouté à la transition "Pop to Bird" de "Throne" vers "Bird" une vidéo MP4 de 12 s, avec la légende « Vue de face » et le crédit « Léa Martin »
 
-    @web @wip
+    @web
     Scénario: Le validateur modifie sur place la légende et le crédit d'une vidéo
       Quand Bruno modifie sur le site, depuis la pose "Throne", la vidéo « Vue de face » de la transition « Pop to Bird » avec la légende « Pop to Bird, démonstration de face » et le crédit « Hugo Bernard »
       Alors la transition « Pop to Bird » présente la vidéo « Pop to Bird, démonstration de face », créditée « Vidéo : Hugo Bernard »
 
-    @web @wip
+    @web
     Scénario: Le validateur ajoute sur place une description à une vidéo
       Quand Bruno modifie sur le site, depuis la pose "Throne", la vidéo « Vue de face » de la transition « Pop to Bird » avec la description « La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol. »
       Alors la transition « Pop to Bird » présente la vidéo « Vue de face » avec la description « La base pousse les pieds du flyer, qui passe de l'assise à l'horizontale, face au sol. »
 
-    @web @wip
+    @web
     Scénario: Retirer la dernière vidéo d'une transition annonce qu'elle n'aura plus de vidéo
       Quand Bruno commence à retirer sur le site, depuis la pose "Throne", la vidéo « Vue de face » de la transition « Pop to Bird »
-      Alors le site demande « Retirer cette vidéo de Pop to Bird ? » et précise « Pop to Bird n'aura plus de vidéo. »
+      Alors le site demande « Retirer cette vidéo de Pop to Bird ? » et précise « Pop to Bird n'aura plus de vidéo, et celle-ci ne pourra pas être récupérée. »
 
-    @web @wip
+    @web
     Scénario: Après confirmation, la vidéo retirée n'est plus présentée
       Quand Bruno retire sur le site, depuis la pose "Throne", la vidéo « Vue de face » de la transition « Pop to Bird », après confirmation
       Alors la transition « Pop to Bird » ne présente aucune vidéo
 
     # Une washing machine figure dans les deux sections de la page de sa pose (story 7), comme pour l'étiquetage.
-    @web @wip
+    @web
     Scénario: Une vidéo ajoutée à une washing machine depuis une section est présentée dans les deux sections
       Soit la transition publiée "Ninja Star" de "Star" vers "Star" de difficulté base "avancé" et de difficulté flyer "avancé"
       Et Bruno a ajouté sur le site, depuis la section des transitions depuis la pose "Star", à la transition « Ninja Star » une vidéo MP4 de 12 s, avec la légende « Ninja Star, deux tours »

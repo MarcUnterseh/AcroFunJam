@@ -86,7 +86,9 @@ describe('footer of the site', () => {
 
   it('should be there when the catalog cannot be reached', async () => {
     renderSite('/', {
-      catalog: { listPublishedPoses: async () => fail({ code: 'catalog.unreachable', message: 'Indisponible.' }) },
+      catalog: {
+        listPublishedPoses: async () => fail({ code: 'catalog.unreachable', message: 'Indisponible.' }),
+      },
     });
 
     expect(await screen.findByRole('alert')).toBeInTheDocument();

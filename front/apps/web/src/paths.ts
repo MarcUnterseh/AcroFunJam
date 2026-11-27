@@ -25,6 +25,22 @@ export const revisionPath = (poseId: string): string =>
 export const addPhotoPagePattern = '/poses/:id/ajouter-une-photo';
 export const addPhotoPath = (poseId: string): string => `${posePath(poseId)}/ajouter-une-photo`;
 
+/**
+ * Page « Ajouter une vidéo » of a published transition (story 12), for the validators and administrators only, opened from
+ * a section of the page of a pose (« ?section=vers » for the transitions to it).
+ */
+export const addVideoPagePattern = '/poses/:id/transitions/:transitionId/ajouter-une-video';
+export const addVideoPath = (
+  poseId: string,
+  transitionId: string,
+  direction: 'from' | 'to' = 'from',
+): string =>
+  `${posePath(poseId)}/transitions/${encodeURIComponent(transitionId)}/ajouter-une-video${direction === 'to' ? '?section=vers' : ''}`;
+
+/** The anchor of a transition on the page of a pose, in a section: the site comes back to it after adding a video. */
+export const transitionAnchor = (direction: 'from' | 'to', transitionId: string): string =>
+  `transition-${direction === 'from' ? 'depuis' : 'vers'}-${transitionId}`;
+
 /** Page « Mes propositions » (story 5), for a signed-in person who may propose. */
 export const myProposalsPath = '/mes-propositions';
 

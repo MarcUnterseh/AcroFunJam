@@ -62,12 +62,18 @@ Vidéo : Hugo Bernard
 
 | Élément | Tokens |
 |---|---|
-| Pied de la vidéo (`div.video__actions`) | bordure haute `borderWidth` **pointillée** `divider`, padding haut `spacing.sm`, marge haute `spacing.xs` ; `display: grid`, écart `spacing.sm` |
+| Pied de la vidéo (`div.video__actions`) | bordure haute `borderWidth` **pointillée** `divider`, padding haut `spacing.sm`, **`margin-block-start: auto`** (posé en bas de la cellule : les pieds d'une même ligne restent alignés quelle que soit la longueur de la légende ou la présence du repli ; l'écart `spacing.xs` de l'élément garantit le minimum) ; `display: grid`, écart `spacing.sm` |
 | Boutons | `bouton.md` **secondaires**, `min-block-size: sizes.touchTarget`, padding `0 spacing.md`, **pleine largeur de la cellule** (une cellule fait au moins 120 px : « Modifier » ≈ 92 px tient) ; noms accessibles suffixés de la légende (texte masqué) : « Modifier Pop to Bird, tutoriel », « Retirer Pop to Bird, tutoriel » |
 
 **Modifier** (en place) : la vidéo prend toute la rangée ; l'affiche reste **compacte** (`inline-size: sizes.videoPoster`), et la figcaption et le pied sont remplacés par la zone de `galerie-photos.md` (« Modification sur place ») sur fond **`background`**, rayon `radius.sm`, padding `spacing.md` (rendu de la zone « Étiqueter » dans un élément `surface`) : titre « Modifier la vidéo » (proposé), champs Légende, Crédit, Description de la vidéo (`champ-video.md`, mêmes aides et compteurs), « Enregistrer la vidéo » (primaire, proposé) et « Annuler ».
 
-**Retirer** : même zone, « Retirer cette vidéo de Pop to Bird ? » (`semibold`), conséquence pour la dernière « Pop to Bird n'aura plus de vidéo. » (`size.sm`, `textMuted`), « Retirer la vidéo » et « Annuler », **deux secondaires**, jamais de rouge plein ; empilés sous 22em de zone, en ligne au-delà.
+**Retirer** : même zone, « Retirer cette vidéo de Pop to Bird ? » (`semibold`), conséquence pour la dernière « Pop to Bird n'aura plus de vidéo, et celle-ci ne pourra pas être récupérée. » (`size.sm`, `textMuted`), « Retirer la vidéo » et « Annuler », **deux secondaires**, jamais de rouge plein ; empilés sous 22em de zone, en ligne au-delà. Une fois la vidéo retirée (revue UX R2), le focus va au **titre « Vidéos »** du bloc (`tabindex="-1"`) s'il reste des vidéos, sinon au **titre de la transition** (`.transition__title`), une fois la page relue (même mécanisme que les photos, `PhotoFocus`).
+
+Les messages d'erreur de « Modifier » et « Retirer » ne parlent jamais d'envoi (revue UX O1, O2) : « Impossible de joindre AcroFunJam. Vérifie ta connexion Internet, puis réessaie. », « Ta session a expiré. Connecte-toi de nouveau, puis réessaie. », « Le site doit être mis à jour. Recharge la page, puis réessaie. » ; crédit refusé : « Le crédit doit nommer à qui appartient la vidéo. Si tu ne sais pas à qui elle appartient, retire cette vidéo. »
+
+### Préparation trop longue (revue UX O5)
+
+Après 15 minutes de suivi sans fin de préparation, la page cesse de relire les vidéos et le dit **sous la rangée** (`p.transition-videos__late`, icône horloge, `size.sm`, `textMuted`) : « La préparation prend plus de temps que prévu. Recharge la page plus tard pour voir si la vidéo est prête. »
 
 ### Échec de préparation : message au niveau du bloc
 

@@ -22,6 +22,12 @@ public static class CatalogErrors
 
     public static readonly Error PhotoNotFound = new("catalog.photo-not-found", "Cette photo n'est pas (ou plus) dans le catalogue.");
 
+    /// <summary>A transition has at most 3 videos, in preparation included (story 12, V15).</summary>
+    public static readonly Error VideoLimitReached =
+        new("catalog.video-limit-reached", "Cette transition a déjà 3 vidéos, le maximum. Retire une vidéo pour en ajouter une autre.");
+
+    public static readonly Error VideoNotFound = new("catalog.video-not-found", "Cette vidéo n'est pas (ou plus) dans le catalogue.");
+
     public static readonly Error FromPoseNotFound = new("catalog.from-pose-not-found", "La pose de départ n'est pas dans le catalogue.");
 
     public static readonly Error ToPoseNotFound = new("catalog.to-pose-not-found", "La pose d'arrivée n'est pas dans le catalogue.");

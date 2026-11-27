@@ -3,7 +3,9 @@ import { test } from './simulated-site';
 
 /** The header has answered the session: its account links are drawn. */
 const headerReady = (page: Page) =>
-  expect(page.getByRole('navigation', { name: 'Compte' }).getByRole('link', { name: 'Se connecter' })).toBeVisible();
+  expect(
+    page.getByRole('navigation', { name: 'Compte' }).getByRole('link', { name: 'Se connecter' }),
+  ).toBeVisible();
 
 // Story « Mentions légales et confidentialité » (docs/design/ecrans/informations-legales.md): the footer on a short
 // page, the two legal pages and the sentence of « S'inscrire », at 320 px and 1280 px wide. Output:

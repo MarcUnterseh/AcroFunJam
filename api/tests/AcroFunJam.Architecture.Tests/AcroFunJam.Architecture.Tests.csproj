@@ -5,11 +5,16 @@
     <ProjectReference Include="../../src/AcroFunJam.Application/AcroFunJam.Application.csproj" />
     <ProjectReference Include="../../src/AcroFunJam.Infrastructure/AcroFunJam.Infrastructure.csproj" />
     <ProjectReference Include="../../src/AcroFunJam.Api/AcroFunJam.Api.csproj" />
+    <ProjectReference Include="../../src/AcroFunJam.Worker/AcroFunJam.Worker.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="TngTech.ArchUnitNET.xUnitV3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../Shared/TestVideoWorkspace.cs" Link="Shared/TestVideoWorkspace.cs" />
   </ItemGroup>
 
 </Project>

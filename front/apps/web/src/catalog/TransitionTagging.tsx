@@ -25,6 +25,10 @@ import { tagListKey, useTags } from './useTags';
  * The zone « Étiqueter » of a published transition (zone-etiqueter.md), for a validator or an administrator: the button,
  * replaced once open by the tags of the list, the current ones checked. Recorded: the zone closes, the page is read
  * again (the line « Étiquettes » is the proof), and « Étiquettes enregistrées. » is announced.
+ *
+ * It renders a fragment, without a wrapper of its own: its button, or once open its zone (`.tagging-zone`), is a child
+ * of the footer of management of the transition (`.transition__manage`, a flex row shared with the invitation « Ajouter
+ * une vidéo », story 12), whose rules place it (`.transition__manage > .tagging-zone` takes the whole row).
  */
 export function TransitionTagging({
   transition,
@@ -101,8 +105,9 @@ export function TransitionTagging({
     announce(transitionTaggingLabels.saved);
   };
 
+  // In the footer of management of the transition (TransitionItem), beside the invitation to add a video.
   return (
-    <div className="transition__manage">
+    <>
       {!open ? (
         <button ref={button} type="button" className="button button--secondary" onClick={start}>
           <span aria-hidden="true">{transitionTaggingLabels.tag}</span>
@@ -153,6 +158,6 @@ export function TransitionTagging({
           </div>
         </form>
       )}
-    </div>
+    </>
   );
 }

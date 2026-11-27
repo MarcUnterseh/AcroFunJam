@@ -113,8 +113,8 @@ export const tagsNoLongerAvailableLabel = (names: readonly string[]): string => 
     names.length === 0
       ? "Une étiquette choisie n'est plus disponible."
       : names.length > 1
-      ? `Les étiquettes ${enumerated} ne sont plus disponibles.`
-      : `L'étiquette ${enumerated} n'est plus disponible.`;
+        ? `Les étiquettes ${enumerated} ne sont plus disponibles.`
+        : `L'étiquette ${enumerated} n'est plus disponible.`;
   return `${removed} Vérifie tes étiquettes, puis génère de nouveau ton flow.`;
 };
 

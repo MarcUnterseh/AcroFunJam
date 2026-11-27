@@ -18,6 +18,7 @@ public static class RoleLabels
         ["accepter ou refuser une proposition"] = "validate-proposals",
         ["gérer les étiquettes"] = "manage-tags",
         ["gérer les photos"] = "manage-photos",
+        ["gérer les vidéos"] = "manage-videos",
         ["gérer les rôles"] = "manage-roles",
     };
 

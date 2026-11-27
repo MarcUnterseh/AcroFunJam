@@ -1,6 +1,7 @@
 import {
   canManagePhotos,
   canManageTags,
+  canManageVideos,
   canPropose,
   enlargedPhotoIndex,
   emptyTransitionsLabel,
@@ -14,6 +15,7 @@ import {
   transitionsSectionTitle,
   transitionTagLabels,
   unnamedTransitionLabel,
+  videoTransitionName,
   type LinkedTransition,
   type PosePage,
   type PosePageError,
@@ -21,13 +23,13 @@ import {
 } from '@acrofunjam/core';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useSession } from '../identity/SessionContext';
 import { useAnnounce } from '../layout/Announcer';
 import { focusPageTitle } from '../layout/focus';
 import { Icon } from '../layout/Icon';
 import { TagLine, TagMeanings } from '../layout/tag-parts';
-import { catalogPath, posePath, revisionPath, transitionProposalPath } from '../paths';
+import { catalogPath, posePath, revisionPath, transitionAnchor, transitionProposalPath } from '../paths';
 import { DifficultyLegend } from './DifficultyLegend';
 import { DifficultyDetails, PoseDetails } from './PoseList';
 import { usePosePageGateway } from './PosePageContext';
@@ -35,6 +37,7 @@ import { MainPhotoSection, OtherPhotosSection, PhotoFocus, PhotoViewer } from '.
 import { PoseTagging } from './PoseTagging';
 import { useTags } from './useTags';
 import { TransitionTagging } from './TransitionTagging';
+import { TransitionVideos, VideoInvitation, VideoPlayback } from './TransitionVideos';
 
 /** The page of a pose could not be read: carries the failure of the use case. */
 class PosePageLoadingFailed extends Error {
@@ -118,9 +121,17 @@ function TransitionItem({
   const other = transition.otherPose;
   const [from, to] = direction === 'from' ? [page.name, other.name] : [other.name, page.name];
   const samePose = isSamePose(page, transition);
+  const spokenTitle = transition.name ?? unnamedTransitionLabel({ from, to }).spoken;
+  // « Ajouter une vidéo à la transition de Throne vers Bird »: the labels of the videos take a preposition.
+  const videoTitle = videoTransitionName({ name: transition.name, from, to });
+  // Story 12: the videos are managed with their own capability (Q230).
+  const { session } = useSession();
+  const managesVideos = canManageVideos(session);
   return (
-    <li className="transition">
-      <h3 className="transition__title">{transition.name ?? <UnnamedTitle from={from} to={to} />}</h3>
+    <li className="transition" id={transitionAnchor(direction, transition.id)}>
+      <h3 className="transition__title" tabIndex={-1}>
+        {transition.name ?? <UnnamedTitle from={from} to={to} />}
+      </h3>
       <p className="transition__other-pose">
         <span>{otherPoseLead(direction)}</span>
         {/* A named washing machine shows its loop here: its title does not draw it. */}
@@ -133,12 +144,25 @@ function TransitionItem({
       <DifficultyDetails difficulties={transition} />
       <TagLine tags={transition.tags} />
       {transition.description && <p className="transition__description">{transition.description}</p>}
+      <TransitionVideos
+        transition={transition}
+        spokenTitle={videoTitle}
+        section={direction}
+        manages={managesVideos}
+      />
       <TagMeanings tags={transition.tags} summary={transitionTagLabels.transitionMeanings} />
-      {manages && (
-        <TransitionTagging
-          transition={transition}
-          spokenTitle={transition.name ?? unnamedTransitionLabel({ from, to }).spoken}
-        />
+      {(manages || managesVideos) && (
+        <div className="transition__manage">
+          {manages && <TransitionTagging transition={transition} spokenTitle={spokenTitle} />}
+          {managesVideos && (
+            <VideoInvitation
+              poseId={page.id}
+              transition={transition}
+              spokenTitle={videoTitle}
+              direction={direction}
+            />
+          )}
+        </div>
       )}
     </li>
   );
@@ -213,6 +237,14 @@ function LoadedPage({
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  // Story 12 (UX-57): back from « Ajouter une vidéo », the page opens on the transition, whose title takes the focus.
+  const { hash } = useLocation();
+  useEffect(() => {
+    const transition = hash ? document.getElementById(decodeURIComponent(hash.slice(1))) : null;
+    if (!transition) return;
+    if (typeof transition.scrollIntoView === 'function') transition.scrollIntoView({ block: 'start' });
+    transition.querySelector<HTMLElement>('.transition__title')?.focus({ preventScroll: true });
+  }, [hash]);
   const photos = page.photos ?? [];
   const enlarged = enlargedPhotoIndex(searchParams.get('photo'), photos.length);
   // Opened by a click: an entry of the history, so that « back » on a phone closes it (R18).
@@ -247,29 +279,36 @@ function LoadedPage({
         <Horizon />
       </div>
       <PhotoFocus page={page}>
-        <div className="pose-page__body">
-          <MainPhotoSection page={page} manages={managesPhotos} safetyNote={safetyNote} onEnlarge={enlarge} />
-          <PoseTags page={page} manages={manages} />
-          {/* Only for a person who may propose: absent otherwise, without any space kept for them. */}
-          {canProposeHere && (
-            <div className="pose-page__actions">
-              <Link to={transitionProposalPath(page.id)} className="button button--primary link-button">
-                <Icon name="plus" />
-                {proposeTransitionFromLabel(page.name)}
-              </Link>
-              <Link to={revisionPath(page.id)} className="button button--secondary link-button">
-                {posePageLabels.proposeRevision}
-              </Link>
-            </div>
-          )}
-          <DifficultyLegend
-            warning={notePlacedWithPhoto ? null : posePageLabels.responsibilityWarning}
-            safetyNote
-          />
-          <TransitionSection page={page} direction="from" manages={manages} />
-          <TransitionSection page={page} direction="to" manages={manages} />
-          <OtherPhotosSection page={page} manages={managesPhotos} onEnlarge={enlarge} />
-        </div>
+        <VideoPlayback>
+          <div className="pose-page__body">
+            <MainPhotoSection
+              page={page}
+              manages={managesPhotos}
+              safetyNote={safetyNote}
+              onEnlarge={enlarge}
+            />
+            <PoseTags page={page} manages={manages} />
+            {/* Only for a person who may propose: absent otherwise, without any space kept for them. */}
+            {canProposeHere && (
+              <div className="pose-page__actions">
+                <Link to={transitionProposalPath(page.id)} className="button button--primary link-button">
+                  <Icon name="plus" />
+                  {proposeTransitionFromLabel(page.name)}
+                </Link>
+                <Link to={revisionPath(page.id)} className="button button--secondary link-button">
+                  {posePageLabels.proposeRevision}
+                </Link>
+              </div>
+            )}
+            <DifficultyLegend
+              warning={notePlacedWithPhoto ? null : posePageLabels.responsibilityWarning}
+              safetyNote
+            />
+            <TransitionSection page={page} direction="from" manages={manages} />
+            <TransitionSection page={page} direction="to" manages={manages} />
+            <OtherPhotosSection page={page} manages={managesPhotos} onEnlarge={enlarge} />
+          </div>
+        </VideoPlayback>
       </PhotoFocus>
       {enlarged !== null && (
         <PhotoViewer page={page} index={enlarged} onBrowse={browse} onClose={closeViewer} />

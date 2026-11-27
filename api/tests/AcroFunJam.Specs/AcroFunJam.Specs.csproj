@@ -21,4 +21,9 @@
     <ReqnrollFeatureFile Include="..\..\..\specs\features\**\*.feature" Link="Features\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="../Shared/ByteRangeInMemory.cs" Link="Shared/ByteRangeInMemory.cs" />
+    <Compile Include="../Shared/TestVideoWorkspace.cs" Link="Shared/TestVideoWorkspace.cs" />
+  </ItemGroup>
+
 </Project>

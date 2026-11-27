@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using AcroFunJam.TestSupport;
 
 namespace AcroFunJam.Architecture.Tests;
 
@@ -20,7 +21,7 @@ public sealed class ApiSecurityTests : IClassFixture<ApiSecurityTests.ApiFactory
         "/flow-generation/flows", // a POST that changes nothing: anyone, visitor included, generates a flow (ADR 0037)
     ];
 
-    private static readonly string[] CapabilityPolicies = [Capabilities.CanPropose, Capabilities.CanValidate, Capabilities.CanManageTags, Capabilities.CanManagePhotos, Capabilities.CanManageRoles];
+    private static readonly string[] CapabilityPolicies = [Capabilities.CanPropose, Capabilities.CanValidate, Capabilities.CanManageTags, Capabilities.CanManagePhotos, Capabilities.CanManageVideos, Capabilities.CanManageRoles];
 
     private readonly IReadOnlyList<RouteEndpoint> _endpoints;
 
@@ -58,6 +59,7 @@ public sealed class ApiSecurityTests : IClassFixture<ApiSecurityTests.ApiFactory
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseEnvironment("Testing");
+            builder.UseOwnVideoWorkspace();
             builder.UseSetting("Catalog:SeedInitialTagList", "false"); // no database here
         }
     }

@@ -1,6 +1,7 @@
 import {
   createApiClient,
   createPosePhotosGateway,
+  createTransitionVideosGateway,
   createAuthGateway,
   createCatalogGateway,
   createContributionGateway,
@@ -32,6 +33,8 @@ import { PoseTaggingProvider } from './catalog/PoseTaggingContext';
 import { PosePhotosProvider } from './catalog/PosePhotosContext';
 import { browserPhotoInspector, canvasPhotoReducer } from './catalog/browser-photo-adapters';
 import { TransitionTaggingProvider } from './catalog/TransitionTaggingContext';
+import { browserVideoInspector } from './catalog/browser-video-adapters';
+import { TransitionVideosProvider } from './catalog/TransitionVideosContext';
 import { ContributionProvider } from './contribution/ContributionContext';
 import { createSessionDecisionInputStore } from './contribution/session-decision-input-store';
 import { createSessionProposalInputStore } from './contribution/session-proposal-input-store';
@@ -57,6 +60,11 @@ const posePhotos = {
   reducer: canvasPhotoReducer,
 };
 const queryClient = new QueryClient();
+/** Story 12 (ADR 0041): the videos of the transitions, sent with their progress (XMLHttpRequest). */
+const transitionVideos = {
+  gateway: createTransitionVideosGateway(apiClient, apiBaseUrl),
+  inspector: browserVideoInspector,
+};
 const router = createBrowserRouter(routes());
 // The input of « Proposer une pose » kept in the tab (ADR 0019), forgotten on sign-out (shared device).
 const proposalInputStore = createSessionProposalInputStore(sessionStorage);
@@ -79,40 +87,42 @@ createRoot(root).render(
             <TransitionTaggingProvider gateway={createTransitionTaggingGateway(apiClient)}>
               <PoseTaggingProvider gateway={createPoseTaggingGateway(apiClient)}>
                 <PosePhotosProvider ports={posePhotos}>
-                  <ContributionProvider
-                    gateway={createContributionGateway(apiClient)}
-                    store={proposalInputStore}
-                  >
-                    <ValidationProvider
-                      gateway={createValidationGateway(apiClient)}
-                      store={decisionInputStore}
+                  <TransitionVideosProvider ports={transitionVideos}>
+                    <ContributionProvider
+                      gateway={createContributionGateway(apiClient)}
+                      store={proposalInputStore}
                     >
-                      <PoseRevisionProvider
-                        gateway={createPoseRevisionGateway(apiClient)}
-                        store={revisionInputStore}
+                      <ValidationProvider
+                        gateway={createValidationGateway(apiClient)}
+                        store={decisionInputStore}
                       >
-                        <TransitionProposalProvider
-                          gateway={createTransitionProposalGateway(apiClient)}
-                          store={transitionInputStore}
+                        <PoseRevisionProvider
+                          gateway={createPoseRevisionGateway(apiClient)}
+                          store={revisionInputStore}
                         >
-                          <IdentityProvider
-                            gateway={createAuthGateway(apiClient)}
-                            memory={createLocalSessionMemory(localStorage, window)}
-                            forgetOnSignOut={[
-                              proposalInputStore,
-                              decisionInputStore,
-                              { clear: revisionInputStore.clearAll },
-                              { clear: transitionInputStore.clearAll },
-                            ]}
+                          <TransitionProposalProvider
+                            gateway={createTransitionProposalGateway(apiClient)}
+                            store={transitionInputStore}
                           >
-                            <FlowGenerationProvider gateway={createFlowGenerationGateway(apiClient)}>
-                              <RouterProvider router={router} />
-                            </FlowGenerationProvider>
-                          </IdentityProvider>
-                        </TransitionProposalProvider>
-                      </PoseRevisionProvider>
-                    </ValidationProvider>
-                  </ContributionProvider>
+                            <IdentityProvider
+                              gateway={createAuthGateway(apiClient)}
+                              memory={createLocalSessionMemory(localStorage, window)}
+                              forgetOnSignOut={[
+                                proposalInputStore,
+                                decisionInputStore,
+                                { clear: revisionInputStore.clearAll },
+                                { clear: transitionInputStore.clearAll },
+                              ]}
+                            >
+                              <FlowGenerationProvider gateway={createFlowGenerationGateway(apiClient)}>
+                                <RouterProvider router={router} />
+                              </FlowGenerationProvider>
+                            </IdentityProvider>
+                          </TransitionProposalProvider>
+                        </PoseRevisionProvider>
+                      </ValidationProvider>
+                    </ContributionProvider>
+                  </TransitionVideosProvider>
                 </PosePhotosProvider>
               </PoseTaggingProvider>
             </TransitionTaggingProvider>

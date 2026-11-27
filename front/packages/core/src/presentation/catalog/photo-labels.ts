@@ -86,6 +86,9 @@ export const posePhotoLabels = {
   /** Refused by AcroFunJam (« inconnu », « Auteur inconnu »…): shown under the field « Crédit ». */
   creditNotAnAuthor:
     "Le crédit doit nommer la personne qui a pris la photo. Si tu ne sais pas qui l'a prise, n'ajoute pas cette photo.",
+  /** The same refusal in « Modifier »: the photo is already there. */
+  creditNotAnAuthorWhenCorrecting:
+    "Le crédit doit nommer la personne qui a pris la photo. Si tu ne sais pas qui l'a prise, retire cette photo.",
   rightsRequired: "Confirme tes droits sur la photo et l'accord des personnes photographiées.",
 } as const;
 
@@ -182,5 +185,26 @@ export const photoErrorMessage = (error: PhotoErrorShape, pose: string): string 
           : posePhotoLabels.tooLarge;
     case 'invalid-input':
       return posePhotoLabels.fileRequired;
+  }
+};
+
+/**
+ * The message of an error of « Choisir comme photo principale », « Modifier » or « Retirer » (an alert under the photo):
+ * nothing is sent there, so it never speaks of a sending nor of choosing the photo again.
+ */
+export const photoManagementErrorMessage = (error: PhotoErrorShape, pose: string): string => {
+  switch (error.kind) {
+    case 'unreachable':
+      return 'Impossible de joindre AcroFunJam. Vérifie ta connexion Internet, puis réessaie.';
+    case 'session-expired':
+      return 'Ta session a expiré. Connecte-toi de nouveau, puis réessaie.';
+    case 'outdated':
+      return 'Le site doit être mis à jour. Recharge la page, puis réessaie.';
+    case 'invalid':
+      return error.code === 'photo.credit-not-an-author'
+        ? posePhotoLabels.creditNotAnAuthorWhenCorrecting
+        : photoErrorMessage(error, pose);
+    default:
+      return photoErrorMessage(error, pose);
   }
 };

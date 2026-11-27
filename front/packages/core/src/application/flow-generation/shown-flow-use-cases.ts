@@ -58,7 +58,10 @@ export const drawFlow = async (
  * « Revenir au flow précédent » (M9): the previous flow and its criteria are shown again, and kept on the device as the
  * flow shown (M3); a device that cannot keep it does not prevent it from being shown.
  */
-export const showPreviousFlow = async (store: LastShownFlowStore, state: ShownFlowState): Promise<ShownFlowState> => {
+export const showPreviousFlow = async (
+  store: LastShownFlowStore,
+  state: ShownFlowState,
+): Promise<ShownFlowState> => {
   if (!state.previous) return state;
   const restored = showPrevious(state);
   try {

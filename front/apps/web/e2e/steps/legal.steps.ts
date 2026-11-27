@@ -69,7 +69,10 @@ Then(
   async ({ page }, address: string) => {
     const footer = new SiteFooter(page);
     await expect(footer.legalNoticeLink).toHaveAttribute('href', LegalPages.paths['les mentions légales']);
-    await expect(footer.privacyPolicyLink).toHaveAttribute('href', LegalPages.paths['la politique de confidentialité']);
+    await expect(footer.privacyPolicyLink).toHaveAttribute(
+      'href',
+      LegalPages.paths['la politique de confidentialité'],
+    );
     await expect(footer.contactLink(address)).toHaveAttribute('href', `mailto:${address}`);
   },
 );
@@ -104,7 +107,7 @@ const durationRows: Record<string, { heading: string; details: readonly string[]
   },
   'les propositions et les décisions': { heading: 'Tes propositions', details: ['décisions'] },
   'la confirmation des droits sur une photo : compte et date': {
-    heading: 'La confirmation des droits',
+    heading: 'La confirmation des droits sur une photo',
     details: ['compte', 'date'],
   },
   'les photos, leur crédit et leur texte alternatif': {
@@ -163,8 +166,13 @@ const requests: Record<string, { anchor: string; words: readonly string[] }> = {
   "s'opposer à un traitement ou le limiter": { anchor: 'tes-droits', words: ["t'opposer", 'limiter'] },
   'faire supprimer son compte': { anchor: 'supprimer-ton-compte', words: ['supprimer ton compte'] },
   "faire retirer une photo où l'on figure, sans compte, une seule demande de la base ou du flyer suffisant": {
-    anchor: 'retirer-une-photo',
-    words: ['une seule demande', 'base', 'flyer', 'sans compte'],
+    anchor: 'retirer-une-photo-ou-une-video',
+    words: ['photo', 'une seule demande', 'base', 'flyer', 'sans compte'],
+  },
+  // Story 12 (V21).
+  "faire retirer une vidéo où l'on figure": {
+    anchor: 'retirer-une-photo-ou-une-video',
+    words: ['vidéo', 'retirée'],
   },
 };
 
@@ -175,6 +183,26 @@ Then(
     const section = new LegalPages(page).section(anchor);
     for (const word of words) await expect(section).toContainText(word);
     await expect(section.locator(`a[href="mailto:${address}"]`).first()).toBeVisible();
+  },
+);
+
+// Story 12 « Vidéos des transitions » (V21, Q285).
+Then(
+  "la politique de confidentialité indique qu'une vidéo est publiée avec son crédit, une légende et, s'il y en a une, une description, sans son ni métadonnées, et que les personnes filmées ne sont jamais nommées",
+  async ({ page }) => {
+    const section = new LegalPages(page).section('tes-donnees');
+    await expect(section.getByRole('heading', { level: 3, name: 'Les vidéos', exact: true })).toBeVisible();
+    for (const words of ['crédit', 'légende', 'description', 'son', 'métadonnées', 'jamais nommées'])
+      await expect(section).toContainText(words);
+  },
+);
+
+Then(
+  'la politique de confidentialité indique que la confirmation des droits sur une vidéo est gardée aussi longtemps que la vidéo',
+  async ({ page }) => {
+    const row = new LegalPages(page).durationRow('La confirmation des droits sur une vidéo');
+    await expect(row).toHaveCount(1);
+    await expect(row).toContainText(/aussi longtemps que la vidéo/i);
   },
 );
 

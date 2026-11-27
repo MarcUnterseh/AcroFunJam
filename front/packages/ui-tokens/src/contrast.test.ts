@@ -78,6 +78,8 @@ const controlPairs: readonly [Role, Role][] = [
   ['primary', 'surfaceHover'],
   // Story 10: the photo icon of a frame without preview (« aperçu indisponible »), on the passe-partout.
   ['textMuted', 'photoMat'],
+  // Story 12: the icon and the outline of a video that cannot be prepared or played, on the passe-partout.
+  ['danger', 'photoMat'],
 ];
 
 const hexStops = (gradient: string): string[] => gradient.match(/#[0-9A-Fa-f]{6}/g) ?? [];

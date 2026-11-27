@@ -12,6 +12,7 @@ import {
 import type { ApiClient } from '../client';
 import { isDifficultyCode } from '../shared-kernel/difficulty-codes';
 import { everyItem, toTagReference } from '../shared-kernel/tag-reading';
+import { toTransitionVideos } from './video-reading';
 
 const isString = (value: unknown): value is string => typeof value === 'string';
 const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
@@ -36,8 +37,10 @@ const toLinkedTransition = (value: unknown): LinkedTransition | null => {
   if (!isRecord(value)) return null;
   const { id, otherPose, name, baseDifficulty, flyerDifficulty, description } = value;
   const tags = everyItem(value['tags'], toTransitionTag);
+  const videos = toTransitionVideos(value['videos']);
   if (
     !tags ||
+    !videos ||
     !isString(id) ||
     !isRecord(otherPose) ||
     !isString(otherPose['id']) ||
@@ -56,6 +59,7 @@ const toLinkedTransition = (value: unknown): LinkedTransition | null => {
     flyerDifficulty,
     description,
     tags,
+    videos,
   };
 };
 

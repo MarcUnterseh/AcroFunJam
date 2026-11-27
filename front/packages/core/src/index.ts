@@ -76,3 +76,9 @@ export * from './domain/catalog/pose-photos';
 export * from './application/catalog/pose-photos';
 export type * from './application/catalog/PosePhotosGateway';
 export * from './presentation/catalog/photo-labels';
+// Story 12 « Vidéos des transitions » (ADR 0041)
+export * from './domain/catalog/transition-videos';
+// Story 12 « Vidéos des transitions » (ADR 0041)
+export * from './application/catalog/transition-videos';
+export type * from './application/catalog/TransitionVideosGateway';
+export * from './presentation/catalog/video-labels';

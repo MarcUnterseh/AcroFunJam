@@ -29,6 +29,7 @@ const popToBird: LinkedTransition = {
   flyerDifficulty: 'intermediate',
   description: null,
   tags: [tagOf('dynamique'), tagOf('pop')],
+  videos: [],
 };
 
 const throneToBird: LinkedTransition = {
@@ -39,6 +40,7 @@ const throneToBird: LinkedTransition = {
   flyerDifficulty: 'beginner',
   description: null,
   tags: [],
+  videos: [],
 };
 
 const throne = (transitionsFrom: LinkedTransition[] = [throneToBird, popToBird]): PosePage => ({

@@ -3,8 +3,15 @@ using AcroFunJam.Domain.SharedKernel;
 
 namespace AcroFunJam.Application.Catalog.GetPosePage;
 
-/// <summary>The page of a published pose: its values, its version and its transitions from and to it (story 7, ADR 0030).</summary>
-public sealed record GetPosePage(PoseId Id);
+/// <summary>
+/// The page of a published pose: its values, its version and its transitions from and to it (story 7, ADR 0030). The videos of
+/// the transitions are presented to its audience (story 12, V11): a visitor by default, or whoever manages the videos, as the Api
+/// evaluates it.
+/// </summary>
+public sealed record GetPosePage(PoseId Id)
+{
+    public VideoAudience Audience { get; init; } = VideoAudience.Visitor;
+}
 
 /// <summary>A tag carried by a transition, with its current name and its description (story 8, C4, ADR 0034).</summary>
 public sealed record PresentedTag(TagId Id, TagName Name, TagDescription Description);
@@ -21,6 +28,16 @@ public sealed record PosePage(
 {
     /// <summary>The photos of the pose, the main photo first, then the others in the order of addition (story 10, R17).</summary>
     public IReadOnlyList<PresentedPhoto> Photos { get; init; } = [];
+
+    /// <summary>The videos of the transitions that have some, as presented to the audience, in the order of addition (story 12, V18).</summary>
+    public IReadOnlyDictionary<TransitionId, IReadOnlyList<PresentedVideo>> Videos { get; init; } =
+        new Dictionary<TransitionId, IReadOnlyList<PresentedVideo>>();
+
+    public IReadOnlyList<PresentedVideo> VideosOf(LinkedTransition transition)
+    {
+        ArgumentNullException.ThrowIfNull(transition);
+        return Videos.GetValueOrDefault(transition.Id) ?? [];
+    }
 
     /// <summary>These tags, presented in catalog order; a tag unknown to the list is left out.</summary>
     public static IReadOnlyList<PresentedTag> Presented(TagSet tags, IReadOnlyDictionary<TagId, PresentedTag> known)

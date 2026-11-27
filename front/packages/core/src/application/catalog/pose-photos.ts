@@ -123,4 +123,3 @@ export const correctPosePhoto = async <F>(
   const answer = await gateway.correctPhoto(poseId, photoId, texts);
   return answer.ok ? answer : fail(toError(answer.error));
 };
-

@@ -88,7 +88,7 @@ public static class PhotoEndpoints
         var (content, altText, credit, rightsConfirmed) = form.Value!;
         var added = await handler.Handle(
             new AddPosePhoto(new PoseId(id), content, altText, credit, rightsConfirmed,
-                new PhotoManagerId(Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!))),
+                new CatalogManagerId(Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!))),
             ct);
         if (added.IsFailure) return added.Error!.ToProblem();
         return TypedResults.Created(added.Value!.Sources.Page, ToResponse(added.Value!));

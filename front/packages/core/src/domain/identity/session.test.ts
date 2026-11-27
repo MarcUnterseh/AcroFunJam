@@ -3,6 +3,7 @@ import {
   canPropose,
   canManageTags,
   canManagePhotos,
+  canManageVideos,
   canValidateProposals,
   initialSession,
   noticeDismissed,
@@ -111,5 +112,21 @@ describe('canManagePhotos', () => {
 
   it('should be false when nobody is signed in', () => {
     expect(canManagePhotos(signedOut())).toBe(false);
+  });
+});
+
+describe('canManageVideos', () => {
+  it.each([
+    [['propose', 'validate-proposals', 'manage-tags', 'manage-photos', 'manage-videos'], true],
+    [['propose', 'validate-proposals', 'manage-tags', 'manage-photos'], false],
+  ] as const)(
+    'should tell whether the signed-in person may manage the videos when the capabilities are %j',
+    (capabilities, expected) => {
+      expect(canManageVideos(signedIn('bruno@example.org', capabilities))).toBe(expected);
+    },
+  );
+
+  it('should be false when nobody is signed in', () => {
+    expect(canManageVideos(signedOut())).toBe(false);
   });
 });

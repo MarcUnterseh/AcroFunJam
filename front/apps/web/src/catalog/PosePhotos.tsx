@@ -12,7 +12,7 @@ import {
   photoCreditLabel,
   photoCreditMaxLength,
   photoDescription,
-  photoErrorMessage,
+  photoManagementErrorMessage,
   posePhotoLabels as labels,
   removalConsequence,
   removalConsequenceText,
@@ -61,13 +61,17 @@ export const enlargeButtonId = (photoId: string) => `agrandir-${photoId}`;
 type FocusTarget = () => HTMLElement | null;
 
 /**
- * A change of the photos (removal, new main photo) moves or removes the button that had the focus: the target is focused
- * once the page is read again, or after the next frame when the page read again is the same.
+ * A change of the photos (removal, new main photo) or of the videos of a transition (removal) moves or removes the button
+ * that had the focus: the target is focused once the page is read again, or after the next frame when the page read
+ * again is the same.
  */
 const PhotoFocusContext = createContext<{
   readonly expect: (target: FocusTarget) => void;
   readonly settle: () => void;
 }>({ expect: () => {}, settle: () => {} });
+
+/** The focus to give once the page of the pose is read again (inside PhotoFocus). */
+export const usePendingFocus = () => useContext(PhotoFocusContext);
 
 export function PhotoFocus({ page, children }: { readonly page: PosePage; readonly children: ReactNode }) {
   const pending = useRef<FocusTarget | null>(null);
@@ -255,9 +259,7 @@ function PhotoManagement({
     const altTextError = checkAltText(altText);
     const creditError = checkPhotoCredit(credit);
     setFieldErrors({
-      ...(altTextError
-        ? { altText: labels.altTextTooLong }
-        : {}),
+      ...(altTextError ? { altText: labels.altTextTooLong } : {}),
       ...(creditError
         ? { credit: creditError === 'required' ? labels.creditRequired : labels.creditTooLong }
         : {}),
@@ -267,7 +269,7 @@ function PhotoManagement({
     const result = await correctPosePhoto(gateway, page.id, photo.id, { altText, credit });
     setBusy(false);
     if (!result.ok && result.error.kind === 'invalid' && result.error.code === creditNotAnAuthor) {
-      setFieldErrors({ credit: labels.creditNotAnAuthor });
+      setFieldErrors({ credit: labels.creditNotAnAuthorWhenCorrecting });
       document.getElementById(creditId)?.focus();
       return;
     }
@@ -280,7 +282,7 @@ function PhotoManagement({
     <FormAlert>
       <Icon name="error" />
       <div className="form-alert__content">
-        <p>{photoErrorMessage(error, page.name)}</p>
+        <p>{photoManagementErrorMessage(error, page.name)}</p>
       </div>
     </FormAlert>
   );
@@ -413,7 +415,8 @@ export function TextField({
   max,
 }: {
   readonly id: string;
-  readonly label: string;
+  /** Text, or text with « (facultative) » out of bold (.field__optional). */
+  readonly label: ReactNode;
   readonly help: string;
   readonly value: string;
   readonly onChange: (value: string) => void;
@@ -597,7 +600,12 @@ export function PhotoViewer({
     if (shown.current === index || !photo) return;
     shown.current = index;
     announce(
-      enlargedPhotoAnnouncement(index + 1, photos.length, page.name, photoDescription(photo, index + 1, page.name)),
+      enlargedPhotoAnnouncement(
+        index + 1,
+        photos.length,
+        page.name,
+        photoDescription(photo, index + 1, page.name),
+      ),
     );
   }, [index, photo, photos.length, page.name, announce]);
 

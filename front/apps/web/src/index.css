@@ -2827,8 +2827,12 @@ html {
   margin-top: var(--afj-spacing-sm);
 }
 
-/* Footer of management of a transition (validators): dotted top border, then the zone « Étiqueter ». */
+/* Footer of management of a transition (validators): dotted top border, « Étiqueter », then « Ajouter une vidéo ». */
 .transition__manage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--afj-spacing-sm) var(--afj-spacing-md);
   padding-top: var(--afj-spacing-sm);
   border-top: var(--afj-size-border-width) dotted var(--afj-color-divider);
 }
@@ -4235,5 +4239,365 @@ html {
   .site-footer__link,
   .legal-page a {
     color: LinkText;
+  }
+}
+
+/* Story 12 « Vidéos des transitions » (rangee-videos.md, lecteur-video.md, bloc-preparation-video.md, champ-video.md). */
+.transition-videos {
+  display: grid;
+  gap: var(--afj-spacing-sm);
+  margin-top: var(--afj-spacing-xs);
+  min-width: 0;
+}
+
+.transition-videos__title {
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  line-height: var(--afj-line-height-tight);
+  color: var(--afj-color-text-muted);
+}
+
+.transition-videos__reminder {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--afj-spacing-xs);
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text);
+}
+
+.transition-videos__reminder .icon {
+  flex: none;
+  color: var(--afj-color-sun-strong);
+}
+
+/* A grid that wraps, never a ribbon that scrolls; the order of the videos never changes (no « dense »). */
+.transition-videos__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--afj-size-video-poster), 1fr));
+  gap: var(--afj-spacing-md) var(--afj-spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.video {
+  display: flex;
+  flex-direction: column;
+  gap: var(--afj-spacing-xs);
+  min-width: 0;
+}
+
+/* A launched video, or one being modified or removed, takes the whole row, at its place. */
+.video--active,
+.video--editing {
+  grid-column: 1 / -1;
+}
+
+.video__figure {
+  display: grid;
+  gap: var(--afj-spacing-xs);
+  margin: 0;
+  min-width: 0;
+}
+
+.video__play {
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 3 / 4;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  background: var(--afj-color-photo-mat);
+  border-radius: var(--afj-radius-md);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.video--editing .video__play,
+.video--editing .video__frame {
+  inline-size: var(--afj-size-video-poster);
+}
+
+.video__play:focus-visible {
+  outline: var(--afj-size-focus-ring-width) solid var(--afj-color-focus);
+  outline-offset: var(--afj-size-focus-ring-offset);
+}
+
+.video__poster {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+
+.video__play-pill {
+  position: absolute;
+  inset-block-end: var(--afj-spacing-sm);
+  inset-inline-start: var(--afj-spacing-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--afj-spacing-xs);
+  min-block-size: var(--afj-size-touch-target);
+  padding: 0 var(--afj-spacing-md) 0 var(--afj-spacing-sm);
+  border-radius: var(--afj-radius-pill);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text);
+  background: var(--afj-color-surface);
+  border: var(--afj-size-border-width) solid var(--afj-color-border);
+}
+
+@media (hover: hover) {
+  .video__play:hover .video__play-pill {
+    background: var(--afj-color-surface-hover);
+    border-color: var(--afj-color-text);
+  }
+}
+
+.video__play:active .video__play-pill {
+  background: var(--afj-color-divider);
+}
+
+.video__duration {
+  position: absolute;
+  inset-block-start: var(--afj-spacing-sm);
+  inset-inline-end: var(--afj-spacing-sm);
+  padding: 0 var(--afj-spacing-sm);
+  border-radius: var(--afj-radius-pill);
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--afj-color-text);
+  background: var(--afj-color-surface);
+}
+
+.video__caption-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: start;
+  gap: var(--afj-spacing-sm) var(--afj-spacing-md);
+  min-width: 0;
+}
+
+.video__caption {
+  display: grid;
+  min-width: 0;
+}
+
+.video__legend,
+.video__credit {
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  line-height: var(--afj-line-height-tight);
+  overflow-wrap: anywhere;
+}
+
+.video__legend {
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text);
+}
+
+.video__credit {
+  color: var(--afj-color-text-muted);
+}
+
+.video__description p {
+  margin: var(--afj-spacing-xs) 0 0;
+  padding: var(--afj-spacing-sm);
+  font-size: var(--afj-font-size-sm);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  background: var(--afj-color-surface-hover);
+  border-radius: var(--afj-radius-sm);
+}
+
+.video__stage {
+  position: relative;
+  inline-size: 100%;
+  background: var(--afj-color-photo-mat);
+  border-radius: var(--afj-radius-md);
+  overflow: hidden;
+}
+
+.video__stage--failed {
+  min-block-size: calc(var(--afj-size-video-max-height) / 2);
+}
+
+.video__stage video {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  max-block-size: var(--afj-size-video-max-height);
+  object-fit: contain;
+}
+
+.video__error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--afj-spacing-sm);
+  padding: var(--afj-spacing-md);
+  text-align: center;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text);
+  background: var(--afj-color-photo-mat);
+}
+
+.video__error p {
+  max-inline-size: var(--afj-size-centered-message-max-width);
+  margin: 0;
+}
+
+.video__error .icon {
+  color: var(--afj-color-danger);
+}
+
+.video__error .button {
+  background: var(--afj-color-surface);
+}
+
+/* « En préparation » / « Impossible à préparer »: the 3:4 frame of the poster, the state written. */
+.video__frame {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--afj-spacing-xs);
+  inline-size: 100%;
+  aspect-ratio: 3 / 4;
+  padding: var(--afj-spacing-sm);
+  text-align: center;
+  font-size: var(--afj-font-size-sm);
+  font-weight: var(--afj-font-weight-semibold);
+  color: var(--afj-color-text);
+  background: var(--afj-color-photo-mat);
+  border-radius: var(--afj-radius-md);
+}
+
+.video__frame--pending {
+  border: var(--afj-size-border-width) dashed var(--afj-color-border);
+}
+
+.video__frame--pending .icon {
+  color: var(--afj-color-text-muted);
+}
+
+.video__frame--failed {
+  border: var(--afj-size-border-width-strong) solid var(--afj-color-danger);
+}
+
+.video__frame--failed .icon {
+  color: var(--afj-color-danger);
+}
+
+/* At the bottom of the cell: the buttons of the videos of a row stay aligned, whatever their captions. */
+.video__actions {
+  display: grid;
+  gap: var(--afj-spacing-sm);
+  margin-block-start: auto;
+  padding-top: var(--afj-spacing-sm);
+  border-top: var(--afj-size-border-width) dotted var(--afj-color-divider);
+}
+
+.video__zone {
+  display: grid;
+  gap: var(--afj-spacing-md);
+  padding: var(--afj-spacing-md);
+  background: var(--afj-color-background);
+  border-radius: var(--afj-radius-sm);
+}
+
+.video__zone-title {
+  margin: 0;
+  font-weight: var(--afj-font-weight-semibold);
+}
+
+.video__zone-text {
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+.transition-videos__alert {
+  font-size: var(--afj-font-size-sm);
+}
+
+.transition-videos__late {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--afj-spacing-xs);
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  color: var(--afj-color-text-muted);
+}
+
+.transition-videos__late .icon {
+  flex-shrink: 0;
+}
+
+.transition-videos__alert p {
+  margin: 0;
+}
+
+.transition__manage > .tagging-zone {
+  flex-basis: 100%;
+}
+
+.transition__videos-manage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--afj-spacing-sm) var(--afj-spacing-md);
+}
+
+.transition__videos-count {
+  margin: 0;
+  font-size: var(--afj-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--afj-color-text-muted);
+}
+
+.transition__videos-max {
+  margin: 0;
+  color: var(--afj-color-text-muted);
+}
+
+.video-field__preview {
+  margin-top: var(--afj-spacing-xs);
+  border-radius: var(--afj-radius-md);
+  background: var(--afj-color-photo-mat);
+  overflow: hidden;
+}
+
+.video-field__preview video {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  max-block-size: var(--afj-size-video-max-height);
+  object-fit: contain;
+}
+
+.photo-field--invalid .video-field__preview {
+  outline: var(--afj-size-border-width-strong) solid var(--afj-color-danger);
+}
+
+.field__optional {
+  font-weight: var(--afj-font-weight-regular);
+  color: var(--afj-color-text-muted);
+}
+
+@media (forced-colors: active) {
+  .video__play,
+  .video__stage,
+  .video__frame,
+  .video__play-pill,
+  .video__duration {
+    border: var(--afj-size-border-width) solid CanvasText;
   }
 }
